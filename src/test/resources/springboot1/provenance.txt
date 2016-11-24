@@ -1,0 +1,39 @@
+Template info:
+
+Group: atomist
+Name: spring-rest-service
+Version 1.0.2-SNAPSHOT
+
+Backing GitHub repo:
+Owner: atomist-project-templates
+Repo: spring-rest-service
+Branch: master
+Path (within repo): 
+sha: b341848173a2b06f05dba92140bc34a6d27605fe
+
+
+Parameter values (passed in on template invocation):
+description='null'
+package_name='com.atomist.test1'
+team-id='T0KT93A9X'
+name='test1'
+template='spring-rest-service'
+user-id='U0LTHLEPP'
+group_id='atomist'
+org='atomisthqtest'
+version='0.0.1'
+artifact_id='test1'
+visibility='private'
+
+Computed parameter values (computed based on parameter values passed in):
+date_time='12 07 2016 '
+configuration_class_name='Test1Configuration'
+package_path='com/atomist/test1'
+base_source_path='src/main/java'
+base_test_path='src/test/java'
+containerless_web_integration_test_name='Test1OutOfContainerIntegrationTests'
+application_name='Test1'
+application_class_name='Test1Application'
+startup_test_name='Test1ApplicationTests'
+web_integration_test_name='Test1WebIntegrationTests'
+creation_date='2016-07-12'

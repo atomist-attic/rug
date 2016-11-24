@@ -1,0 +1,2 @@
+# Just some content to test out deleting a . hidden non-empty folder
+

@@ -3,6 +3,10 @@ install: true
 script: bash travis-build.bash
 jdk:
 - oraclejdk8
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
 branches:
   except:
   - /\+travis\d+$/

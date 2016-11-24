@@ -1,44 +1,47 @@
 package com.atomist.rug.runtime
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.SuccessfulModification
+import com.atomist.project.common.IllformedParametersException
+import com.atomist.project.edit.{FailedModificationAttempt, SuccessfulModification}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 object TypeScriptRugEditorTest {
 
+  val ContentPattern = "Anders .*"
+
   val SimpleEditorTaggedAndMeta =
-    """
-      |import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/ProjectEditor'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/ProjectEditor'
-      |import {File} from 'user-model/model/Core'
-      |
+    s"""
+       |import {Project} from 'user-model/model/Core'
+       |import {ParametersSupport} from 'user-model/operations/ProjectEditor'
+       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+       |import {Parameters} from 'user-model/operations/ProjectEditor'
+       |import {File} from 'user-model/model/Core'
+       |
       |import {parameter} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
-      |
+       |import {inject} from 'user-model/support/Metadata'
+       |import {parameters} from 'user-model/support/Metadata'
+       |import {tag} from 'user-model/support/Metadata'
+       |import {editor} from 'user-model/support/Metadata'
+       |
       |abstract class ContentInfo extends ParametersSupport {
-      |
-      |  @parameter({description: "Content", displayName: "content", pattern: ".*", maxLength: 100})
-      |  content: string = null
-      |
+       |
+      |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
+       |  content: string = null
+       |
       |}
-      |
+       |
       |@editor("A nice little editor")
-      |@tag("java")
-      |@tag("maven")
-      |class SimpleEditor implements ProjectEditor<ContentInfo> {
-      |
+       |@tag("java")
+       |@tag("maven")
+       |class SimpleEditor implements ProjectEditor<ContentInfo> {
+       |
       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
-      |      project.addFile("src/from/typescript", p.content);
-      |      return `Edited Project now containing ${project.fileCount()} files: \n`;
-      |    }
-      |  }
-      |
+       |      project.addFile("src/from/typescript", p.content);
+       |      return `Edited Project now containing $${project.fileCount()} files: \n`;
+       |    }
+       |  }
+       |
     """.stripMargin
 }
 
@@ -81,7 +84,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.name should be("content")
     p.description should be("Content")
     p.getDisplayName should be("content")
-    p.getPattern should be(".*")
+    p.getPattern should be(ContentPattern)
     p.getMaxLength should be(100)
   }
 
@@ -148,6 +151,22 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     //ed.description should be ("A nice little editor")
   }
 
+  it should "send editor bad input and get appropriate response" in {
+    val as = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
+    val jsed = JavaScriptInvokingRugEditor.fromTypeScriptArchive(as).head
+    jsed.name should be("Simple")
+
+    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
+
+    // This should not work beause it doesn't meet the content pattern
+    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Bjarn Stroustrup is God")))
+      )
+    //    match {
+    //      case fm: FailedModificationAttempt =>
+    //    }
+  }
+
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingRugEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = JavaScriptInvokingRugEditor.fromTypeScriptArchive(as).head
@@ -157,7 +176,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
-        //sm.comment.contains("OK") should be(true)
+      //sm.comment.contains("OK") should be(true)
     }
     jsed
   }

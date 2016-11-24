@@ -23,20 +23,7 @@ class JavaScriptContext extends LazyLogging {
       case is: ScriptEngine with Invocable => is
     }
 
-  //so we can print stuff out from TS
-  val consolejs = """console = {
-                        log: print,
-                        warn: print,
-                        error: print
-                    };"""
-
-  engine.eval(consolejs)
-
-  // Avoid the problem with export
-  engine.eval("exports = {}")
-
-  val npmJs = IOUtils.toString(getClass.getResourceAsStream("/utils/jvm-npm.js"), StandardCharsets.UTF_8)
-  engine.eval(npmJs)
+  configureEngine(engine)
 
   /**
     * Evaluate the given JS fragment
@@ -55,6 +42,11 @@ class JavaScriptContext extends LazyLogging {
       eval(f.content)
   }
 
+  /**
+    * Information about a JavaScript var exposed in the project scripts
+    * @param key name of the var
+    * @param scriptObjectMirror interface for working with Var
+    */
   case class Var(key: String, scriptObjectMirror: ScriptObjectMirror)
 
   /**
@@ -68,5 +60,25 @@ class JavaScriptContext extends LazyLogging {
         case _ => None
       }
     }).toSeq
+
+  private def configureEngine(scriptEngine: ScriptEngine): Unit = {
+    //so we can print stuff out from TS
+    val consoleJs =
+    """
+      |console = {
+      |   log: print,
+      |   warn: print,
+      |   error: print
+      |};
+    """.stripMargin
+
+    engine.eval(consoleJs)
+
+    // Avoid problem with export
+    engine.eval("exports = {}")
+
+    val npmJs = IOUtils.toString(getClass.getResourceAsStream("/utils/jvm-npm.js"), StandardCharsets.UTF_8)
+    engine.eval(npmJs)
+  }
 
 }

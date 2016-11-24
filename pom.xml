@@ -45,6 +45,12 @@
             <groupId>com.atomist</groupId>
             <artifactId>rug-compiler</artifactId>
             <version>0.1.0-20161122150734</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.atomist</groupId>
+                    <artifactId>source-lib</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atomist</groupId>

@@ -1,7 +1,7 @@
 package com.atomist.project.edit.common
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.project.common.support.CommonParametersProjectOperation
+import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.edit._
 import com.atomist.source.ArtifactSource
 
@@ -11,7 +11,7 @@ import com.atomist.source.ArtifactSource
   */
 trait ProjectEditorSupport
   extends ProjectEditor
-    with CommonParametersProjectOperation {
+  with ProjectOperationParameterSupport {
 
   /**
     * Should we fail if we were called are are not applicable?

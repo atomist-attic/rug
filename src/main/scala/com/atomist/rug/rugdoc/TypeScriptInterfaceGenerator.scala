@@ -1,8 +1,5 @@
 package com.atomist.rug.rugdoc
 
-import _root_.java.nio.charset.Charset
-import _root_.java.util.Objects
-
 import com.atomist.param.Parameter
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.InvalidParametersException
@@ -10,12 +7,9 @@ import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.java.support.JavaHelpers
 import com.atomist.rug.spi.{StaticTypeInformation, Type, TypeRegistry}
 import com.atomist.rug.ts.TypeScriptGenerationHelper
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.util.template.velocity.VelocityMergeTool
-import org.apache.commons.io.IOUtils
 
 import scala.collection.mutable.ListBuffer
 

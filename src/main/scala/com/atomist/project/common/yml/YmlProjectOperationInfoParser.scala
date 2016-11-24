@@ -85,8 +85,6 @@ private class BoundProjectOperationInfo extends TemplateBasedProjectOperationInf
 
   override def tags(): Seq[Tag] = _tags.map(tw => tw.toTag)
 
-  override def computedParameters(parameterValues: ParameterValues): Seq[ParameterValue] = Nil
-
   override def toString = ReflectionToStringBuilder.toString(this)
 }
 

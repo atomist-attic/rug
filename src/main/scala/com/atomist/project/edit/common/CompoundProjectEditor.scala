@@ -100,8 +100,6 @@ class CompoundProjectEditor(
       .map(v => v.head) // Take the first of each
       .toSeq
 
-  override def computedParameters(parameterValues: ParameterValues): Seq[ParameterValue] = Nil
-
   override def toString: String =
     s"${getClass.getSimpleName}:$name;${components.size} components;descr=$description"
 }

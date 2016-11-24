@@ -17,8 +17,6 @@ case class SimpleProjectOperationInfo(
   def this(poi: ProjectOperationInfo) =
     this(poi.name, poi.description, poi.group, poi.version, poi.tags, poi.parameters)
 
-  override def computedParameters(parameterValues: ParameterValues): Seq[ParameterValue] = Nil
-
   // For Jackson and other bean-oriented mappers
   def getGroup: String = group.orNull
 

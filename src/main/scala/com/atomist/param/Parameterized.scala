@@ -41,12 +41,4 @@ trait Parameterized {
   def areValid(pvs: ParameterValues): Boolean =
     findMissingParameters(pvs).isEmpty && findInvalidParameterValues(pvs).isEmpty
 
-  /**
-    * Returns a list of computed ParameterValues.
-    *
-    * @param pvs ParameterValues to compute
-    * @return any additional parameters not exposed by the ParameterValues object,
-    * which must be valid (without missing parameters)
-    */
-  def computedParameters(pvs: ParameterValues): Seq[ParameterValue]
 }

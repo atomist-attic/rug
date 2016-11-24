@@ -61,5 +61,4 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
     MapToYamlStringSerializer.toYamlString(yamlMap)
   }
 
-  override def computedParameters(parameterValues: ParameterValues): Seq[ParameterValue] = Seq()
 }

@@ -9,8 +9,6 @@ object ParametersToTest {
   val ParamStartingWithX = Parameter("mystery", "x.*")
 
   val ParameterizedToTest = new ParameterizedSupport {
-    override def computedParameters(pvs: ParameterValues): Seq[ParameterValue] = Nil
-
     addParameter(StringParam)
     addParameter(AgeParam)
     addParameter(ParamStartingWithX)

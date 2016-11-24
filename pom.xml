@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
-    <artifactId>rug-lib</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <artifactId>rug</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>rug-lib</name>
-    <description>Rug editor DSL</description>
+    <name>rug</name>
+    <description>Rug runtime</description>
     <properties>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -297,15 +297,23 @@
         </plugins>
     </build>
     <repositories>
-        <repository>
-            <id>atomist-release</id>
-            <name>Atomist Release</name>
-            <url>https://atomist.jfrog.io/atomist/libs-release</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
+      <repository>
+          <id>atomist-release</id>
+          <name>Atomist Release</name>
+          <url>https://atomist.jfrog.io/atomist/libs-release</url>
+          <snapshots>
+              <enabled>false</enabled>
+          </snapshots>
+      </repository>
+      <repository>
+          <id>atomist-snapshots</id>
+          <name>Atomist Snapshots</name>
+          <url>https://atomist.jfrog.io/atomist/libs-snapshot</url>
+          <snapshots>
+              <enabled>true</enabled>
+          </snapshots>
+      </repository>
+      <repository>
             <id>atomisthq-snapshots</id>
             <name>Atomist Snapshots</name>
             <url>https://sforzando.artifactoryonline.com/sforzando/libs-snapshot</url>
@@ -321,25 +329,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>atomist-snapshots</id>
-            <name>Atomist Snapshots</name>
-            <url>https://atomist.jfrog.io/atomist/libs-snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
     </repositories>
     <distributionManagement>
-        <repository>
-            <id>atomisthq-release</id>
+      <repository>
+            <id>atomist-release</id>
             <name>Atomist Release</name>
-            <url>https://sforzando.artifactoryonline.com/sforzando/libs-release-local</url>
+            <url>https://atomist.jfrog.io/atomist/libs-release-local</url>
         </repository>
         <snapshotRepository>
-            <id>atomisthq-snapshots</id>
+            <id>atomist-snapshots</id>
             <name>Atomist Snapshots</name>
-            <url>https://sforzando.artifactoryonline.com/sforzando/libs-snapshot-local</url>
+            <url>https://atomist.jfrog.io/atomist/libs-snapshot-local</url>
         </snapshotRepository>
     </distributionManagement>
 </project>

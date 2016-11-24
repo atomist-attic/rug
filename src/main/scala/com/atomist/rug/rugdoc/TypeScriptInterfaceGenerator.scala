@@ -24,7 +24,7 @@ object TypeScriptInterfaceGenerator {
 
   val DefaultTemplateName = "ts.vm"
 
-  val DefaultDocName = "rugKinds.md"
+  val DefaultFilename = "model/Core.ts"
 
   val OutputPathParam = "output_path"
 
@@ -36,8 +36,8 @@ object TypeScriptInterfaceGenerator {
   * @param typeRegistry Registry of known Rug Types.
   */
 class TypeScriptInterfaceGenerator(
-                           typeRegistry: TypeRegistry = DefaultTypeRegistry
-                         ) extends ProjectGenerator
+                                    typeRegistry: TypeRegistry = DefaultTypeRegistry
+                                  ) extends ProjectGenerator
   with ProjectEditor with ProjectOperationParameterSupport {
 
   val helper = new TypeScriptGenerationHelper()
@@ -49,13 +49,12 @@ class TypeScriptInterfaceGenerator(
   addParameter(Parameter(OutputPathParam, ".*").
     setRequired(false).
     setDisplayName("Path for created doc").
-    setDefaultValue(DefaultDocName))
+    setDefaultValue(DefaultFilename))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = emitInterfaces(poa)
-    val output = StringFileArtifact(DefaultDocName, createdFile.content)
-    new SimpleFileBasedArtifactSource("RugDocs", output)
+    new SimpleFileBasedArtifactSource("Rug user model", createdFile)
   }
 
   private def generateType(t: Type): String = {
@@ -86,14 +85,16 @@ class TypeScriptInterfaceGenerator(
     output.toString
   }
 
+  val typeSort: (Type,Type) => Boolean = (a,b) => a.name <= b.name
+
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
-//    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
-//    val templates = new SimpleFileBasedArtifactSource("template", StringFileArtifact(DefaultTemplateName, template))
-//    val mt = new VelocityMergeTool(templates)
-//    println(s"Generating for ${
-//      typeRegistry.kinds.size
-//    } kinds")
+    //    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
+    //    val templates = new SimpleFileBasedArtifactSource("template", StringFileArtifact(DefaultTemplateName, template))
+    //    val mt = new VelocityMergeTool(templates)
+    //    println(s"Generating for ${
+    //      typeRegistry.kinds.size
+    //    } kinds")
 
     val alreadyGenerated = ListBuffer.empty[Type]
 
@@ -109,9 +110,20 @@ class TypeScriptInterfaceGenerator(
     val output: StringBuilder = new StringBuilder(
       """
         |/*
-        |* Licensed under the Ap
-        |*/
-        |
+        | * Copyright 2015-2016 Atomist Inc.
+        | *
+        | * Licensed under the Apache License, Version 2.0 (the "License");
+        | * you may not use this file except in compliance with the License.
+        | * You may obtain a copy of the License at
+        | *
+        | *      http://www.apache.org/licenses/LICENSE-2.0
+        | *
+        | * Unless required by applicable law or agreed to in writing, software
+        | * distributed under the License is distributed on an "AS IS" BASIS,
+        | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        | * See the License for the specific language governing permissions and
+        | * limitations under the License.
+        | */
       """.stripMargin
     )
 
@@ -121,7 +133,7 @@ class TypeScriptInterfaceGenerator(
     }
 
     for {
-      t <- typeRegistry.kinds
+      t <- typeRegistry.kinds.sortWith(typeSort)
       if !alreadyGenerated.contains(t)
     } {
       var clazzAncestry: Seq[Type] =
@@ -140,8 +152,14 @@ class TypeScriptInterfaceGenerator(
       clazzAncestry.reverse.foreach(t => generate(t))
     }
 
+    output ++= "\n"
+    for { t <- typeRegistry.kinds.sortWith(typeSort) } {
+      val tsName = helper.typeScriptClassNameForTypeName(t.name)
+      output ++= s"export { $tsName }\n"
+    }
+
     StringFileArtifact(
-      Objects.toString(poa.parameterValues.find(p => p.getName.equals(OutputPathParam)).getOrElse(DefaultDocName)),
+      poa.stringParamValue(OutputPathParam),
       output.toString())
   }
 

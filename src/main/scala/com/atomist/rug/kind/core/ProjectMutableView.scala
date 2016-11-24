@@ -374,6 +374,8 @@ class ProjectMutableView(
       """)
   def projects = Collections.singletonList(this)
 
+  @ExportFunction(readOnly = false,
+    description = "Files in this archive")
   def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
     val files = currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, this)).asJava

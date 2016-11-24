@@ -1,0 +1,29 @@
+
+# Rug Standard Types
+
+#foreach($kind in $kinds )
+$h2 Type: `${kind.name()}`
+**${kind.description()}**
+
+$h3 `${kind.name()}` Operations
+
+#foreach ($op in $kind.typeInformation().operationsAsJava())
+
+$h4 Operation: `${op.name()}`
+    ${op.description()}
+
+***Parameters***
+
+#if ($op.parametersAsJava().size() > 0)
+
+| Name        | Type           | Description  |
+| ------------|:---------------|:-------------|
+#foreach ($p in $op.parametersAsJava())
+| ***${p.name()}*** | `${p.parameterType()}` | *${p.getDescription()}* |
+#end
+#else
+*None*
+#end
+
+#end
+#end

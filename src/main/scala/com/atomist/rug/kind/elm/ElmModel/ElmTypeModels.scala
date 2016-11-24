@@ -1,0 +1,89 @@
+package com.atomist.rug.kind.elm.ElmModel
+
+import com.atomist.model.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleTerminalTreeNode}
+import com.atomist.rug.kind.elm.{ElmModuleType, ElmParserCombinator}
+
+object ElmTypeModels {
+
+  sealed trait ElmTypeSpecification extends ParsedMutableContainerTreeNode
+
+  class ElmTypeParameterVariable(id: MutableTerminalTreeNode)
+    extends ParsedMutableContainerTreeNode("type-variable")
+    with ElmTypeSpecification {
+    // I tried to do this as a trait. It didn't work. Something
+    // about UpdatableScalarFieldValue is not a superclass of ParsedMutableStringUpdatingObjectValue
+  }
+
+  case class ElmTypeWithParameters(
+                                    typeNameField: MutableTerminalTreeNode,
+                                    parameters: Seq[ElmTypeSpecification] = Nil)
+    extends ParsedMutableContainerTreeNode("type-with-parameters")
+      with ElmTypeSpecification {
+
+    insertFieldCheckingPosition(typeNameField)
+
+    def typeName = typeNameField.value
+  }
+
+  case class ElmTupleType(
+                           elements: Seq[ElmTypeSpecification]
+                         ) extends ParsedMutableContainerTreeNode("tuple-type")
+    with ElmTypeSpecification
+
+  case class ElmRecordType(
+                            initialFields: Seq[ElmRecordFieldType]
+                          )
+    extends ParsedMutableContainerTreeNode("record-type")
+      with ElmTypeSpecification {
+
+    private var _fields: Seq[ElmRecordFieldType] = initialFields
+
+    appendFields(initialFields)
+
+    override def nodeType: String = ElmModuleType.RecordTypeAlias
+
+    def fields: Seq[ElmRecordFieldType] = _fields
+
+    def add(name: String, typ: String): Unit = {
+      val oldValue = value
+      val newRecordAsString = s"$name : $typ"
+      val newRecord =
+        ElmParserCombinator.parseProduction(
+          ElmParserCombinator.TypeSpecifications.recordFieldType,
+          newRecordAsString)
+      newRecord.pad(newRecordAsString)
+      if (fields.nonEmpty) {
+        val commaField = SimpleTerminalTreeNode("comma", " , ")
+        addFieldAfter(fields.last, commaField)
+        addFieldAfter(commaField, newRecord)
+      }
+      else {
+        // Add it before the }
+        val leftCurly = SimpleTerminalTreeNode("lc", "{ ")
+        val rightCurly = SimpleTerminalTreeNode("rc", " }")
+        replaceFields(Seq(leftCurly, newRecord, rightCurly))
+      }
+      _fields = _fields :+ newRecord
+    }
+  }
+
+  case class ElmRecordFieldType(
+                                 recordFieldTypeNameField: MutableTerminalTreeNode,
+                                 typeSpec: ElmTypeSpecification
+                               )
+    extends ParsedMutableContainerTreeNode("record-field-type") {
+
+    insertFieldCheckingPosition(recordFieldTypeNameField)
+    insertFieldCheckingPosition(typeSpec)
+
+    def recordFieldTypeName = recordFieldTypeNameField.value
+  }
+
+  case class ElmFunctionType(bits: Seq[ElmTypeSpecification])
+    extends ParsedMutableContainerTreeNode("function-type")
+      with ElmTypeSpecification {
+
+    appendFields(bits)
+  }
+
+}

@@ -1,0 +1,87 @@
+package com.atomist.rug.kind.core
+
+import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
+import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.test.RugTestRunnerTestSupport
+import com.atomist.source.file.ClassPathArtifactSource
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import org.scalatest.{FlatSpec, Matchers}
+
+class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport{
+  import com.atomist.rug.TestUtils._
+
+  // NOTES:
+  // - Removing this.content = this.content + "otherstuff" from the view doesn't matter (test will still fail to replace text for last file in path)
+  // - While debugging, we noticed that content of the file artifact view is different from parent files content for the same file
+  // - Only last file doesn't get updated when replacing globally.  It looks like parent.replace actually changes files only when last file is getting processed and all
+  // other calls to parent.replace get overridden by this.setPath and this.content modifications in between
+
+  it should "Break a pom by replacing groupId with something broken using global replace" in
+    doIt("""
+           |editor Replacer
+           |
+           |with replacer r
+           |   do replaceIt "org.springframework" "nonsense"
+         """.stripMargin)
+
+  it should "Break a pom by replacing groupId with something broken" in
+    doIt("""
+           |editor Replacer
+           |
+           |with project
+           |  do replace "org.springframework" "nonsense"
+           |
+           |with replacer
+           |   do replaceItNoGlobal "org.springframework" "nonsense"
+         """.stripMargin)
+
+  private def doIt(prog: String) {
+    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+      case nmn: SuccessfulModification => {
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/PingController.java").get.content.contains("nonsense") should be(true)
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Application.java").get.content.contains("nonsense") should be(true)
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Configuration.java").get.content.contains("nonsense") should be(true)
+
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/PingController.java").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Application.java").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Configuration.java").get.content.contains("otherstuff") should be(true)
+
+        val badFileContent = nmn.result.findFile("newroot/src/test/java/com/atomist/test1/Test1WebIntegrationTests.java").get.content
+        badFileContent.contains("nonsense") should be(true)
+        nmn.result.findFile("newroot/src/test/java/com/atomist/test1/Test1WebIntegrationTests.java").get.content.contains("otherstuff") should be(true)
+      }
+    }
+  }
+
+  it should "change the contents of some clojure files" in {
+    val prog =
+      """
+        |editor Replacer
+        |
+        |with replacerclj r
+        |   do replaceIt "com.atomist.sample" "com.atomist.wassom"
+      """.stripMargin
+
+    updateWith(prog, ClassPathArtifactSource.toArtifactSource("./lein_package_rename")) match {
+      case nmn: SuccessfulModification => {
+        nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("com.atomist.wassom") should be(true)
+        nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/src/com/atomist/sample/blah.clj").get.content.contains("com.atomist.wassom") should be(true)
+        nmn.result.findFile("newroot/src/com/atomist/sample/blah.clj").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/test/com/atomist/sample/t_core.clj").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/test/com/atomist/sample/t_core.clj").get.content.contains("com.atomist.wassom") should be(true)
+        nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("otherstuff") should be(true)
+        nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("com.atomist.wassom") should be(true)
+      }
+    }
+  }
+
+  // Return new content
+  private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
+
+    attemptModification(prog, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+      "foo" -> "bar"
+    )))
+  }
+}

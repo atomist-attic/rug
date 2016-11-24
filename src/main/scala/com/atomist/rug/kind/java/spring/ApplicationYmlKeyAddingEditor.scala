@@ -1,0 +1,55 @@
+package com.atomist.rug.kind.java.spring
+
+import java.util
+import java.util.{Set => JSet}
+
+import com.atomist.project.ProjectOperationArguments
+import com.atomist.project.edit._
+import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.project.edit.common.ProjectEditorUtils._
+import com.atomist.source.ArtifactSource
+import com.atomist.util.yml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
+
+import scala.collection.JavaConversions._
+/**
+  * No parameters are required. All key-value pairs will be added to the
+  * application YML file.
+  */
+object ApplicationYmlKeyAddingEditor extends ProjectEditorSupport {
+
+  import ApplicationPropertiesToApplicationYmlEditor.ApplicationYmlPath
+
+  val YamlHeader = "# Created by Atomist\n\n"
+
+  override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    val yamlMap = new util.HashMap[String, Object]()
+    val yamlFile = newOrExistingFile(as, ApplicationYmlPath, YamlHeader)
+
+    for {
+      pv <- pmi.parameterValues
+    } {
+      PropertiesToMapStructureParser.populateYamlForPeriodScopedProperty(pv.getName, pv.getValue.toString, yamlMap)
+    }
+
+    val stringifiedYamlEntries = MapToYamlStringSerializer.toYamlString(yamlMap)
+
+    val result = appendToFile(as, yamlFile, stringifiedYamlEntries)
+    SuccessfulModification(
+      result,
+      impacts(),
+      "Added keys to yaml file")
+  }
+
+  override def impacts(): Set[Impact] = Set(ConfigImpact)
+
+  /**
+    * We can apply to anything. If a YML file doesn't exist, we'll create one.
+    *
+    * @param as The Artifact Source we're working on
+    */
+  override def applicability(as: ArtifactSource): Applicability = Applicability.OK
+
+  override def description: String = "Atomist Core Editor: Add key to application YML"
+
+  override def name: String = "ApplicationYmlKeyAddingEditor"
+}

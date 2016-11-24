@@ -1,0 +1,578 @@
+package com.atomist.rug.test
+
+import com.atomist.rug.DefaultRugPipeline
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import org.scalatest.{FlatSpec, Matchers}
+import scala.collection.JavaConversions._
+
+class TestRunnerTest extends FlatSpec with Matchers {
+
+  val testRunner = new TestRunner
+
+  it should "fail when not finding editor" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Foobar
+         |debug = true
+         |
+         |let new_class = "Cat"
+         |
+         |given
+         |   ${f.path} = "${f.content}"
+         |
+         |Rename old_class="Dog", new_class = new_class
+         |
+         |then
+         |  # fileCount 1
+         |  contentEquals "src/main/java/Cat.java" "class Cat {}"
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), Nil)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head.passed should be(false)
+  }
+
+  it should "pass with passing editor and file created inline" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  fileCount = 1
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin)
+  }
+
+  it should "pass with passing editor and file created inline with JavaScript expression in predicate" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  fileCount = { 1 }
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin)
+  }
+
+  it should "pass with passing editor and file created inline with JavaScript expression in predicate referencing implicit variable" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  fileCount = { 1 }
+         |  and { result.fileContains("src/main/java/Cat.java", "class Cat") }
+      """.stripMargin)
+  }
+
+  it should "pass with passing editor and file loaded from backing ArtifactSource" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   ${f.path} from "resources/foobar"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         | #dumpAll
+         |
+         |then
+         |  fileCount = 1
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin, rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/foobar", f.content))
+    )
+  }
+
+  it should "pass with passing editor and file loaded using 'files under' from backing ArtifactSource" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   files under "resources"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         | #dumpAll
+         |
+         |then
+         |  fileCount = 1
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin, rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/" + f.path, f.content))
+    )
+  }
+
+  it should "pass with passing editor using computations" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |let cat = "Cat"
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = cat
+         |
+         |then
+         |  fileCount = 1
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin)
+  }
+
+  it should "pass with dumpAll as part of assertions" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |let cat = "Cat"
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = cat
+         |
+         |then
+         |  fileCount = 1
+         |  and dumpAll
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin)
+  }
+
+  it should "pass with uses for a namespaced project editor" in {
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    shouldPass(
+      s"""
+         |scenario Foobar
+         |
+         |uses testnamespace.Rename
+         |
+         |let cat = "Cat"
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = cat
+         |
+         |then
+         |  fileCount = 1
+         |  and dumpAll
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin, Some("testnamespace"))
+  }
+
+  private def shouldPass(prog: String, namespace: Option[String] = None, rugAs: ArtifactSource = EmptyArtifactSource("")) = {
+    val edProg =
+      """
+        |editor Rename
+        |with java.class c when name = "Dog"
+        |do rename "Cat"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg, namespace)
+    val testProg = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.rt", prog))
+    val executedTests = testRunner.run(testProg, rugAs, eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+    }
+  }
+
+  it should "fail with unresolvable namespaced project editor" in {
+    val edProg =
+      """
+        |editor Rename
+        |with java.class c when name = "Dogxxxx"
+        |do rename "Cat"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg, Some("testnamespace"))
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Foobar
+         |
+         |uses testnamespaceWRONG.Rename
+         |
+         |let cat = "Cat"
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = cat
+         |
+         |then
+         |  fileCount = 1
+         |  and dumpAll
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if !t.passed =>
+      // Ok
+    }
+  }
+
+  it should "fail with failing editor" in {
+    val edProg =
+      """
+        |editor Rename
+        |with java.class c when name = "Dogxxxx"
+        |do rename "Cat"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Foobar
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  fileCount = 1
+         |  and fileContains "src/main/java/Cat.java" "class Cat"
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if !t.passed =>
+      // Ok
+    }
+  }
+
+  it should "pass with no change if test scenario wants that" in {
+    val edProg =
+      """
+        |editor Rename
+        |with java.class c when name = "Dogxxxx"
+        |do rename "Cat"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Class rename should work for dogs and cats
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  NoChange
+      """.stripMargin
+
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "fail if test scenario wants that" in {
+    val edProg =
+      """
+        |editor Rename
+        |with java.class c when name = "Dog"
+        |do fail "This is bad"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Class rename should work for dogs and cats
+         |debug = true
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | Rename old_class="Dog", new_class = "Cat"
+         |
+         |then
+         |  ShouldFail
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head.eventLog.input.shouldBe(defined)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "verify fail on missing parameters" in {
+    val edProg =
+      """
+        |editor Rename
+        |param old_class: @java_class
+        |with java.class c when name = old_class
+        |do rename "foo"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Class rename should work for dogs and cats
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | # missing parameter
+         | Rename new_class = "Cat"
+         |
+         |then
+         |  MissingParameters
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "verify fail on invalid parameters" in {
+    val edProg =
+      """
+        |editor Rename
+        |param old_class: @java_class
+        |with java.class c when name = old_class
+        |do rename "foo"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
+    val prog =
+      s"""
+         |scenario Class rename should work for dogs and cats
+         |
+         |given
+         |   "${f.path}" = "${f.content}"
+         |
+         | # invalid parameter
+         | Rename old_class = "Dogx.", new_class = "Cat"
+         |
+         |then
+         |  InvalidParameters
+      """.stripMargin
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "test edit README" in
+    testEditReadMe(true)
+
+  it should "test edit README omitting default parameter" in
+    testEditReadMe(false)
+
+  private def testEditReadMe(includeSecondParameter: Boolean) = {
+    val prog =
+      """
+        |editor UpdateReadme
+        |
+        |param name: .*
+        |
+        |@default 'Boy Wizard'
+        |param description: .*
+        |
+        |with file f when { f.name().contains(".md") } begin
+        |	do replace "{{name}}" name
+        |	do replace "{{description}}" description
+        |end
+      """.stripMargin
+    val (name, description) = ("Harry Potter", "Boy Wizard")
+    val scenario =
+      s"""
+         |scenario UpdateReadme should update README.md 2
+         |
+         |given
+         |	ArchiveRoot
+         |
+         |	UpdateReadme name = "$name" ${if (includeSecondParameter) ", description = '" + description + "'" else ""}
+         |
+         |then
+         |  # TODO need computations
+         |  fileExists "README.md"
+         |	 and fileContains "README.md" "Harry Potter"
+         |	 and fileContains "README.md" "Boy Wizard"
+      """.stripMargin
+    val eds = new DefaultRugPipeline().createFromString(prog)
+    val readme = StringFileArtifact("README.md",
+      """
+        |# {{name}}
+        |
+        |## {{description}}
+      """.stripMargin)
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", readme), eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "copy file from editor backing repo" in {
+    val prog =
+      """
+        |editor AddDocumentation
+        |
+        |with project begin
+        |
+        |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
+        |
+        |end
+        |
+      """.stripMargin
+    val scenario =
+      s"""
+         |scenario Should copy readme
+         |
+         |given
+         |	Empty
+         |
+         |AddDocumentation
+         |
+         |then
+         |  fileExists "test.txt"
+      """.stripMargin
+    val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
+    val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/AddDocumentation.rug", prog)))
+    val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val executedTests = testRunner.run(test, editorBackingArchive, eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "pass the assertion when a precondition restricts an editor from running" in {
+    val prog =
+      """
+        |editor DoSomething
+        |
+        |precondition IsMaven
+        |
+        |with project begin
+        |
+        |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
+        |
+        |end
+        |
+        |predicate IsMaven
+        |  with pom
+        |
+      """.stripMargin
+    val scenario =
+      s"""
+         |scenario Should not copy readme for empty project
+         |
+         |given
+         |	Empty
+         |
+         |DoSomething
+         |
+         |then
+         |  NotApplicable
+      """.stripMargin
+    val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
+    val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
+    val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val executedTests = testRunner.run(test, editorBackingArchive, eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+
+  it should "pass the assertion when preconditions restrict an editor from running" in {
+    val prog =
+      """
+        |editor DoSomething
+        |
+        |precondition IsOk
+        |precondition IsMaven
+        |
+        |with project begin
+        |
+        |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
+        |
+        |end
+        |
+        |predicate IsMaven
+        |  with pom
+        |
+        |predicate IsOk
+        |   with project
+        |
+      """.stripMargin
+    val scenario =
+      s"""
+         |scenario Should not copy readme for empty project
+         |
+         |given
+         |	Empty
+         |
+         |DoSomething
+         |
+         |then
+         |  NotApplicable
+      """.stripMargin
+    val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
+    val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
+    val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
+    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val executedTests = testRunner.run(test, editorBackingArchive, eds)
+    executedTests.tests.size should be(1)
+    executedTests.tests.head match {
+      case t if t.passed =>
+      // Ok
+    }
+  }
+}

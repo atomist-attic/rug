@@ -10,15 +10,5 @@
       <username>${env.ATOMIST_CI_DEPLOY_USERNAME}</username>
       <password>${env.ATOMIST_CI_DEPLOY_PASSWORD}</password>
     </server>
-    <server>
-      <id>atomisthq-snapshots</id>
-      <username>${env.CI_DEPLOY_USERNAME}</username>
-      <password>${env.CI_DEPLOY_PASSWORD}</password>
-    </server>
-    <server>
-      <id>atomisthq-release</id>
-      <username>${env.CI_DEPLOY_USERNAME}</username>
-      <password>${env.CI_DEPLOY_PASSWORD}</password>
-    </server>
   </servers>
 </settings>

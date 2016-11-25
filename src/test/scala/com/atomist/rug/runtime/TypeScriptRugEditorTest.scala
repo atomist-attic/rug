@@ -18,13 +18,15 @@ object TypeScriptRugEditorTest {
       |import {Project} from 'user-model/model/Core'
       |import {editor} from 'user-model/support/Metadata'
       |import {parameters} from 'user-model/support/Metadata'
+      |import {Result,Status} from 'user-model/operations/Result'
       |
       |@editor("My simple editor")
       |class SimpleEditor implements ProjectEditor<Parameters> {
       |
-      |    edit(project: Project, @parameters("Parameters") p: Parameters) {
+      |    edit(project: Project, @parameters("Parameters") p: Parameters):Result {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return `Edited Project now containing ${project.fileCount()} files: \n`;
+      |        return new Result(Status.Success,
+      |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
     """.stripMargin
@@ -54,6 +56,7 @@ object TypeScriptRugEditorTest {
        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
        |import {Parameters} from 'user-model/operations/Parameters'
        |import {File} from 'user-model/model/Core'
+       |import {Result,Status} from 'user-model/operations/Result'
        |
        |import {parameter} from 'user-model/support/Metadata'
        |import {inject} from 'user-model/support/Metadata'
@@ -76,7 +79,9 @@ object TypeScriptRugEditorTest {
        |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
        |      p["otherParam"] = p.content
        |      project.editWith("other", p)
-       |      return `Edited Project now containing $${project.fileCount()} files: \n`;
+       |      return new Result(Status.Success,
+       |        `Edited Project now containing $${project.fileCount()} files: \n`
+       |        );
        |    }
        |  }
        |
@@ -88,6 +93,7 @@ object TypeScriptRugEditorTest {
       |import {GeneratorParameters} from 'user-model/operations/ProjectGenerator'
       |import {ProjectGenerator} from 'user-model/operations/ProjectGenerator'
       |import {Project} from 'user-model/model/Core'
+      |import {Status,Result} from 'user-model/operations/Result'
       |
       |import {generator} from 'user-model/support/Metadata'
       |import {parameters} from 'user-model/support/Metadata'
@@ -98,7 +104,7 @@ object TypeScriptRugEditorTest {
       |     populate(project: Project, parameters: GeneratorParameters) {
       |        project.copyEditorBackingFilesPreservingPath("")
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return `Edited Project now containing ${project.fileCount()} files: \n`;
+      |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
     """.stripMargin
@@ -110,6 +116,7 @@ object TypeScriptRugEditorTest {
        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
        |import {Parameters} from 'user-model/operations/Parameters'
        |import {File} from 'user-model/model/Core'
+       |import {Result,Status} from 'user-model/operations/Result'
        |
        |import {parameter} from 'user-model/support/Metadata'
        |import {inject} from 'user-model/support/Metadata'
@@ -129,9 +136,10 @@ object TypeScriptRugEditorTest {
        |@tag("maven")
        |class SimpleEditor implements ProjectEditor<ContentInfo> {
        |
-       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
+       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo): Result {
        |      project.addFile("src/from/typescript", p.content);
-       |      return `Edited Project now containing $${project.fileCount()} files: \n`;
+       |      return new Result(Status.Success,
+       |      `Edited Project now containing $${project.fileCount()} files: \n`);
        |    }
        |  }
        |
@@ -146,6 +154,7 @@ object TypeScriptRugEditorTest {
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
+      |import {Results,Result,Status} from 'user-model/operations/Result'
       |
       |import {parameter} from 'user-model/support/Metadata'
       |import {inject} from 'user-model/support/Metadata'
@@ -187,7 +196,8 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`;
+      |        return new Result(Status.Success,
+      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       | """.stripMargin
@@ -223,13 +233,15 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "find tags" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+      SimpleEditorTaggedAndMeta))
     ed.tags.size should be(2)
     ed.tags.map(_.name).toSet should equal(Set("java", "maven"))
   }
 
   it should "find parameter metadata" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+      SimpleEditorTaggedAndMeta))
     ed.parameters.size should be(1)
     val p = ed.parameters.head
     p.name should be("content")
@@ -240,7 +252,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "find description" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+      SimpleEditorTaggedAndMeta))
     ed.description should be("A nice little editor")
   }
 

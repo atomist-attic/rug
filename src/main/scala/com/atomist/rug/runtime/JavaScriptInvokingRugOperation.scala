@@ -27,10 +27,6 @@ abstract class JavaScriptInvokingRugOperation(
   extends ProjectOperationParameterSupport
     with LazyLogging {
 
-  override val name: String =
-    if (className.endsWith("Editor")) className.dropRight("Editor".length)
-    else className
-
   readTagsFromMetadata.foreach(t => addTag(t))
 
   readParametersFromMetadata.foreach(p => addParameter(p))

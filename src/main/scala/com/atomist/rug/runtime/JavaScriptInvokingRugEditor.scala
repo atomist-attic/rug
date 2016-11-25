@@ -68,6 +68,10 @@ class JavaScriptInvokingRugEditor(
   extends JavaScriptInvokingRugOperation(jsc, className, jsVar, rugAs)
     with ProjectEditorSupport {
 
+  override val name: String =
+    if (className.endsWith("Editor")) className.dropRight("Editor".length)
+    else className
+
   override def impacts: Set[Impact] = Impacts.UnknownImpacts
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK

@@ -9,6 +9,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   * Context superclass for evaluating JavaScript.
@@ -47,7 +48,28 @@ class JavaScriptContext extends LazyLogging {
     * @param key name of the var
     * @param scriptObjectMirror interface for working with Var
     */
-  case class Var(key: String, scriptObjectMirror: ScriptObjectMirror)
+  case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {
+
+    def getMetaString(key: String): Option[String] =
+      JavaScriptContext.this.getMeta(scriptObjectMirror, key) match {
+        case Some(s: String) => Some(s)
+        case _ => None
+      }
+
+  }
+
+  /**
+    * Convenience function to extract some metadata
+    *
+    * @param mirror
+    * @param key
+    * @return
+    */
+  def getMeta(mirror: ScriptObjectMirror, key: String): Option[Any] = {
+    Try {
+      engine.invokeFunction("get_metadata", mirror, key)
+    }.toOption
+  }
 
   /**
     * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key

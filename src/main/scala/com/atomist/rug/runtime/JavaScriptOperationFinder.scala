@@ -36,53 +36,42 @@ object JavaScriptOperationFinder {
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
-    val eds = editorsFromVars(rugAs, jsc)
+    val eds = operationsFromVars(rugAs, jsc)
     eds
   }
 
-  /**
-    * Convenience function to extract some metadata
-    *
-    * @param jsc
-    * @param mirror
-    * @param key
-    * @return
-    */
-  private def get_meta(jsc: JavaScriptContext, mirror: ScriptObjectMirror, key: String): Object = {
-    Try {
-      jsc.engine.invokeFunction("get_metadata", mirror, key)
-    }.getOrElse("not the droids you're looking for")
-  }
-
   private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: Registry): Unit = {
-    jsc.vars.filter(v => "editor".equals(get_meta(jsc, v.scriptObjectMirror, "rug-type"))).foreach(editor => {
-
-      val args = get_meta(jsc, editor.scriptObjectMirror, "injects") match {
-        case i: ScriptObjectMirror => {
+    for {
+      v <- jsc.vars
+      rugType <- v.getMetaString("rug-type")
+      if Set("editor", "generator").contains(rugType.toString)
+    } {
+      val args = jsc.getMeta(v.scriptObjectMirror, "injects") match {
+        case Some(i: ScriptObjectMirror) => {
           val sorted = i.asInstanceOf[ScriptObjectMirror].values().asScala.toSeq.sortBy(arg => arg.asInstanceOf[ScriptObjectMirror].get("parameterIndex").asInstanceOf[Int])
           val arg = sorted.map { arg =>
             registry.registry.get(arg.asInstanceOf[ScriptObjectMirror].get("typeToInject").asInstanceOf[String])
           }
           arg
-        }.toList.map { s => s.get } //TODO how did we end up with Options here?
+        }.toList
         case _ => Seq()
       }
 
-      val eObj = jsc.engine.eval(editor.key).asInstanceOf[JSObject]
+      val eObj = jsc.engine.eval(v.key).asInstanceOf[JSObject]
       val newEditor = eObj.newObject(args: _*)
       //lower case type name for instance!
-      jsc.engine.put(editor.key.toLowerCase, newEditor)
-    })
-
+      jsc.engine.put(v.key.toLowerCase, newEditor)
+    }
   }
 
-  private def editorsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingRugEditor] = {
+  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingRugEditor] = {
 
-    jsc.vars.map(v => (v, Try {
-      jsc.engine.invokeFunction("get_metadata", v.scriptObjectMirror, "rug-type").asInstanceOf[String]
-    }.toOption)) collect {
-      case (v, Some(rugType)) if "editor".equals(rugType) =>
+    jsc.vars.map(v => (v, v.getMetaString("rug-type"))) collect {
+      case (v, Some("editor")) =>
         new JavaScriptInvokingRugEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
+      case (v, Some("generator")) =>
+        //new JavaScriptInvokingRugEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
+      ???
     }
   }
 }

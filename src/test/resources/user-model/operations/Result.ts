@@ -1,10 +1,4 @@
 
-// module Results {
-//
-//     let OK = new Result(Status.Success, "OK")
-// }
-
-
 export enum Status {
     Success,
     NoChange,
@@ -21,6 +15,5 @@ class Result {
         public message: string = "") {}
 
 }
-
 
 export {Result}

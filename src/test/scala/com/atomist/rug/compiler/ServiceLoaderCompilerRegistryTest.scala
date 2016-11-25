@@ -19,10 +19,11 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers {
         |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
         |import {Parameters} from 'user-model/operations/Parameters'
         |import {Project} from 'user-model/model/Core'
+        |import {Result,Status} from 'user-model/operations/Result'
         |
         |class TestEditor implements ProjectEditor<Parameters> {
         |    edit(p: Project) {
-        |       return "";
+        |       return new Result(Status.Success, "Boom!");
         |    }
         |}
       """.stripMargin))

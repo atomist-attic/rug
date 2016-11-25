@@ -169,7 +169,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "have the PathExpressionEngine injected" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts", EditorInjectedWithPathExpression))
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+      EditorInjectedWithPathExpression))
     //ed.description should be ("A nice little editor")
   }
 

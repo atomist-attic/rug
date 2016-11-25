@@ -14,44 +14,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import scala.collection.JavaConverters._
 
 
-case class Match(root: TreeNode, matches: _root_.java.util.List[TreeNode]) {
-}
-
-/**
-  * JavaScript-friendly facade to PathExpressionEngine
-  */
-class PathExpressionExposer {
-
-  val pee = new PathExpressionEngine
-
-  def evaluate(tn: TreeNode, pe: Object): Match = {
-    println("Foo bar")
-    pe match {
-      case som: ScriptObjectMirror =>
-        val expr: String = som.get("expression").asInstanceOf[String]
-        pee.evaluate(tn, expr) match {
-          case Right(nodes) =>
-            val m = Match(tn, nodes.asJava)
-            m
-        }
-    }
-  }
-}
-
-trait Registry {
-
-  def registry: Map[String, Object]
-
-}
-
-object DefaultRegistry extends Registry {
-
-  override val registry = Map(
-    "PathExpressionEngine" -> new PathExpressionExposer
-  )
-}
-
-
 /**
   * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.

@@ -16,7 +16,8 @@ object JavaScriptOperationFinder {
   val allJsFiles: FileArtifact => Boolean = f => f.name.endsWith(".js")
   val allTsFiles: FileArtifact => Boolean = f => f.name.endsWith(".ts")
 
-  def fromTypeScriptArchive(rugAs: ArtifactSource, registry: Registry = DefaultRegistry): Seq[ProjectOperation] = {
+  def fromTypeScriptArchive(rugAs: ArtifactSource,
+                            registry: UserModelContext = DefaultUserModelContext): Seq[ProjectOperation] = {
     val jsc = new JavaScriptContext
 
     // First, compile any TypeScript files
@@ -40,7 +41,7 @@ object JavaScriptOperationFinder {
     eds
   }
 
-  private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: Registry): Unit = {
+  private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {
     for {
       v <- jsc.vars
       rugType <- v.getMetaString("rug-type")
@@ -49,11 +50,10 @@ object JavaScriptOperationFinder {
       val args = jsc.getMeta(v.scriptObjectMirror, "injects") match {
         case Some(i: ScriptObjectMirror) => {
           val sorted = i.asInstanceOf[ScriptObjectMirror].values().asScala.toSeq.sortBy(arg => arg.asInstanceOf[ScriptObjectMirror].get("parameterIndex").asInstanceOf[Int])
-          val arg = sorted.map { arg =>
+          sorted.flatMap { arg =>
             registry.registry.get(arg.asInstanceOf[ScriptObjectMirror].get("typeToInject").asInstanceOf[String])
           }
-          arg
-        }.toList
+        }
         case _ => Seq()
       }
 

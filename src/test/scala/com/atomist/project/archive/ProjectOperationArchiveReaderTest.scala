@@ -55,40 +55,40 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   it should "parse single editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", FirstEditor), None, Nil)
-    ops.editors.size should be (1)
-    ops.editorNames should equal (Seq("First"))
-    ops.reviewers should equal (Nil)
-    ops.reviewerNames should equal (Nil)
-    ops.generators should equal (Nil)
-    ops.generatorNames should equal (Nil)
+    ops.editors.size should be(1)
+    ops.editorNames should equal(Seq("First"))
+    ops.reviewers should equal(Nil)
+    ops.reviewerNames should equal(Nil)
+    ops.generators should equal(Nil)
+    ops.generatorNames should equal(Nil)
   }
 
   it should "parse editor and reviewer" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp)), None, Nil)
-    ops.editors.size should be (1)
-    ops.editorNames should equal (Seq("First"))
-    ops.reviewers.size should be (1)
-    ops.reviewerNames should equal (Seq("Second"))
-    ops.generators should equal (Nil)
-    ops.generatorNames should equal (Nil)
+    ops.editors.size should be(1)
+    ops.editorNames should equal(Seq("First"))
+    ops.reviewers.size should be(1)
+    ops.reviewerNames should equal(Seq("Second"))
+    ops.generators should equal(Nil)
+    ops.generatorNames should equal(Nil)
   }
 
   it should "parse editor and reviewer and generator" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator)), None, Nil)
-    ops.editors.size should be (1)
-    ops.editorNames.toSet should equal (Set("First"))
-    ops.reviewers.size should be (1)
-    ops.reviewerNames should equal (Seq("Second"))
-    ops.generators.size should equal (1)
-    ops.generatorNames should equal (Seq("Published"))
+    ops.editors.size should be(1)
+    ops.editorNames.toSet should equal(Set("First"))
+    ops.reviewers.size should be(1)
+    ops.reviewerNames should equal(Seq("Second"))
+    ops.generators.size should equal(1)
+    ops.generatorNames should equal(Seq("Published"))
   }
 
   it should "find imports in a project that uses them" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val imports = apc.findImports(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator, EditorWithImports)))
-    imports should equal (Seq(
+    imports should equal(Seq(
       Import("atomist.common-editors.UpdateReadme"),
       Import("atomist.common-editors.PomParameterizer")
     ))
@@ -97,7 +97,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   it should "find no imports in a project that uses none" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val imports = apc.findImports(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator)))
-    imports should equal (Nil)
+    imports should equal(Nil)
   }
 
   it should "find typescript editor" in {
@@ -107,20 +107,29 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
         TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
     )
     val ops = apc.findOperations(as, None, Nil)
-    ops.editors.size should be (1)
-    ops.editors.head.parameters.size should be (1)
+    ops.editors.size should be(1)
+    ops.editors.head.parameters.size should be(1)
   }
 
-  it should "find typescript generator" in {
+  it should "find and invoke typescript generator" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val as = SimpleFileBasedArtifactSource(
+    val f1 = StringFileArtifact("package.json", "{}")
+    val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
+    val rugAs = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
-        TypeScriptRugEditorTest.SimpleGenerator)
+        TypeScriptRugEditorTest.SimpleGenerator),
+      f1,
+      f2
     )
-    val ops = apc.findOperations(as, None, Nil)
-    ops.generators.size should be (1)
-    ops.generators.head.parameters.size should be (0)
+    val ops = apc.findOperations(rugAs, None, Nil)
+    ops.generators.size should be(1)
+    ops.generators.head.parameters.size should be(0)
     val result = ops.generators.head.generate(SimpleProjectOperationArguments.Empty)
-    result.findFile("src/from/typescript").get.content.contains("Anders") should be (true)
+    // Should preserve content from the backing archive
+    result.findFile(f1.path).get.content.equals(f1.content) should be(true)
+    result.findFile(f2.path).get.content.equals(f2.content) should be(true)
+
+    // Should contain new contain
+    result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
   }
 }

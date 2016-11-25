@@ -99,13 +99,25 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     imports should equal (Nil)
   }
 
-  it should "find typescript file" in {
+  it should "find typescript editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val as = SimpleFileBasedArtifactSource(
-      StringFileArtifact(".atomist/editors/SimpleEditor.ts", TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
+      StringFileArtifact(".atomist/editors/SimpleEditor.ts",
+        TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
     )
     val ops = apc.findOperations(as, None, Nil)
     ops.editors.size should be (1)
     ops.editors.head.parameters.size should be (1)
+  }
+
+  it should "find typescript generator" in {
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val as = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
+        TypeScriptRugEditorTest.SimpleGenerator)
+    )
+    val ops = apc.findOperations(as, None, Nil)
+    ops.generators.size should be (1)
+    ops.generators.head.parameters.size should be (1)
   }
 }

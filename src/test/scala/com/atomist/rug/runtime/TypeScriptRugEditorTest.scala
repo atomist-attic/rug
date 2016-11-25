@@ -28,6 +28,27 @@ object TypeScriptRugEditorTest {
       |}
     """.stripMargin
 
+  val SimpleGenerator =
+    """
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {GeneratorParameters} from 'user-model/operations/ProjectGenerator'
+      |import {ProjectGenerator} from 'user-model/operations/ProjectGenerator'
+      |import {Project} from 'user-model/model/Core'
+      |
+      |import {generator} from 'user-model/support/Metadata'
+      |import {parameters} from 'user-model/support/Metadata'
+      |
+      |@generator("My simple Generator")
+      |class SimpleGenerator implements ProjectGenerator<GeneratorParameters> {
+      |
+      |     populate(project: Project, parameters: GeneratorParameters) {
+      |        project.copyEditorBackingFilesPreservingPath("")
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        return `Edited Project now containing ${project.fileCount()} files: \n`;
+      |    }
+      |}
+    """.stripMargin
+
   val SimpleEditorTaggedAndMeta =
     s"""
        |import {Project} from 'user-model/model/Core'

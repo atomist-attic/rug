@@ -124,7 +124,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       |    }
       |}
     """.stripMargin
-  it should "find typescript executor" in pendingUntilFixed {
+  it should "find typescript executor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/executors/SimpleExecutor.ts",

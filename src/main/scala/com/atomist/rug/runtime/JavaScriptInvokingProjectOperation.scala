@@ -18,7 +18,7 @@ import scala.collection.JavaConverters._
   * @param jsVar var reference in Nashorn
   * @param rugAs backing artifact source for the Rug archive
   */
-abstract class JavaScriptInvokingRugOperation(
+abstract class JavaScriptInvokingProjectOperation(
                                                jsc: JavaScriptContext,
                                                className: String,
                                                jsVar: ScriptObjectMirror,

@@ -3,7 +3,7 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.compiler.Compiler
-import com.atomist.rug.runtime.{JavaScriptInvokingRugEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
 /**

@@ -2,6 +2,7 @@ package com.atomist.project.archive
 
 import java.io.File
 
+import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.Import
 import com.atomist.rug.runtime.TypeScriptRugEditorTest
 import com.atomist.source.file.ClassPathArtifactSource
@@ -118,6 +119,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     )
     val ops = apc.findOperations(as, None, Nil)
     ops.generators.size should be (1)
-    ops.generators.head.parameters.size should be (1)
+    ops.generators.head.parameters.size should be (0)
+    val result = ops.generators.head.generate(SimpleProjectOperationArguments.Empty)
+    result.findFile("src/from/typescript").get.content.contains("Anders") should be (true)
   }
 }

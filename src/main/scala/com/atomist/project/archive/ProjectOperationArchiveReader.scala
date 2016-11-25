@@ -1,7 +1,7 @@
 package com.atomist.project.archive
 
 import com.atomist.project.edit.ProjectEditor
-import com.atomist.project.generate.EditorInvokingProjectGenerator
+import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGenerator}
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -43,10 +43,11 @@ class ProjectOperationArchiveReader(
 
         // TODO these can't be generators yet.
         // This is a hack to avoid breaking tests
-      case ed: JavaScriptInvokingRugEditor => ed
+      case ed: JavaScriptInvokingProjectEditor => ed
     }
 
     val generators = operations collect {
+      case g: ProjectGenerator => g
       case red: RugDrivenProjectEditor if red.program.publishedName.isDefined =>
         // TODO want to pull up published name so it's not Rug only
         val project: ArtifactSource = removeAtomistTemplateContent(startingProject)

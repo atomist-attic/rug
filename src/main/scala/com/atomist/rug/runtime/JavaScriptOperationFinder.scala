@@ -64,14 +64,12 @@ object JavaScriptOperationFinder {
     }
   }
 
-  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingRugEditor] = {
-
+  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
     jsc.vars.map(v => (v, v.getMetaString("rug-type"))) collect {
       case (v, Some("editor")) =>
-        new JavaScriptInvokingRugEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
+        new JavaScriptInvokingProjectEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
       case (v, Some("generator")) =>
-        //new JavaScriptInvokingRugEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
-      ???
+        new JavaScriptInvokingProjectGenerator(jsc, v.key, v.scriptObjectMirror, rugAs)
     }
   }
 }

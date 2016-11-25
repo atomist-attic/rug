@@ -1,17 +1,15 @@
 package com.atomist.rug.runtime
 
 import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
-import com.atomist.param.ParameterValue
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
 import com.atomist.project.edit.common.ProjectEditorSupport
-import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
-import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
@@ -54,18 +52,17 @@ object DefaultRegistry extends Registry {
 }
 
 
-
 /**
   * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
   */
-class JavaScriptInvokingRugEditor(
+class JavaScriptInvokingProjectEditor(
                                    jsc: JavaScriptContext,
                                    className: String,
                                    jsVar: ScriptObjectMirror,
                                    rugAs: ArtifactSource
                                  )
-  extends JavaScriptInvokingRugOperation(jsc, className, jsVar, rugAs)
+  extends JavaScriptInvokingProjectOperation(jsc, className, jsVar, rugAs)
     with ProjectEditorSupport {
 
   override val name: String =
@@ -82,7 +79,7 @@ class JavaScriptInvokingRugEditor(
     val tr = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig)
 
-      val params = new Parameters(poa)
+      val params = new ParametersProxy(poa)
 
       //  println(editMethod.entrySet())
 
@@ -107,34 +104,5 @@ class JavaScriptInvokingRugEditor(
     tr._1
   }
 
-}
-
-
-/**
-  * Dynamic properties holder that represents the JVM counterpart of a TypeScript class that
-  * doesn't exist in Java.
-  */
-private class Parameters(poa: ProjectOperationArguments) extends AbstractJSObject {
-
-  override def getMember(name: String): AnyRef = {
-    val resolved: ParameterValue = poa.parameterValueMap.getOrElse(
-      name,
-      throw new RugRuntimeException(null, s"Cannot resolve parameter [$name]"))
-    //println(s"Call to getMember with [$name]")
-
-    // The below is what you use for a function
-    //    new AbstractJSObject() {
-    //
-    //      override def isFunction: Boolean = true
-    //
-    //      override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-    //        resolved
-    //      }
-    //    }
-
-    // This works for a method
-    resolved.getValue
-    // TODO fall back to the value in the field?
-  }
 }
 

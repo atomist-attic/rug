@@ -12,5 +12,5 @@ import com.atomist.source.ArtifactSource
 trait ProjectGenerator extends ProjectDelta {
 
   @throws(classOf[InvalidParametersException])
-  def generate(tcc: ProjectOperationArguments): ArtifactSource
+  def generate(poa: ProjectOperationArguments): ArtifactSource
 }

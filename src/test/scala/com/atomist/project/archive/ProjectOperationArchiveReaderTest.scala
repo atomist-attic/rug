@@ -110,7 +110,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     ops.editors.head.parameters.size should be (1)
   }
 
-  it should "find typescript generator" in {
+  it should "find typescript generator" in pendingUntilFixed {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",

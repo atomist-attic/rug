@@ -36,7 +36,7 @@ class JavaScriptInvokingProjectGenerator(
     val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
     val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig)
 
-    val params = new ParametersProxy(poa)
+    val params = new BidirectionalParametersProxy(poa)
 
     //important that we don't invoke methods on the prototype as otherwise all constructor effects are lost!
     val result = jsc.engine.get(className.toLowerCase).asInstanceOf[ScriptObjectMirror].callMember("populate", pmv, params)

@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
@@ -10,8 +9,6 @@ import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-
-import scala.collection.JavaConverters._
 
 
 /**
@@ -41,7 +38,7 @@ class JavaScriptInvokingProjectEditor(
     val tr = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig)
 
-      val params = new ParametersProxy(poa)
+      val params = new BidirectionalParametersProxy(poa)
 
       //  println(editMethod.entrySet())
 
@@ -49,12 +46,16 @@ class JavaScriptInvokingProjectEditor(
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
         val res = jsc.engine.get(className.toLowerCase).asInstanceOf[ScriptObjectMirror].callMember("edit", pmv, params)
 
+        println("Params=" + params)
+
         if (pmv.currentBackingObject == targetProject) {
+
           NoModificationNeeded("OK")
         }
         else {
           SuccessfulModification(pmv.currentBackingObject, impacts, "OK")
         }
+
       }
       catch {
         case f: InstantEditorFailureException =>

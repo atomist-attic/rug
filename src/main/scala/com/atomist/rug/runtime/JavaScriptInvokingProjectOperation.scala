@@ -3,6 +3,7 @@ package com.atomist.rug.runtime
 import javax.script.ScriptContext
 
 import com.atomist.param.{Parameter, Tag}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -13,23 +14,33 @@ import scala.collection.JavaConverters._
 
 /**
   * Superclass for all operations that delegate to JavaScript
-  * @param jsc JavaScript context
+  *
+  * @param jsc       JavaScript context
   * @param className name of the class
-  * @param jsVar var reference in Nashorn
-  * @param rugAs backing artifact source for the Rug archive
+  * @param jsVar     var reference in Nashorn
+  * @param rugAs     backing artifact source for the Rug archive
   */
 abstract class JavaScriptInvokingProjectOperation(
-                                               jsc: JavaScriptContext,
-                                               className: String,
-                                               jsVar: ScriptObjectMirror,
-                                               rugAs: ArtifactSource
-                                             )
+                                                   jsc: JavaScriptContext,
+                                                   className: String,
+                                                   jsVar: ScriptObjectMirror,
+                                                   rugAs: ArtifactSource
+                                                 )
   extends ProjectOperationParameterSupport
+    with ContextAwareProjectOperation
     with LazyLogging {
 
   readTagsFromMetadata.foreach(t => addTag(t))
 
   readParametersFromMetadata.foreach(p => addParameter(p))
+
+  protected var _context: Seq[ProjectOperation] = Nil
+
+  override def setContext(ctx: Seq[ProjectOperation]): Unit = {
+    _context = ctx
+  }
+
+  protected def context: Seq[ProjectOperation] = _context
 
   override def description: String = jsc.engine.invokeFunction("get_metadata", jsVar, "editor-description") match {
     case s: String => s

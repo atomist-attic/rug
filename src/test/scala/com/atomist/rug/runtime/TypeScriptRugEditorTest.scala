@@ -122,6 +122,8 @@ object TypeScriptRugEditorTest {
       |      //console.log(pe.expression);
       |      let m: Match<Project,File> = this.eng.evaluate(project, pe)
       |
+      |      ji["whatever"] = "thing"
+      |
       |      var t: string = `param=${ji.packageName},filecount=${m.root().fileCount()}`
       |      for (let n of m.matches())
       |        t += `Matched file=${n.path()}`;

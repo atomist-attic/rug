@@ -10,12 +10,24 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 
+trait ContextAwareProjectOperation extends ProjectOperation {
+
+  /**
+    * Should be called before use to expose the context from which other editors can be found.
+    * Will compute parameters and validate dependencies in our Uses blocks.
+    *
+    * @param ctx context where we can find this editor
+    */
+  def setContext(ctx: Seq[ProjectOperation]): Unit
+
+}
+
 abstract class RugDrivenProjectOperation(
                                           val program: RugProgram,
                                           val rugAs: ArtifactSource,
                                           val kindRegistry: TypeRegistry,
                                           val namespace: Option[String])
-  extends ProjectOperation
+  extends ContextAwareProjectOperation
     with ProjectOperationParameterSupport
     with RugOperationSupport
     with LazyLogging {
@@ -36,13 +48,7 @@ abstract class RugDrivenProjectOperation(
 
   override def imports: Seq[Import] = program.imports
 
-  /**
-    * Should be called before use to expose the context from which other editors can be found.
-    * Will compute parameters and validate dependencies in our Uses blocks.
-    *
-    * @param ctx context where we can find this editor
-    */
-  def setContext(ctx: Seq[ProjectOperation]): Unit = {
+  override def setContext(ctx: Seq[ProjectOperation]): Unit = {
     this.context = ctx
     validateUses(ctx)
     validateParameters(ctx)

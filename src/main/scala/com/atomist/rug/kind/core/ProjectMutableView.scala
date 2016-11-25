@@ -7,7 +7,7 @@ import com.atomist.project.common.template.{CombinedMergeToolCreator, MergeToolC
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.mustache.MustacheMergeToolCreator
 import com.atomist.project.generate.velocity.VelocityMergeToolCreator
-import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
+import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.FunctionInvocationContext
 import com.atomist.rug.spi._
@@ -32,14 +32,15 @@ object ProjectMutableView {
 /**
   * Operations.
   *
-  * @param rugAs backing store of the editor
+  * @param rugAs                 backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig Atomist configuration used to determine where we look for files.
+  * @param atomistConfig         Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
                           originalBackingObject: ArtifactSource,
-                          atomistConfig: AtomistConfig)
+                          atomistConfig: AtomistConfig,
+                          context: Seq[ProjectOperation] = Nil)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null) {
 
   // We need this, rather than merely a default, for Java subclasses
@@ -159,8 +160,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter file filter
-    * @param regexp regexp
+    * @param filter      file filter
+    * @param regexp      regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -185,13 +186,13 @@ class ProjectMutableView(
     val fe = SimpleFileEditor(f => f.path.contains(literal), f => f.withPath(f.path.replace(literal, replacement)))
     updateTo(currentBackingObject ✎ fe)
 
-//    updateTo(currentBackingObject ✎ (f => {
-//      if (f.path.contains(literal)) {
-//        val newPath = f.path.replace(literal, replacement)
-//        f.withPath(newPath)
-//      } else
-//        f
-//    }))
+    //    updateTo(currentBackingObject ✎ (f => {
+    //      if (f.path.contains(literal)) {
+    //        val newPath = f.path.replace(literal, replacement)
+    //        f.withPath(newPath)
+    //      } else
+    //        f
+    //    }))
   }
 
   @ExportFunction(readOnly = false,
@@ -380,6 +381,42 @@ class ProjectMutableView(
     import scala.collection.JavaConverters._
     val files = currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, this)).asJava
     files.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
+  }
+
+  /**
+    * For use by scripts. Edit the project with the given
+    * map of string arguments.
+    *
+    * @param editorName name of editor to use
+    * @param params     parameters to pass to the editor
+    * @return
+    */
+  protected def editWith(editorName: String,
+                         params: Map[String, Any],
+                         context: Seq[ProjectOperation]): Unit = {
+    val ed: ProjectEditor = context.collect {
+      case pe: ProjectEditor if pe.name.equals(editorName) =>
+        pe
+    }.headOption.getOrElse(
+      throw new RugRuntimeException(name, s"Cannot find project editor [$editorName]")
+    )
+    ed.modify(currentBackingObject, SimpleProjectOperationArguments.Empty) match {
+      case sm: SuccessfulModification =>
+        updateTo(sm.result)
+      case nmn: NoModificationNeeded => currentBackingObject
+      case wtf =>
+        throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
+    }
+  }
+
+  protected def editWith(editorName: String, params: Map[String,Any]): Unit = {
+    editWith(editorName, params, this.context)
+  }
+
+  @ExportFunction(readOnly = false, description = "Edit with the given editor")
+  protected def editWith(editorName: String, params: Any): Unit = {
+    val m: Map[String,Any] = Map()
+    editWith(editorName, m)
   }
 
   /**

@@ -76,22 +76,9 @@ class ServiceMutableView(override val parent: ServicesMutableView,
     * @param params     parameters to pass to the editor
     * @return
     */
-  def editWith(editorName: String,
-               params: Map[String, String]): Unit = {
-    val ed: ProjectEditor = parent.serviceSource.projectOperations.collect {
-      case pe: ProjectEditor if pe.name.equals(editorName) =>
-        pe
-    }.headOption.getOrElse(
-      throw new RugRuntimeException(name, s"Cannot find project editor [$editorName]")
-    )
-    ed.modify(currentBackingObject, SimpleProjectOperationArguments.Empty) match {
-      case sm: SuccessfulModification =>
-        updateTo(sm.result)
-      case nmn: NoModificationNeeded => currentBackingObject
-      case wtf =>
-        throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
-    }
-  }
+  override def editWith(editorName: String,
+               params: Map[String, Any]): Unit =
+    super.editWith(editorName, params, parent.serviceSource.projectOperations)
 
   // TODO parameter handling
   @ExportFunction(readOnly = false, description = "Edit project with the named editor")

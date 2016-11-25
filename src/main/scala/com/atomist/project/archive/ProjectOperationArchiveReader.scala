@@ -5,7 +5,7 @@ import com.atomist.project.generate.EditorInvokingProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.{JavaScriptInvokingRugEditor, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
+import com.atomist.rug.runtime._
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
@@ -33,7 +33,7 @@ class ProjectOperationArchiveReader(
 
   def findOperations(startingProject: ArtifactSource, namespace: Option[String], otherOperations: Seq[ProjectOperation]): Operations = {
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations)
-    val fromTs = JavaScriptInvokingRugEditor.fromTypeScriptArchive(startingProject)
+    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject)
 
     val operations = fromOldPipeline ++ fromTs
 

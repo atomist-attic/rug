@@ -3,7 +3,7 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.compiler.Compiler
-import com.atomist.rug.runtime.JavaScriptInvokingRugEditor
+import com.atomist.rug.runtime.{JavaScriptInvokingRugEditor, JavaScriptOperationFinder}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
 /**
@@ -22,7 +22,7 @@ class CompilerChainPipeline(compilers: Seq[Compiler],
                       namespace: Option[String],
                       knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
     val withTypeScripts = comps.reduce(_ compose _)(rugArchive)
-    JavaScriptInvokingRugEditor.fromTypeScriptArchive(withTypeScripts)
+    JavaScriptOperationFinder.fromTypeScriptArchive(withTypeScripts)
   }
 
   @throws[BadRugPackagingException]

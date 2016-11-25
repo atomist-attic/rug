@@ -1,0 +1,22 @@
+{
+  "name": "user-model",
+  "version": "0.2.0",
+  "description": "TypeScript model for Atomist editors, generators etc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atomist/user-model.git"
+  },
+  "keywords": [
+    "Atomist",
+    "Rug"
+  ],
+  "author": "Atomist, Inc",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/atomist/user-model/issues"
+  },
+  "homepage": "https://github.com/atomist/user-model#readme",
+  "binary-dependencies": {
+      "com.atomist:rug-lib": "1.4.1"
+    }
+}

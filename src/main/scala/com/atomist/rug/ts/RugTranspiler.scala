@@ -272,8 +272,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   val imports =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/ProjectEditor'
-      |import {ParametersSupport} from 'user-model/operations/ProjectEditor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
       |
       |import {tag} from 'user-model/support/Metadata'

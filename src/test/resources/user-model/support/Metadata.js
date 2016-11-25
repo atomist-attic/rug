@@ -54,7 +54,6 @@ function parameter(details) {
 exports.parameter = parameter;
 function inject(typeToInject) {
     return function (target, propertyKey, parameterIndex) {
-        console.log("Target:" +JSON.stringify(target))
         var injects = get_metadata(target, "injects");
         if (injects == null) {
             injects = [];

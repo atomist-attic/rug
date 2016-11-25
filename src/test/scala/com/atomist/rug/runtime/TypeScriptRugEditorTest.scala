@@ -2,7 +2,7 @@ package com.atomist.rug.runtime
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.common.IllformedParametersException
-import com.atomist.project.edit.{FailedModificationAttempt, SuccessfulModification}
+import com.atomist.project.edit.SuccessfulModification
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -10,97 +10,66 @@ object TypeScriptRugEditorTest {
 
   val ContentPattern = "Anders .*"
 
+  val SimpleEditor =
+    """
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {Project} from 'user-model/model/Core'
+      |import {editor} from 'user-model/support/Metadata'
+      |import {parameters} from 'user-model/support/Metadata'
+      |
+      |@editor("My simple editor")
+      |class SimpleEditor implements ProjectEditor<Parameters> {
+      |
+      |    edit(project: Project, @parameters("Parameters") p: Parameters) {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        return `Edited Project now containing ${project.fileCount()} files: \n`;
+      |    }
+      |}
+    """.stripMargin
+
   val SimpleEditorTaggedAndMeta =
     s"""
        |import {Project} from 'user-model/model/Core'
-       |import {ParametersSupport} from 'user-model/operations/ProjectEditor'
+       |import {ParametersSupport} from 'user-model/operations/Parameters'
        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-       |import {Parameters} from 'user-model/operations/ProjectEditor'
+       |import {Parameters} from 'user-model/operations/Parameters'
        |import {File} from 'user-model/model/Core'
        |
-      |import {parameter} from 'user-model/support/Metadata'
+       |import {parameter} from 'user-model/support/Metadata'
        |import {inject} from 'user-model/support/Metadata'
        |import {parameters} from 'user-model/support/Metadata'
        |import {tag} from 'user-model/support/Metadata'
        |import {editor} from 'user-model/support/Metadata'
        |
-      |abstract class ContentInfo extends ParametersSupport {
+       |abstract class ContentInfo extends ParametersSupport {
        |
-      |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
+       |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
        |  content: string = null
        |
-      |}
+       |}
        |
-      |@editor("A nice little editor")
+       |@editor("A nice little editor")
        |@tag("java")
        |@tag("maven")
        |class SimpleEditor implements ProjectEditor<ContentInfo> {
        |
-      |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
+       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
        |      project.addFile("src/from/typescript", p.content);
        |      return `Edited Project now containing $${project.fileCount()} files: \n`;
        |    }
        |  }
        |
     """.stripMargin
-}
 
-class TypeScriptRugEditorTest extends FlatSpec with Matchers {
-
-  import TypeScriptRugEditorTest._
-
-  it should "run simple editor compiled from TypeScript" in {
-    val ts =
-      """
-        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-        |import {Parameters} from 'user-model/operations/ProjectEditor'
-        |import {Project} from 'user-model/model/Core'
-        |import {editor} from 'user-model/support/Metadata'
-        |import {parameters} from 'user-model/support/Metadata'
-        |
-        |@editor("My simple editor")
-        |class SimpleEditor implements ProjectEditor<Parameters> {
-        |
-        |    edit(project: Project, @parameters("Parameters") p: Parameters) {
-        |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-        |        return `Edited Project now containing ${project.fileCount()} files: \n`;
-        |    }
-        |}
-      """.stripMargin
-
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", ts))
-  }
-
-  it should "find tags" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
-    ed.tags.size should be(2)
-    ed.tags.map(_.name).toSet should equal(Set("java", "maven"))
-  }
-
-  it should "find parameter metadata" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
-    ed.parameters.size should be(1)
-    val p = ed.parameters.head
-    p.name should be("content")
-    p.description should be("Content")
-    p.getDisplayName should be("content")
-    p.getPattern should be(ContentPattern)
-    p.getMaxLength should be(100)
-  }
-
-  it should "find description" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
-    ed.description should be("A nice little editor")
-  }
-
-  val constructor =
+  val EditorInjectedWithPathExpression =
     """import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/ProjectEditor'
+      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/ProjectEditor'
-      |import {PathExpression} from 'user-model/operations/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/operations/PathExpression'
-      |import {Match} from 'user-model/operations/PathExpression'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {PathExpression} from 'user-model/tree/PathExpression'
+      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+      |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
       |
       |import {parameter} from 'user-model/support/Metadata'
@@ -146,8 +115,40 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       |  }
       | """.stripMargin
 
+}
+
+class TypeScriptRugEditorTest extends FlatSpec with Matchers {
+
+  import TypeScriptRugEditorTest._
+
+  it should "run simple editor compiled from TypeScript" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))
+  }
+
+  it should "find tags" in {
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    ed.tags.size should be(2)
+    ed.tags.map(_.name).toSet should equal(Set("java", "maven"))
+  }
+
+  it should "find parameter metadata" in {
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    ed.parameters.size should be(1)
+    val p = ed.parameters.head
+    p.name should be("content")
+    p.description should be("Content")
+    p.getDisplayName should be("content")
+    p.getPattern should be(ContentPattern)
+    p.getMaxLength should be(100)
+  }
+
+  it should "find description" in {
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
+    ed.description should be("A nice little editor")
+  }
+
   it should "have the PathExpressionEngine injected" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts", constructor))
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts", EditorInjectedWithPathExpression))
     //ed.description should be ("A nice little editor")
   }
 

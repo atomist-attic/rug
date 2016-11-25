@@ -4,8 +4,8 @@
 */
 class Match<R,N> {
 
-  _root: R;
-  _matches: Array<N>;
+  private _root: R;
+  private _matches: Array<N>;
 
   constructor(root: R, matches: Array<N>) {
     this._root = root
@@ -22,6 +22,9 @@ class PathExpression<R,N> {
 
 }
 
+/*
+  What we use to execute tree expressions
+*/
 interface PathExpressionEngine {
 
   evaluate<R,N>(root, expr: PathExpression<R,N>): Match<R,N>

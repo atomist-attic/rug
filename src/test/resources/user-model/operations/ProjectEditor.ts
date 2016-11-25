@@ -1,23 +1,14 @@
-import {Project} from 'user-model/model/Core'
+import {Project} from '../model/Core'
+import {Parameters} from "./Parameters"
+import {ParametersSupport} from "./Parameters"
 
-interface Parameters {
-  // TODO should return a detailed failure? Or exception...
-  validate(): boolean
-}
-
-abstract class ParametersSupport implements Parameters {
-
-  validate() { return true; }
-}
-
-
-// TODO Nashorn doesn't seem to like exports
+/**
+ * Main entry point for project editing
+ */
 interface ProjectEditor<P extends Parameters> {
 
     edit(project: Project, p: P): string
 
 }
 
-export {Parameters}
-export {ParametersSupport}
 export {ProjectEditor}

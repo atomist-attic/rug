@@ -77,7 +77,7 @@ class ServiceMutableView(override val parent: ServicesMutableView,
     * @return
     */
   override def editWith(editorName: String,
-               params: Map[String, Any]): Unit =
+               params: Map[String, Object]): Unit =
     super.editWith(editorName, params, parent.serviceSource.projectOperations)
 
   // TODO parameter handling

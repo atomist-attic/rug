@@ -34,7 +34,7 @@ class JavaScriptInvokingProjectGenerator(
     validateParameters(poa)
     //val tr = time {
     val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
-    val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
 
     val params = new BidirectionalParametersProxy(poa)
 

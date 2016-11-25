@@ -9,7 +9,7 @@ import com.atomist.project.generate.mustache.MustacheMergeToolCreator
 import com.atomist.project.generate.velocity.VelocityMergeToolCreator
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.FunctionInvocationContext
+import com.atomist.rug.runtime.{BidirectionalParametersProxy, FunctionInvocationContext}
 import com.atomist.rug.spi._
 import com.atomist.source._
 import com.atomist.util.BinaryDecider
@@ -392,7 +392,7 @@ class ProjectMutableView(
     * @return
     */
   protected def editWith(editorName: String,
-                         params: Map[String, Any],
+                         params: Map[String, Object],
                          context: Seq[ProjectOperation]): Unit = {
     val ed: ProjectEditor = context.collect {
       case pe: ProjectEditor if pe.name.equals(editorName) =>
@@ -400,7 +400,7 @@ class ProjectMutableView(
     }.headOption.getOrElse(
       throw new RugRuntimeException(name, s"Cannot find project editor [$editorName]")
     )
-    ed.modify(currentBackingObject, SimpleProjectOperationArguments.Empty) match {
+    ed.modify(currentBackingObject, SimpleProjectOperationArguments("invocation", params)) match {
       case sm: SuccessfulModification =>
         updateTo(sm.result)
       case nmn: NoModificationNeeded => currentBackingObject
@@ -409,13 +409,16 @@ class ProjectMutableView(
     }
   }
 
-  protected def editWith(editorName: String, params: Map[String,Any]): Unit = {
+  protected def editWith(editorName: String, params: Map[String,Object]): Unit = {
     editWith(editorName, params, this.context)
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
   protected def editWith(editorName: String, params: Any): Unit = {
-    val m: Map[String,Any] = Map()
+    val m: Map[String,Object] = params match {
+      case bdp: BidirectionalParametersProxy =>
+        bdp.allMemberValues
+    }
     editWith(editorName, m)
   }
 

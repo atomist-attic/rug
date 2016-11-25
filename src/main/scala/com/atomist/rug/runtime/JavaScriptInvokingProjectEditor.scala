@@ -36,7 +36,7 @@ class JavaScriptInvokingProjectEditor(
                                          targetProject: ArtifactSource,
                                          poa: ProjectOperationArguments): ModificationAttempt = {
     val tr = time {
-      val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig)
+      val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, context)
 
       val params = new BidirectionalParametersProxy(poa)
 

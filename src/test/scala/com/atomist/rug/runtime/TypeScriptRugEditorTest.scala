@@ -1,9 +1,10 @@
 package com.atomist.rug.runtime
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.project.common.IllformedParametersException
-import com.atomist.project.edit.SuccessfulModification
-import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.project.edit._
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 object TypeScriptRugEditorTest {
@@ -26,6 +27,59 @@ object TypeScriptRugEditorTest {
       |        return `Edited Project now containing ${project.fileCount()} files: \n`;
       |    }
       |}
+    """.stripMargin
+
+  val SimpleEditorInvokingOtherEditor =
+    """
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {Project} from 'user-model/model/Core'
+      |import {editor} from 'user-model/support/Metadata'
+      |import {parameters} from 'user-model/support/Metadata'
+      |
+      |@editor("My simple editor")
+      |class SimpleEditor implements ProjectEditor<Parameters> {
+      |
+      |    edit(project: Project, @parameters("Parameters") p: Parameters) {
+      |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
+      |        return "thing"
+      |    }
+      |}
+    """.stripMargin
+
+  val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
+    s"""
+       |import {Project} from 'user-model/model/Core'
+       |import {ParametersSupport} from 'user-model/operations/Parameters'
+       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+       |import {Parameters} from 'user-model/operations/Parameters'
+       |import {File} from 'user-model/model/Core'
+       |
+       |import {parameter} from 'user-model/support/Metadata'
+       |import {inject} from 'user-model/support/Metadata'
+       |import {parameters} from 'user-model/support/Metadata'
+       |import {tag} from 'user-model/support/Metadata'
+       |import {editor} from 'user-model/support/Metadata'
+       |
+       |abstract class ContentInfo extends ParametersSupport {
+       |
+       |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
+       |  content: string = null
+       |
+       |}
+       |
+       |@editor("A nice little editor")
+       |@tag("java")
+       |@tag("maven")
+       |class SimpleEditor implements ProjectEditor<ContentInfo> {
+       |
+       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
+       |      p["otherParam"] = p.content
+       |      project.editWith("other", p)
+       |      return `Edited Project now containing $${project.fileCount()} files: \n`;
+       |    }
+       |  }
+       |
     """.stripMargin
 
   val SimpleGenerator =
@@ -148,6 +202,26 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))
   }
 
+  it should "run simple editor compiled from TypeScript that invokes another editor with separate parameters object" in pendingUntilFixed {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorInvokingOtherEditor), Seq(otherEditor))
+  }
+
+  val otherEditor: ProjectEditor = new ProjectEditorSupport {
+    override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")), Set(), "")
+    }
+
+    override def impacts: Set[Impact] = Set()
+    override def applicability(as: ArtifactSource): Applicability = Applicability.OK
+    override def name: String = "other"
+    override def description: String = name
+  }
+
+  it should "run simple editor compiled from TypeScript that invokes another editor adding to our parameters object" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+      SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters), Seq(otherEditor))
+  }
+
   it should "find tags" in {
     val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorTaggedAndMeta))
     ed.tags.size should be(2)
@@ -206,10 +280,11 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
+    jsed.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

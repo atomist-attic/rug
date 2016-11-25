@@ -956,6 +956,8 @@ operations can be inefficient.
  */
 interface Project {
 
+editWith(name: string, params: any): void
+
     //name: string
     //parentPath: string
     addDirectory(name: string, parentPath: string): void

@@ -9,15 +9,19 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * Dynamic properties holder that represents the JVM counterpart of a TypeScript class that
   * doesn't exist in Java. Allows additional keys to be set on the proxy.
   */
-private[runtime] class BidirectionalParametersProxy(poa: ProjectOperationArguments) extends AbstractJSObject {
+class BidirectionalParametersProxy(poa: ProjectOperationArguments) extends AbstractJSObject {
 
-  private var _additionalValues: Map[String,Any] = Map()
+  private var _additionalValues: Map[String, Object] = Map()
 
   /**
-    * Return additional values written to the proxy from JavaScript
+    * Original parameters plus additional values written to the proxy from JavaScript
+    *
     * @return
     */
-  def additionalValues: Map[String,Any] = _additionalValues
+  def allMemberValues: Map[String, Object] =
+  (poa.parameterValueMap map {
+    case (k, v) => (k, v.getValue)
+  }) ++ _additionalValues
 
   override def getMember(name: String): AnyRef = {
     val resolved: ParameterValue = poa.parameterValueMap.getOrElse(
@@ -40,7 +44,7 @@ private[runtime] class BidirectionalParametersProxy(poa: ProjectOperationArgumen
     // TODO fall back to the value in the field?
   }
 
-  override def setMember(name: String, value: scala.Any): Unit = {
+  override def setMember(name: String, value: Object): Unit = {
     _additionalValues = _additionalValues ++ Map(name -> value)
     super.setMember(name, value)
   }

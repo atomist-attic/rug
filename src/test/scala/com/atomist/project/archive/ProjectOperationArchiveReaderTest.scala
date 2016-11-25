@@ -132,4 +132,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     // Should contain new contain
     result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
   }
+
+  it should "allow invocation of other operation from TypeScript editor" in pending
+
 }

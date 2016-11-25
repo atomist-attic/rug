@@ -150,7 +150,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= helper.indented(actionCode(ed, a, config.projectVarName, 1), 1)
       ts ++= config.separator
     }
-    ts ++= helper.indented(s"return 'Editor [${ed.name}] executed OK'\n", 1)
+    ts ++= helper.indented(s"return new Result(Status.Success, 'Editor [${ed.name}] executed OK')\n", 1)
     ts.toString
   }
 
@@ -275,6 +275,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       |import {Parameters} from 'user-model/operations/Parameters'
       |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
+      |import {Result,Status} from 'user-model/operations/Result'
       |
       |import {tag} from 'user-model/support/Metadata'
       |import {editor} from 'user-model/support/Metadata'

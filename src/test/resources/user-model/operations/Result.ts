@@ -1,8 +1,8 @@
 
-module Results {
-
-    let OK = new Result(Status.Success, "OK")
-}
+// module Results {
+//
+//     let OK = new Result(Status.Success, "OK")
+// }
 
 
 export enum Status {
@@ -23,4 +23,4 @@ class Result {
 }
 
 
-export {Result,Results}
+export {Result}

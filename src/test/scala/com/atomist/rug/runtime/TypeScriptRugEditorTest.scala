@@ -154,7 +154,7 @@ object TypeScriptRugEditorTest {
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
-      |import {Results,Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status} from 'user-model/operations/Result'
       |
       |import {parameter} from 'user-model/support/Metadata'
       |import {inject} from 'user-model/support/Metadata'

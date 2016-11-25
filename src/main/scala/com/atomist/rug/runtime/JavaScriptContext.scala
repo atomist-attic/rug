@@ -1,12 +1,11 @@
 package com.atomist.rug.runtime
 
-import java.nio.charset.StandardCharsets
 import javax.script.{Invocable, ScriptContext, ScriptEngine, ScriptEngineManager}
 
+import com.atomist.rug.compiler.typescript.TypeScriptHelper
 import com.atomist.source.FileArtifact
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -93,14 +92,9 @@ class JavaScriptContext extends LazyLogging {
       |   error: print
       |};
     """.stripMargin
+    scriptEngine.eval(consoleJs)
 
-    engine.eval(consoleJs)
-
-    // Avoid problem with export
-    engine.eval("exports = {}")
-
-    val npmJs = IOUtils.toString(getClass.getResourceAsStream("/utils/jvm-npm.js"), StandardCharsets.UTF_8)
-    engine.eval(npmJs)
+    TypeScriptHelper.prepareEngine(scriptEngine)
   }
 
 }

@@ -17,7 +17,7 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(StringFileArtifact(".atomist/Thing.ts",
       """
         |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-        |import {Parameters} from 'user-model/operations/ProjectEditor'
+        |import {Parameters} from 'user-model/operations/Parameters'
         |import {Project} from 'user-model/model/Core'
         |
         |class TestEditor implements ProjectEditor<Parameters> {

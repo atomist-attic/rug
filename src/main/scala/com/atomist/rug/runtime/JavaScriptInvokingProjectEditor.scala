@@ -10,7 +10,6 @@ import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-
 /**
   * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
@@ -38,24 +37,16 @@ class JavaScriptInvokingProjectEditor(
     val tr = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, context)
 
-      val params = new BidirectionalParametersProxy(poa)
-
-      //  println(editMethod.entrySet())
-
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        val res = jsc.engine.get(className.toLowerCase).asInstanceOf[ScriptObjectMirror].callMember("edit", pmv, params)
-
-        println("Params=" + params)
+        val res = invokeMember("edit", pmv, poa)
 
         if (pmv.currentBackingObject == targetProject) {
-
           NoModificationNeeded("OK")
         }
         else {
           SuccessfulModification(pmv.currentBackingObject, impacts, "OK")
         }
-
       }
       catch {
         case f: InstantEditorFailureException =>

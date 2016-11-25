@@ -3,7 +3,7 @@ package com.atomist.rug.runtime
 import javax.script.ScriptContext
 
 import com.atomist.param.{Parameter, Tag}
-import com.atomist.project.ProjectOperation
+import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -45,6 +45,25 @@ abstract class JavaScriptInvokingProjectOperation(
   override def description: String = jsc.engine.invokeFunction("get_metadata", jsVar, "editor-description") match {
     case s: String => s
     case _ => name
+  }
+
+  /**
+    * Invoke the given member with these arguments, processing them as appropriate
+    * @param member
+    * @param args
+    * @return
+    */
+  protected def invokeMember(member: String, args: Object*): Any = {
+    val processedArgs = args.map {
+      case poa: ProjectOperationArguments => new BidirectionalParametersProxy(poa)
+      case x => x
+    }
+
+    // Important that we don't invoke methods on the prototype as otherwise all constructor effects are lost!
+    jsc.engine.get(className.toLowerCase) match {
+      case som: ScriptObjectMirror => som.callMember(member, processedArgs:_*)
+    }
+
   }
 
   protected def readTagsFromMetadata: Seq[Tag] = {

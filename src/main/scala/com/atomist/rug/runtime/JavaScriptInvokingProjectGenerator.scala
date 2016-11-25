@@ -3,12 +3,9 @@ package com.atomist.rug.runtime
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
-import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -36,11 +33,7 @@ class JavaScriptInvokingProjectGenerator(
     val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
     val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
 
-    val params = new BidirectionalParametersProxy(poa)
-
-    //important that we don't invoke methods on the prototype as otherwise all constructor effects are lost!
-    val result = jsc.engine.get(className.toLowerCase).asInstanceOf[ScriptObjectMirror].callMember("populate", pmv, params)
-
+    val result = invokeMember("populate", pmv, poa)
 
     //    logger.debug(s"$name modifyInternal took ${tr._2}ms")
     //    tr._1

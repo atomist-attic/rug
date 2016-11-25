@@ -1,11 +1,8 @@
 package com.atomist.rug.runtime
 
-import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.{Executor, ProjectOperationArguments}
-import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.service.ServiceSource
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
+import com.atomist.source.ArtifactSource
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 class JavaScriptInvokingExecutor(
@@ -23,9 +20,9 @@ class JavaScriptInvokingExecutor(
 
 
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
-    //val result = jsc.engine.get(className.toLowerCase).asInstanceOf[ScriptObjectMirror].callMember("populate", pmv, params)
-???
+    val smv = new ServicesMutableView(rugAs, serviceSource)
+    //val reviewContext = new ReviewContext
+    invokeMember("execute", smv, parameters)
   }
-
 
 }

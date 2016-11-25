@@ -48,14 +48,19 @@ abstract class JavaScriptInvokingProjectOperation(
   }
 
   /**
-    * Invoke the given member with these arguments, processing them as appropriate
-    * @param member
-    * @param args
-    * @return
+    * Invoke the given member of the JavaScript class with these arguments, processing them as appropriate
+    * @param member name of the member to invoke
+    * @param args arguments to invoke with. They will be translated into
+    *             appropriate JavaScript types if necessary
+    * @return result of the invocation
     */
   protected def invokeMember(member: String, args: Object*): Any = {
+    // Translate parameters if necessary
     val processedArgs = args.map {
-      case poa: ProjectOperationArguments => new BidirectionalParametersProxy(poa)
+      case poa: ProjectOperationArguments =>
+        // Create the special type we create on the fly to imitate parameter
+        // classes and allow writing values back
+        new BidirectionalParametersProxy(poa)
       case x => x
     }
 
@@ -63,7 +68,6 @@ abstract class JavaScriptInvokingProjectOperation(
     jsc.engine.get(className.toLowerCase) match {
       case som: ScriptObjectMirror => som.callMember(member, processedArgs:_*)
     }
-
   }
 
   protected def readTagsFromMetadata: Seq[Tag] = {

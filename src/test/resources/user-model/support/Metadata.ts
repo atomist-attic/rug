@@ -30,6 +30,13 @@ function generator(description :string){
   }
 }
 
+function executor(description :string){
+  return function (cons: Function){
+    set_metadata(cons,"rug-type","executor");
+    set_metadata(cons,"generator-description",description);
+  }
+}
+
 function tag(name :string){
   return function (cons: Function){
     let tags: [string] = get_metadata(cons, "tags");
@@ -73,6 +80,7 @@ function parameters(name: string){
 }
 export {editor}
 export {generator}
+export {executor}
 export {tag}
 export {parameter}
 export {parameters}

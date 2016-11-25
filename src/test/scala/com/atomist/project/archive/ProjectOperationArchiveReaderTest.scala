@@ -1,16 +1,11 @@
 package com.atomist.project.archive
 
-import java.io.File
-
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.Import
+import com.atomist.rug.exec.FakeServiceSource
 import com.atomist.rug.runtime.TypeScriptRugEditorTest
-import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.file.ClassPathArtifactSource._
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.collection.JavaConversions._
 
 class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
@@ -109,6 +104,37 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val ops = apc.findOperations(as, None, Nil)
     ops.editors.size should be(1)
     ops.editors.head.parameters.size should be(1)
+  }
+
+  val SimpleExecutor =
+    """
+      |import {Executor} from 'user-model/operations/Executor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {Services} from 'user-model/model/Core'
+      |import {executor} from 'user-model/support/Metadata'
+      |import {parameters} from 'user-model/support/Metadata'
+      |import {Result,Status} from 'user-model/operations/Result'
+      |
+      |@executor("My simple executor")
+      |class SimpleExecutor implements Executor<Parameters> {
+      |
+      |    execute(services: Services, @parameters("Parameters") p: Parameters):Result {
+      |        return new Result(Status.Success,
+      |         `We are clever`)
+      |    }
+      |}
+    """.stripMargin
+  it should "find typescript executor" in pendingUntilFixed {
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val as = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/executors/SimpleExecutor.ts",
+        SimpleExecutor)
+    )
+    val ops = apc.findOperations(as, None, Nil)
+    ops.executors.size should be(1)
+    ops.executors.head.parameters.size should be(0)
+    val s2 = new FakeServiceSource(Nil)
+    ops.executors.head.execute(s2, SimpleProjectOperationArguments.Empty)
   }
 
   it should "find and invoke typescript generator" in {

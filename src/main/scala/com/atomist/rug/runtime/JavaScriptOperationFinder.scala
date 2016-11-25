@@ -29,7 +29,7 @@ object JavaScriptOperationFinder {
     val js = compiled.allFiles.filter(allJsFiles)
       .map(f => {
         //println(f.path)
-        println(f.content)
+        //println(f.content)
         f
       }).foreach(f => {
       jsc.eval(f)

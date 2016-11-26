@@ -25,7 +25,7 @@ class ServicesType(
       |Type for services. Used in executors.
     """.stripMargin
 
-  override def viewManifest: Manifest[ServiceMutableView] = manifest[ServiceMutableView]
+  override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
 
   override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
                                    context: MutableView[_], poa: ProjectOperationArguments,

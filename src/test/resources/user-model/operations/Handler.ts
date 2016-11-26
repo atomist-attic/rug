@@ -12,9 +12,9 @@ interface CallbackRegistry {
   on<R,N>(pathExpression: string, handler: (m: Match<R,N>) => void): void
 }
 
-module Atomist {
+// Also call unicode like  π if we want some of $ familiarity
+export interface Atomist extends CallbackRegistry {
 
-    export let registry: CallbackRegistry = null
 }
 
-Atomist.registry.on<Project,File>("/src/main/**.java", m => null)
+//Atomist.on<Project,File>("/src/main/**.java", m => null)

@@ -7,7 +7,7 @@ import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.spi.{StaticTypeInformation, Type, TypeRegistry}
+import com.atomist.rug.spi.{StaticTypeInformation, Type, TypeOperation, TypeRegistry}
 import com.atomist.rug.ts.TypeScriptGenerationHelper
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 
@@ -51,6 +51,11 @@ class TypeScriptInterfaceGenerator(
     new SimpleFileBasedArtifactSource("Rug user model", createdFile)
   }
 
+  private def shouldEmit(top: TypeOperation) =
+    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) ||
+      "eval".equals(top.name)
+    )
+
   private def generateType(t: Type): String = {
     val output = new StringBuilder("")
     val tsName = helper.typeScriptClassNameForTypeName(t.name)
@@ -64,7 +69,7 @@ class TypeScriptInterfaceGenerator(
       case s: StaticTypeInformation =>
         for {
           op <- s.operations
-          if !op.parameters.exists(_.parameterType.contains("FunctionInvocationContext"))
+          if shouldEmit(op)
         } {
           val comment =
             for (p <- op.parameters)

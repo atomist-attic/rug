@@ -1,9 +1,19 @@
-
 /*
-* Licensed under the Apache License v 2.0
-*/
-
-
+ * Copyright 2015-2016 Atomist Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+      
 /*
  * Docker file type
  */
@@ -59,9 +69,6 @@ interface Dockerfile {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -99,9 +106,6 @@ interface ElmModule {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //name: string
     exposes(name: string): boolean
@@ -150,9 +154,9 @@ interface ElmModule {
 
 
 /*
- *
+ * 
 Type for a file within a project. Supports generic options such as find and replace.
-
+    
  */
 interface File {
 
@@ -167,9 +171,6 @@ interface File {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -235,9 +236,6 @@ interface File {
  */
 interface Http {
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -266,9 +264,6 @@ interface JavaClass {
 
     //fqn: string
     addImport(fqn: string): void
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -367,8 +362,9 @@ interface JavaProject {
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: any
-    eval(arg0: any): void
+    //arg0: string
+    //arg1: any
+    editWith(arg0: string, arg1: any): void
 
     //msg: string
     fail(msg: string): void
@@ -444,9 +440,6 @@ interface JavaSource {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -488,9 +481,6 @@ interface Json {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -523,9 +513,6 @@ interface Line {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -542,9 +529,9 @@ interface Line {
 
 
 /*
- *
+ * 
 Type for a file within a project. Supports generic options such as find and replace.
-
+    
  */
 interface File {
 
@@ -559,9 +546,6 @@ interface File {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -638,9 +622,6 @@ interface PackageJSON {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -725,9 +706,6 @@ interface Xml {
 
     //xpath: string
     deleteNode(xpath: string): void
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -831,9 +809,6 @@ interface Pom {
 
 
     description(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -948,15 +923,13 @@ interface Pom {
 
 
 /*
- *
+ * 
 Type for a project. Supports global operations.
 Consider using file and other lower types by preference as project
 operations can be inefficient.
-
+    
  */
 interface Project {
-
-editWith(name: string, params: any): void
 
     //name: string
     //parentPath: string
@@ -1007,8 +980,9 @@ editWith(name: string, params: any): void
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: any
-    eval(arg0: any): void
+    //arg0: string
+    //arg1: any
+    editWith(arg0: string, arg1: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1071,9 +1045,6 @@ interface Properties {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -1116,9 +1087,6 @@ interface Python {
     //arg0: string
     append(arg0: string): void
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -1142,9 +1110,6 @@ interface PythonRequirements {
 
     //arg0: string
     append(arg0: string): void
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1170,9 +1135,6 @@ interface PythonRequirementsTxt {
     //arg0: string
     append(arg0: string): void
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -1196,9 +1158,6 @@ interface Replacer {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1247,9 +1206,6 @@ interface Replacerclj {
 
     content(): string
 
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
@@ -1290,224 +1246,17 @@ interface Replacerclj {
 
 
 /*
- *
-Type for a project. Supports global operations.
-Consider using file and other lower types by preference as project
-operations can be inefficient.
-
- */
-interface Project {
-
-    //name: string
-    //parentPath: string
-    addDirectory(name: string, parentPath: string): void
-
-    //directoryPath: string
-    addDirectoryAndIntermediates(directoryPath: string): void
-
-    //path: string
-    //content: string
-    addFile(path: string, content: string): void
-
-    //sourcePath: string
-    copyEditorBackingFileOrFail(sourcePath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFileOrFail(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFilesOrFail(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    copyEditorBackingFilesPreservingPath(sourcePath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFilesWithNewRelativePath(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyFile(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyFileOrFail(sourcePath: string, destinationPath: string): void
-
-    //path: string
-    countFilesInDirectory(path: string): number
-
-    //path: string
-    deleteDirectory(path: string): void
-
-    //path: string
-    deleteFile(path: string): void
-
-    //path: string
-    directoryExists(path: string): boolean
-
-    //arg0: any
-    eval(arg0: any): void
-
-    //msg: string
-    fail(msg: string): void
-
-    //path: string
-    //content: string
-    fileContains(path: string, content: string): boolean
-
-
-    fileCount(): number
-
-    //path: string
-    fileExists(path: string): boolean
-
-    //path: string
-    //content: string
-    fileHasContent(path: string, content: string): boolean
-
-
-    files(): any[]
-
-    //path: string
-    moveUnder(path: string): void
-
-
-    name(): string
-
-    //msg: string
-    println(msg: string): void
-
-
-    projects(): any[]
-
-    //regexp: string
-    //replacement: string
-    regexpReplace(regexp: string, replacement: string): void
-
-    //literal: string
-    //replaceWith: string
-    replace(literal: string, replaceWith: string): void
-
-    //literal: string
-    //replacement: string
-    replaceInPath(literal: string, replacement: string): void
-
-}   // interface Project
-
-
-/*
- *
+ * 
 Type for services. Used in executors.
-
+    
  */
 interface Services {
 
-    //name: string
-    //parentPath: string
-    addDirectory(name: string, parentPath: string): void
-
-    //directoryPath: string
-    addDirectoryAndIntermediates(directoryPath: string): void
-
-    //path: string
-    //content: string
-    addFile(path: string, content: string): void
-
-    //sourcePath: string
-    copyEditorBackingFileOrFail(sourcePath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFileOrFail(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFilesOrFail(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    copyEditorBackingFilesPreservingPath(sourcePath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyEditorBackingFilesWithNewRelativePath(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyFile(sourcePath: string, destinationPath: string): void
-
-    //sourcePath: string
-    //destinationPath: string
-    copyFileOrFail(sourcePath: string, destinationPath: string): void
-
-    //path: string
-    countFilesInDirectory(path: string): number
-
-    //path: string
-    deleteDirectory(path: string): void
-
-    //path: string
-    deleteFile(path: string): void
-
-    //path: string
-    directoryExists(path: string): boolean
-
-    //arg0: string
-    editUsing(arg0: string): void
-
-    //arg0: any
-    eval(arg0: any): void
-
     //msg: string
     fail(msg: string): void
 
-    //path: string
-    //content: string
-    fileContains(path: string, content: string): boolean
-
-
-    fileCount(): number
-
-    //path: string
-    fileExists(path: string): boolean
-
-    //path: string
-    //content: string
-    fileHasContent(path: string, content: string): boolean
-
-
-    files(): any[]
-
-    //arg0: string
-    messageChannel(arg0: string): void
-
-    //path: string
-    moveUnder(path: string): void
-
-
-    name(): string
-
     //msg: string
     println(msg: string): void
-
-
-    projects(): any[]
-
-    //arg0: string
-    raiseIssue(arg0: string): void
-
-    //regexp: string
-    //replacement: string
-    regexpReplace(regexp: string, replacement: string): void
-
-    //literal: string
-    //replaceWith: string
-    replace(literal: string, replaceWith: string): void
-
-    //literal: string
-    //replacement: string
-    replaceInPath(literal: string, replacement: string): void
 
 }   // interface Services
 
@@ -1579,8 +1328,9 @@ interface SpringBootProject {
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: any
-    eval(arg0: any): void
+    //arg0: string
+    //arg1: any
+    editWith(arg0: string, arg1: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1655,9 +1405,6 @@ interface Yml {
 
 
     content(): string
-
-    //arg0: any
-    eval(arg0: any): void
 
     //msg: string
     fail(msg: string): void

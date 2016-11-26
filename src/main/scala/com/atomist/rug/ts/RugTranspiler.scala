@@ -57,7 +57,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
-    println(s"Emitted:\n$ts")
+    //println(s"Emitted:\n$ts")
     ts.toString
   }
 

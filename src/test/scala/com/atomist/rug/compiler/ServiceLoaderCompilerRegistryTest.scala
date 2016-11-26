@@ -30,9 +30,9 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers {
     val tsc = compilerFor(as)
     val compiled = tsc.compile(as)
     for (f <- compiled.allFiles) {
-      println(f.path)
-      println(f.content)
-      println
+//      println(f.path)
+//      println(f.content)
+//      println
     }
 
   }

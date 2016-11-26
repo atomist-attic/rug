@@ -27,7 +27,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
     ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
-        println(f.content)
         f.content should equal("foo=bar")
     }
   }
@@ -73,7 +72,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
     match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
-        println(f.content)
         f.content.contains("main") should be (true)
     }
   }

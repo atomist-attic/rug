@@ -8,7 +8,7 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.{FlatSpec, Matchers}
 
-class HandlerModuleTest extends FlatSpec with Matchers {
+class HandlerTest extends FlatSpec with Matchers {
 
   it should "allow Atomist invocations" in {
 

@@ -3,7 +3,7 @@ package com.atomist.rug.runtime
 import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.rug.spi.{MutableView, TypeRegistry, Updater}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -42,11 +42,18 @@ class PathExpressionExposer {
   def as(root: TreeNode, name: String): TreeNode = ???
 
   // Find the children of the current node of this time
-  def children(root: TreeNode, name: String): Seq[TreeNode] = {
+  def children(root: TreeNode, name: String) = {
     val typ = typeRegistry.findByName(name).getOrElse(???)
     typ match {
       case cvf: ContextlessViewFinder =>
-        cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
+        val kids = cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
+//        root match {
+//          case mv: MutableView[Any] =>
+//            mv.registerUpdater(new Updater[Any] {
+//              override def update(v: MutableView[Any]): Unit = ???
+//            })
+//        }
+        kids.asJava
     }
   }
 }

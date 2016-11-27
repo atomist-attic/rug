@@ -37,8 +37,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  // TODO remove parameters to see validation issue
-  it should "rename module using TypeScript without path expression" in pendingUntilFixed(doRename(
+  // TODO uncomment parameters to see validation issue
+  it should "rename module using TypeScript without path expression" in (doRename(
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
@@ -61,6 +61,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |   new_name: string = null
       |}
       |
+      |declare var print
+      |
       |@editor("Renames an Elm module")
       |class Renamer implements ProjectEditor<ElmRenamerParameters> {
       |
@@ -72,16 +74,21 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project,
       |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
-      |        //let em: ElmModule = null//when name = old_name
-      |
-      |
-      |        //em.rename(p.new_name)
-      |
       |        let allModules: Array<ElmModule> =
       |             this.eng.children<ElmModule>(project, "elm.module")
-      |         for (let em of allModules)
-      |           if (em.imports(p.old_name))
+      |
+      |         for (let em of allModules) if (em.name() == p.old_name) {
+      |            print(`Modifying ${em} to have name ${p.new_name}`)
+      |            em.rename(p.new_name)
+      |         }
+      |
+      |         print(`found ${allModules.length} elm modules in ${project}`)
+      |         for (let em of allModules) {
+      |           print(`Module ${em}`)
+      |           if (em.imports(p.old_name)) {
       |             em.updateImport(p.old_name, p.new_name)
+      |           }
+      |        }
       |        return new Result(Status.Success, "OK")
       |    }
       |}

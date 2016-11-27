@@ -55,6 +55,7 @@ class ElmModuleMutableView(
     logger.debug(s"Renamed module ${em.nodeName} to $newName")
     em.nameField.update(newName)
     this.setName(s"$newName.elm")
+    commit()
   }
 
   @ExportFunction(readOnly = false, description = "Replace the exposing")
@@ -82,6 +83,8 @@ class ElmModuleMutableView(
     em.imports.foreach {
       case imp if imp.moduleName.equals(oldModuleName) => imp.moduleNameField.update(newModuleName)
     }
+    commit()
+
     logger.debug(s"After update, imports=${em.imports.mkString(",")}")
   }
 

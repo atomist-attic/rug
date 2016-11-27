@@ -1,8 +1,9 @@
 package com.atomist.rug.runtime
 
 import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.spi.MutableView
+import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -15,6 +16,8 @@ case class Match(root: TreeNode, matches: _root_.java.util.List[TreeNode]) {
   * Paralleled by a UserModel TypeScript interface.
   */
 class PathExpressionExposer {
+
+  val typeRegistry: TypeRegistry = DefaultTypeRegistry
 
   val pee = new PathExpressionEngine
 
@@ -39,9 +42,12 @@ class PathExpressionExposer {
   def as(root: TreeNode, name: String): TreeNode = ???
 
   // Find the children of the current node of this time
-  def children(root: TreeNode, name: String): Seq[TreeNode] = root match {
-    case cvf: ContextlessViewFinder =>
-      cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
+  def children(root: TreeNode, name: String): Seq[TreeNode] = {
+    val typ = typeRegistry.findByName(name).getOrElse(???)
+    typ match {
+      case cvf: ContextlessViewFinder =>
+        cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
+    }
   }
 }
 

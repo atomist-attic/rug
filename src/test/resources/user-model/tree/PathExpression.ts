@@ -28,6 +28,17 @@ class PathExpression<R,N> {
 interface PathExpressionEngine {
 
   evaluate<R,N>(root, expr: PathExpression<R,N>): Match<R,N>
+
+/**
+ * Return a single match. Throw an exception otherwise.
+ */
+  scalar<R,N>(root, expr: PathExpression<R,N>): N
+
+// cast the current node
+  as<N>(root, name: string): N
+
+  // Find the children of the current node of this time
+  children<N>(root, name: string): Array<N>
 }
 
 export {Match}

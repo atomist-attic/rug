@@ -3,7 +3,7 @@
 set -eu
 set -o pipefail
 
-mvn="mvn --settings .settings.xml -B -V"
+mvn="mvn --settings .settings.xml -B -V -DskipTests"
 if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     $mvn build-helper:parse-version versions:set -DnewVersion="$TRAVIS_TAG" versions:commit
     project_version="$TRAVIS_TAG"

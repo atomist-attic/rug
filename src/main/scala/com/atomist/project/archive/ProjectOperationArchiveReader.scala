@@ -1,14 +1,12 @@
 package com.atomist.project.archive
 
-import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGenerator}
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime._
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.rug.ts.RugTranspiler
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
+import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 

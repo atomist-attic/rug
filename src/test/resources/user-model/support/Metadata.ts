@@ -42,14 +42,15 @@ function tag(name :string){
     let tags: [string] = get_metadata(cons, "tags");
     if(tags == null){
       tags = [name];
-    }else if(tags.indexOf(name) < 0){
+    } 
+    else if(tags.indexOf(name) < 0){
       tags.push(name)
     }
     set_metadata(cons,"tags",tags);
   }
 }
 
-function parameter(details: any){
+function parameter(details: any) {
   return function (target: any, propertyKey: string) {
     let params: {} = get_metadata(target, "params");
 
@@ -73,7 +74,7 @@ function inject(typeToInject: string){
    }
 }
 
-function parameters(name: string){
+function parameters(name: string) {
   return function (target: Object, propertyKey: string , parameterIndex: number) {
       set_metadata(target,"parameter-class",name);
   }

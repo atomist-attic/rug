@@ -55,9 +55,14 @@ trait AtomistConfig {
   val defaultRugFileBase = "default"
 
   /**
-    * Default path of rug input file to create when a string is passed in.
+    * Default path of Rug program to create when a string is passed in.
     */
   def defaultRugFilepath = s"$editorsRoot/$defaultRugFileBase$rugExtension"
+
+  /**
+    * Default path of TypeScript program to create when a string is passed in.
+    */
+  def defaultTypeScriptFilepath = s"$editorsRoot/$defaultRugFileBase.ts"
 
   def isRugSource(f: FileArtifact): Boolean = {
     f.name.endsWith(rugExtension) && (

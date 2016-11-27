@@ -2,18 +2,21 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
+import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class ElmTypeUsageTest extends FlatSpec with Matchers {
 
   import ElmTypeUsageTest.elmExecute
+
+  val typeScriptPipeline: RugPipeline =
+    new CompilerChainPipeline(Seq(new RugTranspiler()))
+
 
   it should "rename module using native Rug predicate" in doRename(
     """
@@ -32,6 +35,47 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |with elm.module e when imports old_name
       |do updateImport from old_name to new_name
     """.stripMargin
+  )
+
+  // TODO remove parameters to see validation issue
+  it should "rename module using TypeScript without path expression" in doRename(
+    """
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
+      |import {Project,ElmModule} from 'user-model/model/Core'
+      |import {editor, parameter, parameters} from 'user-model/support/Metadata'
+      |import {Result,Status} from 'user-model/operations/Result'
+      |
+      |abstract class ElmRenamerParameters extends ParametersSupport {
+      |
+      |  //@parameter({description: "Name of module we're renaming",
+      |    //    pattern: "[A-Z][\w]+", maxLength: 100 //, required = true,
+      |      //  })
+      |   old_name: string = null
+      |
+      |   //@parameter({description: "New name for the module",
+      |     //   pattern: "[A-Z][\w]+", maxLength: 100 //, required = true,
+      |       //  })
+      |   new_name: string = null
+      |}
+      |
+      |
+      |@editor("Renames an Elm module")
+      |class Renamer implements ProjectEditor<ElmRenamerParameters> {
+      |
+      |    edit(project: Project,
+      |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
+      |        let em: ElmModule = null//when name = old_name
+      |        em.rename(p.new_name)
+      |
+      |        let importingModule: ElmModule = null
+      |            //when em when imports oldname
+      |         em.updateImport(p.old_name, p.new_name)
+      |        return new Result(Status.Success, "OK")
+      |    }
+      |}
+    """.stripMargin,
+    runtime = typeScriptPipeline
   )
 
   it should "rename module using path expression" in doRename(
@@ -99,14 +143,15 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  private def doRename(program: String) {
+  private def doRename(program: String,
+                       runtime: RugPipeline = new DefaultRugPipeline()) {
     val oldModuleName = "Todo"
     val newModuleName = "Foobar"
     val todoSource = StringFileArtifact(s"$oldModuleName.elm", s"module $oldModuleName exposing (..)")
     def makeUsesTodoSource(moduleName: String) = StringFileArtifact("UsesTodo.elm",
       s"""module UsesTodo exposing (..)
           |
-        |import $moduleName""".stripMargin)
+          |import $moduleName""".stripMargin)
 
     val usesTodoSource = makeUsesTodoSource(oldModuleName)
 
@@ -118,7 +163,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val result = elmExecute(elmProject, program, Map(
       "old_name" -> oldModuleName,
       "new_name" -> newModuleName
-    ))
+    ),
+      runtime = runtime)
 
     val newTodoContent = result.findFile(s"$newModuleName.elm").get.content
     newTodoContent.trim should equal("module Foobar exposing (..)")
@@ -704,8 +750,9 @@ object ElmTypeUsageTest extends LazyLogging {
   class TestDidNotModifyException extends RuntimeException
 
   def elmExecute(elmProject: ArtifactSource, program: String,
-                 params: Map[String, String] = Map()): ArtifactSource = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
+                 params: Map[String, String] = Map(),
+                 runtime: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
+                ): ArtifactSource = {
 
     val eds = runtime.createFromString(program)
     val pe = eds.head.asInstanceOf[ProjectEditor]

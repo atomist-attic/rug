@@ -1,6 +1,5 @@
 
 import {Match,PathExpression} from "../tree/PathExpression"
-
 import {Project,File} from "../model/Core"
 
 /**
@@ -16,5 +15,3 @@ interface CallbackRegistry {
 export interface Atomist extends CallbackRegistry {
 
 }
-
-//Atomist.on<Project,File>("/src/main/**.java", m => null)

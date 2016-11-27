@@ -1,4 +1,7 @@
 
+/**
+ * Status of an operation.
+ */
 export enum Status {
     Success,
     NoChange,
@@ -8,12 +11,10 @@ export enum Status {
 /**
  * Result of running an editor
  */
-class Result {
+export class Result {
 
     constructor(
         public status: Status,
         public message: string = "") {}
 
 }
-
-export {Result}

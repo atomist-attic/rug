@@ -1,10 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.FileArtifactMutableView
-import com.atomist.rug.runtime.LambdaPredicate
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 

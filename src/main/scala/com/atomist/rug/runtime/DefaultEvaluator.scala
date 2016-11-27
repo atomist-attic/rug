@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.grammar.microgrammar.{InMemAntlrMicrogrammar, Microgrammar}
-import com.atomist.model.content.text.{ContainerTreeNode, PathExpressionEngine, TreeNode}
+import com.atomist.model.content.grammar.microgrammar.Microgrammar
+import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug._
 import com.atomist.rug.parser._
@@ -9,9 +9,7 @@ import com.atomist.rug.runtime.Evaluator.FunctionTarget
 import com.atomist.rug.runtime.lang.js.NashornExpressionEngine
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.scalaparsing._
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
-import com.atomist.util.template.velocity.VelocityMergeTool
-import com.atomist.util.template.{MergeContext, MergeTool}
+import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
 object DefaultEvaluator extends DefaultEvaluator(new EmptyRugFunctionRegistry) {
@@ -23,8 +21,6 @@ class DefaultEvaluator(
                       )
   extends Evaluator
     with LazyLogging {
-
-  import DefaultEvaluator._
 
   private def evaluateArgs[T <: Object](
                                          functionInvocation: FunctionInvocation,
@@ -109,8 +105,8 @@ class DefaultEvaluator(
           val result = nse.evaluate(ic).asInstanceOf[R]
           result
         case g4: GrammarBlock =>
-          val g: Microgrammar = InMemAntlrMicrogrammar.lastProduction(g4.content)
-          g
+          //val g: Microgrammar = InMemAntlrMicrogrammar.lastProduction(g4.content)
+          ???
         case PathExpressionValue(pathExpression, None) =>
           val result = pathExpression
           result.asInstanceOf[R]

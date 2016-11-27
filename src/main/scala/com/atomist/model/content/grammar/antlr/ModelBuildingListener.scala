@@ -1,6 +1,5 @@
 package com.atomist.model.content.grammar.antlr
 
-import com.atomist.model.content.grammar.microgrammar.InMemAntlrMicrogrammar
 import com.atomist.model.content.grammar.{MatchListener, PositionalString}
 import com.atomist.model.content.text._
 import com.typesafe.scalalogging.LazyLogging
@@ -45,10 +44,6 @@ class ModelBuildingListener(
           ml.foreach(_.onMatch(mof))
           logger.debug("\t" + ctx)
         }
-      case InMemAntlrMicrogrammar.UnwordProduction =>
-        // TODO this should probably be handled by a filter passed in
-        logger.debug(s"DISCARD: [${ctx.getText}]")
-        ml.foreach(_.onSkip(PositionalString(ctx.getText, position(ctx.getStart))))
       case _ =>
     }
   }

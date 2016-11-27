@@ -157,7 +157,7 @@ private class PairMutableView(
           case mv: MutableContainerTreeNode if "object" equals mv.nodeName =>
             findPairsInValueNode(this, mv)
           case arr: MutableContainerTreeNode if "array".equals(arr.nodeName) =>
-            println("SUPPORT ARRAYS!!!!!!")
+            // println("SUPPORT ARRAYS!!!!!!")
             Nil
         }
       case None => requiredSingleChild(currentBackingObject, "STRING") match {

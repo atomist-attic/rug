@@ -297,31 +297,31 @@
         </plugins>
     </build>
     <repositories>
-      <repository>
-          <id>atomist-release</id>
-          <name>Atomist Release</name>
-          <url>https://atomist.jfrog.io/atomist/libs-release</url>
-          <snapshots>
-              <enabled>false</enabled>
-          </snapshots>
-      </repository>
-      <repository>
-          <id>atomist-snapshots</id>
-          <name>Atomist Snapshots</name>
-          <url>https://atomist.jfrog.io/atomist/libs-snapshot</url>
-          <snapshots>
-              <enabled>true</enabled>
-          </snapshots>
-      </repository>
+        <repository>
+            <id>public-atomist-release</id>
+            <name>Atomist Release</name>
+            <url>https://atomist.jfrog.io/atomist/libs-release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>public-atomist-snapshots</id>
+            <name>Atomist Snapshots</name>
+            <url>https://atomist.jfrog.io/atomist/libs-snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <distributionManagement>
-      <repository>
-            <id>atomist-release</id>
+        <repository>
+            <id>public-atomist-release</id>
             <name>Atomist Release</name>
             <url>https://atomist.jfrog.io/atomist/libs-release-local</url>
         </repository>
         <snapshotRepository>
-            <id>atomist-snapshots</id>
+            <id>public-atomist-snapshots</id>
             <name>Atomist Snapshots</name>
             <url>https://atomist.jfrog.io/atomist/libs-snapshot-local</url>
         </snapshotRepository>

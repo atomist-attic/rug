@@ -43,6 +43,8 @@ else
    echo "registry.npmjs.org/:_authToken=${NPMJS_API_KEY}" > .npmrc
 fi
 
+# npm honors this
 
+rm -f .gitignore
 npm publish --access=public || die "Error publishing node module"
 

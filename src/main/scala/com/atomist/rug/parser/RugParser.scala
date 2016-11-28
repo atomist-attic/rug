@@ -310,7 +310,6 @@ case class With(
   }
 }
 
-
 case class ToEvaluateDoStep(te: ToEvaluate) extends DoStep {
 
   override def accept(v: Visitor, depth: Int): Unit = {

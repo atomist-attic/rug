@@ -59,7 +59,6 @@ class PathExpressionExposer {
 
 }
 
-
 private object MagicJavaScriptMethods {
 
   /**
@@ -84,7 +83,6 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
       super.getMember(name)
 
     case st: StaticTypeInformation =>
-      println(s"Call to getMember with [$name]")
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
       // TODO separate error message if wrong number of arguments
@@ -105,7 +103,6 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
             throw new RugRuntimeException(null,
               s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
           val returned = op.get.invoke(n, args.toSeq)
-          println(s"Target method invocation returned $returned")
           n match {
             case c : { def commit(): Unit } => c.commit()
             case _ =>
@@ -120,7 +117,6 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
   }
 }
 
-
 trait UserModelContext {
 
   def registry: Map[String, Object]
@@ -133,4 +129,3 @@ object DefaultUserModelContext extends UserModelContext {
     "PathExpressionEngine" -> new PathExpressionExposer
   )
 }
-

@@ -37,13 +37,10 @@ object JavaScriptOperationFinder {
 
     val compiled = tsc.compile(rugAs)
     val js = compiled.allFiles.filter(allJsFiles)
-      .map(f => {
-        //println(f.path)
-        //println(f.content)
-        f
-      }).foreach(f => {
-      jsc.eval(f)
-    })
+      .map(f => f)
+      .foreach(f => {
+        jsc.eval(f)
+      })
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
@@ -69,7 +66,7 @@ object JavaScriptOperationFinder {
 
       val eObj = jsc.engine.eval(v.key).asInstanceOf[JSObject]
       val newEditor = eObj.newObject(args: _*)
-      //lower case type name for instance!
+      // Lower case type name for instance!
       jsc.engine.put(v.key.toLowerCase, newEditor)
     }
   }

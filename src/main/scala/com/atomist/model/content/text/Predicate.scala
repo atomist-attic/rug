@@ -1,6 +1,5 @@
 package com.atomist.model.content.text
 
-
 object Selector {
 
   type Selector = (TreeNode, Seq[TreeNode]) => Boolean
@@ -21,21 +20,15 @@ case class Predicate(name: String, f: Selector) extends Selector {
 
 }
 
-
 object TruePredicate extends Predicate("true", (_,_) => true)
 
 object FalsePredicate extends Predicate("false", (_,_) => false)
 
-
 class NegationOf(p: Predicate)
   extends Predicate(s"!${p.name}", (tn,among) => !p(tn, among))
 
-
-
 /**
-  * XPath indexes from 1, and unfortunately we need to do that also
-  * @param name
-  * @param i
+  * XPath indexes from 1, and unfortunately we need to do that also.
   */
 class IndexPredicate(name: String, i: Int)
   extends Predicate(name, (tn, among) => {
@@ -44,5 +37,3 @@ class IndexPredicate(name: String, i: Int)
       throw new IllegalStateException(s"Internal error: Index [$i] not found in collection $among")
     i == index + 1
   })
-
-

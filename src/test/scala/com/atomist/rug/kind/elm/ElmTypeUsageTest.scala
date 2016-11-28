@@ -17,7 +17,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
 
-
   it should "rename module using native Rug predicate" in doRename(
     """
       |@description "Renames an Elm module"
@@ -233,7 +232,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     // We've seen failures with Elm module directly under project in the wild,
     // so if we get here we're probably OK
   }
-
 
   it should "add import when no existing imports" in {
     val newImport = "Foo"

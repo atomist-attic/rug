@@ -1,6 +1,5 @@
 package com.atomist.model.content.text
 
-
 trait Positioned {
 
   def startPosition: InputPosition

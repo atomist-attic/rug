@@ -42,5 +42,4 @@ object ConsoleUserMessageRouter extends UserMessageRouter {
   override def messageChannel(channel: String, msg: String): Unit = println(s"#$channel: $msg")
 
   override def messageUser(service: Service, screenName: String, msg: String): Unit = println(s"@$screenName: $msg")
-
 }

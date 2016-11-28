@@ -49,7 +49,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
     match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
-        println(f.content)
         f.content.contains("main") should be (true)
     }
   }
@@ -103,7 +102,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
 //  }
 
   /*
-
 
   it should "extract simple content using ANDed predicate" in {
     val contentFile = StringFileArtifact("content.txt", "The quick brown fox jumped over the lazy dog")

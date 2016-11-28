@@ -18,8 +18,7 @@ trait ReflectiveExportContainerTreeNode extends ContainerTreeNode {
       case null => Nil
       case tn: TreeNode => Seq(tn)
       case Seq(tn: TreeNode) => Seq(tn)
-      case x => println(s"WTF from $m")
-        Nil
+      case x => Nil
     }
   }
 
@@ -44,4 +43,3 @@ trait ReflectiveExportContainerTreeNode extends ContainerTreeNode {
   final override def childNodeTypes: Set[String] =
     kidMethods.map(k => k.typeName).toSet
 }
-

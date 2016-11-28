@@ -93,7 +93,6 @@ object JsonType {
 
 import com.atomist.rug.kind.json.JsonType._
 
-
 class JsonMutableView(
                        originalBackingObject: FileArtifact,
                        parent: ProjectMutableView)
@@ -121,8 +120,6 @@ class JsonMutableView(
     case mv: MutableContainerTreeNode => mv
   }
 
-  //println(s"created ROOT with name $nodeName, kidNames=$childrenNames, kid=$soleKid")
-
   override protected def currentContent: String = currentParsed.value
 
   override def childrenNames: Seq[String] =
@@ -132,9 +129,7 @@ class JsonMutableView(
     findPairsInValueNode(this, soleKid)
       .filter(n => fieldName.equals(n.nodeName))
   }
-
 }
-
 
 /*
   pair
@@ -157,7 +152,6 @@ private class PairMutableView(
           case mv: MutableContainerTreeNode if "object" equals mv.nodeName =>
             findPairsInValueNode(this, mv)
           case arr: MutableContainerTreeNode if "array".equals(arr.nodeName) =>
-            // println("SUPPORT ARRAYS!!!!!!")
             Nil
         }
       case None => requiredSingleChild(currentBackingObject, "STRING") match {
@@ -165,8 +159,6 @@ private class PairMutableView(
           Seq(new JsonStringView(s, this))
       }
     }
-
-  //println(s"Made pair based on ${originalBackingObject.value},kidNames=$childrenNames,kids=$kids,name=$nodeName")
 
   override def nodeName: String = nodeNameFromValue(currentBackingObject)
 
@@ -194,7 +186,6 @@ private class PairMutableView(
   def addKeyValue(k: String, v: String): Unit = {
     requiredSingleChild(currentBackingObject, "value") match {
       case vm: MutableContainerTreeNode =>
-        //println(s"Adding to [${vm.value}]")
         val index = vm.value.lastIndexOf("\"")
         val split = vm.value.splitAt(index)
         val newContent = s"${jsonize(k)}: ${jsonize(v)}"
@@ -206,12 +197,8 @@ private class PairMutableView(
   override def toString = s"${currentBackingObject.nodeName}:${currentBackingObject.nodeType}:[${currentBackingObject.value}]"
 }
 
-
 /**
-  * Handle " surrounding JSON strings
-  *
-  * @param originalBackingObject
-  * @param parent
+  * Handle " surrounding JSON strings.
   */
 private class JsonStringView(
                               originalBackingObject: MutableTerminalTreeNode,

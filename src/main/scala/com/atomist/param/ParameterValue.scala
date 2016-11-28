@@ -24,4 +24,3 @@ object ParameterValueDeserializer extends JsonDeserializer[ParameterValue] {
     SimpleParameterValue(name, value)
   }
 }
-

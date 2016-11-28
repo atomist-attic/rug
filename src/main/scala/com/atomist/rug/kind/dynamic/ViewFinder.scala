@@ -7,7 +7,6 @@ import com.atomist.rug.spi.MutableView
 import com.atomist.source.ArtifactSource
 import org.springframework.util.ObjectUtils
 
-
 /**
   * Try to find children of this type in the given context
   */
@@ -25,7 +24,6 @@ trait ChildResolver {
     */
   def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]]
 }
-
 
 /**
   * Adapter making it possible to resolve children without context in a ViewFinder.

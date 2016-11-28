@@ -23,7 +23,6 @@ class TypeScriptGenerationHelper(indent: String = "    ")
        |*/""".stripMargin
   }
 
-
   def javaTypeToTypeScriptType(jt: String): String = {
     jt match {
       case "String" => "string"

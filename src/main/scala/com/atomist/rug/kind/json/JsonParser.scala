@@ -26,7 +26,6 @@ class JsonParser extends Parser {
   override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
     val raw = jsGrammar.parse(input, ml)
     val r = (RemovePadding andThen Prune)(raw)
-    println(r)
     r
   }
 }

@@ -38,20 +38,17 @@ class PathExpressionEngine extends ExpressionEngine {
   }
 
   override def evaluateParsed(node: TreeNode, parsed: PathExpression, nodePreparer: Option[NodePreparer]): ExecutionResult = {
-    println(parsed)
     // TODO can rewrite functionally?
     var r: ExecutionResult = ExecutionResult(List(node))
     for (e <- parsed.elements) {
       r = r match {
         case Right(n::Nil) =>
           val next = e.follow(n, nodePreparer.getOrElse(n => n))
-          println(s"Evaluated $e on ${show(n)} to get \n\t${ExecutionResult.show(next)}")
           next
         case Right(Nil) =>
           Right(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq.flatMap(kid => e.follow(kid, nodePreparer.getOrElse(n => n)).right.toOption).flatten
-          println(s"Evaluated $e on \n\t${seq.map(show(_)).mkString("\n\t")}\nto get ${kids.size}\n\t${kids.map(show(_)).mkString("\n\t")}")
           Right(kids.distinct)
         case failure@Left(msg) => failure
       }
@@ -60,7 +57,6 @@ class PathExpressionEngine extends ExpressionEngine {
   }
 
 }
-
 
 //case class DescentToChild(name: String) extends AxisSpecifier {
 //
@@ -72,8 +68,6 @@ class PathExpressionEngine extends ExpressionEngine {
 //    case x => Left(s"Cannot find property [$name] on non-container tree node [$x]")
 //  }
 //}
-
-
 
 //case class IndexAddress(index: Int) extends AxisSpecifier {
 //
@@ -88,8 +82,6 @@ class PathExpressionEngine extends ExpressionEngine {
 //      }
 //  }
 //}
-
-
 
 case class LocationStep(axis: AxisSpecifier, test: NodeTest, predicate: Option[Predicate] = None) {
 
@@ -113,5 +105,3 @@ case class PathExpression(
   require(elements.nonEmpty, s"Must have path some elements in PathExpression")
 
 }
-
-

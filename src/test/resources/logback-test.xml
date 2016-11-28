@@ -20,7 +20,7 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <logger name="com.atomist.rug.compiler" level="info" additivity="false">
+    <logger name="com.atomist.rug.compiler" level="error" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 

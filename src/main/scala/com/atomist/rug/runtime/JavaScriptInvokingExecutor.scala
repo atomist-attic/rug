@@ -18,11 +18,9 @@ class JavaScriptInvokingExecutor(
     if (className.endsWith("Executor")) className.dropRight("Executor".length)
     else className
 
-
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
     val smv = new ServicesMutableView(rugAs, serviceSource)
     //val reviewContext = new ReviewContext
     invokeMember("execute", smv, parameters)
   }
-
 }

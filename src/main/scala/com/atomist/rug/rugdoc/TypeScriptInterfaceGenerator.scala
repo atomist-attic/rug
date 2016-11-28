@@ -13,7 +13,6 @@ import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifact
 
 import scala.collection.mutable.ListBuffer
 
-
 object TypeScriptInterfaceGenerator {
 
   val DefaultTemplateName = "ts.vm"
@@ -86,7 +85,6 @@ class TypeScriptInterfaceGenerator(
 
   val typeSort: (Type,Type) => Boolean = (a,b) => a.name <= b.name
 
-
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
     //    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
     //    val templates = new SimpleFileBasedArtifactSource("template", StringFileArtifact(DefaultTemplateName, template))
@@ -141,10 +139,7 @@ class TypeScriptInterfaceGenerator(
       // TODO DON'T IMPLEMENT SUBCLASS METHOD TWICE and put in inheritance
       val parentType: Option[Type] =
         Option(t.underlyingType.getSuperclass)
-          .flatMap(sup => {
-            println(s"Checking superclass $sup of ${t.underlyingType}")
-            typeRegistry.kinds.find(_.underlyingType.equals(sup))
-          })
+          .flatMap(sup => typeRegistry.kinds.find(_.underlyingType.equals(sup)))
 
       clazzAncestry = clazzAncestry ++ parentType
 

@@ -82,7 +82,6 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         | do setValue "absquatulate"
       """.stripMargin
     val edited = updateWith(prog)
-    //println(edited)
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
@@ -97,8 +96,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         | do addKeyValue "foo" "bar"
       """.stripMargin
     val edited = updateWith(prog)
-    println(edited)
-    //edited should equal(packageJson.replace("foobar", "absquatulate"))
+    // edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
   // Return new content

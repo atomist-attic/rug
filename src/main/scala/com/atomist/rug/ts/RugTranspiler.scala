@@ -57,7 +57,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
-    //println(s"Emitted:\n$ts")
     ts.toString
   }
 
@@ -158,7 +157,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)}"
   }
 
-
   private def constructorCode(ed: RugEditor): String = {
     def argList = ed.runs.map(roo => {
       s"${JavaHelpers.lowerize(roo.name)}: ${roo.name}"
@@ -220,7 +218,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         idf.name
     case wfa: WrappedFunctionArg => extractValue(prog, wfa.te, outerAlias)
   }
-
 
   private def emit(rf: ParsedRegisteredFunctionPredicate, outerAlias: String): String = {
     outerAlias + "." + rf.function
@@ -290,4 +287,3 @@ case class RugTranspilerConfig(
                                 parametersVarName: String = "parameters",
                                 editMethodName: String = "edit"
                               )
-

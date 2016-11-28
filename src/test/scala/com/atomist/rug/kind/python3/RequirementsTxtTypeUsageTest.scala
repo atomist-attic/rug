@@ -15,7 +15,6 @@ class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       StringFileArtifact("requirements.txt", simple1)
     )
 
-
   def exec(program: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(program)

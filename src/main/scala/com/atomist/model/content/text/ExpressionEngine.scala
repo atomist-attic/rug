@@ -28,7 +28,6 @@ object ExpressionEngine {
 
 }
 
-
 trait ExpressionEngine {
 
   import ExpressionEngine._
@@ -48,4 +47,3 @@ trait ExpressionEngine {
   def evaluate(node: TreeNode, expression: String, nodePreparer: Option[NodePreparer] = None): ExecutionResult
 
 }
-

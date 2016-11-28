@@ -21,4 +21,3 @@ class ExecutorParsingTest extends FlatSpec with Matchers {
     new ParserCombinatorRugParser().parse(f)
   }
 }
-

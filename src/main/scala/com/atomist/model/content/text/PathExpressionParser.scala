@@ -30,7 +30,6 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private def test(extracted: Any, value: Any, n: TreeNode): Boolean = {
-    println(s"Testing expected [$value] against extracted [$extracted] on ${n.nodeName}:${n.nodeType}")
     value.equals(extracted)
   }
 
@@ -68,7 +67,6 @@ trait PathExpressionParser extends CommonTypesParser {
     case methodName ~ args ~ op ~ literal =>
       Predicate(s".$methodName", (n,among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
-        println(s"invoked=[$invoked], literal=[$literal]")
         ObjectUtils.equals(literal, invoked)
       })
   }
@@ -89,7 +87,6 @@ trait PathExpressionParser extends CommonTypesParser {
   private def truePredicate: Parser[Predicate] = "true" ^^ (_ => TruePredicate)
 
   private def falsePredicate: Parser[Predicate] = "false" ^^ (_ => FalsePredicate)
-
 
   private def predicateTerm: Parser[Predicate] = methodInvocationTest | propertyTest | booleanMethodInvocation |
     truePredicate | falsePredicate |
@@ -140,6 +137,5 @@ trait PathExpressionParser extends CommonTypesParser {
     parseTo(StringFileArtifact("<input>", expr), phrase(pathExpression))
   }
 }
-
 
 object PathExpressionParser extends PathExpressionParser

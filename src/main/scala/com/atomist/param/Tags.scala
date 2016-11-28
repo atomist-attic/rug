@@ -15,4 +15,3 @@ object Tags {
 
   val Web = Tag("web", "Web support")
 }
-

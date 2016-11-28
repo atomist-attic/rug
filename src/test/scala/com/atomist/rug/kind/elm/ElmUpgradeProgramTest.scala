@@ -30,7 +30,6 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
 
   }
 
-
   it should "find a module that exposes a thing explicitly" in {
 
     val elm =
@@ -55,13 +54,11 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
   }
 
   it should "find a module that exposes all things and defines this one" in {
-
     val elm=
       """module Main exposing (..)
         |
         |main = "Foo"
       """.stripMargin
-
 
     val editor=
       """editor Whatever
@@ -117,14 +114,12 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
         |    do renameModule "Carrot"
       """.stripMargin
 
-
     val source =
       StringFileArtifact("Main.elm", elm)
 
     an[ElmTypeUsageTest.TestDidNotModifyException] should be thrownBy {
       elmExecute(new SimpleFileBasedArtifactSource("", source), editor)
     }
-
   }
 
   it should "upgrade a beginner program" in {

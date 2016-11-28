@@ -74,7 +74,6 @@ object CommentsImpact extends Impact
 object ReadmeImpact extends Impact
 object DependenciesImpact extends Impact
 
-
 object Impacts {
 
   val UnknownImpacts = Set(ContractImpact, CodeImpact, ConfigImpact, TestsImpact, CommentsImpact, ReadmeImpact, DependenciesImpact)

@@ -40,7 +40,6 @@ class JavaClassType(evaluator: Evaluator)
         )
       case dmv: DirectoryArtifactMutableView =>
         val jpmv = JavaProjectMutableView(dmv.parent)
-        //println(s"childrenNames* are ${dmv.childrenNames},childNodeNames=${dmv.childNodeNames}")
         val filesInDir = dmv.childNodes
         val javaSourceFiles = filesInDir collect {
           case f: FileArtifactBackedMutableView if f.path.endsWith(JavaExtension) =>

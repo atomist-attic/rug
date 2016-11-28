@@ -84,7 +84,6 @@ trait IssueRouter {
   def raiseIssue(service: Service, issue: Issue): Unit
 }
 
-
 case class Issue(
                 name: String
                 )
@@ -95,4 +94,3 @@ object ConsoleIssueRouter extends IssueRouter {
     println(s"Raising issue [${issue.name}] against ${service.project.id}")
   }
 }
-

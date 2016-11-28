@@ -22,8 +22,6 @@ object ViewTree {
       }
     })
 
-    //println("Corresponds=" + of.fieldValues.zip(filtered1))
-
     val filtered = filtered1.flatten.map(t).flatten
     // TODO this is a bit ugly
     val _fieldValues = ListBuffer.empty[TreeNode]

@@ -6,30 +6,26 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.{ParserCombinatorRugParser, RugParser}
 import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-
-
+import com.atomist.source.{ArtifactSource, FileArtifact}
 
 /**
   * Build executable ProjectOperations from Rug archives
   * Rug scripts must be in .atomist/editors directory
   *
-  * @param parser   parser to use
+  * @param parser parser to use
   * @param compiler compiler to use
   */
 class InterpreterRugPipeline(
-                   parser: RugParser,
-                   compiler: RugCompiler,
-                   val atomistConfig: AtomistConfig)
+                              parser: RugParser,
+                              compiler: RugCompiler,
+                              val atomistConfig: AtomistConfig)
   extends RugPipeline {
-
-  import InterpreterRugPipeline._
 
   @throws[BadRugException]
   @throws[IllegalArgumentException]
   override def create(rugArchive: ArtifactSource,
-             namespace: Option[String],
-             knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
+                      namespace: Option[String],
+                      knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
     val rugCompilationUnits = parseRugFiles(rugArchive)
     compileRugPrograms(rugCompilationUnits, rugArchive, namespace, knownOperations)
   }
@@ -87,7 +83,6 @@ class InterpreterRugPipeline(
         f, progs)
     }
   }
-
 }
 
 object InterpreterRugPipeline {

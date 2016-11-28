@@ -42,7 +42,6 @@ class RugDrivenExecutor(
     }
   }
 
-
   override protected def doStepHandler(rugAs: ArtifactSource,
                                        as: ArtifactSource,
                                        reviewContext: ReviewContext,

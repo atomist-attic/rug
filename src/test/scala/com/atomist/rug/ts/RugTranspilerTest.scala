@@ -17,7 +17,6 @@ class RugTranspilerTest extends FlatSpec with Matchers {
     val progs = rugParser.parse(EqualsLiteralStringInPredicate)
     val prog = progs.head
     val ts = transpiler.emit(progs)
-    //println(ts)
     verify(prog, ts)
   }
 

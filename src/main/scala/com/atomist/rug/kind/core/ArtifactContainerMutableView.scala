@@ -3,7 +3,6 @@ package com.atomist.rug.kind.core
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
 import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
 
-
 object ArtifactContainerMutableView {
 
   val FileAlias = "file"
@@ -13,7 +12,6 @@ object ArtifactContainerMutableView {
 }
 
 import com.atomist.rug.kind.core.ArtifactContainerMutableView._
-
 
 abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
                                                                      originalBackingObject: T,
@@ -35,7 +33,6 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
     case DirectoryAlias =>
       currentBackingObject.allDirectories.view.map(d => new DirectoryArtifactMutableView(d, parent))
     case maybeContainedArtifactName =>
-      //println(s"Looking for $maybeContainedArtifactName in $parent")
       val arts = currentBackingObject.artifacts.filter(_.name.equals(maybeContainedArtifactName))
       arts.map {
         case d : DirectoryArtifact => new DirectoryArtifactMutableView(d, parent)
@@ -55,10 +52,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   def directoryExists(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
                       path: String): Boolean = currentBackingObject.findDirectory(path).isDefined
-
-
 }
-
 
 class DirectoryArtifactMutableView(
                                     originalBackingObject: DirectoryArtifact,
@@ -71,7 +65,6 @@ class DirectoryArtifactMutableView(
     description = "Return the name of the directory")
   override def name: String = {
     val n = currentBackingObject.name
-    //println(s"Returning name $n for $this")
     n
   }
 

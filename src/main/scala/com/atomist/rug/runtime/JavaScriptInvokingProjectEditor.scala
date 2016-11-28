@@ -57,6 +57,4 @@ class JavaScriptInvokingProjectEditor(
     logger.debug(s"$name modifyInternal took ${tr._2}ms")
     tr._1
   }
-
 }
-

@@ -115,9 +115,8 @@ abstract class AbstractMutableContainerTreeNode(
       val content = initialSource.substring(endPosition.offset)
       if (content.nonEmpty) {
         val pn = PaddingNode("End", content)
-        //println("Adding padding " + pn)
         fieldResults.append(pn)
-        //assertPaddingInvariants(initialSource)
+        // assertPaddingInvariants(initialSource)
       }
     }
     this._fieldValues = fieldResults

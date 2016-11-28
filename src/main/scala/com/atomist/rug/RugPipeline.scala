@@ -52,5 +52,3 @@ trait RugPipeline {
   @throws[BadRugPackagingException]
   def validatePackaging(rugFiles: Seq[FileArtifact], f: FileArtifact, progs: Seq[RugProgram]): Unit
 }
-
-

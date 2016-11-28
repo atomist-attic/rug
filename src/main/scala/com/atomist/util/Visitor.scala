@@ -10,11 +10,7 @@ import scala.collection.mutable.ListBuffer
 trait Visitor {
 
   /**
-    * Boolean is whether this visit wants to visit the children of the current node, if any
-    *
-    * @param v
-    * @param depth
-    * @return
+    * Boolean is whether this visit wants to visit the children of the current node, if any.
     */
   def visit(v: Visitable, depth: Int): Boolean
 }
@@ -23,7 +19,6 @@ trait Visitable {
 
   def accept(v: Visitor, depth: Int)
 }
-
 
 /**
   * Visitor support that avoids cycles by tracking
@@ -45,7 +40,6 @@ trait CycleAvoidingVisitor extends Visitor {
 
   protected def visitInternal(v: Visitable, depth: Int): Boolean
 }
-
 
 /**
   * Visitor implementation that saves all descendants. Do not use on huge trees!

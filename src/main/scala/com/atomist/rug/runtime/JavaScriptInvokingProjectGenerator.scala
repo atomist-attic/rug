@@ -25,7 +25,6 @@ class JavaScriptInvokingProjectGenerator(
     if (className.endsWith("Generator")) className.dropRight("Generator".length)
     else className
 
-
   @throws(classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     validateParameters(poa)

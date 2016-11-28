@@ -92,7 +92,6 @@ trait TerminalTreeNode extends TreeNode {
 case class SimpleTerminalTreeNode(nodeName: String, value: String, nodeType: String = "literal")
   extends TerminalTreeNode
 
-
 /**
   * Convenient class for padding nodes
   * @param description description of what's being padded
@@ -103,5 +102,4 @@ case class PaddingNode(description: String, value: String) extends TerminalTreeN
   override def nodeName = s"padding:$description"
 
   override def nodeType = "padding"
-
 }

@@ -41,14 +41,11 @@ class HandlerTest extends FlatSpec with Matchers {
       jsc.eval(ts)
     }
   }
-
 }
-
 
 class AtomistFacade {
 
   def on(s: String, handler: Any): Unit = {
-    println(s"Got back to ScalaFacade with $s")
     handler match {
       case som: ScriptObjectMirror =>
         val arg = Match(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())

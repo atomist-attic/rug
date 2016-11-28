@@ -14,7 +14,6 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("f1", "The", OffsetInputPosition(0))
     val f2 = new MutableTerminalTreeNode("f2", "quick", OffsetInputPosition(4))
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, f2), input)
-    println(mc)
     mc.childNodes.exists(cn => cn.isInstanceOf[PaddingNode]) should be (true)
     val transformed = RemovePadding(mc)
     transformed.childNodes.exists(cn => cn.isInstanceOf[PaddingNode]) should be (false)
@@ -27,10 +26,8 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     val empty = new SimpleMutableContainerTreeNode("empty", Seq(f2), f2.startPosition, f2.endPosition)
 
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, empty), input)
-    println(mc)
     mc.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (true)
     val transformed = Flatten(mc)
-    //println("transformed=" + transformed)
     transformed.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (false)
   }
 
@@ -41,10 +38,8 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     val empty = new SimpleMutableContainerTreeNode("empty", Seq(f2), f2.startPosition, f2.endPosition)
 
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, empty), input)
-    println(mc)
     mc.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (true)
     val transformed = (collapse("empty"))(mc)
-    //println("transformed=" + transformed)
     transformed.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (false)
   }
 
@@ -55,7 +50,6 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     val empty = new SimpleMutableContainerTreeNode("empty", Seq(f2), f2.startPosition, f2.endPosition)
 
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, empty), input)
-    println(mc)
     mc.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (true)
     val transformed = Flatten(mc)
     transformed.value should equal (input)

@@ -15,7 +15,6 @@ trait NodeTest {
 
 }
 
-
 /**
   * Convenience superclass that uses a predicate to handle sourced nodes
   *
@@ -41,13 +40,11 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     case Child => tn match {
       case ctn: ContainerTreeNode =>
         val kids = ctn.childNodes.toList
-        println(s"$this produced $kids: Kid names were [${ctn.childNodeNames}]")
         Right(kids)
       case x => ExecutionResult.empty
     }
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
-      //println(s"$this produced $kids: Kid names were [${ctn.childNodeNames}]")
       Right(kids)
     case DescendantOrSelf =>
       sourceNodes(tn, Descendant) match {
@@ -57,9 +54,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   }
 }
 
-
 object All extends PredicatedNodeTest("All", TruePredicate)
-
 
 case class NamedNodeTest(name: String)
   extends NodeTest {
@@ -74,13 +69,10 @@ case class NamedNodeTest(name: String)
                 TreeNodeOperations.invokeMethodIfPresent[TreeNode](tn, name).
                   map {
                     case s: List[TreeNode] =>
-                      println(s"Found $s from method [$name]")
                       s
                     case t: TreeNode =>
-                      println(s"Found $t from method [$name], wrapping in method")
                       List(t)
                     case x =>
-                      println(s"WTF should I do with $x from method [$name]")
                       Nil
                   }.getOrElse {
                   val allKids = ctn.childNodes
@@ -89,7 +81,6 @@ case class NamedNodeTest(name: String)
                 }
               case l => l
             }
-          println(s"$this produced $kids: Kid names were [${ctn.childNodeNames}]")
           Right(kids)
         case x => Left(s"Cannot find property [$name] on non-container tree node [$x]")
       }
@@ -136,8 +127,7 @@ case class TypeJump(typeName: String) extends NodeTest {
           Right(List(mv))
         case x =>
           // val kids: Seq[TreeNode] = childResolver.findAllIn(x.p).getOrElse(Nil)
-          //println(s"Descending from $tn to [$typeName] to get $kids")
-          //ExecutionResult(kids)
+          // ExecutionResult(kids)
           ???
         case x => Left(s"Cannot find nodes of type name [$typeName] on non-view tree node [$x]")
       }
@@ -145,7 +135,6 @@ case class TypeJump(typeName: String) extends NodeTest {
       tn match {
         case mv: MutableView[_] =>
           val kids: Seq[TreeNode] = childResolver.findAllIn(mv).getOrElse(Nil)
-          println(s"Descending from $tn to [$typeName] to get $kids")
           ExecutionResult(kids)
         case x => Left(s"Cannot find nodes of type name [$typeName] on non-view tree node [$x]")
       }
@@ -153,7 +142,6 @@ case class TypeJump(typeName: String) extends NodeTest {
       tn match {
         case mv: MutableView[_] =>
           val kids: Seq[TreeNode] = childResolver.findAllIn(mv).getOrElse(Nil)
-          println(s"Descending from $tn to [$typeName] to get $kids")
           ExecutionResult(kids)
         case x => Left(s"Cannot find nodes of type name [$typeName] on non-view tree node [$x]")
       }

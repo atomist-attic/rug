@@ -27,7 +27,6 @@ class BidirectionalParametersProxy(poa: ProjectOperationArguments) extends Abstr
     val resolved: ParameterValue = poa.parameterValueMap.getOrElse(
       name,
       throw new RugRuntimeException(null, s"Cannot resolve parameter [$name]"))
-    //println(s"Call to getMember with [$name]")
 
     // The below is what you use for a function
     //    new AbstractJSObject() {

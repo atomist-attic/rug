@@ -11,7 +11,6 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
   override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
 
-
   // Note that we do not support .endsWith
   it should "execute simple program with parameters, simple JavaScript file function and transform function using default type " in {
     val goBowling =
@@ -31,7 +30,6 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 }
-
 
 /**
   * Uses the old interpreter
@@ -150,7 +148,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling)
   }
-
 
   it should "execute simple program with parameters, simple JavaScript file function using computed value and transform function" in {
     val goBowling =
@@ -317,7 +314,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     val expected = originalFile.content.replace("Dog", "2")
     simpleAppenderProgramExpectingParameters(goBowling, Some(expected))
   }
-
 
   it should "execute simple program with template interpretation" in {
     val JavaAndTemplate: ArtifactSource = new SimpleFileBasedArtifactSource("name",

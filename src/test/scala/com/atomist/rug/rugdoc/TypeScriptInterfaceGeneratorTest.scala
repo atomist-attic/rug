@@ -18,15 +18,11 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
       Map(OutputPathParam -> ".atomist/editors/Interfaces.ts")))
     output.allFiles.size should be(1)
     val d = output.allFiles.head
-    //println("The path is "  + d.path)
-    //println(d.content)
-
     val compiled = tsc.compile(output)
     val js = compiled.allFiles.find(_.name.endsWith(".js")).get
   }
 
 }
-
 
 /**
   * Use this to actually generate interfaces. Of course, we

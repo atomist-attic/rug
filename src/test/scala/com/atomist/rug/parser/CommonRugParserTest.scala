@@ -49,7 +49,6 @@ object CommonRugParserTest {
        | append what
       """.stripMargin
 
-
   val ParamWithMinAndMax =
     s"""
        |editor Triplet

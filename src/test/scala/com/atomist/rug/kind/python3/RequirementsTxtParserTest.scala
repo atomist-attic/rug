@@ -78,7 +78,6 @@ class RequirementsTxtParserTest extends FlatSpec with Matchers {
     reqs.requirements.exists(_.packageName.value.equals("the_new_thing")) should be(true)
   }
 
-
   it should "parse without versions" in {
     val reqs = parsesOk(noVersions)
     reqs.requirements.size should be(3)

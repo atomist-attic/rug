@@ -9,7 +9,6 @@ class JsonParserTest extends FlatSpec with Matchers {
   it should "parse simple JSON" in {
     val jsp = new JsonParser
     val parsed = jsp.parse(simple)
-    println(parsed)
   }
 
 //  it should "support path find" in {
@@ -20,9 +19,7 @@ class JsonParserTest extends FlatSpec with Matchers {
 //    val rtn = ee.evaluate(parsed, expr)
 //    rtn.right.get.size should be (1)
 //  }
-
 }
-
 
 object JsonParserTest {
 

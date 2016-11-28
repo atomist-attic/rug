@@ -11,7 +11,6 @@ import org.scalatest.{Matchers, FlatSpec}
 import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
 
-
 abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
   protected def pipeline: RugPipeline
@@ -141,8 +140,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
-
-
 
   it should "execute simple program with parameters and transform function using computed identifier" in {
     val goBowling =

@@ -103,7 +103,6 @@ class RequirementsTxtMutableView(
 
 }
 
-
 class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMutableView)
   extends ViewSupport[Requirement](requirement, parent) {
 

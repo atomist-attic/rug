@@ -3,6 +3,8 @@
 set -eu
 set -o pipefail
 
+MAVEN_OPTS="-Xmx2g"
+
 mvn="mvn --settings .settings.xml -B -V"
 if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     $mvn build-helper:parse-version versions:set -DnewVersion="$TRAVIS_TAG" versions:commit

@@ -20,7 +20,7 @@ private[elm] object ElmParserCombinator
   val DashDashLineComment = """\-\-.*\n"""
 
   // this set is actually dynamic but we can just hard-code the ones we know about for now
-  val InfixOperators: Seq[Parser[String]] = Seq("++", "+", "!", "-", "//", "/", "*", "==", "::")
+  val ElmInfixOperators: Seq[Parser[String]] = Seq("++", "+", "!", "-", "//", "/", "*", "==", "::", "<<", ">>")
 
   val ElmCommentsWhiteSpace =
     ("""(\s|""" + DashDashLineComment + "|" + ElmMultilineComment + ")+").r
@@ -187,7 +187,7 @@ private[elm] object ElmParserCombinator
       case left ~ op ~ right => ElmInfixFunctionApplication(left, op, right)
     }
 
-    def infixOperator: Parser[ElmInfixOperator] = mutableTerminalNode("infix-operator", oneOfThese(InfixOperators)) ^^ {
+    def infixOperator: Parser[ElmInfixOperator] = mutableTerminalNode("infix-operator", oneOfThese(ElmInfixOperators)) ^^ {
       usfv: MutableTerminalTreeNode => new MutableTerminalTreeNode(usfv) with ElmInfixOperator {
         def id = value
       }

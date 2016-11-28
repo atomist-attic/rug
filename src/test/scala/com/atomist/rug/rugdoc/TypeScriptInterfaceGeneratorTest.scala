@@ -2,7 +2,6 @@ package com.atomist.rug.rugdoc
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {

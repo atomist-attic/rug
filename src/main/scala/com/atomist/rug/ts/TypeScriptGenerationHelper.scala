@@ -31,6 +31,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "void" => "void"
       case "Object" => "any"
       case "List" => "any[]" // TODO improve this
+      case "FileArtifactMutableView" => "File"   // TODO this is nasty
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }

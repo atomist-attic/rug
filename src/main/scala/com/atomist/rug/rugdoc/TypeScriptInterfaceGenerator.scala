@@ -52,8 +52,6 @@ class TypeScriptInterfaceGenerator(
                                   ) extends ProjectGenerator
   with ProjectEditor with ProjectOperationParameterSupport {
 
-  import TypeScriptInterfaceGenerator._
-
   val helper = new TypeScriptGenerationHelper()
 
   import TypeScriptInterfaceGenerator._

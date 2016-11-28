@@ -48,8 +48,8 @@
         </dependency>
         <dependency>
             <groupId>com.atomist</groupId>
-            <artifactId>typescript-rug-compiler</artifactId>
-            <version>0.1.1-20161128110336</version>
+            <artifactId>rug-typescript-compiler</artifactId>
+            <version>0.1.1-20161128225259</version>
         </dependency>
         <dependency>
             <groupId>com.github.julianthome</groupId>

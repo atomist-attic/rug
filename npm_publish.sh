@@ -40,7 +40,7 @@ if [[ -z ${NPMJS_API_KEY} ]]; then
    echo "Assuming your ~/.npmrc is setup correctly for this project"
 else
    echo "Creating local .npmrc using API key from environment"
-   echo "registry.npmjs.org/:_authToken=${NPMJS_API_KEY}" > .npmrc
+   echo "//registry.npmjs.org/:_authToken=${NPMJS_API_KEY}" > ~/.npmrc
 fi
 
 # npm honors this

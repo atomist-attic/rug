@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-      
+    
 /*
  * Docker file type
  */
@@ -98,8 +98,8 @@ interface Dockerfile {
  */
 interface ElmModule {
 
-    //arg0: string
-    addFunction(arg0: string): void
+    //body: string
+    addFunction(body: string): void
 
     //importStatement: string
     addImportStatement(importStatement: string): void
@@ -134,8 +134,8 @@ interface ElmModule {
     //msg: string
     println(msg: string): void
 
-    //arg0: string
-    removeFunction(arg0: string): void
+    //name: string
+    removeFunction(name: string): void
 
     //newName: string
     rename(newName: string): void
@@ -271,8 +271,8 @@ interface JavaClass {
     //annotation: string
     hasAnnotation(annotation: string): boolean
 
-    //arg0: string
-    inheritsFrom(arg0: string): boolean
+    //simpleName: string
+    inheritsFrom(simpleName: string): boolean
 
 
     isAbstract(): boolean
@@ -302,8 +302,8 @@ interface JavaClass {
     //replacement: string
     renameByReplace(target: string, replacement: string): void
 
-    //arg0: string
-    setHeaderComment(arg0: string): void
+    //comment: string
+    setHeaderComment(comment: string): void
 
 }   // interface JavaClass
 
@@ -362,9 +362,9 @@ interface JavaProject {
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: string
-    //arg1: any
-    editWith(arg0: string, arg1: any): void
+    //editorName: string
+    //params: any
+    editWith(editorName: string, params: any): void
 
     //msg: string
     fail(msg: string): void
@@ -385,6 +385,9 @@ interface JavaProject {
 
 
     files(): any[]
+
+    //path: string
+    findFile(path: string): File
 
 
     isMaven(): boolean
@@ -729,8 +732,8 @@ interface Xml {
     println(msg: string): void
 
     //xpath: string
-    //arg1: string
-    setTextContentFor(xpath: string, arg1: string): void
+    //newContent: string
+    setTextContentFor(xpath: string, newContent: string): void
 
     //root: string
     underPath(root: string): boolean
@@ -907,8 +910,8 @@ interface Pom {
     setProjectName(newName: string): void
 
     //xpath: string
-    //arg1: string
-    setTextContentFor(xpath: string, arg1: string): void
+    //newContent: string
+    setTextContentFor(xpath: string, newContent: string): void
 
     //newVersion: string
     setVersion(newVersion: string): void
@@ -980,9 +983,9 @@ interface Project {
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: string
-    //arg1: any
-    editWith(arg0: string, arg1: any): void
+    //editorName: string
+    //params: any
+    editWith(editorName: string, params: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1003,6 +1006,9 @@ interface Project {
 
 
     files(): any[]
+
+    //path: string
+    findFile(path: string): File
 
     //path: string
     moveUnder(path: string): void
@@ -1258,6 +1264,9 @@ interface Services {
     //msg: string
     println(msg: string): void
 
+
+    services(): any[]
+
 }   // interface Services
 
 
@@ -1328,9 +1337,9 @@ interface SpringBootProject {
     //path: string
     directoryExists(path: string): boolean
 
-    //arg0: string
-    //arg1: any
-    editWith(arg0: string, arg1: any): void
+    //editorName: string
+    //params: any
+    editWith(editorName: string, params: any): void
 
     //msg: string
     fail(msg: string): void
@@ -1351,6 +1360,9 @@ interface SpringBootProject {
 
 
     files(): any[]
+
+    //path: string
+    findFile(path: string): File
 
 
     isMaven(): boolean
@@ -1427,9 +1439,9 @@ interface Yml {
     //root: string
     underPath(root: string): boolean
 
-    //arg0: string
-    //arg1: string
-    updateKey(arg0: string, arg1: string): void
+    //name: string
+    //value: string
+    updateKey(name: string, value: string): void
 
     //name: string
     valueOf(name: string): any

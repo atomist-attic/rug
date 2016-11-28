@@ -37,7 +37,13 @@ class YmlMutableView(
     * Does nothing if it doesn't exist.
     */
   @ExportFunction(readOnly = false, description = "Update the value of a given key")
-  def updateKey(name: String, value: String): Unit = {
+  def updateKey(
+                 @ExportFunctionParameterDescription(name = "name",
+                   description = "Name of the key to update")
+                 name: String,
+                 @ExportFunctionParameterDescription(name = "value",
+                   description = "New value for the key")
+                 value: String): Unit = {
     val oldValue = model.dump(name).map(oldval => {
       model.setKey(name, value)
       val dumped: String = model.dump(name).get

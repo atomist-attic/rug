@@ -3,7 +3,7 @@ package com.atomist.rug.kind.elm
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView
 import com.atomist.rug.kind.elm.ElmModel.{AllExposing, FunctionNamesExposing}
-import com.atomist.rug.spi._
+import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
 import com.atomist.source.FileArtifact
 
 /**
@@ -51,7 +51,7 @@ class ElmModuleMutableView(
   @ExportFunction(readOnly = false, description = "Change the name of the module")
   def rename(@ExportFunctionParameterDescription(name = "newName",
     description = "The module name to change to")
-                       newName: String): Unit = {
+             newName: String): Unit = {
     logger.debug(s"Renamed module ${em.nodeName} to $newName")
     em.nameField.update(newName)
     this.setName(s"$newName.elm")
@@ -60,7 +60,7 @@ class ElmModuleMutableView(
   @ExportFunction(readOnly = false, description = "Replace the exposing")
   def replaceExposing(@ExportFunctionParameterDescription(name = "newExposing",
     description = "New content of exposing. Does not include exposing keyword. Will be either a CSV list or ..")
-             newExposing: String): Unit = {
+                      newExposing: String): Unit = {
     em.replaceExposing(newExposing)
   }
 
@@ -87,13 +87,19 @@ class ElmModuleMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Add a function with the given declaration")
-  def addFunction(body: String): Unit = {
+  def addFunction(
+                   @ExportFunctionParameterDescription(name = "body",
+                     description = "Body for the function")
+                   body: String): Unit = {
     em.addFunctionBody(body)
   }
 
   @ExportFunction(readOnly = false,
     description = "Remove a function with the given name")
-  def removeFunction(name: String): Unit = {
+  def removeFunction(
+                      @ExportFunctionParameterDescription(name = "name",
+                        description = "Name of the function to remove")
+                      name: String): Unit = {
     em.removeFunction(name)
   }
 

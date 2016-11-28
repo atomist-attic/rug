@@ -91,13 +91,13 @@ class XmlMutableView(
   @ExportFunction(readOnly = false, description = "Add the specified content under the indicated xpath-selected node")
   private def addChildNode(@ExportFunctionParameterDescription(name = "xpath",
     description = "The XPath selector for the node to add the content under")
-                   xpath: String,
-                   @ExportFunctionParameterDescription(name = "newNode",
-                     description = "The new node name to be added as a child")
-                   newNode: String,
-                   @ExportFunctionParameterDescription(name = "nodeContent",
-                     description = "XML document to be added under the indicated node")
-                   nodeContent: String): Unit = {
+                           xpath: String,
+                           @ExportFunctionParameterDescription(name = "newNode",
+                             description = "The new node name to be added as a child")
+                           newNode: String,
+                           @ExportFunctionParameterDescription(name = "nodeContent",
+                             description = "XML document to be added under the indicated node")
+                           nodeContent: String): Unit = {
     val xmlDocument = stringToDocument(currentContent)
 
     val nodesList: NodeList = executeXPathExpression(xpath, xmlDocument)
@@ -111,8 +111,8 @@ class XmlMutableView(
 
   @ExportFunction(readOnly = false, description = "Adds or replaces a node")
   def addOrReplaceNode(@ExportFunctionParameterDescription(name = "parentNodeXPath",
-                          description = "The XPath selector for the parent node")
-                          xpathOfParent: String,
+    description = "The XPath selector for the parent node")
+                       xpathOfParent: String,
                        @ExportFunctionParameterDescription(name = "xPathOfNodeToReplace",
                          description = "The XPath selector for the node to replace")
                        xPathOfNodeToReplace: String,
@@ -173,6 +173,8 @@ class XmlMutableView(
   def setTextContentFor(@ExportFunctionParameterDescription(name = "xpath",
     description = "The XPath to use to set the test content")
                         xpath: String,
+                        @ExportFunctionParameterDescription(name = "newContent",
+                          description = "New text content for the XPath")
                         newContent: String): Unit = {
     val xmlDocument = stringToDocument(currentContent)
     val nodesList: NodeList = executeXPathExpression(xpath, xmlDocument)

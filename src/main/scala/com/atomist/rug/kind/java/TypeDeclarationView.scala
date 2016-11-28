@@ -16,7 +16,10 @@ abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: 
   def name: String = currentBackingObject.getName
 
   @ExportFunction(readOnly = false, description = "Add or replace header comment for this type")
-  def setHeaderComment(comment: String): Unit = {
+  def setHeaderComment(
+                        @ExportFunctionParameterDescription(name = "comment",
+                          description = "New header comment to set")
+                        comment: String): Unit = {
     currentBackingObject.setComment(new BlockComment(comment))
   }
 

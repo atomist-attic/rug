@@ -409,13 +409,19 @@ class ProjectMutableView(
     }
   }
 
-  protected def editWith(editorName: String, params: Map[String,Object]): Unit = {
+  protected def editWith(editorName: String, params: Map[String, Object]): Unit = {
     editWith(editorName, params, this.context)
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
-  protected def editWith(editorName: String, params: Any): Unit = {
-    val m: Map[String,Object] = params match {
+  protected def editWith(
+                          @ExportFunctionParameterDescription(name = "editorName",
+                            description = "Name of the editor to invoke")
+                          editorName: String,
+                          @ExportFunctionParameterDescription(name = "params",
+                            description = "Parameters to pass to the editor")
+                          params: Any): Unit = {
+    val m: Map[String, Object] = params match {
       case bdp: BidirectionalParametersProxy =>
         bdp.allMemberValues
     }

@@ -85,7 +85,9 @@ class TypeScriptInterfaceGenerator(
       .mkString("\n")
   }
 
-  private def emitParameter(p: TypeParameter): String = {
+  private def emitParameter(t: Type, top: TypeOperation, p: TypeParameter): String = {
+    if (p.name.startsWith("arg"))
+      System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${top.name} has no name annotation")
     s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
   }
 
@@ -103,7 +105,7 @@ class TypeScriptInterfaceGenerator(
           val comment = emitDocComment(op)
           val params =
             for (p <- op.parameters)
-              yield emitParameter(p)
+              yield emitParameter(t, op, p)
           output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}\n\n"
         }
     }

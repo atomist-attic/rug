@@ -47,7 +47,10 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
   }
 
   @ExportFunction(readOnly = true, description = "Does this type extend the given type?")
-  def inheritsFrom(simpleName: String): Boolean = {
+  def inheritsFrom(
+                    @ExportFunctionParameterDescription(name = "simpleName",
+                      description = "Simple name of the ancestor class we're looking for")
+                    simpleName: String): Boolean = {
     currentBackingObject.getExtends.exists(t => t.getName.equals(simpleName))
   }
 }

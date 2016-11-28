@@ -1,13 +1,12 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.model.content.text.{MutableContainerTreeNode, MutableTreeNode, TreeNode, TreeNodeUtils}
+import com.atomist.model.content.text.TreeNodeFinders._
+import com.atomist.model.content.text.{MutableContainerTreeNode, MutableTreeNode, TreeNode}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
-import com.atomist.rug.spi.{ExportFunction, MutableView, ViewSupport}
+import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
 import com.atomist.source.FileArtifact
-import PythonType._
-import com.atomist.model.content.text.TreeNodeFinders._
 
 class PythonFileMutableView(
                              originalBackingObject: FileArtifact,
@@ -34,15 +33,18 @@ class PythonFileMutableView(
   }
 
   @ExportFunction(readOnly = false, description = "Append content")
-  def append(newContent: String): Unit = {
+  def append(
+              @ExportFunctionParameterDescription(name = "newContent",
+                description = "Content to append to the file")
+              newContent: String): Unit = {
     val appended = currentContent + "\n" + newContent
     currentParsed = pythonParser.parse(appended)
   }
 }
 
 class ImportMutableView(
-                      originalBackingObject: MutableContainerTreeNode,
-                      parent: PythonFileMutableView)
+                         originalBackingObject: MutableContainerTreeNode,
+                         parent: PythonFileMutableView)
   extends ViewSupport[MutableContainerTreeNode](originalBackingObject, parent) {
 
   override def nodeName: String = "import"

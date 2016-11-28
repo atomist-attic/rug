@@ -11,8 +11,8 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 import PythonType._
 
 class RequirementsType(
-                           evaluator: Evaluator
-                         )
+                        evaluator: Evaluator
+                      )
   extends Type(evaluator)
     with ReflectivelyTypedType {
 
@@ -46,11 +46,12 @@ class RequirementsType(
 
 /**
   * Type for Python requirements.txt
+  *
   * @param evaluator used to evaluate expressions
   */
 class RequirementsTxtType(
-                  evaluator: Evaluator
-                )
+                           evaluator: Evaluator
+                         )
   extends RequirementsType(evaluator) {
 
   def this() = this(DefaultEvaluator)
@@ -75,8 +76,8 @@ class RequirementsTxtType(
 }
 
 class RequirementsTxtMutableView(
-                             originalBackingObject: FileArtifact,
-                             parent: ProjectMutableView)
+                                  originalBackingObject: FileArtifact,
+                                  parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
   lazy val originalParsed = RequirementsTxtParser.parseFile(originalBackingObject.content)
@@ -95,11 +96,11 @@ class RequirementsTxtMutableView(
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
-//  @ExportFunction(readOnly = false, description = "Append content")
-//  def append(newContent: String): Unit = {
-//    val appended = currentContent + "\n" + newContent
-//    currentParsed = pythonParser.parse(appended)
-//  }
+  //  @ExportFunction(readOnly = false, description = "Append content")
+  //  def append(newContent: String): Unit = {
+  //    val appended = currentContent + "\n" + newContent
+  //    currentParsed = pythonParser.parse(appended)
+  //  }
 
 }
 
@@ -115,7 +116,10 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
   override def nodeName: String = RequirementAlias
 
   @ExportFunction(readOnly = false, description = "Set version")
-  def setVersion(newVersion: String): Unit = {
+  def setVersion(
+                  @ExportFunctionParameterDescription(name = "newVersion",
+                    description = "New version to set")
+                  newVersion: String): Unit = {
     requirement.update(newVersion)
   }
 

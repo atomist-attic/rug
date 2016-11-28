@@ -16,7 +16,8 @@
     "url": "https://github.com/atomist/user-model/issues"
   },
   "homepage": "https://github.com/atomist/user-model#readme",
-  "binary-dependencies": {
-      "com.atomist:rug-lib": "1.4.1"
-    }
+  "atomist" : {
+    "group": "com.atomist",
+    "artifact": "rug"
+  }
 }

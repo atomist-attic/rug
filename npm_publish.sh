@@ -16,7 +16,7 @@ fi
 if  [[ $TRAVIS == true ]]; then
    echo "Running on travis. Downloading node..."
    wget "https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz"
-   tar -zxvf node-${NODE_VERSION}-linux-x64.tar.xz
+   tar -xJvf node-${NODE_VERSION}-linux-x64.tar.xz || die "Unable to extract archive"
    PATH="${PATH}:./node-${NODE_VERSION}-linux-x64/bin"
 fi
 

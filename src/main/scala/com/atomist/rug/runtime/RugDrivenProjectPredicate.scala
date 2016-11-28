@@ -13,19 +13,12 @@ import com.atomist.source.ArtifactSource
 
 /**
   * A Rug predicate enables use of Rug matching and navigation syntax to return true/false results.
-  * A predicate returns true if its with clause matches anything. Eg
+  * A predicate returns true if its with clause matches anything. For example:
   *
   * <code>
   *   predicate Foo
   *   with file f when path = "ThisIsTheDroidYouAreLookingFor"
   * </code>
-  *
-  * @param evaluator
-  * @param viewFinder
-  * @param program
-  * @param rugAs
-  * @param kindRegistry
-  * @param namespace
   */
 class RugDrivenProjectPredicate(
                                  val evaluator: Evaluator,
@@ -75,5 +68,4 @@ class RugDrivenProjectPredicate(
   }
 
   override def computations: Seq[Computation] = program.computations
-
 }

@@ -7,7 +7,7 @@ import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.spi.{StaticTypeInformation, Type, TypeOperation, TypeRegistry}
+import com.atomist.rug.spi._
 import com.atomist.rug.ts.TypeScriptGenerationHelper
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 
@@ -72,14 +72,27 @@ class TypeScriptInterfaceGenerator(
       "eval".equals(top.name)
       )
 
+  private def emitDocComment(t: Type): String = {
+    s"""
+       |/*
+       | * ${t.description}
+       | */""".stripMargin
+  }
+
+  private def emitDocComment(top: TypeOperation): String = {
+    (for (p <- top.parameters)
+      yield s"$indent//${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}")
+      .mkString("\n")
+  }
+
+  private def emitParameter(p: TypeParameter): String = {
+    s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
+  }
+
   private def generateType(t: Type): String = {
     val output = new StringBuilder("")
     val tsName = helper.typeScriptClassNameForTypeName(t.name)
-    output.++=(
-      s"""
-         |/*
-         | * ${t.description}
-         | */""".stripMargin)
+    output ++= emitDocComment(t)
     output.++=(s"\ninterface $tsName {\n\n")
     t.typeInformation match {
       case s: StaticTypeInformation =>
@@ -87,13 +100,11 @@ class TypeScriptInterfaceGenerator(
           op <- s.operations
           if shouldEmit(op)
         } {
-          val comment =
-            for (p <- op.parameters)
-              yield s"$indent//${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
+          val comment = emitDocComment(op)
           val params =
             for (p <- op.parameters)
-              yield s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
-          output ++= s"${comment.mkString("\n")}\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}\n\n"
+              yield emitParameter(p)
+          output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}\n\n"
         }
     }
     output ++= s"}${indent.dropRight(1)}// interface $tsName"

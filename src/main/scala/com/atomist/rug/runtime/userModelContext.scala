@@ -74,7 +74,8 @@ private object MagicJavaScriptMethods {
   * object and (b) calls the commit() method of the object on all invocations of a
   * method that isn't read-only
   *
-  * @param n
+  * @param typ Rug type we are fronting
+  * @param n node we are fronting
   */
 class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
 
@@ -90,7 +91,6 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
         throw new RugRuntimeException(null,
           s"Attempt to invoke method [$name] on type [${typ.name}]: Not an exported method")
 
-      // TODO issue with primitives when trying to print
       new AbstractJSObject() {
 
         override def isFunction: Boolean = true
@@ -103,7 +103,7 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
             throw new RugRuntimeException(null,
               s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
           val returned = op.get.invoke(n, args.toSeq)
-          n match {
+          if (!op.get.readOnly) n match {
             case c : { def commit(): Unit } => c.commit()
             case _ =>
           }

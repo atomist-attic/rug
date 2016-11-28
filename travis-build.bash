@@ -3,7 +3,8 @@
 set -eu
 set -o pipefail
 
-MAVEN_OPTS="-Xmx2g"
+export MAVEN_OPTS="-Xmx1g"
+export JAVA_OPTS="-Xmx1g"
 
 mvn="mvn --settings .settings.xml -B -V"
 if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

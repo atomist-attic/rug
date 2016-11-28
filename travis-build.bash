@@ -23,7 +23,10 @@ echo "Branch is ${TRAVIS_BRANCH}"
 if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Version is $project_version"
     $mvn deploy -DskipTests
-    ./npm_publish.sh "${TRAVIS_TAG}"
+    if [[ $TRAVIS_TAG ]]; then
+       ./npm_publish.sh "${TRAVIS_TAG}"
+    fi
+
     git config --global user.email "travis-ci@atomist.com"
     git config --global user.name "Travis CI"
     git_tag="$project_version+travis$TRAVIS_BUILD_NUMBER"

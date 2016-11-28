@@ -37,7 +37,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  def elmRenamer(param: Boolean) = {
+  private def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
     val imp1 = if (param)
       """
         |@parameter({description: "Name of module we're renaming",
@@ -53,8 +53,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |  })
       """.stripMargin
     else ""
-
-    // TODO printing barfs due to primitive issue
 
     s"""import {ProjectEditor} from 'user-model/operations/ProjectEditor'
             |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
@@ -90,13 +88,13 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
             |             this.eng.children<ElmModule>(project, "elm.module")
             |
             |         for (let em of allModules) if (em.name() == p.old_name) {
-            |            //print(`Modifying $${em} to have name $${p.new_name}`)
+            |            ${if (prints) "print(`Modifying $${em} to have name $${p.new_name}`)" else ""}
             |            em.rename(p.new_name)
             |         }
             |
             |         print(`found $${allModules.length} elm modules in $${project}`)
             |         for (let em of allModules) {
-            |           //print(`Module $${em}`)
+            |            ${if (prints) "print(`Module $${em}`)" else ""}
             |           if (em.imports(p.old_name)) {
             |             em.updateImport(p.old_name, p.new_name)
             |           }
@@ -108,12 +106,17 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     }
 
   it should "rename module using TypeScript without path expression" in doRename(
-    elmRenamer(param = false),
+    createElmRenamerClass(param = false),
     runtime = typeScriptPipeline
   )
 
   it should "rename module using TypeScript without path expression with @parameter decorator" in pendingUntilFixed(doRename(
-    elmRenamer(param = true),
+    createElmRenamerClass(param = true),
+    runtime = typeScriptPipeline
+  ))
+
+  it should "print SafeCommittingProxy without failing" in pendingUntilFixed(doRename(
+    createElmRenamerClass(param = true, prints = true),
     runtime = typeScriptPipeline
   ))
 

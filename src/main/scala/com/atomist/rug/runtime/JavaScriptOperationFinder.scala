@@ -31,21 +31,15 @@ object JavaScriptOperationFinder {
     val jsc = new JavaScriptContext
 
     // First, compile any TypeScript files
-    val tsc = //ServiceLoaderCompilerRegistry.findAll(rugAs).reduce((a, b) => a compose b)
-    // ServiceLoaderCompilerRegistry.findAll(rugAs).headOption.getOrElse(???)
-    new TypeScriptCompiler
-
+    val tsc = new TypeScriptCompiler
     val compiled = tsc.compile(rugAs)
     val js = compiled.allFiles.filter(allJsFiles)
       .map(f => f)
-      .foreach(f => {
-        jsc.eval(f)
-      })
+      .foreach(f => jsc.eval(f))
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
-    val eds = operationsFromVars(rugAs, jsc)
-    eds
+    operationsFromVars(rugAs, jsc)
   }
 
   private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {

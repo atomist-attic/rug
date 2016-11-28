@@ -69,7 +69,6 @@ class RugDrivenExecutor(
                 applyDoStep(roo.success)
               case fm: FailedModificationAttempt =>
                 applyDoStep(roo.failure)
-                //throw new InstantEditorFailureException(s"Editor ${roo.name} failed: ${fm.failureExplanation}")
               case nmn: NoModificationNeeded =>
                 logger.debug(s"Editor ${roo.name} did not modify anything")
                 applyDoStep(roo.noChange)

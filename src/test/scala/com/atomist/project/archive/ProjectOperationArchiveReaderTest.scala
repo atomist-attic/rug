@@ -4,6 +4,7 @@ import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.Import
 import com.atomist.rug.exec.FakeServiceSource
 import com.atomist.rug.runtime.TypeScriptRugEditorTest
+import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -137,7 +138,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     ops.executors.head.execute(s2, SimpleProjectOperationArguments.Empty)
   }
 
-  it should "find and invoke typescript generator" in {
+  it should "find and invoke typescript generator" in pendingUntilFixed {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
@@ -161,4 +162,19 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "allow invocation of other operation from TypeScript editor" in pending
 
+
+  it should "find and invoke plain javascript generators" in{
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val f1 = StringFileArtifact("package.json", "{}")
+    val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
+    val rugAs = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/SimpleGenerator.js",
+        NashornConstructorTest.SimpleJavascriptGenerator),
+      f1,
+      f2
+    )
+    val ops = apc.findOperations(rugAs, None, Nil)
+    ops.editors.size should be(1)
+    ops.editors.head.parameters.size should be(1)
+  }
 }

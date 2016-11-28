@@ -283,7 +283,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "have the PathExpressionEngine injected" in {
     val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
       EditorInjectedWithPathExpression))
-    //ed.description should be ("A nice little editor")
+    ed.description should be ("A nice little editor")
   }
 
   it should "send editor bad input and get appropriate response" in {
@@ -295,11 +295,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
     // This should not work beause it doesn't meet the content pattern
-    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Bjarn Stroustrup is God")))
-      )
-    //    match {
-    //      case fm: FailedModificationAttempt =>
-    //    }
+    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Bjarn Stroustrup is God"))))
   }
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {

@@ -39,7 +39,7 @@ cd user-model
 if [[ -z ${NPM_TOKEN} ]]; then
    echo "Assuming your ~/.npmrc is setup correctly for this project"
 else
-   echo "Creating local ~.npmrc using API key from environment"
+   echo "Creating local ~/.npmrc using API key from environment"
    echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 fi
 

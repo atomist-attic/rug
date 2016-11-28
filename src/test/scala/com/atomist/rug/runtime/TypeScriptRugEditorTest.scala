@@ -113,6 +113,7 @@ object TypeScriptRugEditorTest {
       |import {ProjectGenerator} from 'user-model/operations/ProjectGenerator'
       |import {Project} from 'user-model/model/Core'
       |import {Status,Result} from 'user-model/operations/Result'
+      |import {Parameters} from 'user-model/operations/Parameters'
       |
       |import {generator} from 'user-model/support/Metadata'
       |import {parameters} from 'user-model/support/Metadata'

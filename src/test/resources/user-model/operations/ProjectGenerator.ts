@@ -1,4 +1,4 @@
-import {Project} from '../model/Core'
+import {Project} from 'user-model/model/Core'
 import {ParametersSupport} from 'user-model/operations/Parameters'
 import {parameter} from "user-model/support/Metadata"
 

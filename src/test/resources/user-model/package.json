@@ -1,6 +1,6 @@
 {
-  "name": "user-model",
-  "version": "0.2.0",
+  "name": "@atomist/rug",
+  "version": "REPLACE_ME",
   "description": "TypeScript model for Atomist editors, generators etc",
   "repository": {
     "type": "git",

@@ -21,6 +21,25 @@ object TypeScriptInterfaceGenerator {
 
   val OutputPathParam = "output_path"
 
+  val LicenseHeader =
+    """
+      |/*
+      | * Copyright 2015-2016 Atomist Inc.
+      | *
+      | * Licensed under the Apache License, Version 2.0 (the "License");
+      | * you may not use this file except in compliance with the License.
+      | * You may obtain a copy of the License at
+      | *
+      | *      http://www.apache.org/licenses/LICENSE-2.0
+      | *
+      | * Unless required by applicable law or agreed to in writing, software
+      | * distributed under the License is distributed on an "AS IS" BASIS,
+      | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      | * See the License for the specific language governing permissions and
+      | * limitations under the License.
+      | */
+    """.stripMargin
+
 }
 
 /**
@@ -33,9 +52,9 @@ class TypeScriptInterfaceGenerator(
                                   ) extends ProjectGenerator
   with ProjectEditor with ProjectOperationParameterSupport {
 
-  val helper = new TypeScriptGenerationHelper()
+  import TypeScriptInterfaceGenerator._
 
-  // TODO don't use a template except for the header. Use String operations
+  val helper = new TypeScriptGenerationHelper()
 
   import TypeScriptInterfaceGenerator._
 
@@ -53,7 +72,7 @@ class TypeScriptInterfaceGenerator(
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) ||
       "eval".equals(top.name)
-    )
+      )
 
   private def generateType(t: Type): String = {
     val output = new StringBuilder("")
@@ -83,7 +102,7 @@ class TypeScriptInterfaceGenerator(
     output.toString
   }
 
-  val typeSort: (Type,Type) => Boolean = (a,b) => a.name <= b.name
+  val typeSort: (Type, Type) => Boolean = (a, b) => a.name <= b.name
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
     //    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
@@ -104,25 +123,7 @@ class TypeScriptInterfaceGenerator(
     //      )
     //    ), DefaultTemplateName)
     // TODO could be a template
-    val output: StringBuilder = new StringBuilder(
-      """
-        |/*
-        | * Copyright 2015-2016 Atomist Inc.
-        | *
-        | * Licensed under the Apache License, Version 2.0 (the "License");
-        | * you may not use this file except in compliance with the License.
-        | * You may obtain a copy of the License at
-        | *
-        | *      http://www.apache.org/licenses/LICENSE-2.0
-        | *
-        | * Unless required by applicable law or agreed to in writing, software
-        | * distributed under the License is distributed on an "AS IS" BASIS,
-        | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        | * See the License for the specific language governing permissions and
-        | * limitations under the License.
-        | */
-      """.stripMargin
-    )
+    val output: StringBuilder = new StringBuilder(LicenseHeader)
 
     def generate(t: Type): Unit = {
       output ++= s"${generateType(t)}\n\n"
@@ -138,8 +139,8 @@ class TypeScriptInterfaceGenerator(
 
       // TODO DON'T IMPLEMENT SUBCLASS METHOD TWICE and put in inheritance
       val parentType: Option[Type] =
-        Option(t.underlyingType.getSuperclass)
-          .flatMap(sup => typeRegistry.kinds.find(_.underlyingType.equals(sup)))
+      Option(t.underlyingType.getSuperclass)
+        .flatMap(sup => typeRegistry.kinds.find(_.underlyingType.equals(sup)))
 
       clazzAncestry = clazzAncestry ++ parentType
 
@@ -147,7 +148,7 @@ class TypeScriptInterfaceGenerator(
     }
 
     output ++= "\n"
-    for { t <- typeRegistry.kinds.sortWith(typeSort) } {
+    for {t <- typeRegistry.kinds.sortWith(typeSort)} {
       val tsName = helper.typeScriptClassNameForTypeName(t.name)
       output ++= s"export { $tsName }\n"
     }

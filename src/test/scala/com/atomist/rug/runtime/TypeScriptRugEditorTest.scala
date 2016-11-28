@@ -11,6 +11,25 @@ object TypeScriptRugEditorTest {
 
   val ContentPattern = "Anders .*"
 
+  val SimpleEditorWithoutParameters =
+    """
+      |import {ParameterlessProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {Project} from 'user-model/model/Core'
+      |import {editor} from 'user-model/support/Metadata'
+      |import {Result,Status} from 'user-model/operations/Result'
+      |
+      |@editor("My simple editor")
+      |class SimpleEditor extends ParameterlessProjectEditor {
+      |
+      |    editWithoutParameters(project: Project):Result {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        return new Result(Status.Success,
+      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |    }
+      |}
+    """.stripMargin
+
   val SimpleEditor =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
@@ -207,6 +226,10 @@ object TypeScriptRugEditorTest {
 class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   import TypeScriptRugEditorTest._
+
+  it should "run simple editor compiled from TypeScript without parameters using support class" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithoutParameters))
+  }
 
   it should "run simple editor compiled from TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))

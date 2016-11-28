@@ -37,63 +37,82 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  // TODO uncomment parameters to see validation issue
-  it should "rename module using TypeScript without path expression" in (doRename(
-    """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
-      |import {Project,ElmModule} from 'user-model/model/Core'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-      |
-      |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
-      |import {Result,Status} from 'user-model/operations/Result'
-      |
-      |abstract class ElmRenamerParameters extends ParametersSupport {
-      |
-      |  //@parameter({description: "Name of module we're renaming",
-      |    //    pattern: "[A-Z][\w]+", maxLength: 100 //, required = true,
-      |      //  })
-      |   old_name: string = null
-      |
-      |   //@parameter({description: "New name for the module",
-      |     //   pattern: "[A-Z][\w]+", maxLength: 100 //, required = true,
-      |       //  })
-      |   new_name: string = null
-      |}
-      |
-      |declare var print
-      |
-      |@editor("Renames an Elm module")
-      |class Renamer implements ProjectEditor<ElmRenamerParameters> {
-      |
-      |     private eng: PathExpressionEngine;
-      |
-      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-      |      this.eng = _eng;
-      |    }
-      |
-      |    edit(project: Project,
-      |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
-      |        let allModules: Array<ElmModule> =
-      |             this.eng.children<ElmModule>(project, "elm.module")
-      |
-      |         for (let em of allModules) if (em.name() == p.old_name) {
-      |            print(`Modifying ${em} to have name ${p.new_name}`)
-      |            em.rename(p.new_name)
-      |         }
-      |
-      |         print(`found ${allModules.length} elm modules in ${project}`)
-      |         for (let em of allModules) {
-      |           print(`Module ${em}`)
-      |           if (em.imports(p.old_name)) {
-      |             em.updateImport(p.old_name, p.new_name)
-      |           }
-      |        }
-      |        return new Result(Status.Success, "OK")
-      |    }
-      |}
-    """.stripMargin,
-    runtime = typeScriptPipeline)
+  def elmRenamer(param: Boolean) = {
+    val imp1 = if (param)
+      """
+        |@parameter({description: "Name of module we're renaming",
+        |    pattern: "[A-Z][\w]+", maxLength: 100, required: true
+        |  })
+      """.stripMargin
+    else ""
+
+    val imp2 = if (param)
+      """
+        |@parameter({description: "New name for the module",
+        |    pattern: "[A-Z][\w]+", maxLength: 100
+        |  })
+      """.stripMargin
+    else ""
+
+    s"""import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+            |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
+            |import {Project,ElmModule} from 'user-model/model/Core'
+            |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+            |
+            |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
+            |import {Result,Status} from 'user-model/operations/Result'
+            |
+            |abstract class ElmRenamerParameters extends ParametersSupport {
+            |
+            |   $imp1
+            |   old_name: string = null
+            |
+            |   $imp2
+            |   new_name: string = null
+            |}
+            |
+            |declare var print
+            |
+            |@editor("Renames an Elm module")
+            |class Renamer implements ProjectEditor<ElmRenamerParameters> {
+            |
+            |     private eng: PathExpressionEngine;
+            |
+            |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+            |      this.eng = _eng;
+            |    }
+            |
+            |    edit(project: Project,
+            |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
+            |        let allModules: Array<ElmModule> =
+            |             this.eng.children<ElmModule>(project, "elm.module")
+            |
+            |         for (let em of allModules) if (em.name() == p.old_name) {
+            |            print(`Modifying $${em} to have name $${p.new_name}`)
+            |            em.rename(p.new_name)
+            |         }
+            |
+            |         print(`found $${allModules.length} elm modules in $${project}`)
+            |         for (let em of allModules) {
+            |           print(`Module $${em}`)
+            |           if (em.imports(p.old_name)) {
+            |             em.updateImport(p.old_name, p.new_name)
+            |           }
+            |        }
+            |        return new Result(Status.Success, "OK")
+            |    }
+            |}
+          """.stripMargin
+    }
+
+  it should "rename module using TypeScript without path expression" in doRename(
+    elmRenamer(param = false),
+    runtime = typeScriptPipeline
+  )
+
+  it should "rename module using TypeScript without path expression with @parameter decorator" in doRename(
+    elmRenamer(param = true),
+    runtime = typeScriptPipeline
   )
 
   it should "rename module using path expression" in doRename(

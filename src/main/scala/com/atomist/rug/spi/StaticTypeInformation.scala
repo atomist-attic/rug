@@ -2,6 +2,8 @@ package com.atomist.rug.spi
 
 import java.util.{List => JList}
 
+import org.springframework.util.ReflectionUtils
+
 import scala.collection.JavaConverters._
 
 /**
@@ -62,4 +64,13 @@ case class TypeOperation(
   def hasExample = example.isDefined
 
   def exampleAsJava = example.getOrElse("")
+
+  def invoke(target: Object, args: Seq[AnyRef]): Object = {
+    val methods = target.getClass.getMethods.toSeq.filter(m =>
+      this.name.equals(m.getName) && this.parameters.size == m.getParameterCount
+    )
+    if (methods.size != 1)
+      throw new IllegalArgumentException(s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1")
+    methods.head.invoke(target, args:_*)
+  }
 }

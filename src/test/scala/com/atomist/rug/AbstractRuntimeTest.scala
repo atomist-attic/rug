@@ -233,6 +233,23 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       DefaultPackageJavaAndText, pipeline = pipeline)
   }
 
+  it should "execute simple program with parameters, simple JavaScript file function and transform function" in {
+    val goBowling =
+      s"""
+         |@description "That's over the line!"
+         |editor Caspar
+         |
+         |param text: .*
+         |param message: .*
+         |
+         |with file f
+         | when { f.name().endsWith(".java") }
+         |do
+         | append "$extraText"
+      """.stripMargin
+    simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
+  }
+
   // TODO this depends on resolution from the type registry rather than from
   // simple descent
   it should "handle custom kind of 'line' nested under file" in pendingUntilFixed {
@@ -256,8 +273,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         "isJava" -> new LambdaPredicate[FileArtifactMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
       )
     )
-    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
-
     val eds = pipeline.createFromString(program)
     eds.size should be(1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
@@ -272,6 +287,29 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         f.content.lines.forall(_.startsWith("// ")) should be(true)
     }
   }
+
+  it should "execute simple program with parameters and multiple with blocks applying to same file" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |param text: .*
+        |param message: .*
+        |
+        |with file f
+        | when isJava
+        |do
+        |  setContent { "WWW" + f.content() + text } ;
+        |
+        |with file f
+        | when isJava
+        |do
+        |  setContent { f.content().substring(3) };
+      """.stripMargin
+    simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
+  }
+
 
   protected def simpleAppenderProgramExpectingParameters(program: String,
                                                          finalFileContent: Option[String] = None,

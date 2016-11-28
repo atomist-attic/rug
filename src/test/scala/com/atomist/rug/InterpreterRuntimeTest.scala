@@ -97,24 +97,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     simpleAppenderProgramExpectingParameters(goBowling)
   }
 
-  it should "execute simple program with parameters and transform function using from extractor" in pendingUntilFixed {
-    val goBowling =
-      """
-        |@description 'A very short tempered editor'
-        |editor Caspar
-        |
-        |param message: .*
-        |
-        |let text = from file f when path = "message.txt" return content
-        |
-        |with file f
-        | when isJava
-        |do
-        | append text
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
-  }
-
   it should "fail to execute simple program with parameters and transform function using undefined identifier" in {
     val goBowling =
       """
@@ -130,23 +112,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         | append undefined_identifier
       """.stripMargin
     an[BadRugException] should be thrownBy simpleAppenderProgramExpectingParameters(goBowling)
-  }
-
-  it should "execute simple program with parameters, simple JavaScript file function and transform function" in {
-    val goBowling =
-      s"""
-         |@description "That's over the line!"
-         |editor Caspar
-         |
-         |param text: .*
-         |param message: .*
-         |
-         |with file f
-         | when { f.name().endsWith(".java") }
-         |do
-         | append "$extraText"
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
   }
 
   it should "execute simple program with parameters, simple JavaScript file function using computed value and transform function" in {
@@ -205,28 +170,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |end
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, extraParams = Map("this-is-bad" -> "whatever"))
-  }
-
-  it should "execute simple program with parameters and multiple with blocks applying to same file" in {
-    val goBowling =
-      """
-        |@description "I can get you a toe!"
-        |editor Caspar
-        |
-        |param text: .*
-        |param message: .*
-        |
-        |with file f
-        | when isJava
-        |do
-        |  setContent { "WWW" + f.content() + params['text'] } ;
-        |
-        |with file f
-        | when isJava
-        |do
-        |  setContent { f.content().substring(3) };
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
   }
 
   it should "execute simple program with parameters and JavaScript regexp transform" in {

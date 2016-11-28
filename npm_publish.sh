@@ -36,11 +36,14 @@ npm install typescript || die "Error installing typescript module"
 
 cd user-model
 
-if [[ -z ${NPMJS_API_KEY} ]]; then
+if [[ -z ${NPM_PASSWORD} ]]; then
    echo "Assuming your ~/.npmrc is setup correctly for this project"
 else
    echo "Creating local .npmrc using API key from environment"
-   echo "//registry.npmjs.org/:_authToken=${NPMJS_API_KEY}" > ~/.npmrc
+   echo "//registry.npmjs.org/:username=atomist" > ~/.npmrc
+   echo "//registry.npmjs.org/:email=npm@atomist.com" >> ~/.npmrc
+   echo "//registry.npmjs.org/:_password=${NPM_PASSWORD}" >> ~/.npmrc
+   yes '' | npm adduser
 fi
 
 # npm honors this

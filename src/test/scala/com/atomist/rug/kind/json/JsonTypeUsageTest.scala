@@ -71,7 +71,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   import JsonTypeUsageTest._
   import com.atomist.rug.TestUtils._
 
-  it should "update node value, going via file" in {
+  it should "update node value, going via file and path expression" in {
     val prog =
       """
         |editor Rename
@@ -80,6 +80,20 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |
         |with subdomainNode
         | do setValue "absquatulate"
+      """.stripMargin
+    val edited = updateWith(prog)
+    edited should equal(packageJson.replace("foobar", "absquatulate"))
+  }
+
+  it should "update node value, going via file and with" in {
+    val prog =
+      """
+        |editor Rename
+        |
+        |with file when path = "package.json"
+        | with json
+        |   with subdomain
+        |     do setValue "absquatulate"
       """.stripMargin
     val edited = updateWith(prog)
     edited should equal(packageJson.replace("foobar", "absquatulate"))

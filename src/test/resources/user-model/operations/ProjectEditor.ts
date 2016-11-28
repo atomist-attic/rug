@@ -1,4 +1,4 @@
-import {Project} from '../model/Core'
+import {Project} from "../model/Core"
 import {Parameters} from "./Parameters"
 import {Result} from "./Result"
 

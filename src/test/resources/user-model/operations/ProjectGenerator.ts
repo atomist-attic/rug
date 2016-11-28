@@ -1,6 +1,6 @@
-import {Project} from 'user-model/model/Core'
-import {ParametersSupport} from 'user-model/operations/Parameters'
-import {parameter} from "user-model/support/Metadata"
+import {Project} from "../model/Core"
+import {ParametersSupport} from "./Parameters"
+import {parameter} from "../support/Metadata"
 
 
 abstract class GeneratorParameters extends ParametersSupport {

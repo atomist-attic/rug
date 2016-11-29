@@ -6,7 +6,7 @@ ulimit -c unlimited
 
 #export MAVEN_OPTS="-Xmx1g"
 #export JAVA_OPTS="-Xmx1g"
-export RUG_DISABLE_V8="true"
+#export RUG_DISABLE_V8="true"
 
 mvn="mvn --settings .settings.xml -B -V"
 if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

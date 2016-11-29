@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015-2016 Atomist Inc.
  *
@@ -400,6 +401,16 @@ interface JavaProject {
 
 
     javaFileCount(): number
+
+    //template: string
+    //path: string
+    //parameters: any
+    merge(template: string, path: string, parameters: any): void
+
+    //templatesPath: string
+    //outputPath: string
+    //ic: any
+    mergeTemplates(templatesPath: string, outputPath: string, ic: any): void
 
     //path: string
     moveUnder(path: string): void
@@ -1010,6 +1021,16 @@ interface Project {
     //path: string
     findFile(path: string): File
 
+    //template: string
+    //path: string
+    //parameters: any
+    merge(template: string, path: string, parameters: any): void
+
+    //templatesPath: string
+    //outputPath: string
+    //ic: any
+    mergeTemplates(templatesPath: string, outputPath: string, ic: any): void
+
     //path: string
     moveUnder(path: string): void
 
@@ -1158,100 +1179,6 @@ interface PythonRequirementsTxt {
 
 
 /*
- * Test type for replacing the content of files
- */
-interface Replacer {
-
-
-    content(): string
-
-    //msg: string
-    fail(msg: string): void
-
-
-    filename(): string
-
-
-    isWellFormed(): boolean
-
-
-    lineCount(): number
-
-    //p1: string
-    //p2: string
-    overloaded(p1: string, p2: string): void
-
-    //p1: string
-    overloaded(p1: string): void
-
-
-    path(): string
-
-    //msg: string
-    println(msg: string): void
-
-    //stringToReplace: string
-    //stringReplacement: string
-    replaceIt(stringToReplace: string, stringReplacement: string): void
-
-    //stringToReplace: string
-    //stringReplacement: string
-    replaceItNoGlobal(stringToReplace: string, stringReplacement: string): void
-
-    //root: string
-    underPath(root: string): boolean
-
-}   // interface Replacer
-
-
-/*
- * Test type for replacing the content of clojure files
- */
-interface Replacerclj {
-
-
-    content(): string
-
-    //msg: string
-    fail(msg: string): void
-
-
-    filename(): string
-
-
-    isWellFormed(): boolean
-
-
-    lineCount(): number
-
-    //p1: string
-    //p2: string
-    overloaded(p1: string, p2: string): void
-
-    //p1: string
-    overloaded(p1: string): void
-
-
-    path(): string
-
-    //msg: string
-    println(msg: string): void
-
-    //stringToReplace: string
-    //stringReplacement: string
-    replaceIt(stringToReplace: string, stringReplacement: string): void
-
-    //stringToReplace: string
-    //stringReplacement: string
-    replaceItNoGlobal(stringToReplace: string, stringReplacement: string): void
-
-    //root: string
-    underPath(root: string): boolean
-
-}   // interface Replacerclj
-
-
-/*
  * 
 Type for services. Used in executors.
     
@@ -1376,6 +1303,16 @@ interface SpringBootProject {
 
     javaFileCount(): number
 
+    //template: string
+    //path: string
+    //parameters: any
+    merge(template: string, path: string, parameters: any): void
+
+    //templatesPath: string
+    //outputPath: string
+    //ic: any
+    mergeTemplates(templatesPath: string, outputPath: string, ic: any): void
+
     //path: string
     moveUnder(path: string): void
 
@@ -1465,8 +1402,6 @@ export { Properties }
 export { Python }
 export { PythonRequirements }
 export { PythonRequirementsTxt }
-export { Replacer }
-export { Replacerclj }
 export { Services }
 export { SpringBootProject }
 export { Xml }

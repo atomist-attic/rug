@@ -1,19 +1,22 @@
 package com.atomist.rug.rugdoc
 
+import java.io.PrintWriter
+
 import com.atomist.param.Parameter
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
+import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.rug.ts.TypeScriptGenerationHelper
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 
+
 import scala.collection.mutable.ListBuffer
 
-object TypeScriptInterfaceGenerator {
+object TypeScriptInterfaceGenerator extends App{
 
   val DefaultTemplateName = "ts.vm"
 
@@ -40,6 +43,13 @@ object TypeScriptInterfaceGenerator {
       | */
     """.stripMargin
 
+  val target = if( args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
+  val generator = new TypeScriptInterfaceGenerator
+
+  val output = generator.generate(SimpleProjectOperationArguments("",
+    Map(OutputPathParam -> "Core.ts")))
+  Some(new PrintWriter(target)).foreach{p => p.write(output.allFiles(0).content); p.close}
+  println(s"Written to ${target}")
 }
 
 /**
@@ -184,5 +194,7 @@ class TypeScriptInterfaceGenerator(
   override def description: String = "Generate core Rug type info"
 
   override def name: String = "TypeDoc"
+
+
 
 }

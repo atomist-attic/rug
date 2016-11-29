@@ -563,7 +563,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |type alias Model =
         |    {}
-        | """.stripMargin)
+        |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -587,7 +587,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |model =
         |    { recordField = "foo" }
-        | """.stripMargin)
+        |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -611,7 +611,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |init =
         |    ( { recordField = "foo" }, Cmd.none )
-        | """.stripMargin)
+        |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -759,7 +759,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    in
         |        { randomGif = randomGifModel }
         |            ! [ Cmd.map RandomGifMsg randomGifCommands ]
-        | """.stripMargin
+        |""".stripMargin
 
     val prog =
       """editor Bar

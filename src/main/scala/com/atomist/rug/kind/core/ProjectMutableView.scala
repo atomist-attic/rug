@@ -11,6 +11,7 @@ import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleP
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.{BidirectionalParametersProxy, FunctionInvocationContext}
 import com.atomist.rug.spi._
+import com.atomist.rug.ts.NashornUtils
 import com.atomist.source._
 import com.atomist.util.BinaryDecider
 import com.atomist.util.template.MergeContext
@@ -18,7 +19,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.reflect.io.File
 import scala.util.Properties
-import scala.collection.JavaConverters._
 
 object ProjectMutableView {
 
@@ -351,12 +351,7 @@ class ProjectMutableView(
   private def mapToUse(arg: Any): Map[String, Object] = arg match {
     case ic: FunctionInvocationContext[_] => ic.identifierMap
     case som: ScriptObjectMirror =>
-      // It's the map they created
-      som.entrySet().asScala.map(me => {
-        println(s"Emitted property ${me.getKey}=${me.getValue}")
-        (me.getKey -> me.getValue)
-      }
-  ).toMap
+      NashornUtils.extractProperties(som)
   }
 
   @ExportFunction(readOnly = false,

@@ -43,7 +43,10 @@ class JavaScriptInvokingProjectEditor(
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        val res = invokeMember("edit", wrapperize(pmv), poa)
+        val res = invokeMember("edit",
+          pmv,
+          //wrapperize(pmv),
+          poa)
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")

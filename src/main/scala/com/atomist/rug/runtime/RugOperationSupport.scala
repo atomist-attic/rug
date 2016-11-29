@@ -25,6 +25,23 @@ object RugOperationSupport {
 
   val YmlFormat =
     DateTimeFormatter.ofPattern("MMM d yyyy")
+
+  // May have been passed in via the infrastructure but couldn't be declared in Rug: Suppress
+  // so it doesn't upset binding into JavaScript
+  private def isIllegalParameterName(k: String) =
+  !JavaHelpers.isValidJavaIdentifier(k)
+
+  def poaToIdentifierMap(parameters: Seq[Parameter]
+                         , poa: ProjectOperationArguments): Map[String, Object] = {
+    val parametersPassedIn = poa.parameterValueMap collect {
+      case (k, pv) if !isIllegalParameterName(k) => (k, pv.getValue)
+    }
+    // Remember to add default parameters that weren't set
+    val defaultParameterValuesNotSet: Map[String, String] = parameters.collect {
+      case p if !parametersPassedIn.keys.contains(p.getName) && p.hasDefaultValue => (p.getName, p.getDefaultValue)
+    }.toMap
+    parametersPassedIn ++ defaultParameterValuesNotSet
+  }
 }
 
 /**
@@ -66,25 +83,9 @@ trait RugOperationSupport extends LazyLogging {
   }
 
   protected def buildIdentifierMap(rugAs: ArtifactSource, context: Object, project: ArtifactSource, poa: ProjectOperationArguments): Map[String, Object] = {
-    val idm = poaToIdentifierMap(poa)
+    val idm = RugOperationSupport.poaToIdentifierMap(parameters, poa)
     val compMap = computationsMap(rugAs, poa, project, targetAlias = "x", context, identifiersAlreadyResolved = idm)
     idm ++ compMap ++ wellKnownIdentifiers
-  }
-
-  // May have been passed in via the infrastructure but couldn't be declared in Rug: Suppress
-  // so it doesn't upset binding into JavaScript
-  private def isIllegalParameterName(k: String) =
-    !JavaHelpers.isValidJavaIdentifier(k)
-
-  private def poaToIdentifierMap(poa: ProjectOperationArguments): Map[String, Object] = {
-    val parametersPassedIn = poa.parameterValueMap collect {
-      case (k, pv) if !isIllegalParameterName(k) => (k, pv.getValue)
-    }
-    // Remember to add default parameters that weren't set
-    val defaultParameterValuesNotSet: Map[String, String] = parameters.collect {
-      case p if !parametersPassedIn.keys.contains(p.getName) && p.hasDefaultValue => (p.getName, p.getDefaultValue)
-    }.toMap
-    parametersPassedIn ++ defaultParameterValuesNotSet
   }
 
   /**
@@ -244,3 +245,4 @@ trait RugOperationSupport extends LazyLogging {
     }
   }
 }
+

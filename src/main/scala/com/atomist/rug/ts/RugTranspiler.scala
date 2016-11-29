@@ -6,8 +6,20 @@ import com.atomist.rug.parser._
 import com.atomist.rug.{RugEditor, RugProgram}
 import com.atomist.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
 import com.atomist.rug.compiler.Compiler
-import com.atomist.source.{StringFileArtifact, ArtifactSource}
+import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import com.atomist.util.SaveAllDescendantsVisitor
+import jdk.nashorn.api.scripting.ScriptObjectMirror
+
+
+object NashornUtils {
+
+  import scala.collection.JavaConverters._
+
+  def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
+    som.entrySet().asScala.map(me => {
+      (me.getKey -> me.getValue)
+    }).toMap
+}
 
 /**
   * Turns Rug into Typescript
@@ -57,7 +69,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
-    println(ts)
+    //println(ts)
     ts.toString
   }
 
@@ -226,12 +238,15 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   // Handle possibly multi-line JS
   private def handleJs(js: String): String = {
     if (js.contains("\n") || js.contains("return")) {
-      s"(() => { \n$js })()"
+      arrowFunctionify(js)
     }
     else {
       js
     }
   }
+
+  private def arrowFunctionify(js: String) =
+    s"(() => { \n$js })()"
 
   private def doStepCode(prog: RugProgram, doStep: DoStep, alias: String): String = doStep match {
     case f: FunctionDoStep if "eval".equals(f.function) =>
@@ -243,7 +258,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         .map(a => extractValue(prog, a, alias))
       // Apply special rules for map
       val extraArg: Option[String] = if ("merge".equals(f.function)) {
-        Some("{}")
+        Some(parametersToJsonObject(prog, alias))
       }
       else None
 
@@ -251,6 +266,19 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       s"$alias.${f.function}($argsToUse)"
     case wds: WithDoStep =>
       helper.indented(withBlockCode(prog, wds.wth, alias), 1)
+  }
+
+  private def parametersToJsonObject(prog: RugProgram, outerAlias: String): String = {
+    val computations = prog.computations
+      .map(comp => extractValue(prog, comp.te, outerAlias))
+      .mkString("\n")
+    val js =
+      s"""
+         |let allParams = clone(${config.parametersVarName})
+         |$computations
+         |return allParams
+       """.stripMargin
+    arrowFunctionify(js)
   }
 
   // Wrap in an if statement
@@ -287,7 +315,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     |
     |function clone(obj) {
     |    if (null == obj || "object" != typeof obj) return obj;
-    |    var copy = obj.constructor();
+    |    var copy = {};
     |    for (var attr in obj) {
     |        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
     |    }

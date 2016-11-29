@@ -6,6 +6,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
+import com.atomist.util.Visitor
 import jdk.nashorn.api.scripting.{AbstractJSObject, JSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
@@ -53,9 +54,9 @@ class PathExpressionExposer {
     }
   }
 
-//  private def safeCommittingProxy(typ: Type, n: TreeNode): Object = {
-//
-//  }
+  //  private def safeCommittingProxy(typ: Type, n: TreeNode): Object = {
+  //
+  //  }
 
 }
 
@@ -63,6 +64,7 @@ private object MagicJavaScriptMethods {
 
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle
+    *
     * @return
     */
   def MagicMethods = Set("valueOf", "toString")
@@ -75,16 +77,26 @@ private object MagicJavaScriptMethods {
   * method that isn't read-only
   *
   * @param typ Rug type we are fronting
-  * @param n node we are fronting
+  * @param n   node we are fronting
   */
-class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
+class SafeCommittingProxy(typ: Type, n: TreeNode)
+  extends AbstractJSObject //with TreeNode
+{
+
+//  override def nodeName: String = n.nodeName
+//
+//  override def nodeType: String = n.nodeType
+//
+//  override def value: String = n.value
+//
+//  override def accept(v: Visitor, depth: Int): Unit = n.accept(v, depth)
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
     case x if MagicJavaScriptMethods.MagicMethods.contains(name) =>
       super.getMember(name)
 
     case st: StaticTypeInformation =>
-      println(s"Calling $name on ${typ.name}")
+      //println(s"Calling $name on ${typ.name}")
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
       // TODO separate error message if wrong number of arguments
@@ -97,7 +109,7 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
         override def isFunction: Boolean = true
 
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-          println(s"in, call, op=$name")
+          //println(s"in, call, op=$name")
           val op = possibleOps.find(
             op => op.parameters.size == args.size)
           // TODO separate error message if wrong number of arguments
@@ -106,7 +118,7 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
               s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
           val returned = op.get.invoke(n, args.toSeq)
           if (!op.get.readOnly) n match {
-            case c : { def commit(): Unit } => c.commit()
+            case c: {def commit(): Unit} => c.commit()
             case _ =>
           }
           returned

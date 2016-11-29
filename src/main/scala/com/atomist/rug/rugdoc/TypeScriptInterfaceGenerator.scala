@@ -10,15 +10,14 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
-import com.atomist.rug.ts.TypeScriptGenerationHelper
+import com.atomist.rug.ts.{TypeScriptGenerationConfig, TypeScriptGenerationHelper}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-
 
 import scala.collection.mutable.ListBuffer
 
-object TypeScriptInterfaceGenerator extends App{
+object TypeScriptInterfaceGenerator extends App {
 
-  val target = if( args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
+  val target = if (args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
   val generator = new TypeScriptInterfaceGenerator
 
   val output = generator.generate(SimpleProjectOperationArguments("",
@@ -33,7 +32,8 @@ object TypeScriptInterfaceGenerator extends App{
   * @param typeRegistry Registry of known Rug Types.
   */
 class TypeScriptInterfaceGenerator(
-                                    typeRegistry: TypeRegistry = DefaultTypeRegistry
+                                    typeRegistry: TypeRegistry = DefaultTypeRegistry,
+                                    config: InterfaceGenerationConfig = new InterfaceGenerationConfig()
                                   ) extends ProjectGenerator
   with ProjectEditor with ProjectOperationParameterSupport {
 
@@ -41,31 +41,9 @@ class TypeScriptInterfaceGenerator(
 
   val DefaultFilename = "model/Core.ts"
 
-
   val OutputPathParam = "output_path"
 
-  val LicenseHeader =
-    """
-      |/*
-      | * Copyright 2015-2016 Atomist Inc.
-      | *
-      | * Licensed under the Apache License, Version 2.0 (the "License");
-      | * you may not use this file except in compliance with the License.
-      | * You may obtain a copy of the License at
-      | *
-      | *      http://www.apache.org/licenses/LICENSE-2.0
-      | *
-      | * Unless required by applicable law or agreed to in writing, software
-      | * distributed under the License is distributed on an "AS IS" BASIS,
-      | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-      | * See the License for the specific language governing permissions and
-      | * limitations under the License.
-      | */
-    """.stripMargin
-
   val helper = new TypeScriptGenerationHelper()
-
-  import TypeScriptInterfaceGenerator._
 
   addParameter(Parameter(OutputPathParam, ".*").
     setRequired(false).
@@ -106,7 +84,7 @@ class TypeScriptInterfaceGenerator(
     val output = new StringBuilder("")
     val tsName = helper.typeScriptClassNameForTypeName(t.name)
     output ++= emitDocComment(t)
-    output ++= s"\ninterface $tsName {\n\n"
+    output ++= s"\ninterface $tsName extends TreeNode {${config.separator}"
     t.typeInformation match {
       case s: StaticTypeInformation =>
         for {
@@ -117,7 +95,8 @@ class TypeScriptInterfaceGenerator(
           val params =
             for (p <- op.parameters)
               yield emitParameter(t, op, p)
-          output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}\n\n"
+          output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}"
+          output ++= config.separator
         }
     }
     output ++= s"}${indent.dropRight(1)} // interface $tsName"
@@ -144,8 +123,10 @@ class TypeScriptInterfaceGenerator(
     //        "h4" -> "####"
     //      )
     //    ), DefaultTemplateName)
-    // TODO could be a template
-    val output: StringBuilder = new StringBuilder(LicenseHeader)
+    val output: StringBuilder = new StringBuilder(config.licenseHeader)
+    output ++= config.separator
+    output ++= config.imports
+    output ++= config.separator
 
     def generate(t: Type): Unit = {
       output ++= s"${generateType(t)}\n\n"
@@ -196,6 +177,33 @@ class TypeScriptInterfaceGenerator(
 
   override def name: String = "TypeDoc"
 
+}
 
+case class InterfaceGenerationConfig(
+                                indent: String = "    ",
+                                separator: String = "\n\n"
+                              )
+  extends TypeScriptGenerationConfig {
 
+  val imports =
+    """
+      |import {TreeNode} from '../tree/PathExpression'""".stripMargin
+
+  val licenseHeader =
+    """
+      |/*
+      | * Copyright 2015-2016 Atomist Inc.
+      | *
+      | * Licensed under the Apache License, Version 2.0 (the "License");
+      | * you may not use this file except in compliance with the License.
+      | * You may obtain a copy of the License at
+      | *
+      | *      http://www.apache.org/licenses/LICENSE-2.0
+      | *
+      | * Unless required by applicable law or agreed to in writing, software
+      | * distributed under the License is distributed on an "AS IS" BASIS,
+      | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      | * See the License for the specific language governing permissions and
+      | * limitations under the License.
+      | */""".stripMargin
 }

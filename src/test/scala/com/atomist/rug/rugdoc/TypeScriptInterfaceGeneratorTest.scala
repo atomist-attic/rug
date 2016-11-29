@@ -2,6 +2,7 @@ package com.atomist.rug.rugdoc
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.source.{FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
@@ -14,8 +15,19 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val output = td.generate(SimpleProjectOperationArguments("",
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
     output.allFiles.size should be(1)
+
+    // We need to get rid of the imports as they'll fail when we try to compile the file on its own
+    val withoutImport = output ✎ new FileEditor {
+      override def canAffect(f: FileArtifact): Boolean = true
+      override def edit(f: FileArtifact): FileArtifact =
+        f.withContent(f.content.replace(new InterfaceGenerationConfig().imports,
+          """
+            |interface TreeNode {}
+          """.stripMargin))
+    }
+
     val d = output.allFiles.head
-    val compiled = tsc.compile(output)
+    val compiled = tsc.compile(withoutImport)
     val js = compiled.allFiles.find(_.name.endsWith(".js")).get
     // println(js.content)
   }
@@ -27,8 +39,6 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
   * should ultimately use the interface generator as an editor.
   */
 object TypeScriptInterfaceGen extends App {
-
-  import TypeScriptInterfaceGenerator._
 
   val td = new TypeScriptInterfaceGenerator()
   // Make it puts the generated files where our compiler will look for them

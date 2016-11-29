@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-    
+
+
+import {TreeNode} from '../tree/PathExpression'
+
+
 /*
  * Docker file type
  */
-interface Dockerfile {
+interface Dockerfile extends TreeNode {
 
     //addContents: string
     addAdd(addContents: string): void
@@ -91,13 +95,13 @@ interface Dockerfile {
     //root: string
     underPath(root: string): boolean
 
-}   // interface Dockerfile
+}    // interface Dockerfile
 
 
 /*
  * Elm module
  */
-interface ElmModule {
+interface ElmModule extends TreeNode {
 
     //body: string
     addFunction(body: string): void
@@ -151,7 +155,7 @@ interface ElmModule {
     //newName: string
     updateImport(oldModuleName: string, newName: string): void
 
-}   // interface ElmModule
+}    // interface ElmModule
 
 
 /*
@@ -159,7 +163,7 @@ interface ElmModule {
 Type for a file within a project. Supports generic options such as find and replace.
     
  */
-interface File {
+interface File extends TreeNode {
 
     //literal: string
     append(literal: string): void
@@ -229,13 +233,13 @@ interface File {
     //root: string
     underPath(root: string): boolean
 
-}   // interface File
+}    // interface File
 
 
 /*
  * Execute http calls
  */
-interface Http {
+interface Http extends TreeNode {
 
     //msg: string
     fail(msg: string): void
@@ -251,13 +255,13 @@ interface Http {
     //data: string
     putJson(url: string, data: string): void
 
-}   // interface Http
+}    // interface Http
 
 
 /*
  * Java class
  */
-interface JavaClass {
+interface JavaClass extends TreeNode {
 
     //pkg: string
     //annotation: string
@@ -306,13 +310,13 @@ interface JavaClass {
     //comment: string
     setHeaderComment(comment: string): void
 
-}   // interface JavaClass
+}    // interface JavaClass
 
 
 /*
  * Java project
  */
-interface JavaProject {
+interface JavaProject extends TreeNode {
 
     //name: string
     //parentPath: string
@@ -326,11 +330,11 @@ interface JavaProject {
     addFile(path: string, content: string): void
 
     //sourcePath: string
-    copyEditorBackingFileOrFail(sourcePath: string): void
-
-    //sourcePath: string
     //destinationPath: string
     copyEditorBackingFileOrFail(sourcePath: string, destinationPath: string): void
+
+    //sourcePath: string
+    copyEditorBackingFileOrFail(sourcePath: string): void
 
     //sourcePath: string
     //destinationPath: string
@@ -443,13 +447,13 @@ interface JavaProject {
     //replacement: string
     replaceInPath(literal: string, replacement: string): void
 
-}   // interface JavaProject
+}    // interface JavaProject
 
 
 /*
  * Java source file
  */
-interface JavaSource {
+interface JavaSource extends TreeNode {
 
 
     content(): string
@@ -484,13 +488,13 @@ interface JavaSource {
     //root: string
     underPath(root: string): boolean
 
-}   // interface JavaSource
+}    // interface JavaSource
 
 
 /*
  * package.json configuration file
  */
-interface Json {
+interface Json extends TreeNode {
 
 
     content(): string
@@ -516,13 +520,13 @@ interface Json {
     //root: string
     underPath(root: string): boolean
 
-}   // interface Json
+}    // interface Json
 
 
 /*
  * Represents a line within a text file
  */
-interface Line {
+interface Line extends TreeNode {
 
 
     content(): string
@@ -539,7 +543,7 @@ interface Line {
     //s2: string
     update(s2: string): void
 
-}   // interface Line
+}    // interface Line
 
 
 /*
@@ -547,7 +551,7 @@ interface Line {
 Type for a file within a project. Supports generic options such as find and replace.
     
  */
-interface File {
+interface File extends TreeNode {
 
     //literal: string
     append(literal: string): void
@@ -617,13 +621,13 @@ interface File {
     //root: string
     underPath(root: string): boolean
 
-}   // interface File
+}    // interface File
 
 
 /*
  * package.json configuration file
  */
-interface PackageJSON {
+interface PackageJSON extends TreeNode {
 
     //literal: string
     append(literal: string): void
@@ -693,13 +697,13 @@ interface PackageJSON {
     //root: string
     underPath(root: string): boolean
 
-}   // interface PackageJSON
+}    // interface PackageJSON
 
 
 /*
  * XML file
  */
-interface Xml {
+interface Xml extends TreeNode {
 
     //xpath: string
     //newNode: string
@@ -749,13 +753,13 @@ interface Xml {
     //root: string
     underPath(root: string): boolean
 
-}   // interface Xml
+}    // interface Xml
 
 
 /*
  * POM XML file
  */
-interface Pom {
+interface Pom extends TreeNode {
 
     //xpath: string
     //newNode: string
@@ -933,7 +937,7 @@ interface Pom {
 
     version(): string
 
-}   // interface Pom
+}    // interface Pom
 
 
 /*
@@ -943,7 +947,7 @@ Consider using file and other lower types by preference as project
 operations can be inefficient.
     
  */
-interface Project {
+interface Project extends TreeNode {
 
     //name: string
     //parentPath: string
@@ -957,11 +961,11 @@ interface Project {
     addFile(path: string, content: string): void
 
     //sourcePath: string
-    copyEditorBackingFileOrFail(sourcePath: string): void
-
-    //sourcePath: string
     //destinationPath: string
     copyEditorBackingFileOrFail(sourcePath: string, destinationPath: string): void
+
+    //sourcePath: string
+    copyEditorBackingFileOrFail(sourcePath: string): void
 
     //sourcePath: string
     //destinationPath: string
@@ -1055,13 +1059,13 @@ interface Project {
     //replacement: string
     replaceInPath(literal: string, replacement: string): void
 
-}   // interface Project
+}    // interface Project
 
 
 /*
  * Properties file
  */
-interface Properties {
+interface Properties extends TreeNode {
 
     //key: string
     containsKey(key: string): boolean
@@ -1103,13 +1107,13 @@ interface Properties {
     //root: string
     underPath(root: string): boolean
 
-}   // interface Properties
+}    // interface Properties
 
 
 /*
  * Python file
  */
-interface Python {
+interface Python extends TreeNode {
 
     //arg0: string
     append(arg0: string): void
@@ -1127,13 +1131,13 @@ interface Python {
     //name: string
     valueOf(name: string): any
 
-}   // interface Python
+}    // interface Python
 
 
 /*
  * Python requirements file
  */
-interface PythonRequirements {
+interface PythonRequirements extends TreeNode {
 
     //arg0: string
     append(arg0: string): void
@@ -1151,13 +1155,13 @@ interface PythonRequirements {
     //name: string
     valueOf(name: string): any
 
-}   // interface PythonRequirements
+}    // interface PythonRequirements
 
 
 /*
  * Python requirements text file
  */
-interface PythonRequirementsTxt {
+interface PythonRequirementsTxt extends TreeNode {
 
     //arg0: string
     append(arg0: string): void
@@ -1175,7 +1179,7 @@ interface PythonRequirementsTxt {
     //name: string
     valueOf(name: string): any
 
-}   // interface PythonRequirementsTxt
+}    // interface PythonRequirementsTxt
 
 
 /*
@@ -1183,7 +1187,7 @@ interface PythonRequirementsTxt {
 Type for services. Used in executors.
     
  */
-interface Services {
+interface Services extends TreeNode {
 
     //msg: string
     fail(msg: string): void
@@ -1194,13 +1198,13 @@ interface Services {
 
     services(): any[]
 
-}   // interface Services
+}    // interface Services
 
 
 /*
  * Spring Boot project
  */
-interface SpringBootProject {
+interface SpringBootProject extends TreeNode {
 
     //name: string
     //parentPath: string
@@ -1227,11 +1231,11 @@ interface SpringBootProject {
     applicationClassSimpleName(): string
 
     //sourcePath: string
-    copyEditorBackingFileOrFail(sourcePath: string): void
-
-    //sourcePath: string
     //destinationPath: string
     copyEditorBackingFileOrFail(sourcePath: string, destinationPath: string): void
+
+    //sourcePath: string
+    copyEditorBackingFileOrFail(sourcePath: string): void
 
     //sourcePath: string
     //destinationPath: string
@@ -1344,13 +1348,13 @@ interface SpringBootProject {
     //replacement: string
     replaceInPath(literal: string, replacement: string): void
 
-}   // interface SpringBootProject
+}    // interface SpringBootProject
 
 
 /*
  * YML file
  */
-interface Yml {
+interface Yml extends TreeNode {
 
 
     content(): string
@@ -1383,7 +1387,7 @@ interface Yml {
     //name: string
     valueOf(name: string): any
 
-}   // interface Yml
+}    // interface Yml
 
 
 export { Dockerfile }

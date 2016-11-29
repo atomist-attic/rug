@@ -325,6 +325,14 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
 }
 
+trait TypeScriptGenerationConfig {
+
+  def indent: String
+
+  def separator: String
+
+}
+
 case class RugTranspilerConfig(
                                 indent: String = "    ",
                                 separator: String = "\n\n",
@@ -332,3 +340,4 @@ case class RugTranspilerConfig(
                                 parametersVarName: String = "parameters",
                                 editMethodName: String = "edit"
                               )
+  extends TypeScriptGenerationConfig

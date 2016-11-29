@@ -22,7 +22,9 @@ class PathExpression<R,N> {
 
 }
 
-// TODO retrofit hierarchy to extend this
+/**
+ * All tree nodes offer these basic operations.
+ */
 interface TreeNode {
 
   nodeName(): String
@@ -40,20 +42,18 @@ interface TreeNode {
 */
 interface PathExpressionEngine {
 
-  // TODO N extends TreeNode
-
-  evaluate<R,N>(root, expr: PathExpression<R,N>): Match<R,N>
+  evaluate<R extends TreeNode,N extends TreeNode>(root, expr: PathExpression<R,N>): Match<R,N>
 
 /**
  * Return a single match. Throw an exception otherwise.
  */
-  scalar<R,N>(root, expr: PathExpression<R,N>): N
+  scalar<R extends TreeNode,N extends TreeNode>(root, expr: PathExpression<R,N>): N
 
 // cast the current node
-  as<N>(root, name: string): N
+  as<N extends TreeNode>(root, name: string): N
 
   // Find the children of the current node of this time
-  children<N>(root, name: string): Array<N>
+  children<N extends TreeNode>(root, name: string): Array<N>
 }
 
 export {Match}

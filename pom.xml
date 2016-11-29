@@ -277,6 +277,7 @@
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                     <argLine>-Xmx1024mgit -XX:MaxPermSize=256m</argLine>
+                    <logForkedProcessCommand>true</logForkedProcessCommand>
                     <!--<forkMode>never</forkMode>-->
                     <!--<parallel>false</parallel>-->
                 </configuration>

@@ -4,8 +4,8 @@ set -eu
 set -o pipefail
 ulimit -c unlimited
 
-export MAVEN_OPTS="-Xmx1g"
-export JAVA_OPTS="-Xmx1g"
+#export MAVEN_OPTS="-Xmx1g"
+#export JAVA_OPTS="-Xmx1g"
 export RUG_DISABLE_V8="true"
 
 mvn="mvn --settings .settings.xml -B -V"

@@ -54,55 +54,55 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     else ""
 
     s"""import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-            |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
-            |import {Project,ElmModule} from 'user-model/model/Core'
-            |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-            |
+        |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
+        |import {Project,ElmModule} from 'user-model/model/Core'
+        |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+        |
             |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
-            |import {Result,Status} from 'user-model/operations/Result'
-            |
+        |import {Result,Status} from 'user-model/operations/Result'
+        |
             |abstract class ElmRenamerParameters extends ParametersSupport {
-            |
+        |
             |   $imp1
-            |   old_name: string = null
-            |
+        |   old_name: string = null
+        |
             |   $imp2
-            |   new_name: string = null
-            |}
-            |
+        |   new_name: string = null
+        |}
+        |
             |declare var print
-            |
+        |
             |@editor("Renames an Elm module")
-            |class Renamer implements ProjectEditor<ElmRenamerParameters> {
-            |
+        |class Renamer implements ProjectEditor<ElmRenamerParameters> {
+        |
             |     private eng: PathExpressionEngine;
-            |
+        |
             |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-            |      this.eng = _eng;
-            |    }
-            |
+        |      this.eng = _eng;
+        |    }
+        |
             |    edit(project: Project,
-            |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
-            |        let allModules: Array<ElmModule> =
-            |             this.eng.children<ElmModule>(project, "elm.module")
-            |
+        |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
+        |        let allModules: Array<ElmModule> =
+        |             this.eng.children<ElmModule>(project, "elm.module")
+        |
             |         for (let em of allModules) if (em.name() == p.old_name) {
-            |            ${if (prints) "print(`Modifying $${em} to have name $${p.new_name}`)" else ""}
-            |            em.rename(p.new_name)
-            |         }
-            |
+        |            ${if (prints) "print(`Modifying $${em} to have name $${p.new_name}`)" else ""}
+        |            em.rename(p.new_name)
+        |         }
+        |
             |         print(`found $${allModules.length} elm modules in $${project}`)
-            |         for (let em of allModules) {
-            |            ${if (prints) "print(`Module $${em}`)" else ""}
-            |           if (em.imports(p.old_name)) {
-            |             em.updateImport(p.old_name, p.new_name)
-            |           }
-            |        }
-            |        return new Result(Status.Success, "OK")
-            |    }
-            |}
+        |         for (let em of allModules) {
+        |            ${if (prints) "print(`Module $${em}`)" else ""}
+        |           if (em.imports(p.old_name)) {
+        |             em.updateImport(p.old_name, p.new_name)
+        |           }
+        |        }
+        |        return new Result(Status.Success, "OK")
+        |    }
+        |}
           """.stripMargin
-    }
+  }
 
   it should "rename module using TypeScript without path expression" in doRename(
     createElmRenamerClass(param = false),
@@ -214,16 +214,17 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   }
 
   it should "rename module directly under project using native Rug predicate" in {
-    val prog = """
-      |editor Organize
-      |
-      |RenameModuleToMain
-      |
-      |editor RenameModuleToMain
-      |with project
-      |   with elm.module m
-      |     do rename newName="Foobar"
-    """.stripMargin
+    val prog =
+      """
+        |editor Organize
+        |
+        |RenameModuleToMain
+        |
+        |editor RenameModuleToMain
+        |with project
+        |   with elm.module m
+        |     do rename newName="Foobar"
+      """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
       s"""module Foo exposing (..)
           |"""
@@ -291,7 +292,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
           |"""
         .stripMargin)
 
-    an[TestDidNotModifyException] shouldBe thrownBy (
+    an[TestDidNotModifyException] shouldBe thrownBy(
       elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog))
   }
 
@@ -310,7 +311,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
           |import $newImport
           |"""
         .stripMargin)
-    an[TestDidNotModifyException] shouldBe thrownBy (
+    an[TestDidNotModifyException] shouldBe thrownBy(
       elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog))
   }
 
@@ -391,10 +392,10 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
   it should "rename a simple constant" in {
     val input =
-    """module Main exposing (..)
-      |
-      |foo = "bananas"
-    """.stripMargin
+      """module Main exposing (..)
+        |
+        |foo = "bananas"
+      """.stripMargin
 
     val output =
       """module Main exposing (..)
@@ -562,7 +563,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |type alias Model =
         |    {}
-        |""".stripMargin)
+        | """.stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -586,7 +587,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |model =
         |    { recordField = "foo" }
-        |""".stripMargin)
+        | """.stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -610,7 +611,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |init =
         |    ( { recordField = "foo" }, Cmd.none )
-        |""".stripMargin)
+        | """.stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").get.content
@@ -758,7 +759,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    in
         |        { randomGif = randomGifModel }
         |            ! [ Cmd.map RandomGifMsg randomGifCommands ]
-        |""".stripMargin
+        | """.stripMargin
 
     val prog =
       """editor Bar
@@ -795,6 +796,9 @@ object ElmTypeUsageTest extends LazyLogging {
                 ): ArtifactSource = {
 
     val eds = runtime.createFromString(program)
+    if (eds.isEmpty) {
+      print(program); throw new Exception("No editor was parsed")
+    }
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
     val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))
@@ -815,7 +819,7 @@ object ElmTypeUsageTest extends LazyLogging {
           }
         }
         sm.result
-      case nmn : NoModificationNeeded =>
+      case nmn: NoModificationNeeded =>
         throw new TestDidNotModifyException
 
     }

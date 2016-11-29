@@ -39,7 +39,8 @@ object JavaScriptOperationFinder {
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
-    operationsFromVars(rugAs, jsc)
+    val ops = operationsFromVars(rugAs, jsc)
+    ops
   }
 
   private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {

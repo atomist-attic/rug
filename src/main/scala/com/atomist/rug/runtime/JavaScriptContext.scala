@@ -2,7 +2,7 @@ package com.atomist.rug.runtime
 
 import javax.script.{Invocable, ScriptContext, ScriptEngine, ScriptEngineManager}
 
-import com.atomist.rug.compiler.typescript.TypeScriptHelper
+import com.atomist.rug.compiler.typescript.TypeScriptCompilerContext
 import com.atomist.source.FileArtifact
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -22,6 +22,8 @@ class JavaScriptContext extends LazyLogging {
     new ScriptEngineManager(null).getEngineByName("nashorn") match {
       case is: ScriptEngine with Invocable => is
     }
+
+  val typeScriptContext = new TypeScriptCompilerContext
 
   configureEngine(engine)
 
@@ -82,6 +84,13 @@ class JavaScriptContext extends LazyLogging {
       }
     }).toSeq
 
+  /**
+    * Shutdown the compiler context after successful extraction of operations
+    */
+  def shutdown = {
+    typeScriptContext.shutdown()
+  }
+
   private def configureEngine(scriptEngine: ScriptEngine): Unit = {
     //so we can print stuff out from TS
     val consoleJs =
@@ -94,7 +103,7 @@ class JavaScriptContext extends LazyLogging {
     """.stripMargin
     scriptEngine.eval(consoleJs)
 
-    TypeScriptHelper.prepareEngine(scriptEngine)
+    typeScriptContext.init(scriptEngine)
   }
 
 }

@@ -40,6 +40,8 @@ class HandlerTest extends FlatSpec with Matchers {
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       jsc.eval(ts)
     }
+
+    jsc.shutdown
   }
 }
 

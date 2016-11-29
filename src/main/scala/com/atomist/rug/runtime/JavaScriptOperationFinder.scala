@@ -23,6 +23,7 @@ object JavaScriptOperationFinder {
     */
   val KnownOperationTypes = Set(ExecutorType, EditorType, GeneratorType)
 
+  // All known JS and TS files not in user_modules
   val allJsFiles: FileArtifact => Boolean = f => f.name.endsWith(".js")
   val allTsFiles: FileArtifact => Boolean = f => f.name.endsWith(".ts")
 
@@ -33,13 +34,17 @@ object JavaScriptOperationFinder {
     // First, compile any TypeScript files
     val tsc = new TypeScriptCompiler
     val compiled = tsc.compile(rugAs)
-    val js = compiled.allFiles.filter(allJsFiles)
+    val js = compiled.allFiles.filter(f => !f.path.startsWith(".atomist/node_modules/")).filter(allJsFiles)
       .map(f => f)
       .foreach(f => jsc.eval(f))
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
-    operationsFromVars(rugAs, jsc)
+    val operations = operationsFromVars(rugAs, jsc)
+
+    jsc.shutdown
+
+    operations
   }
 
   private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {

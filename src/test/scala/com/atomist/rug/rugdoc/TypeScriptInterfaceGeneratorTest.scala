@@ -17,6 +17,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val d = output.allFiles.head
     val compiled = tsc.compile(output)
     val js = compiled.allFiles.find(_.name.endsWith(".js")).get
+    // println(js.content)
   }
 
 }

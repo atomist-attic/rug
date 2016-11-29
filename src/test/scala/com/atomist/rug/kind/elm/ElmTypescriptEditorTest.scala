@@ -7,38 +7,73 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ElmTypescriptEditorTest extends FlatSpec with Matchers {
 
+  import ElmTypescriptEditorTestResources._
+
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
 
-  it should "run the editor yo" in {
-    val result = ElmTypeUsageTest.elmExecute(
-      new SimpleFileBasedArtifactSource(
-        "useless name",
-        StringFileArtifact(
-          "elm-package.json",
-          ElmTypescriptEditorTestResources.elmPackageDotJson)),
-      ElmTypescriptEditorTestResources.editor,
+  it should "produce a README with a link" in pendingUntilFixed {
+    val projectName = "Elminess"
+    val after = ElmTypeUsageTest.elmExecute(
+      singleFileArtifactSource(projectName),
+      Editor,
       runtime = typeScriptPipeline)
+
+    val maybeReadme = after.findFile("README.md")
+    maybeReadme.isDefined should be(true)
+    val readme : String = maybeReadme.get.content
+
+    withClue(readme) {
+      readme.contains( s"# ${projectName}") should be(true)
+
+      readme.contains(s"\n${description}\n") should be(true)
+
+     // readme.contains(s"https://${org}.github.io/${repo}") should be(true)
+    }
+
+  }
+
+  def singleFileArtifactSource(projectName: String): SimpleFileBasedArtifactSource = {
+    new SimpleFileBasedArtifactSource(
+      projectName,
+      StringFileArtifact(
+        "elm-package.json",
+        elmPackageDotJson))
   }
 }
 
 object ElmTypescriptEditorTestResources {
-  val editor =
+  val Editor =
     """
       |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
       |import {Parameters} from "user-model/operations/Parameters"
       |import {Status, Result} from "user-model/operations/Result"
       |import {Project} from 'user-model/model/Core'
+      |import {Match} from 'user-model/tree/PathExpression'
+      |import {PathExpression} from 'user-model/tree/PathExpression'
+      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+      |
       |import {editor} from 'user-model/support/Metadata'
+      |import {inject} from 'user-model/support/Metadata'
       |
       |@editor("Release editor")
       |class Release extends ParameterlessProjectEditor  {
       |
-      |  editWithoutParameters(project: Project): Result {
+      |    private eng: PathExpressionEngine;
+      |
+      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+      |      super();
+      |      this.eng = _eng;
+      |    }
+      |
+      |    editWithoutParameters(project: Project): Result {
+      |
+      |     let description = this.eng.scalar(project, `/*:file[name='elm-package.json']/->json/summary`)
+      |
       |     if (!project.fileExists("README.md")) {
       |       project.addFile("README.md", `# ${project.name()}
       |
-      |Description Goes Here
+      |${description}
       |       `);
       |     }
       |
@@ -72,5 +107,5 @@ object ElmTypescriptEditorTestResources {
         |    },
         |    "elm-version": "0.18.0 <= v < 0.19.0"
         |}
-        |"""
+        |""".stripMargin
 }

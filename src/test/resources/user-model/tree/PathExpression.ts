@@ -32,7 +32,7 @@ interface PathExpressionEngine {
 /**
  * Return a single match. Throw an exception otherwise.
  */
-  scalar<R,N>(root, expr: PathExpression<R,N>): N
+  scalar<R,N>(root, expr: string): N
 
 // cast the current node
   as<N>(root, name: string): N

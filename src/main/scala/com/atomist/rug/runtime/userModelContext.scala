@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
+import com.atomist.model.content.text.{PathExpression, PathExpressionEngine, PathExpressionParser, TreeNode}
 import com.atomist.param.ParameterValue
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -33,13 +33,30 @@ class PathExpressionExposer {
             val m = Match(tn, nodes.asJava)
             m
         }
+      case s: String =>
+        pee.evaluate(tn, s) match {
+          case Right(nodes) =>
+            val m = Match(tn, nodes.asJava)
+            m
+        }
     }
   }
 
   /**
     * Return a single match. Throw an exception otherwise.
     */
-  def scalar(root: TreeNode, expr: String): TreeNode = ???
+  def scalar(root: TreeNode, expr: String): TreeNode = {
+    val res = evaluate(root, expr)
+    val ms = res.matches
+    ms.size() match {
+      case 0 => throw new Exception("No matches found!")
+      case 1 =>
+        print(s"The node type is ${ms.get(0).nodeType}")
+        ms.get(0)
+      case _ => throw new Exception("Too many matches found!")
+    }
+  }
+
 
   // cast the current node
   def as(root: TreeNode, name: String): TreeNode = ???
@@ -80,16 +97,15 @@ private object MagicJavaScriptMethods {
   * @param n   node we are fronting
   */
 class SafeCommittingProxy(typ: Type, n: TreeNode)
-  extends AbstractJSObject //with TreeNode
-{
+  extends AbstractJSObject /* with TreeNode */ {
 
-//  override def nodeName: String = n.nodeName
-//
-//  override def nodeType: String = n.nodeType
-//
-//  override def value: String = n.value
-//
-//  override def accept(v: Visitor, depth: Int): Unit = n.accept(v, depth)
+  //  override def nodeName: String = n.nodeName
+  //
+  //  override def nodeType: String = n.nodeType
+  //
+  //  override def value: String = n.value
+  //
+  //  override def accept(v: Visitor, depth: Int): Unit = n.accept(v, depth)
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
     case x if MagicJavaScriptMethods.MagicMethods.contains(name) =>
@@ -102,7 +118,9 @@ class SafeCommittingProxy(typ: Type, n: TreeNode)
       // TODO separate error message if wrong number of arguments
       if (possibleOps.isEmpty)
         throw new RugRuntimeException(null,
-          s"Attempt to invoke method [$name] on type [${typ.name}]: Not an exported method")
+          s"Attempt to invoke method [$name] on type [${
+            typ.name
+          }]: Not an exported method")
 
       new AbstractJSObject() {
 
@@ -115,10 +133,16 @@ class SafeCommittingProxy(typ: Type, n: TreeNode)
           // TODO separate error message if wrong number of arguments
           if (op.isEmpty)
             throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+              s"Attempt to invoke method [$name] on type [${
+                typ.name
+              }] with ${
+                args.size
+              } arguments: No matching signature")
           val returned = op.get.invoke(n, args.toSeq)
           if (!op.get.readOnly) n match {
-            case c: {def commit(): Unit} => c.commit()
+            case c: {
+              def commit(): Unit
+            } => c.commit()
             case _ =>
           }
           returned
@@ -127,7 +151,9 @@ class SafeCommittingProxy(typ: Type, n: TreeNode)
 
     case _ =>
       // No static type information
-      throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
+      throw new IllegalStateException(s"No static type information is available for type [${
+        typ.name
+      }]: Probably an internal error")
   }
 }
 

@@ -1,6 +1,7 @@
 # Atomist 'rug'
 
-[![Build Status](https://travis-ci.com/atomist/rug.svg?token=iZrpQxJakudjNfb3zxAZ&branch=master)](https://travis-ci.com/atomist/rug) [![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
+[![Build Status](https://travis-ci.org/atomist/rug.svg?branch=master)](https://travis-ci.org/atomist/rug)
+[![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
 
 Rug runtime for project operations, with condolences to the
 Dude. See https://docs.atomist.com/ for documentation of the Rug
@@ -11,12 +12,15 @@ language.
 ## Using
 
 Most users will not need to use this project directly, but will use
-tools, e.g., [rug-cli][cli] that build on this project.  If you wish
-to develop tools using this project, you will need to add this project
-as a dependency and the maven repository where it is published to your
-build tool's configuration.  For example, if you use maven, add the
-dependency to the `<dependencies>` section and the repository to the
-`<repositories>` section of your `pom.xml`:
+tools, e.g., [rug-cli][cli] that build on this project.
+
+[cli]: https://github.com/atomist/rug-cli
+
+If you wish to develop tools using this project, you will need to add
+this project as a dependency and the maven repository where it is
+published to your build tool's configuration.  For example, if you use
+maven, add the dependency to the `<dependencies>` section and the
+repository to the `<repositories>` section of your `pom.xml`:
 
 ```xml
 <?xml version='1.0' encoding='UTF-8'?>
@@ -30,7 +34,7 @@ dependency to the `<dependencies>` section and the repository to the
 		<dependency>
 			<groupId>com.atomist</groupId>
 			<artifactId>rug</artifactId>
-			<version>0.1.0</version>
+			<version>0.3.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>ch.qos.logback</groupId>
@@ -59,19 +63,17 @@ dependency to the `<dependencies>` section and the repository to the
 </project>
 ```
 
-Be sure to change the version to the one you want to use.
-
-[cli]: https://github.com/atomist/rug-cli
+Be sure to change the `<version>` to the one you want to use.
 
 ## Support
 
-General support questions should be discussed in the `#rug-cli`
+General support questions should be discussed in the `#rug-lang`
 channel on our community slack team
 at [atomist-community.slack.com](https://join.atomist.com).
 
 If you find a problem, please create an [issue][].
 
-[issue]: https://github.com/atomist/rug-cli/issues
+[issue]: https://github.com/atomist/rug/issues
 
 ## Development
 
@@ -97,4 +99,4 @@ the annotated tag as the contents of the release notes.  It will also
 automatically upload the needed artifacts.
 
 [semver]: http://semver.org
-[travis]: https://travis-ci.com/atomist/rug-cli
+[travis]: https://travis-ci.com/atomist/rug

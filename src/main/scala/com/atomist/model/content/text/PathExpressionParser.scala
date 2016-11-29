@@ -134,7 +134,13 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   def parsePathExpression(expr: String): PathExpression = {
-    parseTo(StringFileArtifact("<input>", expr), phrase(pathExpression))
+    try {
+      parseTo(StringFileArtifact("<input>", expr), phrase(pathExpression))
+    }
+    catch {
+      case iex: IllegalArgumentException =>
+        throw new IllegalArgumentException(s"Path expression [$expr] is invalid", iex)
+    }
   }
 }
 

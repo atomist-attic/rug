@@ -12,7 +12,7 @@ class ElmTypescriptEditorTest extends FlatSpec with Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
 
-  it should "produce a README with a link" in pendingUntilFixed {
+  it should "produce a README with a link" in {
     val projectName = "Elminess"
     val after = ElmTypeUsageTest.elmExecute(
       singleFileArtifactSource(projectName),
@@ -23,7 +23,7 @@ class ElmTypescriptEditorTest extends FlatSpec with Matchers {
     maybeReadme.isDefined should be(true)
     val readme : String = maybeReadme.get.content
 
-    withClue(readme) {
+    withClue(s"README content----------\n$readme\n----------\n") {
       readme.contains( s"# ${projectName}") should be(true)
 
       readme.contains(s"\n${description}\n") should be(true)
@@ -50,11 +50,9 @@ object ElmTypescriptEditorTestResources {
       |import {Status, Result} from "user-model/operations/Result"
       |import {Project} from 'user-model/model/Core'
       |import {Match} from 'user-model/tree/PathExpression'
-      |import {PathExpression} from 'user-model/tree/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+      |import {PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
       |
-      |import {editor} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
+      |import {editor, inject} from '@atomist/rug/support/Metadata'
       |
       |@editor("Release editor")
       |class Release extends ParameterlessProjectEditor  {
@@ -68,12 +66,13 @@ object ElmTypescriptEditorTestResources {
       |
       |    editWithoutParameters(project: Project): Result {
       |
-      |     let description = this.eng.scalar(project, `/*:file[name='elm-package.json']/->json/summary`)
+      |    let pe = new PathExpression<Project,TreeNode>(`/*:file[name='elm-package.json']/->json/summary`)
+      |    let description: TreeNode = this.eng.scalar(project, pe)
       |
       |     if (!project.fileExists("README.md")) {
       |       project.addFile("README.md", `# ${project.name()}
       |
-      |${description}
+      |${description.value()}
       |       `);
       |     }
       |

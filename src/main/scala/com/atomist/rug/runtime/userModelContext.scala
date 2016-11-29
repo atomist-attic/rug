@@ -45,8 +45,8 @@ class PathExpressionExposer {
   /**
     * Return a single match. Throw an exception otherwise.
     */
-  def scalar(root: TreeNode, expr: String): TreeNode = {
-    val res = evaluate(root, expr)
+  def scalar(root: TreeNode, pe: Object): TreeNode = {
+    val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
       case 0 => throw new Exception("No matches found!")

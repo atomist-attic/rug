@@ -2,11 +2,6 @@
 
 set -eu
 set -o pipefail
-ulimit -c unlimited
-
-#export MAVEN_OPTS="-Xmx1g"
-#export JAVA_OPTS="-Xmx1g"
-#export RUG_DISABLE_V8="true"
 
 mvn="mvn --settings .settings.xml -B -V"
 if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -26,14 +21,13 @@ if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; th
     echo "Version is $project_version"
     $mvn deploy -DskipTests
     if [[ $TRAVIS_TAG ]]; then
-       ./npm_publish.sh "${TRAVIS_TAG}"
+        bash npm_publish.sh "$TRAVIS_TAG"
     fi
-
     git config --global user.email "travis-ci@atomist.com"
     git config --global user.name "Travis CI"
-    git_tag="$project_version+travis$TRAVIS_BUILD_NUMBER"
+    git_tag=$project_version+travis$TRAVIS_BUILD_NUMBER
     git tag "$git_tag" -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-    git push origin "$git_tag"
+    git push --tags -q "https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG"
 fi
 
 exit 0

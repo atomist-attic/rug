@@ -95,7 +95,7 @@ class TypeScriptInterfaceGenerator(
     val output = new StringBuilder("")
     val tsName = helper.typeScriptClassNameForTypeName(t.name)
     output ++= emitDocComment(t)
-    output.++=(s"\ninterface $tsName {\n\n")
+    output ++= s"\ninterface $tsName {\n\n"
     t.typeInformation match {
       case s: StaticTypeInformation =>
         for {
@@ -109,7 +109,7 @@ class TypeScriptInterfaceGenerator(
           output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}\n\n"
         }
     }
-    output ++= s"}${indent.dropRight(1)}// interface $tsName"
+    output ++= s"}${indent.dropRight(1)} // interface $tsName"
     output.toString
   }
 

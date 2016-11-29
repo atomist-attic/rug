@@ -22,17 +22,32 @@ class PathExpression<R,N> {
 
 }
 
+// TODO retrofit hierarchy to extend this
+interface TreeNode {
+
+  nodeName(): String
+
+  nodeType(): String
+
+  value(): String
+
+  update(newValue: String)
+
+}
+
 /*
   What we use to execute tree expressions
 */
 interface PathExpressionEngine {
+
+  // TODO N extends TreeNode
 
   evaluate<R,N>(root, expr: PathExpression<R,N>): Match<R,N>
 
 /**
  * Return a single match. Throw an exception otherwise.
  */
-  scalar<R,N>(root, expr: string): N
+  scalar<R,N>(root, expr: PathExpression<R,N>): N
 
 // cast the current node
   as<N>(root, name: string): N
@@ -44,3 +59,4 @@ interface PathExpressionEngine {
 export {Match}
 export {PathExpression}
 export {PathExpressionEngine}
+export {TreeNode}

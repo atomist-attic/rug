@@ -1,0 +1,75 @@
+
+@tag "elm"
+@description "Creates a new static Elm program"
+@generator "StaticPage"
+editor NewStaticPage
+
+@maxLength 21
+@description "Name of your new project."
+@displayName "Project Name"
+param project_name: @project_name
+
+
+@default "satellite-of-love"
+@description "Github user or organization"
+@optional
+@displayName "Organization"
+@validInput "This would be a good place to put your github user id"
+param org: @group_id
+
+@default "1.0.0"
+@displayName "Semantic Version"
+@optional
+@description "A Semantic Version number of the form: MAJOR.MINOR.PATCH"
+@validInput "MAJOR.MINOR.PATCH"
+param version: @semantic_version
+
+@default "helpful summary of your project, less than 80 characters"
+@optional
+@description "Summary of the new project"
+@displayName "description"
+@validInput "Under 80 characters"
+param description: .*
+
+
+SwitchProjectName
+SetRepository
+SetSummary
+
+
+
+@description "Change the description in elm-package.json"
+editor SetSummary
+
+param description: .*
+
+let descriptionField = $(/[name='elm-package.json']/->json/summary)
+
+with descriptionField
+  do setValue description
+
+
+
+@description "Populate repository"
+editor SetRepository
+
+param org: @group_id
+param project_name: @project_name
+
+let repositoryField = $(/[name='elm-package.json']/->json/repository)
+
+with repositoryField
+  do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
+
+
+@description "Populate project name"
+editor SwitchProjectName
+
+	@description "Name of the new project"
+	@displayName "Name"
+	param project_name: @project_name
+
+  with file when path = "resources/index.html"
+	  begin
+  	  do regexpReplace "<title>.*</title>" { "<title>" + project_name + "</title>"}
+		end

@@ -277,7 +277,7 @@
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                     <argLine>-Xmx1024m</argLine>
-                    <forkMode>never</forkMode>
+                    <!--<forkMode>never</forkMode>-->
                     <parallel>false</parallel>
                 </configuration>
                 <executions>

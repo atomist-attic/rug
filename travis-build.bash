@@ -2,7 +2,7 @@
 
 set -eu
 set -o pipefail
-ulimit -s unlimited
+ulimit -c unlimited
 
 export MAVEN_OPTS="-Xmx1g"
 export JAVA_OPTS="-Xmx1g"

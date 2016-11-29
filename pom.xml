@@ -276,7 +276,7 @@
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
-                    <argLine>-Xmx1024m</argLine>
+                    <argLine>-Xmx1024mgit -XX:MaxPermSize=256m</argLine>
                     <!--<forkMode>never</forkMode>-->
                     <!--<parallel>false</parallel>-->
                 </configuration>

@@ -84,6 +84,7 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
       super.getMember(name)
 
     case st: StaticTypeInformation =>
+      println(s"Calling $name on ${typ.name}")
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
       // TODO separate error message if wrong number of arguments
@@ -96,6 +97,7 @@ class SafeCommittingProxy(typ: Type, n: TreeNode) extends AbstractJSObject {
         override def isFunction: Boolean = true
 
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+          println(s"in, call, op=$name")
           val op = possibleOps.find(
             op => op.parameters.size == args.size)
           // TODO separate error message if wrong number of arguments

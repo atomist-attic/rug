@@ -193,6 +193,27 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
   }
 
+  it should "execute simple program with template interpretation" in {
+    val JavaAndTemplate: ArtifactSource = new SimpleFileBasedArtifactSource("name",
+      StringFileArtifact("pom.xml", "<maven></maven")
+    )
+    val rugAs = new SimpleFileBasedArtifactSource("rugs",
+      StringFileArtifact(s"${atomistConfig.templatesRoot}/simple.vm", """class Dog {}""")
+    )
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |with project p;
+        |do
+        |  merge "simple.vm" "src/main/java/Dog.java";
+      """.stripMargin
+    // TODO idea allow words like "to"   merge "simple.vm" to "src/main/java";
+    val expected = "class Dog {}"
+    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), JavaAndTemplate, rugAs, pipeline = pipeline)
+  }
+
   it should "execute simple program with false comparison preventing bad changes" in {
     val goBowling =
       """

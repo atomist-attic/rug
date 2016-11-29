@@ -4,8 +4,9 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
 import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.spi.InstantEditorFailureException
+import com.atomist.rug.spi.{InstantEditorFailureException, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -23,6 +24,9 @@ class JavaScriptInvokingProjectEditor(
   extends JavaScriptInvokingProjectOperation(jsc, className, jsVar, rugAs)
     with ProjectEditorSupport {
 
+  val typeRegistry: TypeRegistry = DefaultTypeRegistry
+  val projectType = typeRegistry.findByName("project").getOrElse(throw new TypeNotPresentException("project", null))
+
   override val name: String =
     if (className.endsWith("Editor")) className.dropRight("Editor".length)
     else className
@@ -39,7 +43,7 @@ class JavaScriptInvokingProjectEditor(
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        val res = invokeMember("edit", pmv, poa)
+        val res = invokeMember("edit", wrapperize(pmv), poa)
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")
@@ -56,5 +60,9 @@ class JavaScriptInvokingProjectEditor(
     }
     logger.debug(s"$name modifyInternal took ${tr._2}ms")
     tr._1
+  }
+
+  private def wrapperize(pmv: ProjectMutableView): SafeCommittingProxy = {
+    new SafeCommittingProxy(projectType ,pmv)
   }
 }

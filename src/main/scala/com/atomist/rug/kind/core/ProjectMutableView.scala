@@ -14,9 +14,11 @@ import com.atomist.rug.spi._
 import com.atomist.source._
 import com.atomist.util.BinaryDecider
 import com.atomist.util.template.MergeContext
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.reflect.io.File
 import scala.util.Properties
+import scala.collection.JavaConverters._
 
 object ProjectMutableView {
 
@@ -338,12 +340,23 @@ class ProjectMutableView(
             @ExportFunctionParameterDescription(name = "path",
               description = "The path that will be the merged path within the output project.")
             path: String,
-            @ExportFunctionParameterDescription(name = "ic",
-              description = "The project identifier to use")
-            ic: FunctionInvocationContext[ProjectMutableView]) = {
-    val mc = MergeContext(ic.identifierMap)
+            @ExportFunctionParameterDescription(name = "parameters",
+              description = "Parameters")
+            parametersToTemplate: Any) = {
+    val mc = MergeContext(mapToUse(parametersToTemplate))
     val newFile = StringFileArtifact(path, mergeTool.mergeToFile(mc, template).content)
     updateTo(currentBackingObject + newFile)
+  }
+
+  private def mapToUse(arg: Any): Map[String, Object] = arg match {
+    case ic: FunctionInvocationContext[_] => ic.identifierMap
+    case som: ScriptObjectMirror =>
+      // It's the map they created
+      som.entrySet().asScala.map(me => {
+        println(s"Emitted property ${me.getKey}=${me.getValue}")
+        (me.getKey -> me.getValue)
+      }
+  ).toMap
   }
 
   @ExportFunction(readOnly = false,
@@ -360,9 +373,9 @@ class ProjectMutableView(
                        description = "The destination path within the destination project")
                      outputPath: String,
                      @ExportFunctionParameterDescription(name = "ic",
-                       description = "The project identifier to use")
-                     ic: FunctionInvocationContext[ProjectMutableView]) = {
-    val mc = MergeContext(ic.identifierMap)
+                       description = "Parameters to the template")
+                     parametersToTemplate: Any) = {
+    val mc = MergeContext(mapToUse(parametersToTemplate))
     val directoryToMerge = templateContent / templatesPath
     val outputContent = mergeTool.processTemplateFiles(mc, directoryToMerge).withPathAbove(outputPath)
     updateTo(currentBackingObject + outputContent)

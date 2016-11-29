@@ -57,6 +57,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
+    println(ts)
     ts.toString
   }
 
@@ -104,10 +105,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     ts.toString()
   }
 
-  private def decorators(rug: RugProgram): String  = {
-//    @tag("java")
-//    @tag("maven")
-//    @editor("A nice little editor")
+  private def decorators(rug: RugProgram): String = {
+    //    @tag("java")
+    //    @tag("maven")
+    //    @editor("A nice little editor")
 
     s"@editor('${rug.name}')"
   }
@@ -206,7 +207,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       case null => "null"
       case s: String => s""""${s}""""
       case x => x.toString
-
     }
     case js: JavaScriptBlock => handleJs(js.content)
     case rf: ParsedRegisteredFunctionPredicate =>
@@ -229,20 +229,26 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       s"(() => { \n$js })()"
     }
     else {
-     js
+      js
     }
   }
 
   private def doStepCode(prog: RugProgram, doStep: DoStep, alias: String): String = doStep match {
     case f: FunctionDoStep if "eval".equals(f.function) =>
-      // We are only to argument the single arg for a side effect
+      // We are only to evaluate the single arg for a side effect
       require(f.args.size == 1)
       extractValue(prog, f.args.head, "")
     case f: FunctionDoStep =>
-      val args = f.args
+      val args: Seq[String] = f.args
         .map(a => extractValue(prog, a, alias))
-        .mkString(", ")
-      s"$alias.${f.function}($args)"
+      // Apply special rules for map
+      val extraArg: Option[String] = if ("merge".equals(f.function)) {
+        Some("{}")
+      }
+      else None
+
+      val argsToUse = (args ++ extraArg).mkString(", ")
+      s"$alias.${f.function}($argsToUse)"
     case wds: WithDoStep =>
       helper.indented(withBlockCode(prog, wds.wth, alias), 1)
   }
@@ -266,17 +272,28 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       |// To take ownership of this file, simply delete the .rug file
     """.stripMargin
 
+  // TODO remove the utility function here: Move to a standard class
   val imports =
-    """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
-      |import {ParametersSupport} from 'user-model/operations/Parameters'
-      |import {Project} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
-      |
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
-    """.stripMargin
+  """
+    |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+    |import {Parameters} from 'user-model/operations/Parameters'
+    |import {ParametersSupport} from 'user-model/operations/Parameters'
+    |import {Project} from 'user-model/model/Core'
+    |import {Result,Status} from 'user-model/operations/Result'
+    |
+    |import {tag} from 'user-model/support/Metadata'
+    |import {editor} from 'user-model/support/Metadata'
+    |
+    |
+    |function clone(obj) {
+    |    if (null == obj || "object" != typeof obj) return obj;
+    |    var copy = obj.constructor();
+    |    for (var attr in obj) {
+    |        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    |    }
+    |    return copy;
+    |}
+  """.stripMargin
 
 }
 

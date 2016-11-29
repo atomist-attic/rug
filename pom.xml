@@ -278,7 +278,7 @@
                     <filereports>WDF TestSuite.txt</filereports>
                     <argLine>-Xmx1024m</argLine>
                     <!--<forkMode>never</forkMode>-->
-                    <parallel>false</parallel>
+                    <!--<parallel>false</parallel>-->
                 </configuration>
                 <executions>
                     <execution>

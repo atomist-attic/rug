@@ -87,7 +87,7 @@ class JavaScriptContext extends LazyLogging {
   /**
     * Shutdown the compiler context after successful extraction of operations
     */
-  def shutdown = {
+  def shutdown() = {
     typeScriptContext.shutdown()
   }
 

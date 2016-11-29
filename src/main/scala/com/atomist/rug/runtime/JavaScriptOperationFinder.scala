@@ -41,9 +41,7 @@ object JavaScriptOperationFinder {
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 
     val operations = operationsFromVars(rugAs, jsc)
-
-    jsc.shutdown
-
+    jsc.shutdown()
     operations
   }
 

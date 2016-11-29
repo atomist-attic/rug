@@ -24,6 +24,12 @@ class PathExpressionExposer {
 
   val pee = new PathExpressionEngine
 
+  /**
+    *
+    * @param tn
+    * @param pe path expression to evaluate
+    * @return
+    */
   def evaluate(tn: TreeNode, pe: Object): Match = {
     pe match {
       case som: ScriptObjectMirror =>

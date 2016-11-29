@@ -66,7 +66,8 @@ object ElmTypescriptEditorTestResources {
       |
       |    editWithoutParameters(project: Project): Result {
       |
-      |    let pe = new PathExpression<Project,TreeNode>(`/*:file[name='elm-package.json']/->json/summary`)
+      |    let pe = new PathExpression<Project,TreeNode>(
+      |     `/*:file[name='elm-package.json']/->json/summary/[1]`)
       |    let description: TreeNode = this.eng.scalar(project, pe)
       |
       |     if (!project.fileExists("README.md")) {

@@ -18,9 +18,29 @@ import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App{
 
+  val target = if( args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
+  val generator = new TypeScriptInterfaceGenerator
+
+  val output = generator.generate(SimpleProjectOperationArguments("",
+    Map(generator.OutputPathParam -> "Core.ts")))
+  Some(new PrintWriter(target)).foreach{p => p.write(output.allFiles.head.content); p.close()}
+  println(s"Written to $target")
+}
+
+/**
+  * Generate types for documents
+  *
+  * @param typeRegistry Registry of known Rug Types.
+  */
+class TypeScriptInterfaceGenerator(
+                                    typeRegistry: TypeRegistry = DefaultTypeRegistry
+                                  ) extends ProjectGenerator
+  with ProjectEditor with ProjectOperationParameterSupport {
+
   val DefaultTemplateName = "ts.vm"
 
   val DefaultFilename = "model/Core.ts"
+
 
   val OutputPathParam = "output_path"
 
@@ -42,25 +62,6 @@ object TypeScriptInterfaceGenerator extends App{
       | * limitations under the License.
       | */
     """.stripMargin
-
-  val target = if( args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
-  val generator = new TypeScriptInterfaceGenerator
-
-  val output = generator.generate(SimpleProjectOperationArguments("",
-    Map(OutputPathParam -> "Core.ts")))
-  Some(new PrintWriter(target)).foreach{p => p.write(output.allFiles(0).content); p.close}
-  println(s"Written to ${target}")
-}
-
-/**
-  * Generate types for documents
-  *
-  * @param typeRegistry Registry of known Rug Types.
-  */
-class TypeScriptInterfaceGenerator(
-                                    typeRegistry: TypeRegistry = DefaultTypeRegistry
-                                  ) extends ProjectGenerator
-  with ProjectEditor with ProjectOperationParameterSupport {
 
   val helper = new TypeScriptGenerationHelper()
 

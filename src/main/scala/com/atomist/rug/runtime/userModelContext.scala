@@ -57,7 +57,7 @@ class PathExpressionExposer {
     ms.size() match {
       case 0 => throw new Exception("No matches found!")
       case 1 =>
-        print(s"The node type is ${ms.get(0).nodeType}")
+        //print(s"The node type is ${ms.get(0).nodeType}")
         ms.get(0)
       case _ => throw new Exception("Too many matches found!")
     }

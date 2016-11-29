@@ -1,6 +1,6 @@
 # Atomist 'rug'
 
-[![CLA assistant](https://cla-assistant.io/readme/badge/cla-assistant/cla-assistant)](https://cla-assistant.io/cla-assistant/cla-assistant) [![Build Status](https://travis-ci.com/atomist/rug.svg?token=YuitiySbpCXZTEZXx1ss&branch=master)](https://travis-ci.com/atomist/rug) [![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
+[![Build Status](https://travis-ci.com/atomist/rug.svg?token=YuitiySbpCXZTEZXx1ss&branch=master)](https://travis-ci.com/atomist/rug) [![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
 
 Rug runtime for project operations, with condolences to the
 Dude. See https://docs.atomist.com/ for documentation of the Rug

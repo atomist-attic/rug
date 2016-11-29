@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
     <artifactId>rug</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
     <description>Rug runtime</description>
@@ -48,8 +48,8 @@
         </dependency>
         <dependency>
             <groupId>com.atomist</groupId>
-            <artifactId>typescript-rug-compiler</artifactId>
-            <version>0.1.1-20161128110336</version>
+            <artifactId>rug-typescript-compiler</artifactId>
+            <version>0.1.1-20161129000505</version>
         </dependency>
         <dependency>
             <groupId>com.github.julianthome</groupId>
@@ -276,7 +276,7 @@
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
-                    <argLine>-Xmx1024m</argLine>
+                    <argLine>-Xmx2048m</argLine>
                 </configuration>
                 <executions>
                     <execution>

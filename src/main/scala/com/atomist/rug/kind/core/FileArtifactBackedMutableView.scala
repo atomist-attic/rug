@@ -45,6 +45,12 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   @ExportFunction(readOnly = true, description = "Return the number of lines in the file")
   override def lineCount: Int = FileMetrics.lineCount(currentBackingObject.content)
 
+  @ExportFunction(readOnly = true, description = "Return the file's permissions")
+  def permissions: Int = currentBackingObject.mode
+
+  @ExportFunction(readOnly = false, description = "Make the file executable")
+  def makeExecutable() = updateTo(currentBackingObject.withMode(FileArtifact.DefaultMode))
+
   @ExportFunction(readOnly = true,
     description = "Does this path begin with the given pattern? Pattern should contain slashes but not begin with a /")
   def underPath(@ExportFunctionParameterDescription(name = "root",

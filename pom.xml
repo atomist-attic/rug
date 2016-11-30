@@ -269,6 +269,41 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <id>mkdir</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <executable>mkdir</executable>
+                            <arguments>
+                                <argument>-p</argument>
+                                <argument>target/classes/user-model/model</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-interfaces</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <mainClass>com.atomist.rug.rugdoc.TypeScriptInterfaceGenerator</mainClass>
+                            <arguments>
+                                <argument>target/classes/user-model/model/Core.ts</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+
+            </plugin>
+            <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
                 <version>1.0</version>
@@ -276,10 +311,7 @@
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
-                    <!--<argLine>-Xmx2048m</argLine>-->
                     <logForkedProcessCommand>true</logForkedProcessCommand>
-                    <!--<forkMode>never</forkMode>-->
-                    <!--<parallel>false</parallel>-->
                 </configuration>
                 <executions>
                     <execution>

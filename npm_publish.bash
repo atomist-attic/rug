@@ -25,8 +25,8 @@ TARGET="target/nodejs"
 mkdir -p "$TARGET"
 
 rm -rf  "$TARGET/user-model"
-cp -a src/test/resources/user-model "$TARGET" || die "Error copying user-model to target dir"
-jq --arg version "$1" '.version = $version' src/test/resources/user-model/package.json > "$TARGET"/user-model/package.json
+cp -a "target/classes/user-model" "$TARGET" || die "Error copying user-model to target dir"
+jq --arg version "$1" '.version = $version' "target/classes/user-model/package.json" > "${TARGET}/user-model/package.json"
 
 cd "$TARGET"
 

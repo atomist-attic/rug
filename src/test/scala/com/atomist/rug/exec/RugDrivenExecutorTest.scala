@@ -122,19 +122,20 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
     )
   }
 
-  it should "update all projects using JavaScript executor action" in {
-    val content = "What is this, the high hat?"
-    updateAllProjects(content,
-      s"""
-         |executor AddSomeCaspar
-         |
-         |{
-         |  load("http://underscorejs.org/underscore.js");
-         |  _.each(services.services(),
-         |      function(project){ project.addFile("Caspar" , "$content") });
-         |}
-      """.stripMargin
-    )
+  // TODO convert to TypeScript
+//  it should "update all projects using JavaScript executor action" in {
+//    val content = "What is this, the high hat?"
+//    updateAllProjects(content,
+//      s"""
+//         |executor AddSomeCaspar
+//         |
+//         |{
+//         |  load("http://underscorejs.org/underscore.js");
+//         |  _.each(services.services(),
+//         |      function(project){ project.addFile("Caspar" , "$content") });
+//         |}
+//      """.stripMargin
+//    )
   }
 
   it should "update all projects using JavaScript executor action invoking named editor" in pendingUntilFixed {

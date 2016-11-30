@@ -134,7 +134,7 @@ class JsonMutableView(
 
 class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
 
-  override def name: String = "Pair"
+  override def name: String = "pair"
 
   override def description: String = "JSON pair"
 }

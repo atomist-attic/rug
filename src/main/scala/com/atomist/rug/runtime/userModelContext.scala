@@ -1,18 +1,16 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.text.{PathExpression, PathExpressionEngine, PathExpressionParser, TreeNode}
-import com.atomist.param.ParameterValue
+import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
-import com.atomist.util.Visitor
-import jdk.nashorn.api.scripting.{AbstractJSObject, JSObject, ScriptObjectMirror}
+import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
 
-case class Match(root: TreeNode, matches: _root_.java.util.List[TreeNode]) {
-}
+// Matches are actually TreeNodes, but wrapped in SafeCommittingProxy
+case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
 
 /**
   * JavaScript-friendly facade to PathExpressionEngine.
@@ -36,13 +34,13 @@ class PathExpressionExposer {
         val expr: String = som.get("expression").asInstanceOf[String]
         pee.evaluate(tn, expr) match {
           case Right(nodes) =>
-            val m = Match(tn, nodes.asJava)
+            val m = Match(tn, wrap(nodes))
             m
         }
       case s: String =>
         pee.evaluate(tn, s) match {
           case Right(nodes) =>
-            val m = Match(tn, nodes.asJava)
+            val m = Match(tn, wrap(nodes))
             m
         }
     }
@@ -51,7 +49,7 @@ class PathExpressionExposer {
   /**
     * Return a single match. Throw an exception otherwise.
     */
-  def scalar(root: TreeNode, pe: Object): TreeNode = {
+  def scalar(root: TreeNode, pe: Object): Object = {
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
@@ -65,7 +63,8 @@ class PathExpressionExposer {
 
 
   // cast the current node
-  def as(root: TreeNode, name: String): TreeNode = ???
+  def as(root: TreeNode, name: String): Object =
+  scalar(root, s"->$name")
 
   // Find the children of the current node of this time
   def children(root: TreeNode, name: String) = {
@@ -73,13 +72,19 @@ class PathExpressionExposer {
     typ match {
       case cvf: ContextlessViewFinder =>
         val kids = cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
-        kids.map(k => new SafeCommittingProxy(typ, k)).asJava
+        wrap(kids)
     }
   }
 
-  //  private def safeCommittingProxy(typ: Type, n: TreeNode): Object = {
-  //
-  //  }
+  private def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
+    nodes.map(k => new SafeCommittingProxy({
+      typeRegistry.findByName(k.nodeType).getOrElse(
+        throw new UnsupportedOperationException(s"Cannot find type for node type [${k.nodeType}]")
+      )
+    },
+      k).asInstanceOf[Object]).asJava
+  }
+
 
 }
 

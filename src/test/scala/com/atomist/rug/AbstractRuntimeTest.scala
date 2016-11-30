@@ -264,7 +264,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |param message: .*
          |
          |with file f
-         | when { f.name().match(".java$$")}
+         | when { /.*\\.java$$/.test(f.name())}
          |do
          | append "$extraText"
       """.stripMargin

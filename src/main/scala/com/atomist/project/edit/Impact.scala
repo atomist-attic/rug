@@ -38,7 +38,8 @@ case class NoModificationNeeded(comment: String) extends ModificationAttempt
   *
   * @param failureExplanation description of what went wrong
   */
-case class FailedModificationAttempt(failureExplanation: String) extends ModificationAttempt
+case class FailedModificationAttempt(failureExplanation: String,
+                                     cause: Option[Throwable] = None) extends ModificationAttempt
 
 /**
   * Indicates whether this can be applied to a particular ArtifactSource.

@@ -36,7 +36,7 @@ trait ContextlessViewFinder extends ViewFinder with ChildResolver {
 }
 
 /**
-  * Find views in a context, with project knowledge. Used to drive with block execution.
+  * Find views in a context, with project knowledge. Used to drive `with` block execution.
   */
 trait ViewFinder {
 
@@ -53,7 +53,10 @@ trait ViewFinder {
     }
     catch {
       case npe: NullPointerException =>
-        val msg = s"Internal error in Rug type with alias '${selected.alias}': A view was returned as null"
+        val msg = s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
+                      | The context is: ${context}
+                      | This is what is available: ${findAllIn(rugAs, selected, context, poa, identifierMap)}
+                      |"""
         throw new RugRuntimeException(null, msg, npe)
     }
   }

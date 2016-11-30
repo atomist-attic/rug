@@ -227,19 +227,28 @@ trait RugOperationSupport extends LazyLogging {
       case Some(pe: ProjectEditor) =>
         try {
           pe.modify(as, parametersForOtherOperation(rugAs, roo, poa, as))
-        } catch {
-          case a: RugRuntimeException if a.getCause.isInstanceOf[BadRugSyntaxException] =>
-            val bre = a.getCause.asInstanceOf[BadRugSyntaxException]
-            val detailedDescription =
-              s"""Error: ${bre.info.message}
-                  |While trying to parse: ${bre.info.badInput}
-                  |In the context of: ${a.getMessage}
-           """.stripMargin
-            FailedModificationAttempt(detailedDescription)
-        }
+        } catch expressFailure(roo)
       case Some(wtf) =>
         throw new RugRuntimeException(name, s"Project operation is not a ProjectEditor: ${roo.name}", null)
     }
+  }
+
+  private def expressFailure(roo: RunOtherOperation): PartialFunction[Throwable, FailedModificationAttempt] = {
+    case a: RugRuntimeException if a.getCause.isInstanceOf[BadRugSyntaxException] =>
+      val bre = a.getCause.asInstanceOf[BadRugSyntaxException]
+      val detailedDescription =
+         s"""While trying to parse:
+            |${bre.info.badInput}
+            |
+            |I encountered this error:
+            |${a.getMessage}
+           """.stripMargin
+      FailedModificationAttempt(detailedDescription, Some(a))
+    case nie : NotImplementedError =>
+      FailedModificationAttempt(s"NotImplementedError: ??? encountered while running ${roo.name}", Some(nie))
+    case other =>
+      other.printStackTrace()
+      FailedModificationAttempt(s"Failure running ${roo.name}: ${other.getMessage}", Some(other))
   }
 
   protected def runReviewer(

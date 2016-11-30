@@ -45,7 +45,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
                 case mv: MutableView[_] => mv
               })
           }
-        case (suovmv: Seq[MutableContainerTreeNodeMutableView], _) =>
+        case (suovmv: Seq[MutableContainerTreeNodeMutableView @unchecked], _) =>
           Some(suovmv)
         case (childType, parent) =>
           // This is fine

@@ -26,7 +26,7 @@ object DockerfileParser {
           val invocable = engine.asInstanceOf[Invocable]
           val result = invocable.invokeFunction("parse", content1, Map("includeComments" -> "true").asJava)
           val lines = result match {
-            case map: util.Map[AnyRef, AnyRef] =>
+            case map: util.Map[AnyRef @unchecked, AnyRef @unchecked] =>
               map.asScala.values.map(c => mapper.convertValue(c, classOf[DockerfileLine])).toSeq
             case _ => throw new IllegalArgumentException("Failed to parse content")
           }

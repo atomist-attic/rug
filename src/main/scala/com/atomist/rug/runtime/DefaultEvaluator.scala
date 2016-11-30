@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.grammar.microgrammar.Microgrammar
 import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug._
@@ -13,7 +12,6 @@ import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
 object DefaultEvaluator extends DefaultEvaluator(new EmptyRugFunctionRegistry) {
-
 }
 
 class DefaultEvaluator(
@@ -53,7 +51,7 @@ class DefaultEvaluator(
                                                  poa: ProjectOperationArguments): R = {
     try {
       te match {
-        case literal: Literal[R] =>
+        case literal: Literal[R @unchecked] =>
           literal.value
         case _ =>
           val localArgs = te match {

@@ -3,7 +3,8 @@ package com.atomist.util.template
 import java.util.{Map => JMap}
 
 import com.atomist.param.ParameterValues
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor}
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
+import com.atomist.util.BinaryDecider
 
 import scala.collection.JavaConversions._
 
@@ -50,8 +51,7 @@ trait MergeTool {
     * @return output ArtifactSource
     */
   def processTemplateFiles(context: MergeContext, in: ArtifactSource): ArtifactSource =
-    // in ✎ (f => mergeFile(context, f))
-    in ✎ SimpleFileEditor(f => true, f => mergeFile(context, f))
+    in ✎ SimpleFileEditor(f => !BinaryDecider.isBinaryContent(f.content), f => mergeFile(context, f))
 
   /**
     * Merge the given template string.

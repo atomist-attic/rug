@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
     <artifactId>rug</artifactId>
-    <version>0.3.2-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
     <description>Rug runtime</description>

@@ -139,7 +139,7 @@ trait PathExpressionParser extends CommonTypesParser {
     }
     catch {
       case iex: IllegalArgumentException =>
-        throw new IllegalArgumentException(s"Path expression [$expr] is invalid", iex)
+        throw new IllegalArgumentException(s"Path expression '$expr' is invalid: [${iex.getMessage}]", iex)
     }
   }
 }

@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{NoModificationNeeded, ModificationAttempt, ProjectEditor, SuccessfulModification}
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug._
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.file.ClassPathArtifactSource
@@ -11,6 +11,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.JavaConversions._
 import JavaVerifier._
+import com.atomist.rug.ts.RugTranspiler
 
 object JavaClassTypeUsageTest extends Matchers {
 
@@ -47,9 +48,8 @@ object JavaClassTypeUsageTest extends Matchers {
     }
   }
 
-  def attemptToModify(program: String, as: ArtifactSource, poa: Map[String,String]): ModificationAttempt = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-
+  def attemptToModify(program: String, as: ArtifactSource, poa: Map[String,String],
+                      runtime : RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
     val eds = runtime.createFromString(program)
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleProjectOperationArguments("", poa))
@@ -60,16 +60,54 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaClassTypeUsageTest._
 
-  it should "find boot package using let" in {
+  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
+
+  it should "find boot package using let and rug" in {
     val program =
       """
         |editor PackageFinder
         |
-        |let spb = $(/*[type='spring.bootProject'])
+        |let spb = $(->spring.bootProject)
         |
-        |with spb p do eval { print("appPackage=" + p.appPackage()) }
+        |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
       """.stripMargin
     attemptToModify(program, NewSpringBootProject, Map()) match {
+      case nmn: NoModificationNeeded => // Ok
+    }
+  }
+
+  it should "find boot package using let and typescript" in {
+    val program =
+      """
+        |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
+        |import {Status, Result} from "user-model/operations/Result"
+        |import {Project,SpringBootProject} from 'user-model/model/Core'
+        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+        |
+        |import {editor, inject} from '@atomist/rug/support/Metadata'
+        |
+        |declare var print
+        |
+        |@editor("Package finder")
+        |class PackageFinder extends ParameterlessProjectEditor {
+        |
+        | private eng: PathExpressionEngine;
+        |
+        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+        |      super();
+        |      this.eng = _eng;
+        |    }
+        |
+        |    editWithoutParameters(project: Project): Result {
+        |
+        |    let pe = new PathExpression<Project,SpringBootProject>(`->spring.bootProject`)
+        |    let p = this.eng.scalar(project, pe)
+        |    //if (p == null)
+        |    return new Result(Status.Success, "OK");
+        |    }
+        |}
+      """.stripMargin
+    attemptToModify(program, NewSpringBootProject, Map(), runtime = ccPipeline) match {
       case nmn: NoModificationNeeded => // Ok
     }
   }

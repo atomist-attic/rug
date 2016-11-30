@@ -49,8 +49,7 @@ object ElmTypescriptEditorTestResources {
       |import {Parameters} from "user-model/operations/Parameters"
       |import {Status, Result} from "user-model/operations/Result"
       |import {Project} from 'user-model/model/Core'
-      |import {Match} from 'user-model/tree/PathExpression'
-      |import {PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
       |
       |import {editor, inject} from '@atomist/rug/support/Metadata'
       |

@@ -2,6 +2,7 @@ package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.rug.kind.java.support.{IsJavaProject, JavaHelpers}
 import com.atomist.rug.parser.Selected
@@ -12,12 +13,14 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 class SpringBootProjectType(
                              evaluator: Evaluator
                            )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
 
@@ -27,6 +30,8 @@ class SpringBootProjectType(
 
   override def viewManifest: Manifest[SpringBootProjectMutableView] = manifest[SpringBootProjectMutableView]
 
+  override val resolvesFromNodeTypes: Set[String] = Set("project")
+
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
                                    context: MutableView[_],
@@ -35,10 +40,14 @@ class SpringBootProjectType(
     context match {
       case jpv: JavaProjectMutableView =>
         val sproj = new SpringBootProjectMutableView(jpv)
-        Some(Seq(sproj))
+        if (sproj.isValid)
+          Some(Seq(sproj))
+        else Some(Nil)
       case pv: ProjectMutableView if IsJavaProject(pv.currentBackingObject) =>
         val sproj = new SpringBootProjectMutableView(new JavaProjectMutableView(pv))
-        Some(Seq(sproj))
+        if (sproj.isValid)
+          Some(Seq(sproj))
+        else Some(Nil)
       case _ =>
         Some(Nil)
     }
@@ -47,6 +56,9 @@ class SpringBootProjectType(
 
 class SpringBootProjectMutableView(pv: JavaProjectMutableView)
   extends SpringProjectMutableView(pv) {
+
+  def isValid =
+    Try { applicationClassFQN }.isSuccess
 
   @ExportFunction(readOnly = true, description = "The FQN of the Spring Boot Application class")
   def applicationClassFQN: String = {

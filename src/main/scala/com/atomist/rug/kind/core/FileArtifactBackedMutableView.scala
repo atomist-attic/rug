@@ -49,7 +49,7 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   def permissions: Int = currentBackingObject.mode
 
   @ExportFunction(readOnly = false, description = "Make the file executable")
-  def makeExecutable() = updateTo(currentBackingObject.withMode(FileArtifact.DefaultMode))
+  def makeExecutable() = updateTo(currentBackingObject.withMode(FileArtifact.ExecutableMode))
 
   @ExportFunction(readOnly = true,
     description = "Does this path begin with the given pattern? Pattern should contain slashes but not begin with a /")

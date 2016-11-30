@@ -15,6 +15,19 @@ class Dockerfile(val lines: Seq[DockerfileLine]) {
 
   import Command._
 
+  def getExposePorts(): Set[Int] = {
+    val matchingLines: Seq[DockerfileLine] = lines.filter(d => EXPOSE.toString.equals(d.name))
+    val exposeLineToPorts: (DockerfileLine) => Set[Int] = l => {
+      //This could be a single value, or a list of values. First trim off any extra whitespace
+      val exposeValue: String = l.getRaw.stripPrefix(EXPOSE.toString).trim
+      val portValues: Array[String] = exposeValue.split(' ')
+      //A bit hacky, but need to skip entries which are whitespace (the split above leaves in whitespace lines)
+      portValues.filter(v => v.trim.length > 0).map(v => Integer.parseInt(v)).toSet
+    }
+
+    return matchingLines.flatMap(exposeLineToPorts).toSet
+  }
+
   def addOrUpdateFrom(arg: String): this.type = {
     addOrUpdate(FROM, arg)
     this

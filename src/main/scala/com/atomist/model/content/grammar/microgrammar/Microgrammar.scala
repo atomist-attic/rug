@@ -1,7 +1,7 @@
 package com.atomist.model.content.grammar.microgrammar
 
 import com.atomist.model.content.grammar.MatchListener
-import com.atomist.model.content.text.{SimpleMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode$}
+import com.atomist.model.content.text.{SimpleMutableContainerTreeNode, MutableContainerTreeNode}
 
 /**
   * A microgrammar instance reflects a grammar that will match part of all of an input.
@@ -12,9 +12,9 @@ trait Microgrammar {
   /**
     * Match input separated.
     *
-    * @param input
-    * @param l listener to be notified on matches. Useful for test infrastructure etc.
-    * @return
+    * @param input the string to match
+    * @param l listener to be notified on matches. Useful for test infrastructure etc
+    * @return a sequence of MutableContainerTreeNode's
     */
   def findMatches(input: String, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
 

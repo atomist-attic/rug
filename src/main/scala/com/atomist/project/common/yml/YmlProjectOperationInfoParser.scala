@@ -28,7 +28,7 @@ object YmlProjectOperationInfoParser {
 
     Try(mapper.readValue(yml, classOf[BoundProjectOperationInfo])) match {
       case s: Success[BoundProjectOperationInfo] =>
-        val badPatterns = s.value.parameters.flatMap(p => patternError(p))
+        val badPatterns = s.value.parameters().flatMap(p => patternError(p))
         if (badPatterns.nonEmpty)
           throw new InvalidYmlDescriptorException(s"Bad regexp patterns: ${badPatterns.mkString(",")}")
         s.value

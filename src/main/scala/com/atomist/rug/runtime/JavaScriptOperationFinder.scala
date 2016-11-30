@@ -52,12 +52,11 @@ object JavaScriptOperationFinder {
       if KnownOperationTypes.contains(rugType.toString)
     } {
       val args = jsc.getMeta(v.scriptObjectMirror, "injects") match {
-        case Some(i: ScriptObjectMirror) => {
+        case Some(i: ScriptObjectMirror) =>
           val sorted = i.asInstanceOf[ScriptObjectMirror].values().asScala.toSeq.sortBy(arg => arg.asInstanceOf[ScriptObjectMirror].get("parameterIndex").asInstanceOf[Int])
           sorted.flatMap { arg =>
             registry.registry.get(arg.asInstanceOf[ScriptObjectMirror].get("typeToInject").asInstanceOf[String])
           }
-        }
         case _ => Seq()
       }
 

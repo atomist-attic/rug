@@ -37,7 +37,7 @@ abstract class RugDrivenProjectOperation(
   private var context: Seq[ProjectOperation] = Nil
 
   program.parameters.foreach(
-    addParameter(_)
+    addParameter
   )
 
   program.tags.foreach(t =>

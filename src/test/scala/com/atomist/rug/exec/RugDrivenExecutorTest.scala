@@ -136,7 +136,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
 //         |}
 //      """.stripMargin
 //    )
-  }
+//  }
 
   it should "update all projects using JavaScript executor action invoking named editor" in pendingUntilFixed {
     val content = "What is this, the high hat?"

@@ -29,3 +29,5 @@ com.atomist.rug.kind.yml.YmlType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider
+
+com.atomist.model.content.text.MutableTerminalTreeNodeTypeProvider

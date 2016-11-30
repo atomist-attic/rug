@@ -36,13 +36,17 @@ trait RugPipeline {
 
     val as =
       new SimpleFileBasedArtifactSource(DefaultRugArchive,
-        StringFileArtifact(filenameFor(input), input))
+        StringFileArtifact(defaultFilenameFor(input), input))
     create(as, namespace, otherOperations)
   }
 
-  // Determine if this program is Rug or TypeScript and name the file
-  // we create accordingly
-  private def filenameFor(prog: String): String = prog match {
+  /**
+    * Determine if this program is Rug or TypeScript and name the file
+    * we create accordingly
+    * @param prog
+    * @return
+    */
+  def defaultFilenameFor(prog: String): String = prog match {
     case p if prog.contains("import {") =>
       atomistConfig.defaultTypeScriptFilepath
     case _ =>

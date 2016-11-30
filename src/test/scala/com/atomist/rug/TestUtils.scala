@@ -33,7 +33,7 @@ object TestUtils extends Matchers {
                           pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
 
     val eds = pipeline.create(backingAs +
-      StringFileArtifact(atomistConfig.defaultRugFilepath, program), None)
+      StringFileArtifact(pipeline.defaultFilenameFor(program), program), None)
     eds.size should be >= (1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, poa)

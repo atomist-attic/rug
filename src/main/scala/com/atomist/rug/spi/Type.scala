@@ -16,24 +16,9 @@ abstract class Type(
                    )
   extends ViewFinder with Typed {
 
-  /**
-    * Name for use in Rug scripts. e.g "file" in "with file f"
-    *
-    * @return alias for use in Rug scripts
-    */
-  def name: String
-
-  /**
-    * Description of this type
-    */
-  def description: String
+  override def underlyingType: Class[_] = viewManifest.erasure
 
   /** Describe the MutableView subclass to allow for reflective function export */
   def viewManifest: Manifest[_]
 
-  /**
-    * FQN of the type
-    * @return
-    */
-  def underlyingType: Class[_] = viewManifest.erasure
 }

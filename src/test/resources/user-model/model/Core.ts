@@ -20,6 +20,27 @@ import {TreeNode} from '../tree/PathExpression'
 
 
 /*
+ * JSON pair
+ */
+interface Pair extends TreeNode {
+
+    //arg0: string
+    //arg1: string
+    addKeyValue(arg0: string, arg1: string): void
+
+    //msg: string
+    fail(msg: string): void
+
+    //msg: string
+    println(msg: string): void
+
+    //arg0: string
+    setValue(arg0: string): void
+
+}    // interface Pair
+
+
+/*
  * Docker file type
  */
 interface Dockerfile extends TreeNode {
@@ -1390,6 +1411,7 @@ interface Yml extends TreeNode {
 }    // interface Yml
 
 
+export { Pair }
 export { Dockerfile }
 export { ElmModule }
 export { File }

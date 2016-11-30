@@ -31,3 +31,17 @@ trait ReflectivelyTypedType extends Typed {
   final override val typeInformation: TypeInformation =
     new ReflectiveStaticTypeInformation(self.viewManifest.runtimeClass)
 }
+
+
+/**
+  * Extended by classes that can describing existing types that aren't exposed to
+  * top level navigation
+  * @param c class to expose
+  */
+abstract class TypeProvider(c: Class[_]) extends Typed {
+
+  override def underlyingType: Class[_] = c
+
+  override def typeInformation: TypeInformation =
+    new ReflectiveStaticTypeInformation(c)
+}

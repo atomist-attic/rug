@@ -7,7 +7,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.rug.spi.{MutableView, Type, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
@@ -37,7 +37,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           // TODO cache this
           val pe = new PathExpressionEngine()
           // TODO pass in NodePreparer?
-          val evaluated: Either[String,List[TreeNode]]  = pe.evaluateParsed(context, pex, None)
+          val evaluated: Either[String, List[TreeNode]] = pe.evaluateParsed(context, pex, None)
           evaluated match {
             case Right(nodes) =>
               //nodes.map(tn => new MutableContainerTreeNodeMutableView(tn.asInstanceOf[MutableContainerTreeNode], context))
@@ -61,9 +61,11 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
       else None
 
     val fromGlobalTypes: Option[Seq[MutableView[_]]] =
-      typeRegistry.findByName(selected.kind).flatMap(t =>
-        t.findIn(rugAs, selected, context, poa, identifierMap)
-      )
+      typeRegistry.findByName(selected.kind) flatMap {
+        case t: Type =>
+          t.findIn(rugAs, selected, context, poa, identifierMap)
+      }
+
 
     childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes
   }

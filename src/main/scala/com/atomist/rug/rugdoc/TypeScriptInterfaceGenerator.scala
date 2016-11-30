@@ -61,7 +61,7 @@ class TypeScriptInterfaceGenerator(
       "eval".equals(top.name)
       )
 
-  private def emitDocComment(t: Type): String = {
+  private def emitDocComment(t: Typed): String = {
     s"""
        |/*
        | * ${t.description}
@@ -74,13 +74,13 @@ class TypeScriptInterfaceGenerator(
       .mkString("\n")
   }
 
-  private def emitParameter(t: Type, top: TypeOperation, p: TypeParameter): String = {
+  private def emitParameter(t: Typed, top: TypeOperation, p: TypeParameter): String = {
     if (p.name.startsWith("arg"))
       System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${top.name} has no name annotation")
     s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
   }
 
-  private def generateType(t: Type): String = {
+  private def generateTyped(t: Typed): String = {
     val output = new StringBuilder("")
     val tsName = helper.typeScriptClassNameForTypeName(t.name)
     output ++= emitDocComment(t)
@@ -103,7 +103,7 @@ class TypeScriptInterfaceGenerator(
     output.toString
   }
 
-  val typeSort: (Type, Type) => Boolean = (a, b) => a.name <= b.name
+  val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
     //    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
@@ -113,7 +113,7 @@ class TypeScriptInterfaceGenerator(
     //      typeRegistry.kinds.size
     //    } kinds")
 
-    val alreadyGenerated = ListBuffer.empty[Type]
+    val alreadyGenerated = ListBuffer.empty[Typed]
 
     //    val f = mt.mergeToFile(MergeContext(
     //      Map(
@@ -128,8 +128,8 @@ class TypeScriptInterfaceGenerator(
     output ++= config.imports
     output ++= config.separator
 
-    def generate(t: Type): Unit = {
-      output ++= s"${generateType(t)}\n\n"
+    def generate(t: Typed): Unit = {
+      output ++= s"${generateTyped(t)}\n\n"
       alreadyGenerated.append(t)
     }
 
@@ -137,15 +137,15 @@ class TypeScriptInterfaceGenerator(
       t <- typeRegistry.kinds.sortWith(typeSort)
       if !alreadyGenerated.contains(t)
     } {
-      var clazzAncestry: Seq[Type] =
+      var clazzAncestry: Seq[Typed] =
         Seq(t)
 
       // TODO DON'T IMPLEMENT SUBCLASS METHOD TWICE and put in inheritance
-      val parentType: Option[Type] =
+      val parentTyped: Option[Typed] =
       Option(t.underlyingType.getSuperclass)
         .flatMap(sup => typeRegistry.kinds.find(_.underlyingType.equals(sup)))
 
-      clazzAncestry = clazzAncestry ++ parentType
+      clazzAncestry = clazzAncestry ++ parentTyped
 
       clazzAncestry.reverse.foreach(t => generate(t))
     }
@@ -175,7 +175,7 @@ class TypeScriptInterfaceGenerator(
 
   override def description: String = "Generate core Rug type info"
 
-  override def name: String = "TypeDoc"
+  override def name: String = "TypedDoc"
 
 }
 

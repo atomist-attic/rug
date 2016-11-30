@@ -6,9 +6,9 @@ package com.atomist.rug.spi
   */
 trait TypeRegistry {
 
-  def findByName(kind: String): Option[Type]
+  def findByName(kind: String): Option[Typed]
 
   def kindNames: Traversable[String]
 
-  def kinds: Seq[Type]
+  def kinds: Seq[Typed]
 }

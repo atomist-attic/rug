@@ -1,6 +1,9 @@
 package com.atomist.rug.kind.json
 
 import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -71,6 +74,8 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   import JsonTypeUsageTest._
   import com.atomist.rug.TestUtils._
 
+  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
+
   it should "update node value, going via file and path expression" in {
     val prog =
       """
@@ -99,7 +104,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
-  it should "add dependency" in {
+  it should "add dependency using Rug" in {
     val prog =
       """
         |editor Rename
@@ -113,8 +118,44 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
     // edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
+  it should "add dependency using TypeScript" in {
+    val program =
+      """
+        |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
+        |import {Status, Result} from "user-model/operations/Result"
+        |import {Project,Pair} from 'user-model/model/Core'
+        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+        |
+        |import {editor, inject} from '@atomist/rug/support/Metadata'
+        |
+        |declare var print
+        |
+        |@editor("Dependency adder")
+        |class PackageFinder extends ParameterlessProjectEditor {
+        |
+        | private eng: PathExpressionEngine;
+        |
+        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+        |      super();
+        |      this.eng = _eng;
+        |    }
+        |
+        |    editWithoutParameters(project: Project): Result {
+        |
+        |    let pe = new PathExpression<Project,Pair>(`/[name='package.json']/->json/dependencies`)
+        |    let p = this.eng.scalar(project, pe)
+        |    //if (p == null)
+        |    p.addKeyValue("foo", "bar")
+        |    return new Result(Status.Success, "OK");
+        |    }
+        |}
+      """.stripMargin
+    val edited = updateWith(program, ccPipeline)
+  }
+
   // Return new content
-  private def updateWith(prog: String): String = {
+  private def updateWith(prog: String,
+                         pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): String = {
     val filepath = "package.json"
     val as = new SimpleFileBasedArtifactSource("as",
       Seq(
@@ -122,9 +163,10 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       )
     )
     val newName = "Foo"
-    val r = doModification(prog, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val r = doModification(prog, as, EmptyArtifactSource(""),
+      SimpleProjectOperationArguments("", Map(
       "new_name" -> newName
-    )))
+    )), pipeline = pipeline)
 
     val f = r.findFile(filepath).get
     f.content.contains(s"$newName") should be(true)

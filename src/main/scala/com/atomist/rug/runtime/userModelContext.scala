@@ -102,7 +102,7 @@ private object MagicJavaScriptMethods {
   * @param typ Rug type we are fronting
   * @param n   node we are fronting
   */
-class SafeCommittingProxy(typ: Type, n: TreeNode)
+class SafeCommittingProxy(typ: Typed, n: TreeNode)
   extends AbstractJSObject /* with TreeNode */ {
 
   //  override def nodeName: String = n.nodeName

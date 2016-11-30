@@ -344,7 +344,7 @@ class ProjectMutableView(
               description = "Parameters")
             parametersToTemplate: Any) = {
     val mc = MergeContext(mapToUse(parametersToTemplate))
-    val newFile = StringFileArtifact(path, mergeTool.mergeToFile(mc, template).content)
+    val newFile = mergeTool.mergeToFile(mc, template).withPath(path)
     updateTo(currentBackingObject + newFile)
   }
 

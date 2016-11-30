@@ -73,8 +73,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   it should "parse editor and reviewer and generator" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator)), None, Nil)
-    ops.editors.size should be(1)
-    ops.editorNames.toSet should equal(Set("First"))
+    ops.editors.size should be>=(1)
+    ops.editorNames.toSet should equal(Set("First", "Published"))
     ops.reviewers.size should be(1)
     ops.reviewerNames should equal(Seq("Second"))
     ops.generators.size should equal(1)

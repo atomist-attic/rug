@@ -45,4 +45,7 @@ fi
 
 # npm honors this
 rm -f .gitignore
-$npm publish --access=public || die "Error publishing node module"
+if ! $npm publish --access=public; then
+    cat npm-debug.log
+    die "Error publishing node module"
+fi

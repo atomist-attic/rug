@@ -54,7 +54,7 @@ abstract class JavaScriptInvokingProjectOperation(
     *               appropriate JavaScript types if necessary
     * @return result of the invocation
     */
-  protected def invokeMember(member: String, args: Object*): Any = {
+  protected def invokeMemberWithParameters(member: String, args: Object*): Any = {
     // Translate parameters if necessary
     val processedArgs = args.map {
       case poa: ProjectOperationArguments =>

@@ -34,9 +34,12 @@ object JavaScriptOperationFinder {
     // First, compile any TypeScript files
     val tsc = new TypeScriptCompiler
     val compiled = tsc.compile(rugAs)
-    val js = compiled.allFiles.filter(f => !f.path.startsWith(".atomist/node_modules/")).filter(allJsFiles)
-      .map(f => f)
-      .foreach(f => jsc.eval(f))
+    compiled.allFiles.filter(f => !f.path.startsWith(".atomist/node_modules/"))
+      .filter(allJsFiles)
+      .foreach(f => {
+        //println(f.content)
+        jsc.eval(f)
+      })
 
     instantiateOperationsToMakeMetadataAccessible(jsc, registry)
 

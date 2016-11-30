@@ -43,7 +43,7 @@ class JavaScriptInvokingProjectEditor(
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        val res = invokeMember("edit",
+        val res = invokeMemberWithParameters("edit",
           pmv,
           //wrapperize(pmv),
           poa)

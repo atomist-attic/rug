@@ -60,36 +60,14 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaClassTypeUsageTest._
 
-  // TODO fix NPE we get when invoking other operation here. Seems to relate to let
-  it should "enumerate packages with run other operation" in pendingUntilFixed {
-    val program =
-      """
-        |editor PackageLister
-        |
-        |let packages = from java.project p when true return name
-        |
-        |with java.project p do eval { print("Name=" + p.name()) }
-        |
-        |FooBar
-        |
-        |
-        |editor FooBar
-        |with file f do eval { print(f) }
-      """.stripMargin
-    attemptToModify(program, NewSpringBootProject, Map()) match {
-      case nmn: NoModificationNeeded => // Ok
-    }
-  }
-
-  // TODO replace with path expressions
-  it should "find boot package using let" in pendingUntilFixed {
+  it should "find boot package using let" in {
     val program =
       """
         |editor PackageFinder
         |
-        |let appPackage = from spring.bootProject p when true return applicationClassPackage
+        |let spb = $(/*[type='spring.bootProject'])
         |
-        |with java.project p do eval { print("appPackage=" + appPackage) }
+        |with spb p do eval { print("appPackage=" + p.appPackage()) }
       """.stripMargin
     attemptToModify(program, NewSpringBootProject, Map()) match {
       case nmn: NoModificationNeeded => // Ok

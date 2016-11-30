@@ -15,7 +15,7 @@ import com.atomist.rug.parser._
 import com.atomist.rug.runtime.NamespaceUtils._
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
 import com.atomist.rug.spi.{InstantEditorFailureException, MutableView, TypeRegistry}
-import com.atomist.rug.{Import, RugRuntimeException}
+import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
@@ -225,7 +225,18 @@ trait RugOperationSupport extends LazyLogging {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown operation: ${roo.name}", null)
       case Some(pe: ProjectEditor) =>
-        pe.modify(as, parametersForOtherOperation(rugAs, roo, poa, as))
+        try {
+          pe.modify(as, parametersForOtherOperation(rugAs, roo, poa, as))
+        } catch {
+          case a: RugRuntimeException if a.getCause.isInstanceOf[BadRugSyntaxException] =>
+            val bre = a.getCause.asInstanceOf[BadRugSyntaxException]
+            val detailedDescription =
+              s"""Error: ${bre.info.message}
+                  |While trying to parse: ${bre.info.badInput}
+                  |In the context of: ${a.getMessage}
+           """.stripMargin
+            FailedModificationAttempt(detailedDescription)
+        }
       case Some(wtf) =>
         throw new RugRuntimeException(name, s"Project operation is not a ProjectEditor: ${roo.name}", null)
     }

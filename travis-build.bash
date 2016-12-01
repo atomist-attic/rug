@@ -24,7 +24,7 @@ if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; th
     git config --global user.name "Travis CI"
     git_tag=$project_version+travis$TRAVIS_BUILD_NUMBER
     git tag "$git_tag" -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
-    git push --tags -q "https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG"
+    git push --quiet --tags "https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG" > /dev/null 2>&1
 fi
 
 exit 0

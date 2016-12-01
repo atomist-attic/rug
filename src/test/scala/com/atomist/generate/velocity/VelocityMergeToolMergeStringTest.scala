@@ -1,8 +1,7 @@
 package com.atomist.generate.velocity
 
+import com.atomist.project.common.template.{MergeContext, VelocityMergeTool}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.util.template.MergeContext
-import com.atomist.util.template.velocity.VelocityMergeTool
 import org.scalatest.{FlatSpec, Matchers}
 
 class VelocityMergeToolMergeStringTest extends FlatSpec with Matchers {

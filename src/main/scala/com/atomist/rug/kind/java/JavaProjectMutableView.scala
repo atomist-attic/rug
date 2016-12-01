@@ -10,6 +10,7 @@ import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 

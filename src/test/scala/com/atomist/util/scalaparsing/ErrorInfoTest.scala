@@ -1,4 +1,4 @@
-package com.atomist.scalaparsing
+package com.atomist.util.scalaparsing
 
 import org.scalatest.{Matchers, FlatSpec}
 

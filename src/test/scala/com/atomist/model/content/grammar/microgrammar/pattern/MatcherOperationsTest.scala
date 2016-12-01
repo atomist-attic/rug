@@ -69,6 +69,4 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
       case None =>
     }
   }
-
 }
-

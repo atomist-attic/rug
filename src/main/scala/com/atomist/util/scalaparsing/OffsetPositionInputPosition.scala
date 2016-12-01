@@ -1,4 +1,4 @@
-package com.atomist.scalaparsing
+package com.atomist.util.scalaparsing
 
 import com.atomist.model.content.text.LineInputPosition
 

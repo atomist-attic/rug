@@ -2,8 +2,8 @@ package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.java.TypeSelection.TypeSelector
-import com.atomist.rug.kind.java.support.{JavaConstants, JavaHelpers}
 import com.atomist.source.ArtifactSource
+import com.atomist.util.lang.{JavaConstants, JavaHelpers}
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration

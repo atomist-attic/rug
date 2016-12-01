@@ -7,13 +7,12 @@ import com.atomist.param.Parameter
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.project.common.template.{MergeContext, VelocityMergeTool}
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.util.template.MergeContext
-import com.atomist.util.template.velocity.VelocityMergeTool
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConversions._

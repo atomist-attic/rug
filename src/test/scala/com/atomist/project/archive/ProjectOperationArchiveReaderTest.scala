@@ -162,7 +162,6 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "allow invocation of other operation from TypeScript editor" in pending
 
-
   it should "find and invoke plain javascript generators" in{
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")

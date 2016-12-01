@@ -2,7 +2,7 @@ package com.atomist.rug.runtime
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.runtime.Evaluator.FunctionTarget
-import com.atomist.scalaparsing.ToEvaluate
+import com.atomist.util.scalaparsing.ToEvaluate
 import com.atomist.source.ArtifactSource
 
 object Evaluator {

@@ -54,15 +54,11 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     ???
 
-  //Some(PatternMatch(null, offset, s.toString, ""))
-
+  // Some(PatternMatch(null, offset, s.toString, ""))
 }
 
-
 /**
-  * Reference to another matcher
-  * @param delegate
-  * @param name
+  * Reference to another matcher.
   */
 case class Reference(delegate: Matcher, name: String) extends Matcher {
 

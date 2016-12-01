@@ -1,11 +1,11 @@
-package com.atomist.util.template
+package com.atomist.project.common.template
 
 import com.atomist.source.FileArtifact
 
 /**
-  * Combines template handling from different merge tools
+  * Combines template handling from different merge tools.
   *
-  * @param mergeTools
+  * @param mergeTools a sequence of MergeTools
   */
 class CombinedMergeTool(
                          mergeTools: Seq[MergeTool]

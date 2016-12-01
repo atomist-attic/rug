@@ -1,6 +1,6 @@
 package com.atomist.model.content.grammar.microgrammar.pattern
 
-import com.atomist.rug.kind.java.support.JavaHelpers
+import com.atomist.util.lang.JavaHelpers
 
 /**
   * Consumer that goes through input one character at a time and updates state
@@ -21,7 +21,6 @@ trait StatePredicate[R <: Any] extends InputConsumer {
   def state: R
 
 }
-
 
 /**
   * Manages a set of StatePredicates
@@ -54,7 +53,6 @@ object StatePredicateManager {
 
 }
 
-
 /**
   * Predicate that keeps track of whether we're in a string
   */
@@ -70,7 +68,6 @@ class InString extends StatePredicate[Boolean] {
     case _ =>
   }
 }
-
 
 /**
   * Predicate that keeps track of curlyDepth

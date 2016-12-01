@@ -1,4 +1,4 @@
-package com.atomist.util.template
+package com.atomist.project.common.template
 
 import java.util.{List => JList}
 

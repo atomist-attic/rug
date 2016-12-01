@@ -1,4 +1,4 @@
-package com.atomist.scalaparsing
+package com.atomist.util.scalaparsing
 
 /**
   * Support for formatting error information in a standard way.

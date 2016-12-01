@@ -1,9 +1,9 @@
-package com.atomist.util.template
+package com.atomist.project.common.template
 
 import java.util.{Map => JMap}
 
 import com.atomist.param.ParameterValues
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor}
 import com.atomist.util.BinaryDecider
 
 import scala.collection.JavaConversions._

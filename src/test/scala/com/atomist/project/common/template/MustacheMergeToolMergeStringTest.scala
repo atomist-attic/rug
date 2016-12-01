@@ -1,11 +1,11 @@
-package com.atomist.util.template.mustache
+package com.atomist.project.common.template
 
 import com.atomist.source.EmptyArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
 class MustacheMergeToolMergeStringTest extends FlatSpec with Matchers {
 
-  import com.atomist.util.template.mustache.MustacheSamples._
+  import MustacheSamples._
 
   val mmt = new MustacheMergeTool(EmptyArtifactSource(""))
 

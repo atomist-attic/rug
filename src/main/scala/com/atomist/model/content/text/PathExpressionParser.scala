@@ -2,7 +2,7 @@ package com.atomist.model.content.text
 
 import com.atomist.model.content.text.PathExpressionEngine._
 import com.atomist.model.content.text.TreeNodeOperations._
-import com.atomist.scalaparsing.CommonTypesParser
+import com.atomist.util.scalaparsing.CommonTypesParser
 import com.atomist.source.StringFileArtifact
 import org.apache.commons.lang.ObjectUtils
 

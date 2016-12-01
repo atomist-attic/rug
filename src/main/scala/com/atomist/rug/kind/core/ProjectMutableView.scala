@@ -3,10 +3,8 @@ package com.atomist.rug.kind.core
 import java.util.{Collections, Objects}
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.project.common.template.{CombinedMergeToolCreator, MergeToolCreator}
+import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.project.generate.mustache.MustacheMergeToolCreator
-import com.atomist.project.generate.velocity.VelocityMergeToolCreator
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.{BidirectionalParametersProxy, FunctionInvocationContext}
@@ -14,7 +12,6 @@ import com.atomist.rug.spi._
 import com.atomist.rug.ts.NashornUtils
 import com.atomist.source._
 import com.atomist.util.BinaryDecider
-import com.atomist.util.template.MergeContext
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.reflect.io.File

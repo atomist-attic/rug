@@ -1,9 +1,8 @@
-package com.atomist.util.template.mustache
+package com.atomist.project.common.template
 
 import java.io.StringWriter
 
 import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
-import com.atomist.util.template.{MergeContext, MergeTool}
 import com.github.mustachejava.DefaultMustacheFactory
 
 import scala.collection.JavaConverters._
@@ -45,7 +44,7 @@ class MustacheMergeTool(templateContent: ArtifactSource)
     templateOutput.toString
   }
 
-  private[mustache] def toInPlaceFilePath(path: String): String = {
+  private[template] def toInPlaceFilePath(path: String): String = {
     val extension = SupportedExtensions.find(extension => path.endsWith(s"_$extension"))
     if (extension.isDefined)
       path.dropRight(s"_${extension.get}".length)

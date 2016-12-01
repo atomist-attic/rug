@@ -1,9 +1,6 @@
-package com.atomist.project.generate.mustache
+package com.atomist.project.common.template
 
-import com.atomist.project.common.template.MergeToolCreator
 import com.atomist.source.ArtifactSource
-import com.atomist.util.template.MergeTool
-import com.atomist.util.template.mustache.MustacheMergeTool
 
 class MustacheMergeToolCreator
   extends MergeToolCreator {

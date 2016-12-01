@@ -1,10 +1,9 @@
-package com.atomist.util.template.velocity
+package com.atomist.project.common.template
 
 import java.io.StringWriter
 import java.nio.charset.Charset
 
 import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
-import com.atomist.util.template.{MergeContext, MergeTool}
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
@@ -36,7 +35,7 @@ class VelocityMergeTool(templateContent: ArtifactSource)
 
   val ve = new VelocityEngine
   ve.setProperty("resource.loader", "custom")
-  ve.setProperty("custom.resource.loader.instance", new ArtifactSourceResourceLoader(templateContent))
+  ve.setProperty("custom.resource.loader.instance", new ArtifactSourceBackedVelocityResourceLoader(templateContent))
   ve.init()
 
   override def isTemplate(path: String): Boolean = path.endsWith(TemplateSuffix)

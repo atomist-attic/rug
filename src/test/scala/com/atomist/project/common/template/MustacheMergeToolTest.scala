@@ -1,10 +1,8 @@
-package com.atomist.util.template.mustache
+package com.atomist.project.common.template
 
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.collection.JavaConversions._
 
 class MustacheMergeToolTest extends FlatSpec with Matchers {
 

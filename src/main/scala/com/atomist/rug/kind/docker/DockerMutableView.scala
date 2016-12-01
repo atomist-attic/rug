@@ -13,7 +13,6 @@ class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableV
 
   def currentContent: String = _content.toString
 
-
   @ExportFunction( readOnly = true, description = "")
   def getExposedPorts(): java.util.List[Int] = {
     val exposePorts: Set[Int] = _content.getExposePorts()

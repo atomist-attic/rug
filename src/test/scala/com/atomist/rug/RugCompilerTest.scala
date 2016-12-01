@@ -1,7 +1,7 @@
 package com.atomist.rug
 
 import com.atomist.param.Parameter
-import com.atomist.scalaparsing.SimpleLiteral
+import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry

@@ -4,8 +4,9 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.JavaTag
 import com.atomist.project.edit._
 import com.atomist.project.edit.common.ProjectEditorSupport
-import com.atomist.rug.kind.java.support.{IsJavaProject, JavaConstants, JavaFilesExtractor}
+import com.atomist.rug.kind.java.support.{IsJavaProject, JavaFilesExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
+import com.atomist.util.lang.JavaConstants
 import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
 import com.typesafe.scalalogging.LazyLogging

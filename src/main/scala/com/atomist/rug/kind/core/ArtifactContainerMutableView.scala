@@ -43,7 +43,6 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   @ExportFunction(readOnly = true, description = "Return the number of files in this project")
   def fileCount: Int = currentBackingObject.totalFileCount
 
-
   @ExportFunction(readOnly = true, description = "Find file with the given path. Return null if not found.")
   def findFile(@ExportFunctionParameterDescription(name = "path",
     description = "Path of the file we want")
@@ -85,5 +84,4 @@ class DirectoryArtifactMutableView(
 
   override def children(fieldName: String): Seq[MutableView[_]] =
     kids(fieldName, parent)
-
 }

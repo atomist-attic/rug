@@ -1,10 +1,10 @@
-package com.atomist.rug.kind.java.support
+package com.atomist.util.lang
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class JavaHelpersTest extends FlatSpec with Matchers {
 
-  import JavaHelpers._
+  import com.atomist.util.lang.JavaHelpers._
 
   it should "find package of FQN in non-default package" in {
     val fqn1 = "com.something.Foo"

@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.python3
 
 import com.atomist.model.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode}
-import com.atomist.scalaparsing.CommonTypesParser
+import com.atomist.util.scalaparsing.CommonTypesParser
 import com.atomist.source.StringFileArtifact
 
 /**

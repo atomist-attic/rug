@@ -1,6 +1,6 @@
-package com.atomist.util.template
+package com.atomist.project.common.template
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class CombinedMergeToolTest extends FlatSpec with Matchers {
 

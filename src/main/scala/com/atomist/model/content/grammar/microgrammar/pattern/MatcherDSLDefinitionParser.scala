@@ -1,12 +1,11 @@
 package com.atomist.model.content.grammar.microgrammar.pattern
 
 import com.atomist.rug.BadRugException
-import com.atomist.scalaparsing.CommonTypesParser
+import com.atomist.util.scalaparsing.CommonTypesParser
 import com.atomist.source.StringFileArtifact
 
-
 /**
-  * Parse our matcher DSL
+  * Parse our matcher DSL.
   */
 class MatcherDSLDefinitionParser extends CommonTypesParser {
 
@@ -47,7 +46,6 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
 
   private def matcherExpression()(implicit registry: MatcherRegistry): Parser[Matcher] = descendantClause | concatenation | literal | variableReference()
 
-
   private def microgrammar(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 
   /**
@@ -67,10 +65,7 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   }
 
   /**
-    * Parse several microgrammars, building a matcher and validating references
-    * @param microgrammarDefs
-    * @param startingRegistry
-    * @return
+    * Parse several microgrammars, building a matcher and validating references.
     */
   @throws[BadRugException]
   def parseInOrder(microgrammarDefs: Seq[MicrogrammarDefinition], startingRegistry: MatcherRegistry = EmptyMatcherRegistry): MatcherRegistry = {
@@ -95,6 +90,4 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   }
 }
 
-
 case class MicrogrammarDefinition(name: String, sentence: String)
-

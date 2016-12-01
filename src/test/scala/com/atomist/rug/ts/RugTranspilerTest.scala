@@ -1,8 +1,8 @@
 package com.atomist.rug.ts
 
-import com.atomist.rug.kind.java.support.JavaHelpers
 import com.atomist.rug.{RugEditor, RugProgram}
 import com.atomist.rug.parser.{ParserCombinatorRugParser, RugParser}
+import com.atomist.util.lang.JavaHelpers
 import org.scalatest.{FlatSpec, Matchers}
 
 class RugTranspilerTest extends FlatSpec with Matchers {

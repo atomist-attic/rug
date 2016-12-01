@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.rug.kind.core.FileMetrics
-import com.atomist.rug.kind.java.support.JavaParserUtils
 import com.atomist.rug.spi._
+import com.atomist.util.lang.JavaParserUtils
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.BodyDeclaration
 

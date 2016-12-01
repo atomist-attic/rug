@@ -2,12 +2,8 @@ package com.atomist.rug.runtime.lang.js
 
 import javax.script.ScriptEngineManager
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.SuccessfulModification
-import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
 import org.scalatest.{FlatSpec, Matchers}
-
 
 object NashornConstructorTest {
    val SimpleJavascriptGenerator = """/*
@@ -190,9 +186,7 @@ object NashornConstructorTest {
                                      |}());
                                      |""".stripMargin
 }
-/**
-  * Created by kipz on 23/11/2016.
-  */
+
 class NashornConstructorTest extends FlatSpec with Matchers{
 
    val engine = new ScriptEngineManager(null).getEngineByName("nashorn")

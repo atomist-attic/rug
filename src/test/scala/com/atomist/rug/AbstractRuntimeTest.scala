@@ -331,7 +331,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 
-
   protected def simpleAppenderProgramExpectingParameters(program: String,
                                                          finalFileContent: Option[String] = None,
                                                          as: ArtifactSource = JavaAndText,

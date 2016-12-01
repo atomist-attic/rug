@@ -1,4 +1,4 @@
-package com.atomist.util.template.velocity
+package com.atomist.project.common.template
 
 import _root_.java.io.InputStream
 
@@ -10,9 +10,9 @@ import org.apache.velocity.runtime.resource.Resource
 import org.apache.velocity.runtime.resource.loader.ResourceLoader
 
 /**
-  * VelocityResourceLoader backed by an ArtifactSource.
+  * Velocity ResourceLoader backed by an ArtifactSource.
   */
-class ArtifactSourceResourceLoader(artifactSource: ArtifactSource)
+class ArtifactSourceBackedVelocityResourceLoader(artifactSource: ArtifactSource)
   extends ResourceLoader
     with LazyLogging {
 

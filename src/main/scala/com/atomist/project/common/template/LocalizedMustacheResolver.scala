@@ -1,4 +1,4 @@
-package com.atomist.util.template.mustache
+package com.atomist.project.common.template
 
 import java.io.{Reader, StringReader}
 

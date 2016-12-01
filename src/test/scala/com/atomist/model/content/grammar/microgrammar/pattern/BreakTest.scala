@@ -25,4 +25,3 @@ class BreakTest extends FlatSpec with Matchers {
     }
   }
 }
-

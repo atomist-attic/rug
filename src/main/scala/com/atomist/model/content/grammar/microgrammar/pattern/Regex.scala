@@ -2,13 +2,10 @@ package com.atomist.model.content.grammar.microgrammar.pattern
 
 import com.atomist.model.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
-
 // TODO Allow capture groups or is this degenerate?
 
 /**
-  * Matches a regex
-  *
-  * @param regex
+  * Matches a regex.
   */
 case class Regex(name: String, regex: String, config: MatcherConfig = MatcherConfig())
   extends TerminalMatcher with ConfigurableMatcher {
@@ -29,9 +26,8 @@ case class Regex(name: String, regex: String, config: MatcherConfig = MatcherCon
       None
 }
 
-
 /**
-  * Matcher that returns an empty placeholder
+  * Matcher that returns an empty placeholder.
   */
 class Placeholder extends Matcher {
 
@@ -45,8 +41,6 @@ class Placeholder extends Matcher {
       None
 }
 
-
 object Whitespace extends Regex("ws", """\s+""")
-
 
 object WhitespaceOrNewLine extends Regex("wsnl", """[\s\n]+""")

@@ -39,6 +39,4 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
     val r = results.head
     r
   }
-
 }
-

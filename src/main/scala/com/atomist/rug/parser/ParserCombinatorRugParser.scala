@@ -2,7 +2,7 @@ package com.atomist.rug.parser
 
 import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.rug._
-import com.atomist.scalaparsing.ScriptBlock
+import com.atomist.util.scalaparsing.ScriptBlock
 import com.atomist.source.FileArtifact
 
 /**

@@ -1,4 +1,4 @@
-package com.atomist.rug.kind.java.support
+package com.atomist.util.lang
 
 import com.atomist.param.ParameterValidationPatterns
 import com.atomist.source.FileArtifact

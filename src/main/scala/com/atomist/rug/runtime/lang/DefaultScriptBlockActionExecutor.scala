@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.lang
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.parser.ScriptBlockAction
 import com.atomist.rug.runtime.lang.js.NashornExpressionEngine
-import com.atomist.scalaparsing.JavaScriptBlock
+import com.atomist.util.scalaparsing.JavaScriptBlock
 
 /**
   * Default support for executing scripts in Clojure and JavaScript.

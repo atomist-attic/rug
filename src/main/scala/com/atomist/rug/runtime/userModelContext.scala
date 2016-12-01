@@ -61,7 +61,6 @@ class PathExpressionExposer {
     }
   }
 
-
   // cast the current node
   def as(root: TreeNode, name: String): Object =
   scalar(root, s"->$name")
@@ -84,16 +83,12 @@ class PathExpressionExposer {
     },
       k).asInstanceOf[Object]).asJava
   }
-
-
 }
 
 private object MagicJavaScriptMethods {
 
   /**
-    * Set of JavaScript magic methods that we should let Nashorn superclass handle
-    *
-    * @return
+    * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
   def MagicMethods = Set("valueOf", "toString")
 }

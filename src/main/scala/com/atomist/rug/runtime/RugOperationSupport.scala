@@ -10,13 +10,13 @@ import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.dynamic._
-import com.atomist.rug.kind.java.support.JavaHelpers
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.NamespaceUtils._
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
 import com.atomist.rug.spi.{InstantEditorFailureException, MutableView, TypeRegistry}
 import com.atomist.rug.{Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
+import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConversions._
@@ -245,4 +245,3 @@ trait RugOperationSupport extends LazyLogging {
     }
   }
 }
-

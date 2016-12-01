@@ -1,7 +1,7 @@
 package com.atomist.rug
 
 import com.atomist.rug.parser.Annotation
-import com.atomist.scalaparsing.ErrorInfo
+import com.atomist.util.scalaparsing.ErrorInfo
 import com.atomist.source.FileArtifact
 
 abstract class BadRugException(msg: String, rootCause: Throwable = null)

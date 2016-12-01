@@ -1,7 +1,6 @@
 package com.atomist.project.common.template
 
 import com.atomist.source.ArtifactSource
-import com.atomist.util.template.{CombinedMergeTool, MergeTool}
 
 trait MergeToolCreator {
 

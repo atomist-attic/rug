@@ -14,7 +14,6 @@ import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import org.scalatest.{FlatSpec, Matchers}
 
-
 class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
   it should "create an artifact source" in {
@@ -42,7 +41,6 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
     }
 
   }
-
 
   def invokeGenerator(rugArchiveDirectoryOnTheClasspath: String,
                       generatorName: String,

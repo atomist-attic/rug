@@ -1,4 +1,4 @@
-package com.atomist.rug.kind.java.support
+package com.atomist.util.lang
 
 import com.github.javaparser.ASTHelper
 import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType, VoidType, PrimitiveType => JavaParserPrimitiveType}

@@ -1,4 +1,4 @@
-package com.atomist.rug.ts
+package com.atomist.util.lang
 
 /**
   * Useful helper for generating any language
@@ -12,7 +12,7 @@ class CodeGenerationHelper(indent: String = "    ") {
     *
     * @param block
     * @param n number of indents
-    * @return
+    * @return a String
     */
   def indented(block: String, n: Int): String = {
     val padding = Array.fill[String](n)(indent).mkString("")
@@ -27,7 +27,7 @@ class CodeGenerationHelper(indent: String = "    ") {
     * @param outerRight right part e.g. "\n}"
     * @param block block to wrap
     * @param n indent depth to use for block
-    * @return
+    * @return a String
     */
   def wrap(outerLeft: String, outerRight: String, block: String, n: Int): String = {
     outerLeft + indented(block, n) + outerRight

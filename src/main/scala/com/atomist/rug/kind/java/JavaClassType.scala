@@ -4,11 +4,11 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.{ChildResolver, ContextlessViewFinder}
 import com.atomist.rug.kind.java.JavaClassType._
-import com.atomist.rug.kind.java.support.JavaHelpers
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
+import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
 

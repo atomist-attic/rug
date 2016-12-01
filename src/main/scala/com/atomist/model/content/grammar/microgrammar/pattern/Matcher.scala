@@ -63,14 +63,12 @@ trait Matcher {
     * @param offset start offset
     * @param input  input sequence
     * @param n      number of characters to take
-    * @return string
+    * @return a String
     */
   protected def take(offset: Int, input: CharSequence, n: Int): String = {
     input.subSequence(offset, offset + n).toString
   }
-
 }
-
 
 trait TerminalMatcher extends Matcher {
 
@@ -79,13 +77,12 @@ trait TerminalMatcher extends Matcher {
 }
 
 /**
-  * Trait extended by Matchers that are configurable
+  * Trait extended by Matchers that are configurable.
   */
 trait ConfigurableMatcher extends Matcher {
 
   def config: MatcherConfig
 }
-
 
 object PatternMatch {
 
@@ -117,7 +114,6 @@ case class PatternMatch(
   def remainder: CharSequence = input.subSequence(remainderOffset, input.length())
 
 }
-
 
 /**
   * Concatenate two patterns
@@ -159,7 +155,6 @@ case class Concat(left: Matcher, right: Matcher, name: String = "Concat") extend
     }
   }
 }
-
 
 /**
   * Try first to match the left pattern, then the right
@@ -220,4 +215,3 @@ object Repsep {
     m.? ~? Rep(sep ~? m)
 
 }
-

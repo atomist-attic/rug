@@ -1,6 +1,6 @@
 package com.atomist.rug.lang.js
 
-import com.atomist.scalaparsing.JavaScriptBlock
+import com.atomist.util.scalaparsing.JavaScriptBlock
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.JavaClassTypeUsageTest._
 import com.atomist.rug.kind.java.{JavaClassTypeUsageTest, JavaProjectMutableView, SpringBootProjectMutableView, SpringProjectMutableView}

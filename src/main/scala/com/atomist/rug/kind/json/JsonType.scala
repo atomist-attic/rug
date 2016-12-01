@@ -93,7 +93,6 @@ object JsonType {
 
 import com.atomist.rug.kind.json.JsonType._
 
-
 class JsonMutableView(
                        originalBackingObject: FileArtifact,
                        parent: ProjectMutableView)
@@ -138,7 +137,6 @@ class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
 
   override def description: String = "JSON pair"
 }
-
 
 /*
   pair

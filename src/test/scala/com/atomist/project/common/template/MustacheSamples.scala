@@ -1,6 +1,4 @@
-package com.atomist.util.template.mustache
-
-import com.atomist.util.template.MergeContext
+package com.atomist.project.common.template
 
 object MustacheSamples {
 

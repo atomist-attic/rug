@@ -66,7 +66,6 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           t.findIn(rugAs, selected, context, poa, identifierMap)
       }
 
-
     childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes
   }
 }

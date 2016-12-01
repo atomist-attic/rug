@@ -1,6 +1,5 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.source.{FileArtifact, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.source.{FileArtifact, StringFileArtifact}
 

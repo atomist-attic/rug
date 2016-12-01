@@ -11,10 +11,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   extends CodeGenerationHelper(indent) {
 
   /**
-    * Convert the block to a JsDoc style comment
-    *
-    * @param block
-    * @return
+    * Convert the block to a JsDoc style comment.
     */
   def toJsDoc(block: String) = {
     s"""
@@ -34,6 +31,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "Object" => "any"
       case "class java.lang.Object" =>  "any"
       case "java.util.List<com.atomist.rug.kind.core.ProjectMutableView>" => "Project[]"
+      case "java.util.List<java.lang.Object>" => "any[]"
       case "class com.atomist.rug.kind.core.FileArtifactMutableView" => "File"
       case "scala.collection.immutable.List<java.lang.Object>" => "any[]"
       case "java.util.List<com.atomist.rug.kind.core.FileArtifactBackedMutableView>" => "File[]"

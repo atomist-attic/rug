@@ -22,7 +22,6 @@ class FileArtifactMutableView(
     }
   }
 
-
   @ExportFunction(readOnly = true, description = "Name of the file, excluding path")
   def name = filename
 
@@ -32,9 +31,8 @@ class FileArtifactMutableView(
   @ExportFunction(readOnly = false, description = "Set entire file content to new string")
   def setContent(@ExportFunctionParameterDescription(name = "newContent",
     description = "The content to set the file to")
-                 newContent: String): Unit = {
+                 newContent: String): Unit =
     updateTo(StringFileArtifact.updated(currentBackingObject, newContent))
-  }
 
   @ExportFunction(readOnly = true,
     description = "Does the file name (not path) contain the given string?")

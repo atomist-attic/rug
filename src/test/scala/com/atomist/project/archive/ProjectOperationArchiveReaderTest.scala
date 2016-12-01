@@ -3,7 +3,7 @@ package com.atomist.project.archive
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.Import
 import com.atomist.rug.exec.FakeServiceSource
-import com.atomist.rug.runtime.TypeScriptRugEditorTest
+import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

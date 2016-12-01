@@ -1,10 +1,6 @@
-package com.atomist.tree
+package com.atomist.tree.content.text
 
-import com.atomist.tree.content.text.{MutableTerminalTreeNode, LineInputPositionImpl}
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.reflect.internal.util.OffsetPosition
-import scala.util.parsing.input.Position
 
 class MutableTerminalTreeNodeTest extends FlatSpec with Matchers {
 

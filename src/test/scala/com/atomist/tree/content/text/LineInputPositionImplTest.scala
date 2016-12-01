@@ -1,7 +1,6 @@
-package com.atomist.tree
+package com.atomist.tree.content.text
 
-import com.atomist.tree.content.text.LineInputPositionImpl
-import org.scalatest.{Matchers, FlatSpec, FunSuite}
+import org.scalatest.{FlatSpec, Matchers}
 
 class LineInputPositionImplTest extends FlatSpec with Matchers {
 

@@ -1,6 +1,7 @@
 package com.atomist.util.lang
 
 import com.github.javaparser.ASTHelper
+import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
 import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType, VoidType, PrimitiveType => JavaParserPrimitiveType}
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr._
@@ -214,4 +215,13 @@ object JavaParserUtils {
   def shouldExposeAsCustomTypeMember(bd: BodyDeclaration): Boolean =
     bd.getAnnotations.exists(a =>
       ExposeDataFieldAnnotations.contains(a.getName.getName))
+
+  def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
+    fqns.foreach(fqn => {
+      val importDefinition = cu.getImports.find(imp => imp.toString contains fqn)
+      if (importDefinition.isEmpty) {
+        cu.getImports.add(new ImportDeclaration(new NameExpr(fqn), false, false))
+      }
+    })
+  }
 }

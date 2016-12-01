@@ -1,6 +1,4 @@
-package com.atomist.rug.ts
-
-import com.atomist.util.lang.{CodeGenerationHelper, JavaHelpers}
+package com.atomist.util.lang
 
 /**
   * Useful helps for generating TypeScript

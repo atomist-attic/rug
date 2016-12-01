@@ -7,7 +7,7 @@ import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
 import com.atomist.rug.compiler.Compiler
 import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import com.atomist.util.SaveAllDescendantsVisitor
-import com.atomist.util.lang.JavaHelpers
+import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 object NashornUtils {

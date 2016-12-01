@@ -10,8 +10,9 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
-import com.atomist.rug.ts.{TypeScriptGenerationConfig, TypeScriptGenerationHelper}
+import com.atomist.rug.ts.TypeScriptGenerationConfig
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.lang.TypeScriptGenerationHelper
 
 import scala.collection.mutable.ListBuffer
 

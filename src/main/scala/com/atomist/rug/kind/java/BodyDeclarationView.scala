@@ -32,7 +32,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
       case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
       case _ => throw new IllegalArgumentException("Failed to get compilation unit")
     }
-    compilationUnit.foreach(cu => JavaParserProjectEditor.addImportsIfNeeded(Seq(fqn), cu))
+    compilationUnit.foreach(cu => JavaParserUtils.addImportsIfNeeded(Seq(fqn), cu))
   }
 
   @ExportFunction(readOnly = true, description = "Does the element have the given annotation?")

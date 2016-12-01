@@ -71,17 +71,3 @@ abstract class JavaParserProjectEditor(val name: String,
   protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit]
 }
 
-/**
-  * Convenience methods for modifying JavaParser objects.
-  */
-object JavaParserProjectEditor {
-
-  def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
-    fqns.foreach(fqn => {
-      val importDefinition = cu.getImports.find(imp => imp.toString contains fqn)
-      if (importDefinition.isEmpty) {
-        cu.getImports.add(new ImportDeclaration(new NameExpr(fqn), false, false))
-      }
-    })
-  }
-}

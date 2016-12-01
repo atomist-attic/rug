@@ -157,7 +157,7 @@ class PathNavigationTest extends FlatSpec with Matchers {
     rtn2.right.get.size should be (0)
   }
 
-  it should "find files irrespective of case" in pendingUntilFixed {
+  it should "handle OR" in {
     val proj = SimpleFileBasedArtifactSource(
       StringFileArtifact("license.txt", "The blah blah license")
     )
@@ -168,6 +168,18 @@ class PathNavigationTest extends FlatSpec with Matchers {
     val rtn = ee.evaluate(pmv, expr)
     rtn.right.get.size should be (1)
   }
+
+//  it should "find files irrespective of case" in {
+//    val proj = SimpleFileBasedArtifactSource(
+//      StringFileArtifact("license.txt", "The blah blah license")
+//    )
+//    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+//
+//    // Second filter is really a no op
+//    val expr = "/[name='license.txt' or name='foo']"
+//    val rtn = ee.evaluate(pmv, expr)
+//    rtn.right.get.size should be (1)
+//  }
 
   it should "jump into Java type and test on name" in {
     val proj = ParsingTargets.NewStartSpringIoProject

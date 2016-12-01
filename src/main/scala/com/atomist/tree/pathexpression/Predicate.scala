@@ -4,12 +4,24 @@ import com.atomist.tree.TreeNode
 
 object Selector {
 
+  /**
+    * Function taking nodes returned by navigation
+    * to filter them. First argument is the node we're testing on;
+    * second argument is all nodes returned. The second argument is
+    * often ignored, but can be used to discern the index of the target node.
+    */
   type Selector = (TreeNode, Seq[TreeNode]) => Boolean
 }
 
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.Selector.Selector
 
+/**
+  * Based on the XPath concept of a predicate. A predicate acts on a sequence of nodes
+  * returned from navigation to filter them.
+  * @param name
+  * @param f
+  */
 case class Predicate(name: String, f: Selector) extends Selector {
 
   override def apply(n: TreeNode, among: Seq[TreeNode]) = f(n, among)
@@ -17,7 +29,8 @@ case class Predicate(name: String, f: Selector) extends Selector {
   def and(that: Predicate): Predicate =
     Predicate(s"${this.name} and ${that.name}", (n, among) => this(n, among) && that(n, among))
 
-  def or(predicate: Predicate): Predicate = ???
+  def or(that: Predicate): Predicate =
+    Predicate(s"${this.name} or ${that.name}", (n, among) => this(n, among) || that(n, among))
 
   def not(predicate: Predicate): Predicate = ???
 

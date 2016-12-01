@@ -16,7 +16,7 @@ object Child extends AxisSpecifier
 
 object Descendant extends AxisSpecifier {
 
-  // TODO this is horribly inefficient.
+  // TODO this is very inefficient and needs to be optimized.
   // Subclasses can help, or knowing a plan
   def allDescendants(tn: TreeNode): Seq[TreeNode] = tn match {
     case ctn: ContainerTreeNode =>

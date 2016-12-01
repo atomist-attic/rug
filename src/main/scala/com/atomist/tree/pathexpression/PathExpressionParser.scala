@@ -97,8 +97,11 @@ trait PathExpressionParser extends CommonTypesParser {
     case pred => new NegationOf(pred)
   }
 
-  private def predicateAnd: Parser[Predicate] = predicateTerm ~ "and" ~ predicateExpression ^^ {
-    case a ~ _ ~ b => a and b
+  private def logicalOp: Parser[String] = "and" | "or"
+
+  private def predicateAnd: Parser[Predicate] = predicateTerm ~ logicalOp ~ predicateExpression ^^ {
+    case a ~ "and" ~ b => a and b
+    case a ~ "or" ~ b => a or b
   }
 
   private def predicateExpression: Parser[Predicate] = predicateAnd | negatedPredicate | predicateTerm

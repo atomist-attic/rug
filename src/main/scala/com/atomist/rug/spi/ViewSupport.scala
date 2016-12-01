@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
-import com.atomist.model.content.text.TreeNode
 import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.tree.TreeNode
 
 import scala.collection.mutable.ListBuffer
 

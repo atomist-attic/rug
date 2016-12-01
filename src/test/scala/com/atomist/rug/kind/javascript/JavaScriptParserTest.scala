@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.javascript
 
-import com.atomist.model.content.text.{MutableContainerTreeNode, TreeNodeUtils}
+import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.utils.TreeNodeUtils
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 

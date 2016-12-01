@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug._
 import com.atomist.rug.parser._
@@ -9,6 +8,8 @@ import com.atomist.rug.runtime.lang.js.NashornExpressionEngine
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.util.scalaparsing._
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
+import com.atomist.tree.pathexpression.PathExpressionEngine
 import com.typesafe.scalalogging.LazyLogging
 
 object DefaultEvaluator extends DefaultEvaluator(new EmptyRugFunctionRegistry) {

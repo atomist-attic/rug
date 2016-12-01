@@ -1,12 +1,13 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.model.content.text.TreeNodeFinders._
-import com.atomist.model.content.text.{MutableContainerTreeNode, MutableTreeNode, TreeNode}
+import com.atomist.tree.utils.TreeNodeFinders._
+import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.python3.PythonType._
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
 import com.atomist.source.FileArtifact
+import com.atomist.tree.{MutableTreeNode, TreeNode}
 
 class PythonFileMutableView(
                              originalBackingObject: FileArtifact,

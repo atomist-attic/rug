@@ -1,10 +1,11 @@
 package com.atomist.rug.runtime
 
-import com.atomist.model.content.text.{PathExpressionEngine, TreeNode}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
+import com.atomist.tree.TreeNode
+import com.atomist.tree.pathexpression.PathExpressionEngine
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._

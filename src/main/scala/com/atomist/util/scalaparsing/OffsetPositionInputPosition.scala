@@ -1,6 +1,6 @@
 package com.atomist.util.scalaparsing
 
-import com.atomist.model.content.text.LineInputPosition
+import com.atomist.tree.content.text.LineInputPosition
 
 import scala.util.parsing.input.OffsetPosition
 

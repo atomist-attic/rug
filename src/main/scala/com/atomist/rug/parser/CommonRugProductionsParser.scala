@@ -1,7 +1,7 @@
 package com.atomist.rug.parser
 
-import com.atomist.model.content.text.PathExpressionParser
 import com.atomist.rug.Import
+import com.atomist.tree.pathexpression.PathExpressionParser
 import com.atomist.util.scalaparsing._
 
 /**

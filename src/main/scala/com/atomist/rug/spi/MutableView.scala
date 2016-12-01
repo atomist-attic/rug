@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
-import com.atomist.model.content.text.{ContainerTreeNode, TreeNode}
 import com.atomist.rug.runtime.Evaluator
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
   * View read operations.

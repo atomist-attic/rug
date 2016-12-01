@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.model.content.text.TreeNodeUtils
 import com.atomist.rug.kind.elm.ElmModel.ElmExpressionModels.ElmTuple
 import com.atomist.rug.kind.elm.ElmModel._
+import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class ElmParserTest extends FlatSpec with Matchers {

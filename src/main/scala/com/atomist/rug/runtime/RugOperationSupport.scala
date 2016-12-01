@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Objects
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.param.{Parameter, ParameterValue, SimpleParameterValue}
 import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
@@ -16,6 +16,8 @@ import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlo
 import com.atomist.rug.spi.{InstantEditorFailureException, MutableView, TypeRegistry}
 import com.atomist.rug.{Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
+import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 

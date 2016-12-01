@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.model.content.text.TreeNode
+import com.atomist.tree.TreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 object RequirementsTxtParserTest {

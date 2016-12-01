@@ -1,10 +1,11 @@
 package com.atomist.util.scalaparsing
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.parser.RugParser._
 import com.atomist.rug.{BadRugSyntaxException, RugRuntimeException}
 import com.atomist.source.FileArtifact
-import com.atomist.util.{Visitor, Visitable}
+import com.atomist.tree.pathexpression.PathExpression
+import com.atomist.util.{Visitable, Visitor}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.parsing.combinator.JavaTokenParsers

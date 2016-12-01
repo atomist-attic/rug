@@ -1,6 +1,6 @@
 package com.atomist.project
 
-import com.atomist.model.project.{ResourceSpecifier, SimpleResourceSpecifier}
+import com.atomist.tree.project.{ResourceSpecifier, SimpleResourceSpecifier}
 import com.atomist.param.{Parameterized, Tag}
 
 trait ProjectOperationInfo extends Parameterized {

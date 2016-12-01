@@ -1,7 +1,8 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels._
+import com.atomist.tree.{SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 
 package object ElmModel {
 

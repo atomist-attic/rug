@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import java.util.{List => JList}
 

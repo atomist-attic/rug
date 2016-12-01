@@ -8,7 +8,7 @@ import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.EditorInvokingProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.ParserCombinatorRugParser
-import com.atomist.rug.runtime.DefaultEvaluator
+import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.{DefaultRugCompiler, InterpreterRugPipeline}
 import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}

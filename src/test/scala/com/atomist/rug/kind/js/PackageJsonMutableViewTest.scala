@@ -2,7 +2,7 @@ package com.atomist.rug.kind.js
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.SimpleFunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 

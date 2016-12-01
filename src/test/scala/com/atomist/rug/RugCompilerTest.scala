@@ -7,7 +7,7 @@ import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactMutableView
 import com.atomist.rug.parser._
-import com.atomist.rug.runtime.{DefaultEvaluator, LambdaPredicate, RugDrivenProjectEditor}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, LambdaPredicate, RugDrivenProjectEditor}
 import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}

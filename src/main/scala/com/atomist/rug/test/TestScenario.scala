@@ -5,7 +5,7 @@ import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleP
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.parser.{Computation, Predicate, RunOtherOperation}
-import com.atomist.rug.runtime.{DefaultEvaluator, RugOperationSupport}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, RugOperationSupport}
 import com.atomist.rug.{EmptyRugFunctionRegistry, Import}
 import com.atomist.source._
 

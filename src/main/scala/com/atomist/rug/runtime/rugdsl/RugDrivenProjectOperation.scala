@@ -1,9 +1,10 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.ProjectOperation
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.rug._
+import com.atomist.rug.runtime.NamespaceUtils
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging

@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig

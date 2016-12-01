@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 class LambdaPredicate[V](
                           val name: String,

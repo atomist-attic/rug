@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.kind.dynamic.ViewFinder
-import com.atomist.rug.runtime.Evaluator
+import com.atomist.rug.runtime.rugdsl.Evaluator
 
 /**
   * Support for a new Rug "kind" or "type" that can be used in with or from comprehensions, such

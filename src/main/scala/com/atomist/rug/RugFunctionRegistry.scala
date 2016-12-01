@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.rug.runtime.{NoOpFunction, RugFunction}
+import com.atomist.rug.runtime.rugdsl.{NoOpFunction, RugFunction}
 
 trait RugFunctionRegistry {
 

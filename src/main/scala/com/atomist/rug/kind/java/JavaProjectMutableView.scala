@@ -7,7 +7,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.util.lang.JavaHelpers

@@ -1,7 +1,7 @@
 package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
-import com.atomist.rug.runtime.RugDrivenProjectOperation
+import com.atomist.rug.runtime.rugdsl.RugDrivenProjectOperation
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 
 /**

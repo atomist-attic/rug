@@ -1,6 +1,6 @@
 package com.atomist.rug.spi
 
-import com.atomist.rug.runtime.Evaluator
+import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**

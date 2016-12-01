@@ -4,7 +4,7 @@ import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.ProjectOperationArchiveReader
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.service._
-import com.atomist.rug.runtime.RugDrivenExecutor
+import com.atomist.rug.runtime.rugdsl.RugDrivenExecutor
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging

@@ -5,7 +5,7 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.RugReferenceException
-import com.atomist.rug.runtime.RugDrivenProjectReviewer
+import com.atomist.rug.runtime.rugdsl.RugDrivenProjectReviewer
 
 import scala.collection.JavaConversions._
 

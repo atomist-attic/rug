@@ -1,9 +1,9 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.runtime.Evaluator.FunctionTarget
-import com.atomist.util.scalaparsing.ToEvaluate
+import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
 import com.atomist.source.ArtifactSource
+import com.atomist.util.scalaparsing.ToEvaluate
 
 object Evaluator {
 

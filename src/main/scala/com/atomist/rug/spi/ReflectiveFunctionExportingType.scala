@@ -1,10 +1,10 @@
 package com.atomist.rug.spi
 
-import java.lang.reflect.{InvocationTargetException, Method, Parameter}
+import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.atomist.rug._
-import com.atomist.rug.runtime.Evaluator.FunctionTarget
-import com.atomist.rug.runtime.{FunctionInvocationContext, RugFunction}
+import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
+import com.atomist.rug.runtime.rugdsl.{FunctionInvocationContext, RugFunction}
 import org.springframework.util.ReflectionUtils
 
 /**

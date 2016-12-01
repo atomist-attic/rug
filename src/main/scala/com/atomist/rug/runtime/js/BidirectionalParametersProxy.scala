@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.js
 
 import com.atomist.param.ParameterValue
 import com.atomist.project.ProjectOperationArguments

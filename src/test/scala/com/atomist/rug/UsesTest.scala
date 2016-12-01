@@ -6,7 +6,7 @@ import com.atomist.project.edit._
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.java.JavaClassTypeUsageTest
 import com.atomist.rug.parser.{RunOtherOperation, WrappedFunctionArg}
-import com.atomist.rug.runtime.RugDrivenProjectEditor
+import com.atomist.rug.runtime.rugdsl.RugDrivenProjectEditor
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 

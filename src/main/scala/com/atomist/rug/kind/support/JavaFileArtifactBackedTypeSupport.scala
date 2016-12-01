@@ -2,7 +2,7 @@ package com.atomist.rug.kind.support
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.Evaluator
+import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.rug.spi.{MutableView, ReflectiveStaticTypeInformation, Type, TypeInformation}
 import com.atomist.source.ArtifactSource
 

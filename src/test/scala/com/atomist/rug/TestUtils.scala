@@ -4,8 +4,6 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.FileArtifactMutableView
-import com.atomist.rug.runtime.{FunctionInvocationContext, RugFunction}
 import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import org.scalatest.Matchers
 

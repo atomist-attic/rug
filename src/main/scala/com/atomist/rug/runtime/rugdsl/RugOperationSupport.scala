@@ -1,10 +1,9 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Objects
 
-import com.atomist.tree.content.text._
 import com.atomist.param.{Parameter, ParameterValue, SimpleParameterValue}
 import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
@@ -13,7 +12,7 @@ import com.atomist.rug.kind.dynamic._
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.NamespaceUtils._
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
-import com.atomist.rug.spi.{InstantEditorFailureException, MutableView, TypeRegistry}
+import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.rug.{Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode

@@ -1,11 +1,11 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.project.{Executor, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.dynamic.ViewFinder
 import com.atomist.rug.kind.service.{ServiceMutableView, ServiceSource, ServicesMutableView}
 import com.atomist.rug.parser._
-import com.atomist.rug.spi.{InstantEditorFailureException, MutableView, TypeRegistry}
+import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.rug.{RugExecutor, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging

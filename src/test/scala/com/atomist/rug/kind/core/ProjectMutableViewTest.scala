@@ -3,7 +3,7 @@ package com.atomist.rug.kind.core
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaClassTypeUsageTest
-import com.atomist.rug.runtime.SimpleFunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

@@ -4,7 +4,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.{ParserCombinatorRugParser, RugParser}
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, FileArtifact}
 

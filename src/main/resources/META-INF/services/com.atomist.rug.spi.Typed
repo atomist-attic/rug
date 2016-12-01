@@ -9,7 +9,6 @@ com.atomist.rug.kind.java.JavaSourceType
 com.atomist.rug.kind.java.JavaProjectType
 
 com.atomist.rug.kind.json.JsonType
-com.atomist.rug.kind.http.HttpType
 
 com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.pom.PomType

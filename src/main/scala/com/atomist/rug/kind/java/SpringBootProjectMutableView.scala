@@ -6,7 +6,7 @@ import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.rug.kind.java.support.IsJavaProject
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.JavaHelpers

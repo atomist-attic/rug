@@ -1,8 +1,7 @@
 package com.atomist.rug.runtime
 
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.project.edit._
-import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.project.predicate.ProjectPredicate
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}

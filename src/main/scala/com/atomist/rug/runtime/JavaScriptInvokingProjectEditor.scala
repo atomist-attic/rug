@@ -2,8 +2,7 @@ package com.atomist.rug.runtime
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.project.edit._
-import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.spi.{InstantEditorFailureException, TypeRegistry}

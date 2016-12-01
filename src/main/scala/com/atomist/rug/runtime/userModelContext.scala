@@ -119,7 +119,6 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
       super.getMember(name)
 
     case st: StaticTypeInformation =>
-      //println(s"Calling $name on ${typ.name}")
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
       // TODO separate error message if wrong number of arguments

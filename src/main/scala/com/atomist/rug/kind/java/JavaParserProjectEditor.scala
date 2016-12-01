@@ -2,8 +2,7 @@ package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.JavaTag
-import com.atomist.project.edit._
-import com.atomist.project.edit.common.ProjectEditorSupport
+import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.java.support.{IsJavaProject, JavaFilesExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
 import com.atomist.util.lang.JavaConstants

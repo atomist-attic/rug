@@ -2,6 +2,7 @@ package com.atomist.rug.kind.core
 
 import com.atomist.source.{FileArtifact, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import com.atomist.source.{FileArtifact, StringFileArtifact}
 
 class FileArtifactMutableViewTest extends FlatSpec with Matchers {
 
@@ -136,6 +137,35 @@ class FileArtifactMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileArtifactMutableView(f, null)
     fmv.filename should equal (f.name)
+  }
+
+  it should "not add a string if the text already contains it" in {
+    val initialContent: String = "The quick brown jumped"
+    val f = StringFileArtifact("name",  initialContent)
+    val fmv = new FileArtifactMutableView(f, null)
+
+    val newString: String = " over the lazy dog"
+    fmv.mustContain(newString)
+    fmv.content should equal(initialContent + newString)
+  }
+
+  it should "add a string if it isn't already present" in {
+    val initialContent: String = "The quick brown jumped over the lazy dog"
+    val f = StringFileArtifact("name",  initialContent)
+    val fmv = new FileArtifactMutableView(f, null)
+
+    fmv.mustContain("over the lazy dog")
+    fmv.content should equal(initialContent)
+  }
+
+  it should "not add a required string twice" in {
+    val initialContent: String = "The quick brown jumped over the lazy dog"
+    val f = StringFileArtifact("name",  initialContent)
+    val fmv = new FileArtifactMutableView(f, null)
+
+    fmv.mustContain("over the lazy dog")
+    fmv.mustContain("over the lazy dog")
+    fmv.content should equal(initialContent)
   }
 
   it should "make file executable" in {

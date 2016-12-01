@@ -30,4 +30,8 @@ class DockerfileLine(val name: String) {
   def setRaw(raw: String) {
     this.raw = raw.replace("#$#", "\\\n")
   }
+
+  override def toString(): String = {
+    return raw
+  }
 }

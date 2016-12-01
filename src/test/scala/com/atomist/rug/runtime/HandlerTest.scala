@@ -3,6 +3,7 @@ package com.atomist.rug.runtime
 import java.util.Collections
 
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.runtime.js.{JavaScriptContext, Match}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror

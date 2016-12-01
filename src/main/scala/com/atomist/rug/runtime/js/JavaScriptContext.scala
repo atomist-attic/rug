@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.js
 
 import javax.script.{Invocable, ScriptContext, ScriptEngine, ScriptEngineManager}
 

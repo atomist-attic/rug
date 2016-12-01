@@ -5,6 +5,7 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
 import com.atomist.source.ArtifactSource

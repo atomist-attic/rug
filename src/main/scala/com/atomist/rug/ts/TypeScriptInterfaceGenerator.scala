@@ -1,4 +1,4 @@
-package com.atomist.rug.rugdoc
+package com.atomist.rug.ts
 
 import java.io.PrintWriter
 
@@ -10,7 +10,6 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
-import com.atomist.rug.ts.TypeScriptGenerationConfig
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.lang.TypeScriptGenerationHelper
 

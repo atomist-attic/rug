@@ -1,16 +1,17 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.js
 
 import javax.script.ScriptContext
 
 import com.atomist.param.{Parameter, Tag}
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
+import com.atomist.rug.runtime.{BidirectionalParametersProxy, ContextAwareProjectOperation}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-import scala.util.Try
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   * Superclass for all operations that delegate to JavaScript.

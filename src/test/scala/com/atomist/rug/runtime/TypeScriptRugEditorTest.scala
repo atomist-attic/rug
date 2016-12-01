@@ -2,7 +2,8 @@ package com.atomist.rug.runtime
 
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.project.common.IllformedParametersException
-import com.atomist.project.edit.{ProjectEditorSupport, _}
+import com.atomist.project.edit._
+import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 

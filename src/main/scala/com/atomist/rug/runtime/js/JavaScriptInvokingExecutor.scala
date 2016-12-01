@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime
+package com.atomist.rug.runtime.js
 
 import com.atomist.project.{Executor, ProjectOperationArguments}
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}

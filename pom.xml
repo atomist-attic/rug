@@ -294,7 +294,7 @@
                         </goals>
                         <phase>compile</phase>
                         <configuration>
-                            <mainClass>com.atomist.rug.rugdoc.TypeScriptInterfaceGenerator</mainClass>
+                            <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
                             <arguments>
                                 <argument>target/classes/user-model/model/Core.ts</argument>
                             </arguments>

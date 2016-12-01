@@ -139,7 +139,7 @@ class ModelBuildingListener(
         Seq(sf)
       case tn: TerminalNode =>
         makeField(name, tn.getSymbol, classOf[String])
-      case l: java.util.List[Object] =>
+      case l: java.util.List[Object @unchecked] =>
         l.asScala.flatMap(e => makeField(name, e, classOf[Object]))
       case prc: ParserRuleContext =>
         Seq(treeToContainerField(prc))

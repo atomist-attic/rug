@@ -40,21 +40,3 @@ abstract class CustomizingProjectGenerator<P extends GeneratorParameters>
 export {GeneratorParameters}
 export {ProjectGenerator}
 export {CustomizingProjectGenerator}
-
-
-// TODO doesn't compile. why?
-/*
-import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-import {editor} from 'user-model/support/Metadata'
-import {parameters} from 'user-model/support/Metadata'
-
-//@generator("My simple Generator")
-class SimpleGenerator implements CustomizingProjectGenerator<GeneratorParameters> {
-
-     customize(project: Project, parameters: GeneratorParameters) {
-        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-        return `Edited Project now containing ${project.fileCount()} files: \n`;
-    }
-}
-
-*/

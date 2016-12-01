@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport {
 
-  it should "test the test that tests that the editor updates dockerfile" in {
+  it should "test the test that tests that the editor updates Dockerfile" in {
     val prog =
       """
         |editor UpdateServicePort
@@ -18,6 +18,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
         |  do addOrUpdateExpose servicePort
         |
       """.stripMargin
+
     val scenario =
       """
         |scenario UpdateServicePort should update Dockerfile
@@ -33,6 +34,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
         |  fileExists "src/main/docker/Dockerfile"
         |	 and fileContains "src/main/docker/Dockerfile" "EXPOSE 8181"
       """.stripMargin
+
     val eds = new DefaultRugPipeline().createFromString(prog)
     val dockerfile = StringFileArtifact("src/main/docker/Dockerfile",
       """
@@ -47,6 +49,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
         |CMD ["java", "-Xmx1g", "-jar", "@project.build.finalName@.jar"]
         |
       """.stripMargin)
+
     val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
     val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", dockerfile), eds)
     executedTests.tests.size should be(1)

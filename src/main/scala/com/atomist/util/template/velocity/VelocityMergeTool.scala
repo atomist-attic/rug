@@ -41,13 +41,17 @@ class VelocityMergeTool(templateContent: ArtifactSource)
 
   override def isTemplate(path: String): Boolean = path.endsWith(TemplateSuffix)
 
-  override def mergeToFile(context: MergeContext, templatePath: String): FileArtifact = {
-    val templateOutput = new StringWriter
-    logger.debug(s"Using template : [$templatePath]")
-    ve.mergeTemplate(templatePath, Charset.defaultCharset().name(), context, templateOutput)
-    val filePath = mergeString(context, toInPlaceFilePath(templatePath)).replace(":", "/")
-    StringFileArtifact(filePath, templateOutput.toString)
-  }
+  override def mergeToFile(context: MergeContext, templatePath: String): FileArtifact =
+    templateContent.findFile(templatePath) match {
+      case None =>
+        throw new IllegalArgumentException(s"Template '$templatePath' not found")
+      case Some(template) =>
+        val templateOutput = new StringWriter
+        logger.debug(s"Using template : [$templatePath]")
+        ve.mergeTemplate(templatePath, Charset.defaultCharset().name(), context, templateOutput)
+        val filePath = mergeString(context, toInPlaceFilePath(templatePath)).replace(":", "/")
+        StringFileArtifact(filePath, templateOutput.toString).withMode(template.mode)
+    }
 
   override def mergeString(context: MergeContext, templateString: String): String = {
     val templateOutput = new StringWriter

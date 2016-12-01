@@ -25,7 +25,7 @@ object TreeNodeUtils {
     def showValue(n: TreeNode, cutoff: Int) = inlineReturns(
       n match {
         case cn: AbstractMutableContainerTreeNode if !cn.padded => ""
-        case n if n.value.size < cutoff => n.value
+        case n if n.value.length < cutoff => n.value
         case n => n.value.take(cutoff) + "..."
       })
 

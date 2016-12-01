@@ -1,5 +1,15 @@
 package com.atomist.model.content.text
 
+import com.atomist.rug.spi.{ExportFunction, TypeProvider}
+
+class MutableTerminalTreeNodeTypeProvider
+  extends TypeProvider(classOf[MutableTerminalTreeNode]) {
+
+  override def name: String = "mutable"
+
+  override def description: String = "Updateable terminal node"
+}
+
 /**
   * Updateable terminal node.
   *
@@ -21,12 +31,14 @@ class MutableTerminalTreeNode(
 
   private var currentValue = initialValue
 
+  @ExportFunction(readOnly = false, description = "Update the node value")
   override def update(newValue: String): Unit = {
     currentValue = newValue
   }
 
   override def endPosition: InputPosition = startPosition + currentValue.length
 
+  @ExportFunction(readOnly = true, description = "Return the value")
   override def value = currentValue
 
   override def dirty = currentValue != initialValue

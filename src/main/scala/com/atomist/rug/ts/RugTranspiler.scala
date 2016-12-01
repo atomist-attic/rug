@@ -16,13 +16,11 @@ object NashornUtils {
   import scala.collection.JavaConverters._
 
   def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
-    som.entrySet().asScala.map(me => {
-      (me.getKey -> me.getValue)
-    }).toMap
+    som.entrySet().asScala.map(me => me.getKey -> me.getValue).toMap
 }
 
 /**
-  * Turns Rug into Typescript
+  * Turns Rug into Typescript.
   */
 class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
                     rugParser: RugParser = new ParserCombinatorRugParser())
@@ -44,10 +42,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   override def supports(source: ArtifactSource): Boolean = true
 
   /**
-    * Turn Rug into Typescript
-    *
-    * @param rug
-    * @return
+    * Turn Rug into Typescript.
     */
   def transpile(rug: String): String = {
     val rugs = rugParser.parse(rug)
@@ -69,7 +64,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
-    //println(ts)
     ts.toString
   }
 
@@ -217,7 +211,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   private def extractValue(prog: RugProgram, te: ToEvaluate, outerAlias: String): String = te match {
     case l: Literal[_] => l.value match {
       case null => "null"
-      case s: String => s""""${s}""""
+      case s: String => s""""$s""""
       case x => x.toString
     }
     case js: JavaScriptBlock => handleJs(js.content)

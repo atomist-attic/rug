@@ -33,7 +33,7 @@ object TypeScriptInterfaceGenerator extends App {
   */
 class TypeScriptInterfaceGenerator(
                                     typeRegistry: TypeRegistry = DefaultTypeRegistry,
-                                    config: InterfaceGenerationConfig = new InterfaceGenerationConfig()
+                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig()
                                   ) extends ProjectGenerator
   with ProjectEditor with ProjectOperationParameterSupport {
 

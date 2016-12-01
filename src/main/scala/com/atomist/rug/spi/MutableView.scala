@@ -19,7 +19,7 @@ trait View[T] extends ContainerTreeNode {
   def originalBackingObject: T
 
   override def childNodes: Seq[TreeNode] =
-    childrenNames.map(name => children(name)).flatten
+    childrenNames.flatMap(name => children(name))
 
   override def value: String = ???
 

@@ -12,7 +12,7 @@ object ExecutionResult {
   val empty: ExecutionResult = Right(Nil)
 
   def show(er: ExecutionResult): String = er match {
-    case Right(nodes) => s"\t${nodes.map(show(_)).mkString("\n\t")}"
+    case Right(nodes) => s"\t${nodes.map(show).mkString("\n\t")}"
     case Left(err) => s"[$err]"
   }
 

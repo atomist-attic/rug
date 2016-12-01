@@ -115,7 +115,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.dirty should be(true)
   }
 
-  it should "count files in a diectory" in {
+  it should "count files in a directory" in {
     val src1 = StringFileArtifact("src/thing", "under src")
     val src2 = StringFileArtifact("src/main/otherThing", "under src/main")
     val asToEdit = SimpleFileBasedArtifactSource(src1, src2)

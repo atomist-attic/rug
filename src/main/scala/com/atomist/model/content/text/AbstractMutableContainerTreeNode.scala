@@ -60,7 +60,7 @@ abstract class AbstractMutableContainerTreeNode(
       val content = initialSource.substring(from, to)
       val name = s"$from-$to[${
         val pcontent = TreeNodeUtils.inlineReturns(content)
-        if (pcontent.size > show) s"${pcontent.take(show)}..." else pcontent
+        if (pcontent.length > show) s"${pcontent.take(show)}..." else pcontent
       }]"
       val pad = PaddingNode(name, content)
       pad
@@ -125,7 +125,7 @@ abstract class AbstractMutableContainerTreeNode(
 
   private def assertPaddingInvariants(initialSource: String): Unit = {
     val lastFieldValue = this._fieldValues.last.value
-    val endOfInput = initialSource.takeRight(_fieldValues.last.value.size.min(initialSource.length))
+    val endOfInput = initialSource.takeRight(_fieldValues.last.value.length.min(initialSource.length))
     require(lastFieldValue.equals(endOfInput),
       s"Last field value of [$lastFieldValue] does not equal end of input string, [$endOfInput]")
   }

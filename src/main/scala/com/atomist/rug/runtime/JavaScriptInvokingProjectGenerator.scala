@@ -32,7 +32,7 @@ class JavaScriptInvokingProjectGenerator(
     val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
     val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
 
-    val result = invokeMember("populate", pmv, poa)
+    val result = invokeMemberWithParameters("populate", pmv, poa)
 
     //    logger.debug(s"$name modifyInternal took ${tr._2}ms")
     //    tr._1

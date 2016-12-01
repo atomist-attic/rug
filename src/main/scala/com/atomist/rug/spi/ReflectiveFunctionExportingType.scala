@@ -35,7 +35,7 @@ object ReflectiveFunctionExport {
         val a = m.getAnnotation(classOf[ExportFunction])
         val params = extractExportedParametersAndDocumentation(m)
         TypeOperation(m.getName, a.description(), a.readOnly(), params,
-          m.getReturnType.getSimpleName, a.example() match {
+          m.getGenericReturnType.toString, a.example() match {
           case "" => None
           case ex => Some(ex)
         })
@@ -46,9 +46,9 @@ object ReflectiveFunctionExport {
     val params = m.getParameters.map({ p =>
       p.isAnnotationPresent(classOf[ExportFunctionParameterDescription]) match {
         case true => TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
-          p.getType.getSimpleName,
+          p.getParameterizedType.toString,
           Some(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).description()))
-        case _ => TypeParameter(p.getName, p.getType.getSimpleName, None)
+        case _ => TypeParameter(p.getName, p.getParameterizedType.toString, None)
       }
     })
     params

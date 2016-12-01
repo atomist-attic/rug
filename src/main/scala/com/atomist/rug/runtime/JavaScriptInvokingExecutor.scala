@@ -21,6 +21,6 @@ class JavaScriptInvokingExecutor(
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
     val smv = new ServicesMutableView(rugAs, serviceSource)
     //val reviewContext = new ReviewContext
-    invokeMember("execute", smv, parameters)
+    invokeMemberWithParameters("execute", smv, parameters)
   }
 }

@@ -219,7 +219,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
     def apply(in: Input): ParseResult[IdentifierRef] = {
       val pr = underlying.apply(in)
       pr match {
-        case succ: Success[String] =>
+        case succ: Success[String @unchecked] =>
           if (reservedWords.contains(succ.get))
             Failure(s"Cannot use reserved word '${succ.get}' as function name", succ.next)
           else
@@ -237,7 +237,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
     def apply(in: Input): ParseResult[String] = {
       val pr = ident.apply(in)
       pr match {
-        case succ: Success[String] =>
+        case succ: Success[String @unchecked] =>
           if (!choices.contains(succ.get))
             Failure(s"Choice of '${succ.get}' not valid: Allowed were [${choices.mkString(",")}]", succ.next)
           else
@@ -283,7 +283,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
       val offset = in.offset
       val start = handleWhiteSpace(source, offset)
       underlying(in) match {
-        case suc: Success[T] =>
+        case suc: Success[T @unchecked] =>
           // Only update positions if they're not already updated
           if (suc.result.startPosition == null || suc.result.endPosition == null) {
             val inputString = in.source.toString

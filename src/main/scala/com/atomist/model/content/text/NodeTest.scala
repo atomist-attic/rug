@@ -31,9 +31,6 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   /**
     * Subclasses can override this to provide a more efficient implementation.
     * This one works but can be expensive.
-    *
-    * @param axis
-    * @return
     */
   protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier): ExecutionResult = axis match {
     case Self => Right(List(tn))
@@ -68,7 +65,7 @@ case class NamedNodeTest(name: String)
               case Nil =>
                 TreeNodeOperations.invokeMethodIfPresent[TreeNode](tn, name).
                   map {
-                    case s: List[TreeNode] =>
+                    case s: List[TreeNode @unchecked] =>
                       s
                     case t: TreeNode =>
                       List(t)

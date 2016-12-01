@@ -1,8 +1,11 @@
 package com.atomist.rug.exec
 
-import com.atomist.rug.DefaultRugPipeline
+import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.archive.ProjectOperationArchiveReader
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.service._
 import com.atomist.rug.runtime.RugDrivenExecutor
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -10,6 +13,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ListBuffer
 
 class RugDrivenExecutorTest extends FlatSpec with Matchers {
+
+  val ccPipeline: RugPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler()))
 
   it should "update all projects" in {
     val content = "What is this, the high hat?"
@@ -126,14 +131,26 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
     val content = "What is this, the high hat?"
     updateAllProjects(content,
       s"""
-         |executor AddSomeCaspar
+         |import {Executor} from "@atomist/rug/operations/Executor"
+         |import {Parameters} from "@atomist/rug/operations/Parameters"
+         |import {Services} from "@atomist/rug/model/Core"
+         |import {Result,Status} from "@atomist/rug/operations/Result"
          |
-         |{
-         |  load("http://underscorejs.org/underscore.js");
-         |  _.each(services.services(),
-         |      function(project){ project.addFile("Caspar" , "$content") });
+         |import {executor} from "@atomist/rug/support/Metadata"
+         |
+         |@executor("An angry executor")
+         |class AddSomeCaspar implements Executor<Parameters> {
+         |
+         |    execute(services: Services, p: Parameters): Result {
+         |        for (let s of services.services())
+         |            s.addFile("Caspar", "$content");
+         |
+         |      return new Result(Status.Success, "OK")
+         |    }
          |}
-      """.stripMargin
+      """.stripMargin,
+      rugPath = ".atomist/executors/AddSomeCaspar.ts",
+      ccPipeline
     )
   }
 
@@ -157,17 +174,22 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
     )
   }
 
-  private def updateAllProjects(content: String, rug: String) {
-    val rp = new DefaultRugPipeline()
-    val CasparRangesFree = rp.create(
-      new SimpleFileBasedArtifactSource("", StringFileArtifact("executors/AddSomeCaspar.rug", rug)),
-      None
-    ).head.asInstanceOf[RugDrivenExecutor]
+  private def updateAllProjects(content: String, rug: String,
+                                rugPath: String = "executors/AddSomeCaspar.rug",
+                                pipeline: RugPipeline = new DefaultRugPipeline()) {
+    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, rug))
+//    val CasparRangesFree = pipeline.create(
+//      as,
+//      None
+//    ).head.asInstanceOf[RugDrivenExecutor]
+
+    val ops = new ProjectOperationArchiveReader().findOperations(as, None, Nil)
+    val CasparRangesFree = ops.executors.head
 
     val donny = EmptyArtifactSource("")
     val dude = new SimpleFileBasedArtifactSource("dude", StringFileArtifact("question", "Mind if i light up a J?"))
     val services = new FakeServiceSource(Seq(donny, dude))
-    CasparRangesFree.execute(services)
+    CasparRangesFree.execute(services, SimpleProjectOperationArguments.Empty)
 
     val latestVersions = services.updatePersister.latestVersion.values
     latestVersions.size should be(2)

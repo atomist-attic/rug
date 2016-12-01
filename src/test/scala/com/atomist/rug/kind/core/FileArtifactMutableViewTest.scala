@@ -1,7 +1,8 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.source.StringFileArtifact
+import com.atomist.source.{FileArtifact, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import com.atomist.source.{FileArtifact, StringFileArtifact}
 
 class FileArtifactMutableViewTest extends FlatSpec with Matchers {
 
@@ -165,5 +166,15 @@ class FileArtifactMutableViewTest extends FlatSpec with Matchers {
     fmv.mustContain("over the lazy dog")
     fmv.mustContain("over the lazy dog")
     fmv.content should equal(initialContent)
+  }
+
+  it should "make file executable" in {
+    val f = StringFileArtifact("name.sh", "The quick brown jumped over the lazy dog")
+    val fmv = new FileArtifactMutableView(f, null)
+    fmv.name should equal("name.sh")
+    fmv.dirty should be (false)
+    fmv.makeExecutable()
+    fmv.dirty should be (true)
+    fmv.currentBackingObject.mode should equal (FileArtifact.ExecutableMode)
   }
 }

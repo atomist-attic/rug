@@ -26,18 +26,17 @@ class MustacheMergeTool(templateContent: ArtifactSource)
   override def isTemplate(path: String): Boolean =
     SupportedExtensions.exists(extension => path.endsWith(extension))
 
-  override def mergeToFile(context: MergeContext, path: String): FileArtifact = {
-    val f = templateContent.findFile(path)
-    if (f.isEmpty)
-      throw new IllegalArgumentException(s"Template '$path' not found")
-
-    val fa = f.get
-    val templateOutput = new StringWriter
-    val filePath = mergeString(context, toInPlaceFilePath(path)).replace(":", "/")
-    val mustache = mf.compile(fa.content)
-    mustache.execute(templateOutput, context.map.asJava)
-    StringFileArtifact(filePath, templateOutput.toString, fa.mode, fa.uniqueId)
-  }
+  override def mergeToFile(context: MergeContext, path: String): FileArtifact =
+    templateContent.findFile(path) match {
+      case None =>
+        throw new IllegalArgumentException(s"Template '$path' not found")
+      case Some(template) =>
+        val templateOutput = new StringWriter
+        val filePath = mergeString(context, toInPlaceFilePath(path)).replace(":", "/")
+        val mustache = mf.compile(template.content)
+        mustache.execute(templateOutput, context.map.asJava)
+        StringFileArtifact(filePath, templateOutput.toString, template.mode, template.uniqueId)
+    }
 
   override def mergeString(context: MergeContext, templateString: String): String = {
     val templateOutput = new StringWriter

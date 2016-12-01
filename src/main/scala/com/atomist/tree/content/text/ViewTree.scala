@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
-import com.atomist.tree.utils.TreeNodeOperations.NodeTransformer
+import TreeNodeOperations.NodeTransformer
 
 import scala.collection.mutable.ListBuffer
 

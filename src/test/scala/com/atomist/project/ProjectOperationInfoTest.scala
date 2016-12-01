@@ -1,6 +1,6 @@
 package com.atomist.project
 
-import com.atomist.tree.project.SimpleResourceSpecifier
+import com.atomist.tree.content.project.SimpleResourceSpecifier
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProjectOperationInfoTest extends FlatSpec with Matchers {

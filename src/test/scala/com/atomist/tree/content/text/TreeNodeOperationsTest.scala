@@ -9,7 +9,7 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 class TreeNodeOperationsTest extends FlatSpec with Matchers {
 
-  import com.atomist.tree.utils.TreeNodeOperations._
+  import TreeNodeOperations._
 
   it should "remove padding" in {
     val input = "The quick brown fox"

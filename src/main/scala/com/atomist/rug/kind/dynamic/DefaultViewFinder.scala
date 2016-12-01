@@ -7,8 +7,8 @@ import com.atomist.rug.parser.Selected
 import com.atomist.rug.spi.{MutableView, Type, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.grammar.MatchListener
-import com.atomist.tree.content.microgrammar.Microgrammar
+import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.content.text.microgrammar.Microgrammar
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.typesafe.scalalogging.LazyLogging

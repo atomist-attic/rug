@@ -5,7 +5,6 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
-import com.atomist.tree.utils.TreeNodeOperations
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**

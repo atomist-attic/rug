@@ -2,10 +2,10 @@ package com.atomist.rug.kind.json
 
 import java.nio.charset.StandardCharsets
 
-import com.atomist.tree.content.grammar.antlr.AntlrGrammar
-import com.atomist.tree.content.grammar.{MatchListener, Parser}
+import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
+import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
 import com.atomist.tree.content.text.MutableContainerTreeNode
-import com.atomist.tree.utils.TreeNodeOperations._
+import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
 import org.springframework.core.io.DefaultResourceLoader

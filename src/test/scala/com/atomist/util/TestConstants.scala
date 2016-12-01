@@ -1,6 +1,6 @@
 package com.atomist.util
 
-import com.atomist.tree.project.{SimpleResourceSpecifier, ResourceSpecifier}
+import com.atomist.tree.content.project.{SimpleResourceSpecifier, ResourceSpecifier}
 
 object TestConstants {
 

@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.java.spring
 
-import com.atomist.tree.project.Configuration
+import com.atomist.tree.content.project.Configuration
 import com.atomist.parse.java.spring.HasApplicationYml
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.SuccessfulModification

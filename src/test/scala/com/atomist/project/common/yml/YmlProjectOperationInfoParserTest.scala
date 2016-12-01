@@ -1,6 +1,6 @@
 package com.atomist.project.common.yml
 
-import com.atomist.tree.project.SimpleResourceSpecifier
+import com.atomist.tree.content.project.SimpleResourceSpecifier
 import com.atomist.param.ParameterValidationPatterns
 import org.scalatest.{FlatSpec, Matchers}
 

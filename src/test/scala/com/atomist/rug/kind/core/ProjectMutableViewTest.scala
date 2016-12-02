@@ -76,7 +76,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
     val kids = pmv.defaultChildViews
     kids.nonEmpty should be (true)
-    kids.forall(f => f.isInstanceOf[ArtifactContainerMutableView[_]]) should be (true)
+    kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be (true)
   }
 
   it should "handle path and content replace" in {
@@ -101,9 +101,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val newContentDir = "newContent"
     val pmv = new ProjectMutableView(backingTemplates, outputAs)
     val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
-      FirstPoa.parameterValues.map {
-        case pv => (pv.getName, pv.getValue)
-      }.toMap,
+      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
       FirstPoa, Nil)
     pmv.mergeTemplates("", newContentDir, ic)
     pmv.currentBackingObject.totalFileCount should be(3)
@@ -202,8 +200,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "handle deleting of a directory" in {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
-    val oldPackage = "com.atomist.test1"
-    val newPackage = "com.foo.bar"
 
     val gitDirectoryPath = s"dirToDelete"
 

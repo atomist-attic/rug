@@ -1,6 +1,6 @@
 package com.atomist.project
 
-import com.atomist.model.project.ResourceSpecifier
+import com.atomist.tree.content.project.ResourceSpecifier
 import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
 
 import scala.beans.BeanProperty

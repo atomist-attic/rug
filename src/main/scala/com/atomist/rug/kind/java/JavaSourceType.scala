@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging

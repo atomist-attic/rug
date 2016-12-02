@@ -3,7 +3,7 @@ package com.atomist.rug.parser
 import java.util.Objects
 
 import com.atomist.rug._
-import com.atomist.scalaparsing.{JavaScriptBlock, Literal, ScriptBlock, ToEvaluate}
+import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ScriptBlock, ToEvaluate}
 import com.atomist.source.{FileArtifact, StringFileArtifact}
 import com.atomist.util.{Visitor, Visitable}
 

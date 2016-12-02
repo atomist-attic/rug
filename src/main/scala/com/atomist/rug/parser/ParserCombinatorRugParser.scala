@@ -2,7 +2,7 @@ package com.atomist.rug.parser
 
 import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.rug._
-import com.atomist.scalaparsing.ScriptBlock
+import com.atomist.util.scalaparsing.ScriptBlock
 import com.atomist.source.FileArtifact
 
 /**
@@ -30,7 +30,7 @@ class ParserCombinatorRugParser(
 
   private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
     case p: String => RegexParameterPattern(p)
-    case values: Seq[String] => AllowedValuesParameterPattern(values)
+    case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
   }
 
   protected override def parameterName: Parser[String] = identifierRef(ReservedWordsToAvoidInBody, camelCaseIdentifier) ^^ (id => id.name)
@@ -80,7 +80,7 @@ class ParserCombinatorRugParser(
         for (annotation <- annotations) annotation match {
           case Annotation(DescriptionAnnotationAttribute, Some(desc: String)) => ed = ed.copy(description = desc)
           case Annotation(TagAnnotation, Some(tag: String)) => ed = ed.copy(tags = ed.tags :+ tag)
-          case Annotation(GeneratorAnnotation, pubName: Option[String]) =>
+          case Annotation(GeneratorAnnotation, pubName: Option[String @unchecked]) =>
             ed = ed.copy(publishedName = Some(pubName.getOrElse(ed.name)))
           // TODO Do what we did for parameters
           // and do the resolution later, because someone thought this makes it worse, but it doesn't, printing the $op helps
@@ -109,7 +109,7 @@ class ParserCombinatorRugParser(
   private def doSteps(simpleAction: Parser[DoStep]): Parser[Seq[DoStep]] =
     (simpleAction | compoundDoStep) ^^ {
       case d: DoStep => Seq(d)
-      case dos: Seq[DoStep] => dos
+      case dos: Seq[DoStep @unchecked] => dos
     }
 
   private def simpleWithDoStep: Parser[DoStep] = (doDoStep | withBlock(simpleWithDoStep)) ^^ {
@@ -154,7 +154,7 @@ class ParserCombinatorRugParser(
 
   private def opActions: Parser[Seq[Action]] = (scriptActionBlock | rep1(action(simpleWithDoStep))) ^^ {
     case sb: ScriptBlock => Seq(ScriptBlockAction(sb))
-    case actions: Seq[Action] => actions
+    case actions: Seq[Action @unchecked] => actions
   }
 
   private def rugEditor: Parser[RugEditor] =
@@ -227,7 +227,7 @@ class ParserCombinatorRugParser(
 
   protected def executorActions: Parser[Seq[Action]] = (scriptActionBlock | rep1(action(simpleExecutionDoStep))) ^^ {
     case sab: ScriptBlock => Seq(ScriptBlockAction(sab))
-    case actions: Seq[Action] => actions
+    case actions: Seq[Action @unchecked] => actions
   }
 
   private def rugExecutor: Parser[RugExecutor] =

@@ -1,7 +1,8 @@
 package com.atomist.rug.kind.elm.ElmModel
 
-import com.atomist.model.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleTerminalTreeNode}
+import com.atomist.tree.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode}
 import com.atomist.rug.kind.elm.{ElmModuleType, ElmParserCombinator}
+import com.atomist.tree.SimpleTerminalTreeNode
 
 object ElmTypeModels {
 

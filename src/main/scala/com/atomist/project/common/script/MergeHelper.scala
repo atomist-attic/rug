@@ -1,6 +1,6 @@
 package com.atomist.project.common.script
 
-import com.atomist.util.template.{MergeContext, MergeTool}
+import com.atomist.project.common.template.{MergeContext, MergeTool}
 
 class MergeHelper(mt: MergeTool) {
 

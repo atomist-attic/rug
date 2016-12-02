@@ -1,16 +1,14 @@
 package com.atomist.rug.kind.java.spring
 
 import java.util
-import java.util.{Set => JSet}
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.edit._
-import com.atomist.project.edit.common.ProjectEditorSupport
-import com.atomist.project.edit.common.ProjectEditorUtils._
+import com.atomist.project.edit.ProjectEditorSupport
+import com.atomist.project.edit.ProjectEditorUtils._
 import com.atomist.source.ArtifactSource
 import com.atomist.util.yml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
 
-import scala.collection.JavaConversions._
 /**
   * No parameters are required. All key-value pairs will be added to the
   * application YML file.

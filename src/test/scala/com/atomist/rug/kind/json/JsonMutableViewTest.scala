@@ -1,8 +1,9 @@
 package com.atomist.rug.kind.json
 
-import com.atomist.model.content.text.{ContainerTreeNode, MutableTreeNode, PathExpressionEngine}
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.pathexpression.PathExpressionEngine
+import com.atomist.tree.{ContainerTreeNode, MutableTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 class JsonMutableViewTest extends FlatSpec with Matchers {

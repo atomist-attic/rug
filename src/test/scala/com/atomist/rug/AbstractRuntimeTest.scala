@@ -1,15 +1,14 @@
 package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{SuccessfulModification, ProjectEditor}
+import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.core.FileArtifactMutableView
-import com.atomist.rug.runtime.LambdaPredicate
 import com.atomist.source.file.SimpleFileSystemArtifactSourceIdentifier
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact, ArtifactSource, EmptyArtifactSource}
-import org.scalatest.{Matchers, FlatSpec}
-
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
+import com.atomist.rug.runtime.rugdsl.LambdaPredicate
 
 abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
@@ -264,7 +263,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |param message: .*
          |
          |with file f
-         | when { f.name().endsWith(".java") }
+         | when { /.*\\.java$$/.test(f.name())}
          |do
          | append "$extraText"
       """.stripMargin
@@ -330,7 +329,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
-
 
   protected def simpleAppenderProgramExpectingParameters(program: String,
                                                          finalFileContent: Option[String] = None,

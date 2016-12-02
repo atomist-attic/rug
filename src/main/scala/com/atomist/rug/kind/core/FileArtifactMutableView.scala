@@ -14,6 +14,14 @@ class FileArtifactMutableView(
   extends FileArtifactBackedMutableView(originalBackingObject, parent)
     with TerminalView[FileArtifact] {
 
+  @ExportFunction(readOnly = false, description = "If the file already contains the specified text, does nothing. Otherwise appends it to the file")
+  def mustContain(@ExportFunctionParameterDescription(name = "content", description = "The content that the file will contain")
+                  newString: String) = {
+    if (!contains(newString)) {
+      append(newString)
+    }
+  }
+
   @ExportFunction(readOnly = true, description = "Name of the file, excluding path")
   def name = filename
 
@@ -23,9 +31,8 @@ class FileArtifactMutableView(
   @ExportFunction(readOnly = false, description = "Set entire file content to new string")
   def setContent(@ExportFunctionParameterDescription(name = "newContent",
     description = "The content to set the file to")
-                 newContent: String): Unit = {
+                 newContent: String): Unit =
     updateTo(StringFileArtifact.updated(currentBackingObject, newContent))
-  }
 
   @ExportFunction(readOnly = true,
     description = "Does the file name (not path) contain the given string?")

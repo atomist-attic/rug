@@ -4,12 +4,26 @@ import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMuta
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 import com.atomist.source.FileArtifact
 
+import scala.collection.JavaConversions
+
 class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, pv) {
 
   var _content: Dockerfile = DockerfileParser.parse(originalBackingObject.content)
 
   def currentContent: String = _content.toString
+
+  @ExportFunction( readOnly = true, description = "")
+  def getExposedPorts(): java.util.List[Int] = {
+    val exposePorts: Set[Int] = _content.getExposePorts()
+    /*
+    We have to export collections as Java collections, as these get passed into
+    nashorn for the typescript stuff, and it doesn't understand scala.
+    I'd also rather return a java.util.Set here, but so far our typescript support
+    doesn't seem to like that - only java.util.List is supported
+     */
+    return JavaConversions.seqAsJavaList(exposePorts.toSeq)
+  }
 
   @ExportFunction(readOnly = false, description = "Add or update FROM directive")
   def addOrUpdateFrom(@ExportFunctionParameterDescription(name = "fromContents",

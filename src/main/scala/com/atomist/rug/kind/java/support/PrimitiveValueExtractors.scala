@@ -2,13 +2,14 @@ package com.atomist.rug.kind.java.support
 
 import com.atomist.project.{ArtifactSourceFilter, FilesExtractor, MaybeFileExtractor, ProjectValueExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.util.lang.{JavaHelpers, MavenConstants}
 
 case class SourcePaths(
                         baseSourcePath: String,
                         baseTestPath: String
                       )
 
-import com.atomist.rug.kind.java.support.JavaConstants._
+import com.atomist.util.lang.JavaConstants._
 
 object DefaultSourcePaths extends SourcePaths(
   DefaultBaseSourcePath,

@@ -3,7 +3,7 @@ package com.atomist.rug.kind.test
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectiveStaticTypeInformation, Type, TypeInformation}
 import com.atomist.source.ArtifactSource
 

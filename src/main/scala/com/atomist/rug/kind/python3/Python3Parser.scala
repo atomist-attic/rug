@@ -2,10 +2,10 @@ package com.atomist.rug.kind.python3
 
 import java.nio.charset.StandardCharsets
 
-import com.atomist.model.content.grammar.antlr.AntlrGrammar
-import com.atomist.model.content.grammar.{MatchListener, Parser}
-import com.atomist.model.content.text.MutableContainerTreeNode
-import com.atomist.model.content.text.TreeNodeOperations._
+import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
+import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
+import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
 import org.springframework.core.io.DefaultResourceLoader

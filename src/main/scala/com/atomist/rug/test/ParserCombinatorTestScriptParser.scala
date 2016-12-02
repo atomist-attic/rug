@@ -56,7 +56,7 @@ object ParserCombinatorTestScriptParser
 
   private def andThen: Parser[Then] = ThenToken.r ~> (assertions | NoChangeToken |
     NotApplicableToken | ShouldFailToken | MissingParameters | InvalidParameters) ^^ {
-    case assertions: Seq[Assertion] => Then(assertions)
+    case assertions: Seq[Assertion @unchecked] => Then(assertions)
     case NoChangeToken => Then(Seq(NoChangeAssertion))
     case NotApplicableToken => Then(Seq(NotApplicableAssertion))
     case ShouldFailToken => Then(Seq(ShouldFailAssertion))

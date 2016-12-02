@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.lang.js
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.rug.runtime.SimpleFunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

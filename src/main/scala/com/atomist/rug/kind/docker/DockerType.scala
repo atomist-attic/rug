@@ -1,10 +1,10 @@
 package com.atomist.rug.kind.docker
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.ArtifactSource
 

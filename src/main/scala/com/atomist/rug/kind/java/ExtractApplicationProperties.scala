@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.model.project.{ConfigValue, Configuration, SimpleConfigValue, SimpleConfiguration}
+import com.atomist.tree.content.project.{ConfigValue, Configuration, SimpleConfigValue, SimpleConfiguration}
 import com.atomist.project.Extractor
 import com.atomist.source.FileArtifact
 import org.apache.commons.lang3.StringUtils

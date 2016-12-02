@@ -1,11 +1,11 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.model.content.text.{AbstractMutableContainerTreeNode, MutableTerminalTreeNode}
+import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableTerminalTreeNode}
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels._
 import com.atomist.rug.kind.elm.ElmModel.ElmExpressionModels._
 import com.atomist.rug.kind.elm.ElmModel.ElmTypeModels._
 import com.atomist.rug.kind.elm.ElmModel._
-import com.atomist.scalaparsing.CommonTypesParser
+import com.atomist.util.scalaparsing.CommonTypesParser
 import com.atomist.source.StringFileArtifact
 import com.typesafe.scalalogging.LazyLogging
 

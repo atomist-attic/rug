@@ -32,7 +32,6 @@ trait ReflectivelyTypedType extends Typed {
     new ReflectiveStaticTypeInformation(self.viewManifest.runtimeClass)
 }
 
-
 /**
   * Extended by classes that can describing existing types that aren't exposed to
   * top level navigation

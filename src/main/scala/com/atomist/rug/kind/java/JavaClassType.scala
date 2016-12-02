@@ -2,11 +2,10 @@ package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.{ChildResolver, ContextlessViewFinder}
+import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.JavaClassType._
-import com.atomist.rug.kind.java.support.JavaHelpers
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
 import com.github.javaparser.ast.body._
@@ -33,7 +32,7 @@ class JavaClassType(evaluator: Evaluator)
                                    poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] =
     context match {
       case pv: ProjectMutableView =>
-        Some(JavaProjectMutableView(pv).javaSourceViews.map(_.defaultChildViews).flatten)
+        Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.defaultChildViews))
       case fmv: FileArtifactBackedMutableView =>
         Some(
           Seq(new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView(fmv.parent))).flatMap(s => s.children(JavaTypeAlias))

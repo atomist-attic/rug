@@ -5,6 +5,8 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
 import com.atomist.source.ArtifactSource
@@ -37,7 +39,7 @@ class ProjectOperationArchiveReader(
 
     val editors = operations collect {
       // TODO returning an editor that really is a generator is confusing
-      case red: RugDrivenProjectEditor if red.program.publishedName.isEmpty => red
+      case red: RugDrivenProjectEditor => red
 
         // TODO these can't be generators yet.
         // This is a hack to avoid breaking tests
@@ -50,7 +52,7 @@ class ProjectOperationArchiveReader(
         // TODO want to pull up published name so it's not Rug only
         val project: ArtifactSource = removeAtomistTemplateContent(startingProject)
         // TODO remove blanks in the generator names; we need to have a proper solution for this
-        val name = red.program.publishedName.get.replace(" ", "")
+        val name = red.program.publishedName.get
         logger.info(s"Creating new generator with name $name")
         new EditorInvokingProjectGenerator(name, red, project)
     }

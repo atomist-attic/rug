@@ -2,6 +2,7 @@ package com.atomist.rug.kind.java.support
 
 import com.atomist.project.{FunctionProjectAssertion, ProjectAssertion}
 import com.atomist.source.ArtifactSource
+import com.atomist.util.lang.{JavaHelpers, MavenConstants}
 
 import scala.collection.JavaConversions._
 

@@ -3,7 +3,7 @@ package com.atomist.project.archive
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.Import
 import com.atomist.rug.exec.FakeServiceSource
-import com.atomist.rug.runtime.TypeScriptRugEditorTest
+import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -73,8 +73,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   it should "parse editor and reviewer and generator" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator)), None, Nil)
-    ops.editors.size should be(1)
-    ops.editorNames.toSet should equal(Set("First"))
+    ops.editors.size should be(2)
+    ops.editorNames.toSet should equal(Set("First", "Published"))
     ops.reviewers.size should be(1)
     ops.reviewerNames should equal(Seq("Second"))
     ops.generators.size should equal(1)
@@ -161,7 +161,6 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   }
 
   it should "allow invocation of other operation from TypeScript editor" in pending
-
 
   it should "find and invoke plain javascript generators" in{
     val apc = new ProjectOperationArchiveReader(atomistConfig)

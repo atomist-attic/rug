@@ -1,14 +1,16 @@
 package com.atomist.rug.kind.dynamic
 
-import com.atomist.model.content.grammar.MatchListener
-import com.atomist.model.content.grammar.microgrammar.Microgrammar
-import com.atomist.model.content.text.{MutableContainerTreeNode, PathExpression, PathExpressionEngine, TreeNode}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.spi.{MutableView, Type, TypeRegistry}
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.content.text.microgrammar.Microgrammar
+import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.typesafe.scalalogging.LazyLogging
 
 class DefaultViewFinder(typeRegistry: TypeRegistry)
@@ -45,7 +47,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
                 case mv: MutableView[_] => mv
               })
           }
-        case (suovmv: Seq[MutableContainerTreeNodeMutableView], _) =>
+        case (suovmv: Seq[MutableContainerTreeNodeMutableView @unchecked], _) =>
           Some(suovmv)
         case (childType, parent) =>
           // This is fine
@@ -65,7 +67,6 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         case t: Type =>
           t.findIn(rugAs, selected, context, poa, identifierMap)
       }
-
 
     childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes
   }

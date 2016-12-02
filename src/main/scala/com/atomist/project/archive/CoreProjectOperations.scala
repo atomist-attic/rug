@@ -1,11 +1,9 @@
 package com.atomist.project.archive
 
-import com.atomist.project.edit.common.CompoundProjectEditor
+import com.atomist.project.edit.CompoundProjectEditor
 import com.atomist.rug.kind.java.spring.{ApplicationPropertiesToApplicationYmlEditor, ApplicationYmlKeyAddingEditor}
 import com.atomist.rug.rugdoc.TypeDoc
 import com.atomist.rug.runtime.NamespaceUtils._
-
-import scala.collection.JavaConversions._
 
 /**
   * Well known project operations.

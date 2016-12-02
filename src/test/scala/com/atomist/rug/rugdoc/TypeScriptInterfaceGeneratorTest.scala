@@ -2,6 +2,7 @@ package com.atomist.rug.rugdoc
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptInterfaceGenerator}
 import com.atomist.source.{FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 

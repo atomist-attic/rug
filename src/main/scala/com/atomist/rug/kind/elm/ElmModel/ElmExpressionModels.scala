@@ -1,8 +1,9 @@
 package com.atomist.rug.kind.elm.ElmModel
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels.ElmDeclaration
 import com.atomist.rug.kind.elm.{ElmModuleType, ElmParser, ElmParserCombinator}
+import com.atomist.tree.{PaddingNode, SimpleTerminalTreeNode, TreeNode}
 
 object ElmExpressionModels {
 

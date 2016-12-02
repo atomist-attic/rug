@@ -1,9 +1,10 @@
 package com.atomist.rug.kind.dynamic
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
 import com.atomist.source.{FileArtifact, StringFileArtifact}
+import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, SimpleTerminalTreeNode}
 import com.typesafe.scalalogging.LazyLogging
 
 class MutableTreeNodeUpdater(soo: MutableContainerTreeNode)

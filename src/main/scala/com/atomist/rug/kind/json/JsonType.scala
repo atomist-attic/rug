@@ -1,15 +1,17 @@
 package com.atomist.rug.kind.json
 
-import com.atomist.model.content.text.TreeNodeFinders._
-import com.atomist.model.content.text._
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.json.JsonType._
 import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.tree.content.text._
+import com.atomist.tree.pathexpression.PathExpressionEngine
+import com.atomist.tree.utils.TreeNodeFinders._
+import com.atomist.tree.{MutableTreeNode, TreeNode}
 
 class JsonType(
                 evaluator: Evaluator
@@ -93,7 +95,6 @@ object JsonType {
 
 import com.atomist.rug.kind.json.JsonType._
 
-
 class JsonMutableView(
                        originalBackingObject: FileArtifact,
                        parent: ProjectMutableView)
@@ -134,11 +135,10 @@ class JsonMutableView(
 
 class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
 
-  override def name: String = "Pair"
+  override def name: String = "pair"
 
   override def description: String = "JSON pair"
 }
-
 
 /*
   pair

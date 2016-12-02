@@ -1,9 +1,10 @@
 package com.atomist.rug.kind.elm.ElmModel
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.kind.elm.ElmModel.ElmExpressionModels.{ElmExpression, ElmPattern}
 import com.atomist.rug.kind.elm.ElmModel.ElmTypeModels.{ElmTypeSpecification, ElmTypeWithParameters}
 import com.atomist.rug.kind.elm.{ElmModuleType, ElmParser, ElmParserCombinator}
+import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 
 /**
   * Elm top-level declarations include:

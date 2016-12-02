@@ -3,7 +3,7 @@ package com.atomist.rug.parser
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.{BadRugSyntaxException, InvalidRugAnnotationValueException}
-import com.atomist.scalaparsing._
+import com.atomist.util.scalaparsing._
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 

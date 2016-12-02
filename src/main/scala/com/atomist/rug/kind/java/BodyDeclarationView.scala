@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.rug.kind.core.FileMetrics
-import com.atomist.rug.kind.java.support.JavaParserUtils
 import com.atomist.rug.spi._
+import com.atomist.util.lang.JavaParserUtils
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.BodyDeclaration
 
@@ -32,7 +32,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
       case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
       case _ => throw new IllegalArgumentException("Failed to get compilation unit")
     }
-    compilationUnit.foreach(cu => JavaParserProjectEditor.addImportsIfNeeded(Seq(fqn), cu))
+    compilationUnit.foreach(cu => JavaParserUtils.addImportsIfNeeded(Seq(fqn), cu))
   }
 
   @ExportFunction(readOnly = true, description = "Does the element have the given annotation?")

@@ -2,10 +2,10 @@ package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.JavaTag
-import com.atomist.project.edit._
-import com.atomist.project.edit.common.ProjectEditorSupport
-import com.atomist.rug.kind.java.support.{IsJavaProject, JavaConstants, JavaFilesExtractor}
+import com.atomist.project.edit.{ProjectEditorSupport, _}
+import com.atomist.rug.kind.java.support.{IsJavaProject, JavaFilesExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
+import com.atomist.util.lang.JavaConstants
 import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
 import com.typesafe.scalalogging.LazyLogging
@@ -70,17 +70,3 @@ abstract class JavaParserProjectEditor(val name: String,
   protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit]
 }
 
-/**
-  * Convenience methods for modifying JavaParser objects.
-  */
-object JavaParserProjectEditor {
-
-  def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
-    fqns.foreach(fqn => {
-      val importDefinition = cu.getImports.find(imp => imp.toString contains fqn)
-      if (importDefinition.isEmpty) {
-        cu.getImports.add(new ImportDeclaration(new NameExpr(fqn), false, false))
-      }
-    })
-  }
-}

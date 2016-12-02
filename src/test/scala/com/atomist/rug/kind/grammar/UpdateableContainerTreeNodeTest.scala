@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.grammar
 
-import com.atomist.model.content.text._
+import com.atomist.tree.SimpleTerminalTreeNode
+import com.atomist.tree.content.text._
 import org.scalatest.{FlatSpec, Matchers}
 
 class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {

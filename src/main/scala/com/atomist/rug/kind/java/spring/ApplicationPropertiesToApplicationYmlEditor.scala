@@ -2,7 +2,7 @@ package com.atomist.rug.kind.java.spring
 
 import _root_.java.util
 
-import com.atomist.model.project.{ConfigValue, Configuration}
+import com.atomist.tree.content.project.{ConfigValue, Configuration}
 import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.edit._

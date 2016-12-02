@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
-import com.atomist.model.content.text.{ContainerTreeNode, TreeNode}
-import com.atomist.rug.runtime.Evaluator
+import com.atomist.rug.runtime.rugdsl.Evaluator
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
   * View read operations.
@@ -19,7 +19,7 @@ trait View[T] extends ContainerTreeNode {
   def originalBackingObject: T
 
   override def childNodes: Seq[TreeNode] =
-    childrenNames.map(name => children(name)).flatten
+    childrenNames.flatMap(name => children(name))
 
   override def value: String = ???
 

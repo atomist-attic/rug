@@ -3,7 +3,7 @@ package com.atomist.rug.kind.core
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaClassTypeUsageTest
-import com.atomist.rug.runtime.SimpleFunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -115,7 +115,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.dirty should be(true)
   }
 
-  it should "count files in a diectory" in {
+  it should "count files in a directory" in {
     val src1 = StringFileArtifact("src/thing", "under src")
     val src2 = StringFileArtifact("src/main/otherThing", "under src/main")
     val asToEdit = SimpleFileBasedArtifactSource(src1, src2)

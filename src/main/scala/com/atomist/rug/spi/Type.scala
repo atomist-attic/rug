@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.kind.dynamic.ViewFinder
-import com.atomist.rug.runtime.Evaluator
+import com.atomist.rug.runtime.rugdsl.Evaluator
 
 /**
   * Support for a new Rug "kind" or "type" that can be used in with or from comprehensions, such
@@ -16,7 +16,7 @@ abstract class Type(
                    )
   extends ViewFinder with Typed {
 
-  override def underlyingType: Class[_] = viewManifest.erasure
+  override def underlyingType: Class[_] = viewManifest.runtimeClass
 
   /** Describe the MutableView subclass to allow for reflective function export */
   def viewManifest: Manifest[_]

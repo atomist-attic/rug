@@ -2,7 +2,7 @@ package com.atomist.rug.spi
 
 import com.atomist.project.review.{ReviewComment, Severity}
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.FunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.typesafe.scalalogging.LazyLogging
 
 /**

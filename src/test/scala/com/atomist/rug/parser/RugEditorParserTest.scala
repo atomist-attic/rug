@@ -1,6 +1,6 @@
 package com.atomist.rug.parser
 
-import com.atomist.scalaparsing.{JavaScriptBlock, Literal}
+import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal}
 import com.atomist.rug._
 import org.scalatest.{FlatSpec, Matchers}
 

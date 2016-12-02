@@ -1,7 +1,8 @@
 package com.atomist.rug.kind.dynamic
 
-import com.atomist.model.content.text._
+import com.atomist.tree.content.text._
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
+import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 
 /**
   * Allows select (with/from) navigation over any structured data that can

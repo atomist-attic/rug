@@ -1,6 +1,6 @@
 package com.atomist.rug.test
 
-import com.atomist.scalaparsing.SimpleLiteral
+import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.rug.parser.{ParsedRegisteredFunctionPredicate, WrappedFunctionArg}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

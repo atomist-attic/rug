@@ -3,7 +3,6 @@ package com.atomist.project.edit
 import com.atomist.param.{Parameter, ParameterValidationPatterns, SimpleParameterValue}
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.common.{IllformedParametersException, MissingParametersException}
-import com.atomist.project.edit.common.ProjectEditorSupport
 import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.java.AddClassAnnotationEditor
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors

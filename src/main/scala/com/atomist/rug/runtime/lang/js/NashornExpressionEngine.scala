@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.lang.js
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{Map => JMap}
 
-import com.atomist.rug.runtime.FunctionInvocationContext
+import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.util.script.Script
 import com.atomist.util.script.nashorn.AbstractNashornScriptBacked
 import com.typesafe.scalalogging.LazyLogging

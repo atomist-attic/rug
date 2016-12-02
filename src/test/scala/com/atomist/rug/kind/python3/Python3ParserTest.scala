@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.model.content.text.{MutableContainerTreeNode, TreeNodeUtils}
+import com.atomist.tree.content.text.MutableContainerTreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 class Python3ParserTest extends FlatSpec with Matchers {

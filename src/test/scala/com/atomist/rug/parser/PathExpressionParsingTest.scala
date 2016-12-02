@@ -1,7 +1,7 @@
 package com.atomist.rug.parser
 
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.scalaparsing.PathExpressionValue
+import com.atomist.util.scalaparsing.PathExpressionValue
 import com.atomist.source.StringFileArtifact
 import org.scalatest.{FlatSpec, Matchers}
 

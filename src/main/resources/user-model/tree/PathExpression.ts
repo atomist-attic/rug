@@ -42,14 +42,20 @@ interface TreeNode {
 */
 interface PathExpressionEngine {
 
-  evaluate<R extends TreeNode,N extends TreeNode>(root, expr: PathExpression<R,N>): Match<R,N>
+  evaluate<R extends TreeNode,N extends TreeNode>(root: R, expr: PathExpression<R,N>): Match<R,N>
+
+  with<N extends TreeNode>(root: TreeNode, expr: String,
+            f: (n: N) => void): void
+
 
 /**
  * Return a single match. Throw an exception otherwise.
  */
-  scalar<R extends TreeNode,N extends TreeNode>(root, expr: PathExpression<R,N>): N
+  scalar<R extends TreeNode,N extends TreeNode>(root: R, expr: PathExpression<R,N>): N
 
-// cast the current node
+ /**
+ * Cast the present node to the given type
+ */
   as<N extends TreeNode>(root, name: string): N
 
   // Find the children of the current node of this time

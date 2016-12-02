@@ -4,13 +4,24 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpressionEngine
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
 
-// Matches are actually TreeNodes, but wrapped in SafeCommittingProxy
+/*
+   This file contains types exposed to JavaScript via Nashorn, which
+   have a corresponding TypeScript interface.
+   We use Java, rather than Scala, types to facilitate this interoperability.
+ */
+
+/**
+  * Represents a Match from executing a PathExpression.
+  * Matches are actually TreeNodes, but wrapped in SafeCommittingProxy
+  * @param root root we evaluated path from
+  * @param matches matches
+  */
 case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
 
 /**
@@ -24,27 +35,45 @@ class PathExpressionExposer {
   val pee = new PathExpressionEngine
 
   /**
-    *
-    * @param tn
+    * Evaluate the given path expression
+    * @param root root node to evaluate path expression against
     * @param pe path expression to evaluate
     * @return
     */
-  def evaluate(tn: TreeNode, pe: Object): Match = {
+  def evaluate(root: TreeNode, pe: Object): Match = {
     pe match {
       case som: ScriptObjectMirror =>
         val expr: String = som.get("expression").asInstanceOf[String]
-        pee.evaluate(tn, expr) match {
+        pee.evaluate(root, expr) match {
           case Right(nodes) =>
-            val m = Match(tn, wrap(nodes))
+            val m = Match(root, wrap(nodes))
             m
         }
       case s: String =>
-        pee.evaluate(tn, s) match {
+        pee.evaluate(root, s) match {
           case Right(nodes) =>
-            val m = Match(tn, wrap(nodes))
+            val m = Match(root, wrap(nodes))
             m
         }
     }
+  }
+
+  /**
+    * Evalute the path expression, applying a function
+    * to each result
+    * @param root node to evaluate path expression against
+    * @param pexpr path expression (compiled or string)
+    * @param f function to apply to each path expression
+    */
+  def `with`(root: TreeNode, pexpr: Object, f: Object): Unit = {
+    val som = f match {
+      case som: ScriptObjectMirror => som
+    }
+    val r = evaluate(root, pexpr)
+    r.matches.asScala.foreach(m => {
+      val args = Seq(m)
+      som.call("apply", args:_*)
+    })
   }
 
   /**
@@ -62,9 +91,14 @@ class PathExpressionExposer {
     }
   }
 
-  // cast the current node
+  /**
+    * Try to cast the given node to the required type
+    * @param root
+    * @param name
+    * @return
+    */
   def as(root: TreeNode, name: String): Object =
-  scalar(root, s"->$name")
+    scalar(root, s"->$name")
 
   // Find the children of the current node of this time
   def children(root: TreeNode, name: String) = {

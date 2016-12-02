@@ -257,7 +257,9 @@ private[elm] object ElmParserCombinator
 
       def field: Parser[ElmRecordField] = positionedStructure(fieldStructure)
 
-      def record: Parser[ElmRecord] = "{" ~> repsep(field, ",") <~ "}" ^^ (fields => new ElmRecord(fields))
+      private def recordElementSeparator: Parser[String] = opt(NewLineWithLessIndentation) ~> ","
+
+      def record: Parser[ElmRecord] = "{" ~> repsep(field, recordElementSeparator) <~ opt(NewLineWithLessIndentation) ~ "}" ^^ (fields => new ElmRecord(fields))
 
       private def recordSuchThatStructure: Parser[ElmRecordUpdate] = "{" ~> functionName ~ "|" ~ rep1sep(field, CommaThatMightGoLeft) <~ opt(NewLineWithLessIndentation) ~ "}" ^^ {
         case startingRecord ~ _ ~ changedFields => ElmRecordUpdate(startingRecord, changedFields)

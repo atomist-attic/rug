@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>0.6.0</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>com.atomist</groupId>
@@ -269,24 +269,29 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <id>mkdir</id>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <executable>mkdir</executable>
-                            <arguments>
-                                <argument>-p</argument>
-                                <argument>target/classes/user-model/model</argument>
-                            </arguments>
+                            <tasks>
+                                <mkdir dir="target/classes/user-model/model"/>
+                            </tasks>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
                     <execution>
                         <id>generate-interfaces</id>
                         <goals>
@@ -301,7 +306,6 @@
                         </configuration>
                     </execution>
                 </executions>
-
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>

@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
@@ -13,7 +14,8 @@ import scala.collection.JavaConverters._
 /**
   * Represents a Match from executing a PathExpression.
   * Matches are actually TreeNodes, but wrapped in SafeCommittingProxy
-  * @param root root we evaluated path from
+  *
+  * @param root    root we evaluated path from
   * @param matches matches
   */
 case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
@@ -31,8 +33,9 @@ class PathExpressionExposer {
 
   /**
     * Evaluate the given path expression
+    *
     * @param root root node to evaluate path expression against
-    * @param pe path expression to evaluate
+    * @param pe   path expression to evaluate
     * @return
     */
   def evaluate(root: TreeNode, pe: Object): Match = {
@@ -56,19 +59,20 @@ class PathExpressionExposer {
   /**
     * Evalute the path expression, applying a function
     * to each result
-    * @param root node to evaluate path expression against
+    *
+    * @param root  node to evaluate path expression against
     * @param pexpr path expression (compiled or string)
-    * @param f function to apply to each path expression
+    * @param f     function to apply to each path expression
     */
-  def `with`(root: TreeNode, pexpr: Object, f: Object): Unit = {
-    val som = f match {
-      case som: ScriptObjectMirror => som
-    }
-    val r = evaluate(root, pexpr)
-    r.matches.asScala.foreach(m => {
-      val args = Seq(m)
-      som.call("apply", args:_*)
-    })
+  def `with`(root: TreeNode, pexpr: Object, f: Object): Unit = f match {
+    case som: ScriptObjectMirror =>
+      val r = evaluate(root, pexpr)
+      r.matches.asScala.foreach(m => {
+        val args = Seq(m)
+        som.call("apply", args: _*)
+      })
+    case _ =>
+      throw new RugRuntimeException(null, s"Invalid argument to 'with' method: $f is not a JavaScript function")
   }
 
   /**
@@ -88,6 +92,7 @@ class PathExpressionExposer {
 
   /**
     * Try to cast the given node to the required type
+    *
     * @param root
     * @param name
     * @return
@@ -125,9 +130,9 @@ private object MagicJavaScriptMethods {
 }
 
 /**
-  * Proxy that sits in front of tree nodes (including MutableView objects)
+  * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
   * that (a) checks whether an invoked method is exposed on the relevant Type
-  * object and (b) calls the commit() method of the object on all invocations of a
+  * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
   * @param typ Rug type we are fronting
@@ -143,29 +148,30 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
     case st: StaticTypeInformation =>
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
-      // TODO separate error message if wrong number of arguments
       if (possibleOps.isEmpty)
         throw new RugRuntimeException(null,
-          s"Attempt to invoke method [$name] on type [${typ.name}]: Not an exported method")
+          s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name")
 
       new AbstractJSObject() {
 
         override def isFunction: Boolean = true
 
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-          //println(s"in, call, op=$name")
-          val op = possibleOps.find(
-            op => op.parameters.size == args.size)
-          // TODO separate error message if wrong number of arguments
-          if (op.isEmpty)
-            throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
-          val returned = op.get.invoke(n, args.toSeq)
-          if (!op.get.readOnly) n match {
-            case c: { def commit(): Unit } => c.commit()
-            case _ =>
+          possibleOps.find(op => op.parameters.size == args.size) match {
+            case None =>
+              throw new RugRuntimeException(null,
+                s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+            case Some(op) =>
+              val returned = op.invoke(n, args.toSeq)
+              n match {
+                //case c: { def commit(): Unit } =>
+                case c: MutableView[_] if !op.readOnly =>
+                  println(s"Calling commit on $c")
+                  c.commit()
+                case _ =>
+              }
+              returned
           }
-          returned
         }
       }
 

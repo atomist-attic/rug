@@ -6,7 +6,7 @@ import com.atomist.source.{FileArtifact, StringFileArtifact}
 import scala.collection.JavaConversions._
 
 /**
-  * The mutable view we expose directly for working with files.
+  * Mutable view for working directly with files.
   */
 class FileArtifactMutableView(
                                originalBackingObject: FileArtifact,

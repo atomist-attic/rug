@@ -5,11 +5,18 @@ import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
-  * Inspired by XPath NodeTest. However, our NodeTests allow a change of
-  * type.
+  * One of the three core elements of a LocationStep. Inspired by XPath NodeTest.
+  * However, our NodeTests also allow a "type jump," with resolution potentially
+  * beyond direct children that the starting TreeNode knows about.
   */
 trait NodeTest {
 
+  /**
+    * Find nodes from the given node, observing the given AxisSpecifier
+    * @param tn node to drill down from
+    * @param axis AxisSpecifier indicating the kind of navigation
+    * @return Resulting nodes
+    */
   def follow(tn: TreeNode, axis: AxisSpecifier): ExecutionResult
 
 }
@@ -50,6 +57,9 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   }
 }
 
+/**
+  * Return all nodes on the given axis
+  */
 object All extends PredicatedNodeTest("All", TruePredicate)
 
 case class NamedNodeTest(name: String)
@@ -85,7 +95,7 @@ case class NamedNodeTest(name: String)
 }
 
 /**
-  *
+  * Return all nodes of the given type
   * @param typeName
   * @param nameWildcard * or a node name
   */

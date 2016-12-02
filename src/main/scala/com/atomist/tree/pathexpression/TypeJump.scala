@@ -7,7 +7,8 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
 /**
-  * We are going beyond obvious children. No equivalent in XPath.
+  * Look for nodes of the given type that can be resolved from the present node,
+  * whether among its children, or using a ChildResolver. No equivalent in XPath.
   * For example: going to a type under children
   *
   * @param typeName name of the type
@@ -46,10 +47,13 @@ case class TypeJump(typeName: String) extends NodeTest {
             if (mv.childNodeTypes.contains(typeName)) {
               // TODO inefficient
               val k = mv.childNodes.filter(n => typeName.equals(n.nodeType))
-              println(s"Looking for children of type [$typeName] on $mv, found $k")
+              println(s"Looked for children of type [$typeName] on $mv, found $k")
               k
             }
-            else childResolver.findAllIn(mv).getOrElse(Nil)
+            else {
+              println(s"Using ChildResolver")
+              childResolver.findAllIn(mv).getOrElse(Nil)
+            }
           ExecutionResult(kids)
         case x => Left(s"Cannot find nodes of type name [$typeName] on non-view tree node [$x]")
       }

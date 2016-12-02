@@ -10,14 +10,6 @@ import com.atomist.util.SaveAllDescendantsVisitor
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-object NashornUtils {
-
-  import scala.collection.JavaConverters._
-
-  def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
-    som.entrySet().asScala.map(me => me.getKey -> me.getValue).toMap
-}
-
 /**
   * Turns Rug into Typescript.
   */

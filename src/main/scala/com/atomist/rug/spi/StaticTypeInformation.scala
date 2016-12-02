@@ -2,7 +2,8 @@ package com.atomist.rug.spi
 
 import java.util.{List => JList}
 
-import org.springframework.util.ReflectionUtils
+import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.ts.NashornUtils
 
 import scala.collection.JavaConverters._
 
@@ -65,12 +66,28 @@ case class TypeOperation(
 
   def exampleAsJava = example.getOrElse("")
 
-  def invoke(target: Object, args: Seq[AnyRef]): Object = {
+  def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
+    val args = rawArgs.map(a => NashornUtils.toJavaType(a))
     val methods = target.getClass.getMethods.toSeq.filter(m =>
       this.name.equals(m.getName) && this.parameters.size == m.getParameterCount
     )
     if (methods.size != 1)
       throw new IllegalArgumentException(s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1")
-    methods.head.invoke(target, args:_*)
+    //println(s"About to invoke ${methods.head} with args=$args")
+    target match {
+      case mv: MutableView[_] => println(s"Target parent=${mv.parent}")
+      case _ =>
+    }
+    try {
+      methods.head.invoke(target, args:_*)
+    }
+    catch {
+      case t: Throwable =>
+        val argDiagnostics = args map {
+          case null => "null"
+          case o => s"$o: ${o.getClass}"
+        }
+        throw new RugRuntimeException(null, s"Exception invoking ${methods.head} with args=${argDiagnostics.mkString(",")}: ${t.getMessage}", t)
+    }
   }
 }

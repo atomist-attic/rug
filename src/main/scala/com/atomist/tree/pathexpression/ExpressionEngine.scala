@@ -3,6 +3,9 @@ package com.atomist.tree.pathexpression
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
+/**
+  * Result type and utility methods of a node navigation.
+  */
 object ExecutionResult {
 
   type ExecutionResult = Either[String, List[TreeNode]]

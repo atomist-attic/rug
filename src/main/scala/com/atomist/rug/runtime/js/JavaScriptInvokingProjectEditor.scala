@@ -39,7 +39,7 @@ class JavaScriptInvokingProjectEditor(
                                          targetProject: ArtifactSource,
                                          poa: ProjectOperationArguments): ModificationAttempt = {
     val tr = time {
-      val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, context)
+      val pmv = new TypescriptArrayDecoratingProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, context)
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!

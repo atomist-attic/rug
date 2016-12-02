@@ -1,10 +1,13 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.AtomistConfig
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.interop.{DefaultUserModelContext, UserModelContext}
 import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.util.lang.TypescriptArray
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
@@ -82,4 +85,17 @@ object JavaScriptOperationFinder {
         new JavaScriptInvokingExecutor(jsc, v.key, v.scriptObjectMirror, rugAs)
     }
   }
+}
+
+class TypescriptArrayDecoratingProjectMutableView(rugAs: ArtifactSource,
+                                                  originalBackingObject: ArtifactSource,
+                                                  atomistConfig: AtomistConfig,
+                                                  context: Seq[ProjectOperation] = Nil)
+  extends ProjectMutableView(rugAs, originalBackingObject , atomistConfig, context) {
+
+
+  override def files: java.util.List[FileArtifactBackedMutableView] = {
+    new TypescriptArray[FileArtifactBackedMutableView](super.files)
+  }
+
 }

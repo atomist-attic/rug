@@ -30,7 +30,7 @@ class JavaScriptInvokingProjectGenerator(
     validateParameters(poa)
     //val tr = time {
     val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
-    val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
+    val pmv = new TypescriptArrayDecoratingProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
 
     val result = invokeMemberWithParameters("populate", pmv, poa)
 

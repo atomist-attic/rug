@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime.js
+package com.atomist.rug.runtime.js.interop
 
 import com.atomist.param.ParameterValue
 import com.atomist.project.ProjectOperationArguments
@@ -27,18 +27,6 @@ class BidirectionalParametersProxy(poa: ProjectOperationArguments) extends Abstr
     val resolved: ParameterValue = poa.parameterValueMap.getOrElse(
       name,
       throw new RugRuntimeException(null, s"Cannot resolve parameter [$name]"))
-
-    // The below is what you use for a function
-    //    new AbstractJSObject() {
-    //
-    //      override def isFunction: Boolean = true
-    //
-    //      override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-    //        resolved
-    //      }
-    //    }
-
-    // This works for a method
     resolved.getValue
     // TODO fall back to the value in the field?
   }

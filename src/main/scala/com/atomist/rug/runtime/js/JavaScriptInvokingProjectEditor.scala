@@ -5,6 +5,7 @@ import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.interop.SafeCommittingProxy
 import com.atomist.rug.spi.{InstantEditorFailureException, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._

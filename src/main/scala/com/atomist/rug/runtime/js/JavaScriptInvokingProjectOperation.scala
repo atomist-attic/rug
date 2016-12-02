@@ -5,6 +5,7 @@ import javax.script.ScriptContext
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
+import com.atomist.rug.runtime.js.interop.BidirectionalParametersProxy
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging

@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.interop.{DefaultUserModelContext, UserModelContext}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
 

@@ -1,20 +1,14 @@
-package com.atomist.rug.runtime.js
+package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.spi._
-import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
+import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.PathExpressionEngine
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
-
-/*
-   This file contains types exposed to JavaScript via Nashorn, which
-   have a corresponding TypeScript interface.
-   We use Java, rather than Scala, types to facilitate this interoperability.
- */
 
 /**
   * Represents a Match from executing a PathExpression.
@@ -23,6 +17,7 @@ import scala.collection.JavaConverters._
   * @param matches matches
   */
 case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
+
 
 /**
   * JavaScript-friendly facade to PathExpressionEngine.
@@ -120,6 +115,7 @@ class PathExpressionExposer {
   }
 }
 
+
 private object MagicJavaScriptMethods {
 
   /**
@@ -138,15 +134,7 @@ private object MagicJavaScriptMethods {
   * @param n   node we are fronting
   */
 class SafeCommittingProxy(typ: Typed, n: TreeNode)
-  extends AbstractJSObject /* with TreeNode */ {
-
-  //  override def nodeName: String = n.nodeName
-  //
-  //  override def nodeType: String = n.nodeType
-  //
-  //  override def value: String = n.value
-  //
-  //  override def accept(v: Visitor, depth: Int): Unit = n.accept(v, depth)
+  extends AbstractJSObject {
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
     case x if MagicJavaScriptMethods.MagicMethods.contains(name) =>
@@ -195,17 +183,4 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
         typ.name
       }]: Probably an internal error")
   }
-}
-
-trait UserModelContext {
-
-  def registry: Map[String, Object]
-
-}
-
-object DefaultUserModelContext extends UserModelContext {
-
-  override val registry = Map(
-    "PathExpressionEngine" -> new PathExpressionExposer
-  )
 }

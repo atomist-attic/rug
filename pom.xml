@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>0.7.0</version>
+            <version>0.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.atomist</groupId>

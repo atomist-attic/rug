@@ -78,7 +78,7 @@ class ProjectMutableView(
                    @ExportFunctionParameterDescription(name = "parentPath",
                      description = "The path under which the directory should be created")
                    parentPath: String): Unit = {
-    updateTo(currentBackingObject + EmptyDirectoryArtifact(name, parentPath.split(File.separator)))
+    updateTo(currentBackingObject + EmptyDirectoryArtifact(name, parentPath.split("/")))
   }
 
   @ExportFunction(readOnly = true, description = "Create a directory")
@@ -86,7 +86,7 @@ class ProjectMutableView(
                                     @ExportFunctionParameterDescription(name = "directoryPath",
                                       description = "The path under which the directory and any missing intermediate directories will be created")
                                     directoryPath: String): Unit = {
-    val splitPath = directoryPath.split(File.separator)
+    val splitPath = directoryPath.split("/")
     val splitLength = splitPath.length
     val directoryName = splitPath(splitLength - 1)
     updateTo(currentBackingObject + EmptyDirectoryArtifact(directoryName, splitPath))

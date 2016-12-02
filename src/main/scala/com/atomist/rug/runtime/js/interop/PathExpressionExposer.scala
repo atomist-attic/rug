@@ -146,9 +146,7 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
       // TODO separate error message if wrong number of arguments
       if (possibleOps.isEmpty)
         throw new RugRuntimeException(null,
-          s"Attempt to invoke method [$name] on type [${
-            typ.name
-          }]: Not an exported method")
+          s"Attempt to invoke method [$name] on type [${typ.name}]: Not an exported method")
 
       new AbstractJSObject() {
 
@@ -161,16 +159,10 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
           // TODO separate error message if wrong number of arguments
           if (op.isEmpty)
             throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${
-                typ.name
-              }] with ${
-                args.size
-              } arguments: No matching signature")
+              s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
           val returned = op.get.invoke(n, args.toSeq)
           if (!op.get.readOnly) n match {
-            case c: {
-              def commit(): Unit
-            } => c.commit()
+            case c: { def commit(): Unit } => c.commit()
             case _ =>
           }
           returned

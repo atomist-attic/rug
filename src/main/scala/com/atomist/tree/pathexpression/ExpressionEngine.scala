@@ -29,6 +29,9 @@ object ExpressionEngine {
 
 }
 
+/**
+  * Evaluates path expressions.
+  */
 trait ExpressionEngine {
 
   import ExpressionEngine._

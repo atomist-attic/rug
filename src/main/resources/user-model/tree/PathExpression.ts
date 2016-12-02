@@ -44,6 +44,9 @@ interface PathExpressionEngine {
 
   evaluate<R extends TreeNode,N extends TreeNode>(root: R, expr: PathExpression<R,N>): Match<R,N>
 
+  /**
+  * Execute the given function on the nodes returned by the given path expression
+  */
   with<N extends TreeNode>(root: TreeNode, expr: String,
             f: (n: N) => void): void
 

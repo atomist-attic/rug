@@ -270,9 +270,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 
-  // TODO this depends on resolution from the type registry rather than from
-  // simple descent
-  it should "handle custom kind of 'line' nested under file" in pendingUntilFixed {
+  it should "handle custom kind of 'line' nested under file" in {
     val program =
       """
         |@description "Documentation is good. Did I mention that I like documentation?"

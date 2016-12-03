@@ -3,8 +3,8 @@
 [![Build Status](https://travis-ci.org/atomist/rug.svg?branch=master)](https://travis-ci.org/atomist/rug)
 [![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
 
-The Rug runtime. See https://docs.atomist.com/ for documentation of the Rug
-language.
+The Rug runtime. See http://docs.atomist.com/ for documentation of the
+Rug language.
 
 ## Using
 

@@ -206,8 +206,10 @@ object TypeScriptRugEditorTest {
       |      ji["whatever"] = "thing"
       |
       |      var t: string = `param=${ji.packageName},filecount=${m.root().fileCount()}`
-      |      for (let n of m.matches())
+      |      for (let n of m.matches()) {
       |        t += `Matched file=${n.path()}`;
+      |        n.append("randomness")
+      |        }
       |
       |        var s: string = ""
       |
@@ -261,6 +263,62 @@ object TypeScriptRugEditorTest {
       |
       |      this.eng.with<File>(project, "/*:file[name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
+      |        n.append("randomness")
+      |      })
+      |
+      |        var s: string = ""
+      |
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        for (let f of project.files())
+      |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
+      |        return new Result(Status.Success,
+      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |    }
+      |  }
+      | """.stripMargin
+
+  val EditorInjectedWithPathExpressionUsingWithTypeJump =
+    """import {Project} from 'user-model/model/Core'
+      |import {ParametersSupport} from 'user-model/operations/Parameters'
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {PathExpression} from 'user-model/tree/PathExpression'
+      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+      |import {Match} from 'user-model/tree/PathExpression'
+      |import {File} from 'user-model/model/Core'
+      |import {Result,Status} from 'user-model/operations/Result'
+      |
+      |import {parameter} from 'user-model/support/Metadata'
+      |import {inject} from 'user-model/support/Metadata'
+      |import {parameters} from 'user-model/support/Metadata'
+      |import {tag} from 'user-model/support/Metadata'
+      |import {editor} from 'user-model/support/Metadata'
+      |
+      |abstract class JavaInfo extends ParametersSupport {
+      |
+      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: ".*", maxLength: 100})
+      |  packageName: string = null
+      |
+      |}
+      |
+      |@editor("A nice little editor")
+      |@tag("java")
+      |@tag("maven")
+      |class ConstructedEditor implements ProjectEditor<Parameters> {
+      |
+      |    private eng: PathExpressionEngine;
+      |
+      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+      |      this.eng = _eng;
+      |    }
+      |
+      |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
+      |
+      |      var t: string = `param=${ji.packageName},filecount=${project.fileCount()}`
+      |
+      |      this.eng.with<File>(project, "->file", n => {
+      |        t += `Matched file=${n.path()}`;
+      |        n.append("randomness")
       |      })
       |
       |        var s: string = ""
@@ -345,6 +403,11 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     ed.description should be ("A nice little editor")
   }
 
+  it should "have the PathExpressionEngine injected using PathExpressionEngine.with typejump" in {
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+      EditorInjectedWithPathExpressionUsingWithTypeJump))
+  }
+
   it should "send editor bad input and get appropriate response" in {
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
@@ -367,6 +430,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
       //sm.comment.contains("OK") should be(true)
+        sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
     }
     jsed
   }

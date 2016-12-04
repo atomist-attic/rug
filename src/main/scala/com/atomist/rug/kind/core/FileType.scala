@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.project.ProjectOperationArguments
+import com.atomist.rug.kind.dynamic.{ChildResolver, ContextlessViewFinder}
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
@@ -10,7 +11,8 @@ class FileType(
                 evaluator: Evaluator
               )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ChildResolver {
 
   def this() = this(DefaultEvaluator)
 
@@ -30,5 +32,15 @@ class FileType(
         Some(pmv.currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, pmv)))
       case _ => None
     }
+  }
+
+  override def resolvesFromNodeTypes: Set[String] = Set("project")
+
+  override type Self = this.type
+
+  override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
+    case pmv: ProjectMutableView =>
+      Some(pmv.currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, pmv)))
+    case x => None
   }
 }

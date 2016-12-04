@@ -1,14 +1,13 @@
 package com.atomist.rug.ts
 
 import com.atomist.param.Parameter
+import com.atomist.rug.compiler.Compiler
 import com.atomist.rug.parser._
 import com.atomist.rug.{RugEditor, RugProgram}
-import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
-import com.atomist.rug.compiler.Compiler
 import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import com.atomist.util.SaveAllDescendantsVisitor
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
 
 /**
   * Turns Rug into Typescript.
@@ -55,6 +54,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= tsProg(rug, pc)
     }
 
+    //println(ts)
     ts.toString
   }
 
@@ -103,11 +103,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def decorators(rug: RugProgram): String = {
-    //    @tag("java")
-    //    @tag("maven")
-    //    @editor("A nice little editor")
-
-    s"@editor('${rug.name}')"
+    (s"@editor('${rug.name}')"
+      +: rug.tags.map(tag =>
+      s"@tag('$tag')"))
+      .mkString("\n")
   }
 
   private def paramClassName(pc: Option[ParamClass]) = pc match {
@@ -122,6 +121,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   private def editorBody(ed: RugEditor, pc: Option[ParamClass]): String = {
     val ts = new StringBuilder()
 
+    ts ++= "private eng: PathExpressionEngine"
+    ts ++= config.separator
     ts ++= constructorCode(ed)
 
     ts ++= config.separator
@@ -156,9 +157,14 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def constructorCode(ed: RugEditor): String = {
-    def argList = ed.runs.map(roo => {
-      s"${JavaHelpers.lowerize(roo.name)}: ${roo.name}"
-    }).mkString(" ,")
+    def argList = (ed.runs
+      .map(roo => {
+        s"${JavaHelpers.lowerize(roo.name)}: ${roo.name}"
+      })
+      :+
+      """@inject("PathExpressionEngine") eng: PathExpressionEngine""")
+      .mkString(" ,")
+
     def body = ed.runs.map(roo => {
       s"this.${JavaHelpers.lowerize(roo.name)} = ${JavaHelpers.lowerize(roo.name)}"
     }).mkString(" ,")
@@ -166,6 +172,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     s"""
        |constructor($argList) {
        |  ${helper.indented(body, 1)}
+       |  this.eng = eng
        |}
      """.stripMargin
   }
@@ -183,20 +190,26 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def withBlockCode(prog: RugProgram, wb: With, outerAlias: String): String = {
-    // TODO problem is working out plan to get it if it's not simple descent - or does tree execution engine do it?
-    // Or we expose a typescript helper
-
     val doSteps =
       (for (d <- wb.doSteps)
         yield {
           doStepCode(prog, d, wb.alias)
         }).mkString("\n")
 
-    val blockHeader =
-      s"for (let ${wb.alias} of $outerAlias.${wb.kind}s()) {"
+    val typeParams = s"<TreeNode,${helper.typeScriptClassNameForTypeName(wb.kind)}>"
+    val pathExpr = s"'//->${wb.kind}'"
+    val descent = s"this.eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
 
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
-    blockHeader + "\n" + helper.indented(blockBody, 1) + "\n}"
+
+    if (!wb.kind.equals(outerAlias)) {
+      descent + "\n" + helper.indented(blockBody, 1) + "\n})"
+    }
+    else {
+      // Special case where inner and outer block are the same type, like "with project" under a project
+      (if (wb.alias.equals(wb.kind)) "" else s"let ${wb.alias} = ${wb.kind}\n") +
+      helper.indented(blockBody, 1)
+    }
   }
 
   private def extractValue(prog: RugProgram, te: ToEvaluate, outerAlias: String): String = te match {
@@ -287,34 +300,25 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   // TODO remove the utility function here: Move to a standard class
   val imports =
-  """
-    |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-    |import {Parameters} from 'user-model/operations/Parameters'
-    |import {ParametersSupport} from 'user-model/operations/Parameters'
-    |import {Project} from 'user-model/model/Core'
-    |import {Result,Status} from 'user-model/operations/Result'
-    |
-    |import {tag} from 'user-model/support/Metadata'
-    |import {editor} from 'user-model/support/Metadata'
-    |
-    |
-    |function clone(obj) {
-    |    if (null == obj || "object" != typeof obj) return obj;
-    |    var copy = {};
-    |    for (var attr in obj) {
-    |        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
-    |    }
-    |    return copy;
-    |}
-  """.stripMargin
-
-}
-
-trait TypeScriptGenerationConfig {
-
-  def indent: String
-
-  def separator: String
+    """
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
+      |import {Project,File} from 'user-model/model/Core'
+      |import {Result,Status} from 'user-model/operations/Result'
+      |
+      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+      |
+      |import {tag, editor, inject} from 'user-model/support/Metadata'
+      |
+      |function clone(obj) {
+      |    if (null == obj || "object" != typeof obj) return obj;
+      |    var copy = {};
+      |    for (var attr in obj) {
+      |        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+      |    }
+      |    return copy;
+      |}
+    """.stripMargin
 
 }
 

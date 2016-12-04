@@ -60,8 +60,11 @@ case class TypeJump(typeName: String) extends NodeTest {
     case DescendantOrSelf =>
       tn match {
         case mv: MutableView[_] =>
-          val kids: Seq[TreeNode] = childResolver.findAllIn(mv).getOrElse(Nil)
-          ExecutionResult(kids)
+          //val kids: Seq[TreeNode] = childResolver.findAllIn(mv).getOrElse(Nil)
+          // TODO inefficient
+          val kids = Descendant.allDescendants(tn).toList
+          val hits = kids.filter(n => typeName.equals(n.nodeType))
+          ExecutionResult(hits)
         case x => Left(s"Cannot find nodes of type name [$typeName] on non-view tree node [$x]")
       }
   }

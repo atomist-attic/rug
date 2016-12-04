@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.project.ProjectOperationArguments
+import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
@@ -10,7 +11,8 @@ class ProjectType(
                    evaluator: Evaluator
                  )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
 
@@ -35,6 +37,8 @@ class ProjectType(
       case _ => None
     }
   }
+
+  override def resolvesFromNodeTypes: Set[String] = Set("project")
 }
 
 object ProjectType {

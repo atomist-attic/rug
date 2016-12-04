@@ -259,6 +259,7 @@ object TypeScriptRugEditorTest {
       |
       |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
       |
+      |      project.files().filter(t => false)
       |      var t: string = `param=${ji.packageName},filecount=${project.fileCount()}`
       |
       |      this.eng.with<File>(project, "/*:file[name='pom.xml']", n => {

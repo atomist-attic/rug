@@ -285,6 +285,18 @@
                             </tasks>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>cp-core-ts-to-scoverage-dir</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <tasks>
+                                <copy file="target/classes/user-model/model/Core.ts" toDir="target/scoverage-classes/user-model/model"></copy>
+                            </tasks>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -308,6 +320,23 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>scoverage-maven-plugin</artifactId>
+                <version>${scoverage.plugin.version}</version>
+                <configuration>
+                    <highlighting>true</highlighting>
+                </configuration>
+                <executions>
+
+                    <execution>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>post-integration-test</phase> <!-- or any other phase -->
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
                 <version>1.0</version>
@@ -325,14 +354,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>scoverage-maven-plugin</artifactId>
-                <version>${scoverage.plugin.version}</version>
-                <configuration>
-                    <highlighting>true</highlighting>
-                </configuration>
             </plugin>
         </plugins>
     </build>

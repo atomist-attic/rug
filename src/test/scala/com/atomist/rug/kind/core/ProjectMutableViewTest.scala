@@ -75,6 +75,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   // Why is this failing on travis only
   it should "return default children" in {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
+    println("*** " + project.artifacts.mkString(","))
     val pmv = new ProjectMutableView(backingTemplates, project)
     println("*** " + pmv.childrenNames.mkString(","))
     val kids = pmv.defaultChildViews

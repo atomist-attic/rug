@@ -67,7 +67,7 @@ class ProjectMutableView(
     description = "Return the name of the project. If it's in GitHub, it will be the repo name." +
       "If it's on the local filesystem it will be the directory name")
   override def name: String = {
-    val segments = currentBackingObject.id.name.split("/")
+    val segments = currentBackingObject.id.name.split('/')
     segments.reverse(0)
   }
 

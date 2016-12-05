@@ -36,7 +36,7 @@ trait View[T] extends ContainerTreeNode {
   def children(fieldName: String): Seq[MutableView[_]]
 
   /**
-    * Return the default child views: corresponding to the 0th element in the collection of childViewNames.
+    * Return the default child views: corresponding to the 0th element in the collection of childrenNames.
     * If there are no child views this method will returns an empty sequence.
     */
   def defaultChildViews: Seq[MutableView[_]] =

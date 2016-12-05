@@ -5,8 +5,9 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaClassTypeUsageTest
 import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
-import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.Inspectors.{forAll => iforAll}
 
 import scala.collection.JavaConversions._
 
@@ -72,13 +73,14 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "merge" is pending
 
   // Why is this failing on travis only
-//  it should "return default children" is pendingUntilFixed {
-//    val project = JavaClassTypeUsageTest.NewSpringBootProject
-//    val pmv = new ProjectMutableView(backingTemplates, project)
-//    val kids = pmv.defaultChildViews
-//    kids.nonEmpty should be (true)
-//    kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be (true)
-//  }
+  it should "return default children" in {
+    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val pmv = new ProjectMutableView(backingTemplates, project)
+    val kids = pmv.defaultChildViews
+    kids.nonEmpty should be(true)
+    kids.foreach(_.isInstanceOf[ArtifactContainerMutableView[_]] should be(true))
+    // kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be(true)
+  }
 
   it should "handle path and content replace" in {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
@@ -119,8 +121,8 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val src2 = StringFileArtifact("src/main/otherThing", "under src/main")
     val asToEdit = SimpleFileBasedArtifactSource(src1, src2)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), asToEdit)
-    pmv.countFilesInDirectory("src") should be (1)
-    pmv.countFilesInDirectory("xxx") should be (0)
+    pmv.countFilesInDirectory("src") should be(1)
+    pmv.countFilesInDirectory("xxx") should be(0)
   }
 
   it should "copy files under dir preserving path" in {
@@ -136,7 +138,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingAs, outputAs)
     pmv.copyEditorBackingFilesPreservingPath("src")
     pmv.currentBackingObject.totalFileCount should be(2)
-
     pmv.currentBackingObject.findFile(src1.path).get.content should equal(src1.content)
     pmv.currentBackingObject.findFile(src2.path).get.content should equal(src2.content)
     pmv.dirty should be(true)
@@ -155,7 +156,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     ))
     val pmv = new ProjectMutableView(backingAs, outputAs)
     pmv.copyEditorBackingFilesPreservingPath("src")
-    pmv.currentBackingObject.findFile(alreadyThere.path).get should equal (alreadyThere)
+    pmv.currentBackingObject.findFile(alreadyThere.path).get should equal(alreadyThere)
 
     pmv.currentBackingObject.totalFileCount should be(3)
 
@@ -203,15 +204,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val gitDirectoryPath = s"dirToDelete"
-
     pmv.directoryExists(gitDirectoryPath) should be(true)
-
     pmv.dirty should be(false)
-
     pmv.deleteDirectory(gitDirectoryPath)
-
     pmv.directoryExists(gitDirectoryPath) should be(false)
-
     pmv.dirty should be(true)
   }
 
@@ -220,15 +216,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val fileToDelete = "src/main/resources/application.properties"
-
     pmv.fileExists(fileToDelete) should be(true)
-
     pmv.dirty should be(false)
-
     pmv.deleteFile(fileToDelete)
-
     pmv.fileExists(fileToDelete) should be(false)
-
     pmv.dirty should be(true)
   }
 
@@ -238,10 +229,9 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
     val src = "pom.xml"
     val dest = "foobar/pom2.xml"
-
     pmv.copyFile(src, dest)
-    pmv.dirty should be (true)
-    pmv.currentBackingObject.findFile(dest).get.content should equal (pmv.currentBackingObject.findFile(src).get.content)
+    pmv.dirty should be(true)
+    pmv.currentBackingObject.findFile(dest).get.content should equal(pmv.currentBackingObject.findFile(src).get.content)
   }
 
   it should "handle creating a directory" in {
@@ -251,15 +241,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val directoryToCreate = "static"
     val pathToDirectory = "src/main/resources"
     val pathAndDirectoryName = pathToDirectory + "/" + directoryToCreate
-
     pmv.directoryExists(pathAndDirectoryName) should be(false)
-
     pmv.dirty should be(false)
-
     pmv.addDirectory(directoryToCreate, pathToDirectory)
-
     pmv.directoryExists(pathAndDirectoryName) should be(true)
-
     pmv.dirty should be(true)
   }
 
@@ -268,15 +253,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val directoryAndIntermdiateDirectoriesToCreate = "src/main/resources/parent/static/stuff"
-
     pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(false)
-
     pmv.dirty should be(false)
-
     pmv.addDirectoryAndIntermediates(directoryAndIntermdiateDirectoriesToCreate)
-
     pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(true)
-
     pmv.dirty should be(true)
   }
 
@@ -304,15 +284,14 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(backingTemplates, project)
     val fmv = pmv.files.head
     val oldPath = fmv.path
-    fmv.dirty should be (false)
+    fmv.dirty should be(false)
     val newPath = "foobar/name"
     fmv.setPath(newPath)
     stuffToDoLater(pmv)
-    fmv.dirty should be (true)
-    fmv.path should equal (newPath)
-    fmv.currentBackingObject.path should equal (newPath)
-    pmv.files.map(_.path).contains(oldPath) should be (false)
-    pmv.files.map(_.path).contains(newPath) should be (true)
+    fmv.dirty should be(true)
+    fmv.path should equal(newPath)
+    fmv.currentBackingObject.path should equal(newPath)
+    pmv.files.map(_.path).contains(oldPath) should be(false)
+    pmv.files.map(_.path).contains(newPath) should be(true)
   }
-
 }

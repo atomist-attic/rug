@@ -7,7 +7,6 @@ import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
-import org.scalatest.Inspectors.{forAll => iforAll}
 
 import scala.collection.JavaConversions._
 

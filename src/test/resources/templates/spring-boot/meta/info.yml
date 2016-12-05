@@ -1,7 +1,0 @@
-name:
-  rest-service
-type:
-  spring-boot
-
-description:
-  Spring Boot REST microservice

@@ -15,7 +15,6 @@ import com.atomist.source._
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-import scala.reflect.io.File
 import scala.util.Properties
 
 object ProjectMutableView {
@@ -67,7 +66,7 @@ class ProjectMutableView(
     description = "Return the name of the project. If it's in GitHub, it will be the repo name." +
       "If it's on the local filesystem it will be the directory name")
   override def name: String = {
-    val segments = currentBackingObject.id.name.split('/')
+    val segments = currentBackingObject.id.name.split("/")
     segments.reverse(0)
   }
 
@@ -160,8 +159,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter      file filter
-    * @param regexp      regexp
+    * @param filter file filter
+    * @param regexp regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -185,14 +184,6 @@ class ProjectMutableView(
                     replacement: String): Unit = {
     val fe = SimpleFileEditor(f => f.path.contains(literal), f => f.withPath(f.path.replace(literal, replacement)))
     updateTo(currentBackingObject ✎ fe)
-
-    //    updateTo(currentBackingObject ✎ (f => {
-    //      if (f.path.contains(literal)) {
-    //        val newPath = f.path.replace(literal, replacement)
-    //        f.withPath(newPath)
-    //      } else
-    //        f
-    //    }))
   }
 
   @ExportFunction(readOnly = false,

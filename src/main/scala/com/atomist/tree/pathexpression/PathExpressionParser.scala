@@ -22,8 +22,8 @@ trait PathExpressionParser extends CommonTypesParser {
   private def descendantOrSelf: Parser[AxisSpecifier] = "//" ^^
     (s => DescendantOrSelf)
 
-  private def nodeTypeJump: Parser[TypeJump] = "->" ~> nodeType ^^ {
-    case p => TypeJump(p)
+  private def childTypeJump: Parser[ChildTypeJump] = "->" ~> nodeType ^^ {
+    case p => ChildTypeJump(p)
   }
 
   private def nodeTypeTest: Parser[OfType] = ("*" | nodeName) ~ ":" ~ nodeType ^^ {
@@ -113,11 +113,11 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def allNodes: Parser[NodeTest] = "*" ^^ (_ => All)
 
-  private def nodeTest: Parser[NodeTest] = nodeTypeTest | nodeNameTest | allNodes | nodeTypeJump
+  private def nodeTest: Parser[NodeTest] = nodeTypeTest | nodeNameTest | allNodes
 
   private def self: Parser[AxisSpecifier] = "." ^^ (_ => Self)
 
-  private def axis: Parser[AxisSpecifier] = self | descendantOrSelf | child
+  private def axis: Parser[AxisSpecifier] = self | descendantOrSelf | child | childTypeJump
 
   private def combine(preds: Seq[Predicate]): Option[Predicate] = preds match {
     case Nil => None

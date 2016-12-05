@@ -5,7 +5,7 @@ import com.atomist.util.{Visitable, Visitor}
 
 import scala.collection.mutable.ListBuffer
 
-sealed trait AxisSpecifier {
+trait AxisSpecifier {
 
   override def toString = this.getClass.getSimpleName
 }

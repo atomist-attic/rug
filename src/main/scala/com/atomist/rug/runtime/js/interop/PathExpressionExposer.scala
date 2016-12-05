@@ -2,7 +2,6 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
@@ -18,7 +17,8 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
+case class Match(root: Object, matches: _root_.java.util.List[Object])
+
 
 /**
   * JavaScript-friendly facade to PathExpressionEngine.
@@ -175,8 +175,6 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
 
     case _ =>
       // No static type information
-      throw new IllegalStateException(s"No static type information is available for type [${
-        typ.name
-      }]: Probably an internal error")
+      throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
   }
 }

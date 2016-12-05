@@ -1,24 +1,30 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.project.ProjectOperationArguments
+import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
 
+/**
+  * Type representing a line within a file
+  * @param evaluator used to evaluate expressions
+  */
 class LineType(
                 evaluator: Evaluator
               )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
 
   override def name = "line"
 
-  override def description = "Represents a line within a text file"
+  override def resolvesFromNodeTypes: Set[String] = Set("file")
 
-  type V = LineMutableView
+  override def description = "Represents a line within a text file"
 
   /** Describe the MutableView subclass to allow for reflective function export */
   override def viewManifest: Manifest[_] = manifest[LineMutableView]
@@ -58,10 +64,10 @@ class LineMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Return this line's content")
-  def content() = currentBackingObject
+  def content(): String = currentBackingObject
 
   @ExportFunction(readOnly = true, description = "Line number")
-  def num = linenum
+  def num: Int = linenum
 
   /**
     * Update the parent after changing this class. Subclasses can override

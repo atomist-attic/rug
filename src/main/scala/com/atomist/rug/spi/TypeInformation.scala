@@ -4,7 +4,6 @@ import java.util.{List => JList}
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.ts.NashornUtils
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
@@ -47,25 +46,24 @@ case class TypeParameter(
 
   def getDescription: String = description.getOrElse("")
 
-  override def toString: String =
+  override def toString: String = {
     name + " : " + parameterType + " : " + description.getOrElse("No Description")
+  }
 }
 
-// TODO flesh out parameters to include type information
 case class TypeOperation(
                           name: String,
                           description: String,
                           readOnly: Boolean,
                           parameters: Seq[TypeParameter],
                           returnType: String,
-                          example: Option[String])
-  extends LazyLogging {
+                          example: Option[String]) {
 
   def parametersAsJava: JList[TypeParameter] = parameters.asJava
 
-  def hasExample = example.isDefined
+  def hasExample: Boolean = example.isDefined
 
-  def exampleAsJava = example.getOrElse("")
+  def exampleAsJava: String = example.getOrElse("")
 
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
     val args = rawArgs.map(a => NashornUtils.toJavaType(a))
@@ -74,15 +72,11 @@ case class TypeOperation(
     )
     if (methods.size != 1)
       throw new IllegalArgumentException(s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1")
-
-    target match {
-      case mv: MutableView[_] => logger.debug(s"Target parent=${mv.parent}")
-      case _ =>
-    }
-
+    //println(s"About to invoke ${methods.head} with args=$args")
     try {
       methods.head.invoke(target, args:_*)
-    } catch {
+    }
+    catch {
       case t: Throwable =>
         val argDiagnostics = args map {
           case null => "null"

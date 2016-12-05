@@ -42,7 +42,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   def emit(rugs: Seq[RugProgram]): String = {
     val ts = new StringBuilder()
     ts ++= licenseHeader
-    ts ++= imports
+    ts ++= standardImports
+    ts ++= specificImports(rugs)
 
     for {
       rug <- rugs
@@ -56,6 +57,24 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
     //println(ts)
     ts.toString
+  }
+
+  private def specificImports(rugs: Seq[RugProgram]): String = {
+    val set = importSet(rugs)
+    val ordered = set.toList.sorted
+    val importLines = ordered
+      .map(imp => s"import {${JavaHelpers.toJavaClassName(imp)}} from 'user-model/model/Core'")
+    val specImports = importLines.mkString("\n")
+    specImports
+  }
+
+  // Set of all imports in these rugs
+  private def importSet(rugs: Seq[RugProgram]): Set[String] = {
+    val v = new SaveAllDescendantsVisitor()
+    rugs.foreach(rug => rug.accept(v, 0))
+    (v.descendants collect {
+      case w: With if !"project".equals(w.kind) => w.kind
+    }).toSet
   }
 
   case class ParamClass(name: String, body: String)
@@ -197,7 +216,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         }).mkString("\n")
 
     val typeParams = s"<TreeNode,${helper.typeScriptClassNameForTypeName(wb.kind)}>"
-    val pathExpr = s"'//->${wb.kind}'"
+    val pathExpr = s"'->${wb.kind}'"
     val descent = s"this.eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
 
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
@@ -298,15 +317,14 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       |// To take ownership of this file, simply delete the .rug file
     """.stripMargin
 
-  // TODO remove the utility function here: Move to a standard class
-  val imports =
+  val standardImports =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
-      |import {Project,File} from 'user-model/model/Core'
+      |import {Project} from 'user-model/model/Core'
       |import {Result,Status} from 'user-model/operations/Result'
       |
-      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |
       |import {tag, editor, inject} from 'user-model/support/Metadata'
       |

@@ -2,7 +2,6 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
@@ -18,7 +17,8 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
+case class Match(root: Object, matches: _root_.java.util.List[Object])
+
 
 /**
   * JavaScript-friendly facade to PathExpressionEngine.
@@ -33,26 +33,31 @@ class PathExpressionExposer {
   /**
     * Evaluate the given path expression
     *
-    * @param root root node to evaluate path expression against
+    * @param root root node to evaluate path expression against. It's a tree node but we may need to unwrap it
     * @param pe   path expression to evaluate
     * @return a Match
     */
-  def evaluate(root: TreeNode, pe: Object): Match = {
+  def evaluate(root: Object, pe: Object): Match = {
     pe match {
       case som: ScriptObjectMirror =>
         val expr: String = som.get("expression").asInstanceOf[String]
-        pee.evaluate(root, expr) match {
+        pee.evaluate(toTreeNode(root), expr) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
       case s: String =>
-        pee.evaluate(root, s) match {
+        pee.evaluate(toTreeNode(root), s) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
     }
+  }
+
+  private def toTreeNode(o: Object): TreeNode = o match {
+    case tn: TreeNode => tn
+    case scp: SafeCommittingProxy => scp.n
   }
 
   /**
@@ -63,7 +68,7 @@ class PathExpressionExposer {
     * @param pexpr path expression (compiled or string)
     * @param f     function to apply to each path expression
     */
-  def `with`(root: TreeNode, pexpr: Object, f: Object): Unit = f match {
+  def `with`(root: Object, pexpr: Object, f: Object): Unit = f match {
     case som: ScriptObjectMirror =>
       val r = evaluate(root, pexpr)
       r.matches.asScala.foreach(m => {
@@ -130,7 +135,7 @@ private object MagicJavaScriptMethods {
   * @param typ Rug type we are fronting
   * @param n   node we are fronting
   */
-class SafeCommittingProxy(typ: Typed, n: TreeNode)
+class SafeCommittingProxy(typ: Typed, val n: TreeNode)
   extends AbstractJSObject {
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
@@ -168,8 +173,6 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
 
     case _ =>
       // No static type information
-      throw new IllegalStateException(s"No static type information is available for type [${
-        typ.name
-      }]: Probably an internal error")
+      throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
   }
 }

@@ -43,7 +43,7 @@ editor SetSummary
 
 param description: .*
 
-let descriptionField = $(/[name='elm-package.json']/->json/summary)
+let descriptionField = $(/[name='elm-package.json']->json/summary)
 
 with descriptionField
   do setValue description
@@ -56,7 +56,7 @@ editor SetRepository
 param org: @group_id
 param project_name: @project_name
 
-let repositoryField = $(/[name='elm-package.json']/->json/repository)
+let repositoryField = $(/[name='elm-package.json']->json/repository)
 
 with repositoryField
   do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }

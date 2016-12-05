@@ -6,8 +6,6 @@ import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
   * One of the three core elements of a LocationStep. Inspired by XPath NodeTest.
-  * However, our NodeTests also allow a "type jump," with resolution potentially
-  * beyond direct children that the starting TreeNode knows about.
   */
 trait NodeTest {
 
@@ -54,6 +52,8 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
         case Right(nodes) => Right(tn +: nodes)
         case failure => failure
       }
+    case ctj: ChildTypeJump =>
+      ExecutionResult(ctj.follow(tn))
   }
 }
 

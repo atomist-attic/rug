@@ -5,6 +5,8 @@ import javax.script.ScriptContext
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
+import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
+import com.atomist.rug.parser.DefaultIdentifierResolver
 import com.atomist.rug.runtime.js.interop.BidirectionalParametersProxy
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.source.ArtifactSource
@@ -104,6 +106,14 @@ abstract class JavaScriptInvokingProjectOperation(
               p.setDefaultValue(details.asInstanceOf[ScriptObjectMirror].get("defaultValue").asInstanceOf[String])
               p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
               p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
+              details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {
+                case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
+                  case Left(sourceOfValidIdentifiers) =>
+                    throw new RugRuntimeException(null,s"Unable to recognized predefined validation pattern: $s")
+                  case Right(pat) => p.setPattern(pat)
+                }
+                case s: String => p.setPattern(s)
+              }
               // TODO it's unclear what allowedValues is for given an AllowedValue is just a name/display_name mapping
               // p.setAllowedValues()
               p

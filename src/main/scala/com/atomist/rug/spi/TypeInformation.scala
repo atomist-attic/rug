@@ -68,10 +68,14 @@ case class TypeOperation(
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
     val args = rawArgs.map(a => NashornUtils.toJavaType(a))
     val methods = target.getClass.getMethods.toSeq.filter(m =>
-      this.name.equals(m.getName) && this.parameters.size == m.getParameterCount
+      this.name.equals(m.getName) &&
+        m.getDeclaredAnnotations.exists(ann => ann.isInstanceOf[ExportFunction]) &&
+        this.parameters.size == m.getParameterCount
     )
     if (methods.size != 1)
-      throw new IllegalArgumentException(s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1")
+      throw new IllegalArgumentException(
+        s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1: " +
+        methods.mkString(","))
     //println(s"About to invoke ${methods.head} with args=$args")
     try {
       methods.head.invoke(target, args:_*)

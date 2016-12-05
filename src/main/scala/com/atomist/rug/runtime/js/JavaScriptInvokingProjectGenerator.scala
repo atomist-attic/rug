@@ -6,6 +6,8 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.util.Timing._
+
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -28,16 +30,16 @@ class JavaScriptInvokingProjectGenerator(
   @throws(classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     validateParameters(poa)
-    //val tr = time {
-    val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
-    val pmv = new TypescriptArrayDecoratingProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
+    val tr = time {
+      val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
+      val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
 
-    val result = invokeMemberWithParameters("populate", pmv, poa)
+      val result = invokeMemberWithParameters("populate", wrapProject(pmv), poa)
 
-    //    logger.debug(s"$name modifyInternal took ${tr._2}ms")
-    //    tr._1
-
-    pmv.currentBackingObject
+      pmv.currentBackingObject
+    }
+    logger.debug(s"$name modifyInternal took ${tr._2}ms")
+    tr._1
   }
 
 }

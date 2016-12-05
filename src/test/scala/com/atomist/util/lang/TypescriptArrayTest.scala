@@ -9,10 +9,8 @@ import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOp
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Created by kipz on 01/12/2016.
-  */
-class TypescriptArrayTest extends FlatSpec with Matchers{
+class TypescriptArrayTest extends FlatSpec with Matchers {
+
   val EditorWithFancyListArray =
     """import {Project} from 'user-model/model/Core'
       |import {ParametersSupport} from 'user-model/operations/Parameters'

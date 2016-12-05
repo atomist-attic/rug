@@ -5,7 +5,8 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.pathexpression.PathExpressionEngine
+import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
+import com.atomist.util.lang.TypescriptArray
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
@@ -28,7 +29,7 @@ class PathExpressionExposer {
 
   val typeRegistry: TypeRegistry = DefaultTypeRegistry
 
-  val pee = new PathExpressionEngine
+  val ee: ExpressionEngine = new PathExpressionEngine
 
   /**
     * Evaluate the given path expression
@@ -41,13 +42,13 @@ class PathExpressionExposer {
     pe match {
       case som: ScriptObjectMirror =>
         val expr: String = som.get("expression").asInstanceOf[String]
-        pee.evaluate(toTreeNode(root), expr) match {
+        ee.evaluate(toTreeNode(root), expr) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
       case s: String =>
-        pee.evaluate(toTreeNode(root), s) match {
+        ee.evaluate(toTreeNode(root), s) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
@@ -57,7 +58,7 @@ class PathExpressionExposer {
 
   private def toTreeNode(o: Object): TreeNode = o match {
     case tn: TreeNode => tn
-    case scp: SafeCommittingProxy => scp.n
+    case scp: SafeCommittingProxy => scp.node
   }
 
   /**
@@ -81,8 +82,11 @@ class PathExpressionExposer {
 
   /**
     * Return a single match. Throw an exception otherwise.
+    *
+    * @param root root of Tree. SafeComittingProxy wrapping a TreeNode
+    * @param pe   path expression of object
     */
-  def scalar(root: TreeNode, pe: Object): Object = {
+  def scalar(root: Object, pe: Object): Object = {
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
@@ -96,15 +100,17 @@ class PathExpressionExposer {
   /**
     * Try to cast the given node to the required type.
     */
-  def as(root: TreeNode, name: String): Object = scalar(root, s"->$name")
+  def as(root: Object, name: String): Object = scalar(root, s"->$name")
 
-  // Find the children of the current node of this time
-  def children(root: TreeNode, name: String) = {
+  // Find the children of the current node of this type
+  def children(root: Object, name: String) = {
+    val rootTn = toTreeNode(root)
     val typ = typeRegistry.findByName(name).getOrElse(???)
-    typ match {
-      case cvf: ContextlessViewFinder =>
-        val kids = cvf.findAllIn(root.asInstanceOf[MutableView[_]]).getOrElse(Nil)
+    (typ,rootTn) match {
+      case (cvf: ContextlessViewFinder, mv: MutableView[_]) =>
+        val kids = cvf.findAllIn(mv).getOrElse(Nil)
         wrap(kids)
+      case _ => ???
     }
   }
 
@@ -132,10 +138,10 @@ private object MagicJavaScriptMethods {
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
-  * @param typ Rug type we are fronting
-  * @param n   node we are fronting
+  * @param typ  Rug type we are fronting
+  * @param node node we are fronting
   */
-class SafeCommittingProxy(typ: Typed, val n: TreeNode)
+class SafeCommittingProxy(typ: Typed, val node: TreeNode)
   extends AbstractJSObject {
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
@@ -159,14 +165,20 @@ class SafeCommittingProxy(typ: Typed, val n: TreeNode)
               throw new RugRuntimeException(null,
                 s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
             case Some(op) =>
-              val returned = op.invoke(n, args.toSeq)
-              n match {
+              val returned = op.invoke(node, args.toSeq)
+              node match {
                 //case c: { def commit(): Unit } =>
                 case c: MutableView[_] if !op.readOnly =>
                   c.commit()
                 case _ =>
               }
-              returned
+              // The returned type needs to be wrapped if it's
+              // a collection
+              returned match {
+                case l: java.util.List[_] =>
+                  new TypescriptArray(l)
+                case _ => returned
+              }
           }
         }
       }

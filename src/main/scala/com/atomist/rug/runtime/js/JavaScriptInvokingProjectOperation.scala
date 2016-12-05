@@ -5,10 +5,13 @@ import javax.script.ScriptContext
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.js.interop.BidirectionalParametersProxy
+import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, SafeCommittingProxy}
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -33,6 +36,11 @@ abstract class JavaScriptInvokingProjectOperation(
   extends ProjectOperationParameterSupport
     with ContextAwareProjectOperation
     with LazyLogging {
+
+  private val typeRegistry: TypeRegistry = DefaultTypeRegistry
+
+  private val projectType = typeRegistry.findByName("project")
+    .getOrElse(throw new TypeNotPresentException("project", null))
 
   readTagsFromMetadata.foreach(t => addTag(t))
 
@@ -122,6 +130,15 @@ abstract class JavaScriptInvokingProjectOperation(
         case _ => Nil
       }
     }.getOrElse(Nil)
+  }
+
+  /**
+    * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
+    * @param pmv project to wrap
+    * @return proxy TypeScript callers can use
+    */
+  protected def wrapProject(pmv: ProjectMutableView): SafeCommittingProxy = {
+    new SafeCommittingProxy(projectType ,pmv)
   }
 
 }

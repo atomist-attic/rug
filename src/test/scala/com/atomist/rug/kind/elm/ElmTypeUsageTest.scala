@@ -58,40 +58,40 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |import {Project,ElmModule} from 'user-model/model/Core'
         |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
         |
-            |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
+        |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
         |import {Result,Status} from 'user-model/operations/Result'
         |
-            |abstract class ElmRenamerParameters extends ParametersSupport {
+        |abstract class ElmRenamerParameters extends ParametersSupport {
         |
-            |   $imp1
+        |   $imp1
         |   old_name: string = null
         |
-            |   $imp2
+        |   $imp2
         |   new_name: string = null
         |}
         |
-            |declare var print
+        |declare var print
         |
-            |@editor("Renames an Elm module")
+        |@editor("Renames an Elm module")
         |class Renamer implements ProjectEditor<ElmRenamerParameters> {
         |
-            |     private eng: PathExpressionEngine;
+        |     private eng: PathExpressionEngine;
         |
-            |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
+        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
         |      this.eng = _eng;
         |    }
         |
-            |    edit(project: Project,
+        |    edit(project: Project,
         |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
         |        let allModules: Array<ElmModule> =
         |             this.eng.children<ElmModule>(project, "elm.module")
         |
-            |         for (let em of allModules) if (em.name() == p.old_name) {
+        |         for (let em of allModules) if (em.name() == p.old_name) {
         |            ${if (prints) "print(`Modifying $${em} to have name $${p.new_name}`)" else ""}
         |            em.rename(p.new_name)
         |         }
         |
-            |         print(`found $${allModules.length} elm modules in $${project}`)
+        |         //print(`found $${allModules.length} elm modules in $${project}`)
         |         for (let em of allModules) {
         |            ${if (prints) "print(`Module $${em}`)" else ""}
         |           if (em.imports(p.old_name)) {

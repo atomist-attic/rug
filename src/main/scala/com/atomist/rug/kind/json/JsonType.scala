@@ -6,7 +6,7 @@ import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.json.JsonType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
-import com.atomist.rug.spi._
+import com.atomist.rug.spi.{ExportFunction, _}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.PathExpressionEngine
@@ -221,7 +221,8 @@ private class JsonStringView(
 
   override def nodeName: String = originalBackingObject.nodeName
 
-  override def value = deJsonize(originalBackingObject.value)
+  @ExportFunction(readOnly = true, description = "Value of the content")
+  override def value: String = deJsonize(originalBackingObject.value)
 
   override def update(to: String): Unit = setValue(to)
 

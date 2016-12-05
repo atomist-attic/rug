@@ -43,6 +43,7 @@ class ElmTypescriptEditorTest extends FlatSpec with Matchers {
 }
 
 object ElmTypescriptEditorTestResources {
+
   val Editor =
     """
       |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
@@ -79,7 +80,6 @@ object ElmTypescriptEditorTestResources {
       |     var readme = project.files();
       |
       |     return new Result(Status.Success, "yay woo");
-      |
       |  }
       |
       |}

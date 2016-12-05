@@ -276,6 +276,16 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       pmv.addFile("some/path", "This is what I want you to put in. Am I Wrong??")
     })
 
+  it should "expose the backing archive as a PMV" in {
+    val src1 = StringFileArtifact(".atomist/package.json", "{}}")
+    val backingObject = SimpleFileBasedArtifactSource(src1)
+    val pmv = new ProjectMutableView(backingObject,EmptyArtifactSource(""))
+    pmv.countFilesInDirectory(".atomist") should be(0)
+    val backingPMV = pmv.backingArchiveProject
+    backingPMV.countFilesInDirectory(".atomist") should be(1)
+    backingPMV.countFilesInDirectory("xxx") should be(0)
+  }
+
   private def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)

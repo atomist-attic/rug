@@ -425,6 +425,10 @@ class ProjectMutableView(
     editWith(editorName, m)
   }
 
+  @ExportFunction(readOnly = true, description="Return a new Project View based on the original backing object (normally the .atomist/ directory)")
+  def backingArchiveProject(): ProjectMutableView ={
+    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,context)
+  }
   /**
     * Convenient method to apply an editor.
     */

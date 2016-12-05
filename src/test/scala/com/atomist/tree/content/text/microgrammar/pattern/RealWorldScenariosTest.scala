@@ -51,7 +51,6 @@ class RealWorldScenariosTest extends FlatSpec with Matchers {
     formats.map(input =>
       scalaMethodHeader.matchPrefix(0, input) match {
         case Some(PatternMatch(tn, 0, matched, `input`, _)) =>
-        println(s"Successfully parsed [$matched]")
         case None => fail(s"Failed to match input [$input]")
       })
   }

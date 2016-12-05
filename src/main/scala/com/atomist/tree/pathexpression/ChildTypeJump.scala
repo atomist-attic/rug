@@ -29,15 +29,8 @@ case class ChildTypeJump(typeName: String) extends AxisSpecifier {
 
   def follow(tn: TreeNode): Seq[TreeNode] = tn match {
     case mv: MutableView[_] =>
-//      if (mv.childNodeTypes.contains(typeName)) {
-//        val k = mv.childNodes.filter(n => typeName.equals(n.nodeType))
-//        println(s"Looked for children of type [$typeName] on $mv, found $k")
-//        k
-//      }
-//      else
-      {
-        println(s"Using ChildResolver")
-        childResolver.findAllIn(mv).getOrElse(Nil)
-      }
+      childResolver.findAllIn(mv).getOrElse(Nil)
+    case x =>
+      throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
   }
 }

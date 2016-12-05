@@ -712,7 +712,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |        do addClause new_pattern {
         |           if (upd.typeSpecification() == "Msg -> Model -> ( Model, Cmd Msg )" &&
         |					     body == "model") {
-        |							  print("recognized advanced application");
+        |							  //print("recognized advanced application");
         |								return "model ! []"
         |						 } else return body;
         |				}""".stripMargin

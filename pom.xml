@@ -326,15 +326,6 @@
                 <configuration>
                     <highlighting>true</highlighting>
                 </configuration>
-                <executions>
-
-                    <execution>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <phase>post-integration-test</phase> <!-- or any other phase -->
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>

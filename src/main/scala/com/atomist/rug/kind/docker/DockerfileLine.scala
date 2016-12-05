@@ -8,9 +8,8 @@ class DockerfileLine(val name: String) {
 
   def getLineno = lineno
 
-  def setLineno(lineno: Int) = {
+  def setLineno(lineno: Int) =
     this.lineno = lineno
-  }
 
   def getArgs: Any = args match {
     case s: String => s.replace("#$#", "")
@@ -22,16 +21,14 @@ class DockerfileLine(val name: String) {
     case _ => args
   }
 
-  def getRaw: String = "COMMENT".equals(name) match {
-    case true => args.toString
-    case false => raw
-  }
+  def getRaw: String =
+    if ("COMMENT".equals(name))
+    args.toString
+   else
+    raw
 
-  def setRaw(raw: String) {
+  def setRaw(raw: String) =
     this.raw = raw.replace("#$#", "\\\n")
-  }
 
-  override def toString(): String = {
-    return raw
-  }
+  override def toString: String = raw
 }

@@ -29,9 +29,8 @@ class YmlMutableView(
   @ExportFunction(readOnly = true, description = "Return the value of the given key")
   def valueOf(@ExportFunctionParameterDescription(name = "name",
     description = "The YAML key whose content you want")
-              name: String): Object = {
+              name: String): Object =
     model.valueOf(name).getOrElse("")
-  }
 
   /**
     * Does nothing if it doesn't exist.
@@ -70,15 +69,9 @@ private[yml] class YmlModel(val yml: String) {
     case _ => throw new IllegalStateException(s"Unrecognized result parsing yml '$yml'")
   }
 
-  def valueOf(name: String): Option[Object] = {
-    map.get(name)
-  }
+  def valueOf(name: String): Option[Object] = map.get(name)
 
-  def setKey(name: String, value: String): Unit = {
-    map.put(name, value)
-  }
+  def setKey(name: String, value: String): Unit = map.put(name, value)
 
-  def dump(key: String): Option[String] = {
-    valueOf(key).map(n => y.dump(n))
-  }
+  def dump(key: String): Option[String] = valueOf(key).map(n => y.dump(n))
 }

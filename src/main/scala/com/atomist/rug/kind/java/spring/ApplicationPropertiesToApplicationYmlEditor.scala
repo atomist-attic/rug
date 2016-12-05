@@ -2,13 +2,13 @@ package com.atomist.rug.kind.java.spring
 
 import _root_.java.util
 
-import com.atomist.tree.content.project.{ConfigValue, Configuration}
-import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
+import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.edit._
 import com.atomist.rug.kind.java.ExtractApplicationProperties
 import com.atomist.rug.kind.java.support.IsSpringProject
 import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
+import com.atomist.tree.content.project.{ConfigValue, Configuration}
 import com.atomist.util.yml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -47,7 +47,7 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
     Tag("spring", "Spring Framework"), Tag("spring-boot", "Spring Boot")
   )
 
-  override def parameters(): Seq[Parameter] = Seq()
+  override def parameters: Seq[Parameter] = Seq()
 
   def toYmlString(cvs: Configuration): String = {
     logger.debug(s"Parsing configuration $cvs to YML")
@@ -60,5 +60,4 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
 
     MapToYamlStringSerializer.toYamlString(yamlMap)
   }
-
 }

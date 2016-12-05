@@ -3,7 +3,6 @@ package com.atomist.rug.test
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
-import scala.collection.JavaConversions._
 
 class TestRunnerTest extends FlatSpec with Matchers {
 

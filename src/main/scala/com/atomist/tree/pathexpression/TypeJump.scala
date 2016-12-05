@@ -51,7 +51,6 @@ case class TypeJump(typeName: String) extends NodeTest {
               k
             }
             else {
-              println(s"Using ChildResolver")
               childResolver.findAllIn(mv).getOrElse(Nil)
             }
           ExecutionResult(kids)

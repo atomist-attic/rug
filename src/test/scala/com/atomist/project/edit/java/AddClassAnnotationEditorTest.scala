@@ -6,8 +6,6 @@ import com.atomist.project.edit.{FailedModificationAttempt, SuccessfulModificati
 import com.atomist.rug.kind.java.AddClassAnnotationEditor
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class AddClassAnnotationEditorTest extends FlatSpec with Matchers {
 
   // Adds a Mysterious annotation to any class

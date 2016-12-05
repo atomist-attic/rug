@@ -18,7 +18,7 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
   override def findMatches(input: String, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     var offset = 0
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
-    while (offset < input.size) {
+    while (offset < input.length) {
       println(s"Offset is $offset in [$input] of length ${input.length}")
       matcher.matchPrefix(offset, input) match {
         case None =>

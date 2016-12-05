@@ -71,6 +71,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |
         |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
       """.stripMargin
+
     attemptToModify(program, NewSpringBootProject, Map()) match {
       case nmn: NoModificationNeeded => // Ok
     }
@@ -107,6 +108,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    }
         |}
       """.stripMargin
+
     attemptToModify(program, NewSpringBootProject, Map(), runtime = ccPipeline) match {
       case nmn: NoModificationNeeded => // Ok
     }
@@ -143,6 +145,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |   return c.addAnnotation("com.foo", "FooBar")
         | };
       """.stripMargin
+
     annotateClass(program)
   }
 
@@ -175,6 +178,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |   do
         |      addAnnotation "com.foo" "FooBar"
       """.stripMargin
+
     annotateClass(program)
   }
 
@@ -189,6 +193,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.foo" "FooBar"
       """.stripMargin
+
     annotateClass(program)
   }
 
@@ -203,6 +208,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation { "com.foo" } "FooBar"
       """.stripMargin
+
     annotateClass(program)
   }
 
@@ -216,6 +222,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation { "com.foo" } "FooBar"
       """.stripMargin
+
     annotateClass(program)
   }
 
@@ -262,6 +269,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  movePackage to "com.atomist"
       """.stripMargin
+
     val as = new SimpleFileBasedArtifactSource("", dog)
     val result = executeJava(program, as)
     result.allFiles.foreach(f => {
@@ -337,6 +345,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addImport "java.util.List"
       """.stripMargin
+
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -382,6 +391,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |
         |}
       """.stripMargin)
+
     val as = new SimpleFileBasedArtifactSource("", Seq(childFile, parentFile))
 
     val (pkg, ann) = ("com.foo", "Baz")
@@ -394,6 +404,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         | do
         |   addAnnotation '$pkg' '$ann'
       """.stripMargin
+
     val r = executeJava(program, as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
@@ -424,6 +435,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          | do
          |   addAnnotation '$pkg' '$ann'
       """.stripMargin
+
     val r = executeJava(program, as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
@@ -442,6 +454,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |
         |}
       """.stripMargin)
+
     val as = new SimpleFileBasedArtifactSource("", Seq(notRelevantFile, impl))
 
     val newHeader = "It appears that Rod still likes long names"
@@ -453,6 +466,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          | do
          |   setHeaderComment '$newHeader'
       """.stripMargin
+
     val r = executeJava(program, as)
 
     val unupdatedNotRelevantFile = r.findFile(notRelevantFile.path).get
@@ -470,6 +484,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          | do
          |   setHeaderComment '$newHeader1'
       """.stripMargin
+
     val r1 = executeJava(program1, as)
 
     val unupdatedNotRelevantFile1 = r1.findFile(notRelevantFile.path).get
@@ -488,6 +503,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |
         |}
       """.stripMargin)
+
     val as = new SimpleFileBasedArtifactSource("", Seq(interfaceFile, impl))
 
     val program =
@@ -498,6 +514,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          | do
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
+
     val r = executeJava(program, as)
 
     val unchangedImpl = r.findFile(impl.path).get
@@ -522,6 +539,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          | do
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
+
     val r = executeJava(program, as)
 
     val updatedInterface = r.findFile(interfaceFile.path).get
@@ -549,6 +567,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
+
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -569,6 +588,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
+
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -589,6 +609,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
+
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -609,6 +630,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
+    
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 

@@ -7,8 +7,6 @@ import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.RugReferenceException
 import com.atomist.rug.runtime.rugdsl.RugDrivenProjectReviewer
 
-import scala.collection.JavaConversions._
-
 object Operations {
 
   val Empty = Operations(Nil, Nil, Nil, Nil)

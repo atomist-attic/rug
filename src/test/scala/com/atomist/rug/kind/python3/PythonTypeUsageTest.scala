@@ -7,8 +7,6 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class PythonTypeUsageTest extends FlatSpec with Matchers {
 
   import Python3ParserTest._

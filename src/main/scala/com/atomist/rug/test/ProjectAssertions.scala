@@ -4,8 +4,6 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, EmptyArtifactSource}
 
-import scala.collection.JavaConversions._
-
 /**
   * Extends project mutable view with assertions specific to testing
   *

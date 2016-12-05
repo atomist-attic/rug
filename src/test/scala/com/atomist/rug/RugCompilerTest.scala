@@ -12,8 +12,6 @@ import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 object RugCompilerTest extends LazyLogging {
 
   val JavaAndText: ArtifactSource = new SimpleFileBasedArtifactSource("name",

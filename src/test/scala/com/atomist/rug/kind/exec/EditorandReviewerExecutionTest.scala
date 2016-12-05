@@ -9,13 +9,11 @@ import com.atomist.rug.kind.service._
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
-
   val emptyProject = EmptyArtifactSource("a")
   val littleProject = new SimpleFileBasedArtifactSource("b", StringFileArtifact("a", "b"))
   val bigProject = JavaClassTypeUsageTest.JavaAndText

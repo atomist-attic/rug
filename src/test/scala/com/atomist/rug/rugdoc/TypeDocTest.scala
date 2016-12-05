@@ -5,8 +5,6 @@ import com.atomist.project.edit.SuccessfulModification
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class TypeDocTest extends FlatSpec with Matchers {
 
   it should "generate type doc" in {

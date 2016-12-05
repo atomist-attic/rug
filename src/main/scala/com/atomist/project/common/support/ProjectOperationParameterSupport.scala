@@ -4,8 +4,6 @@ import com.atomist.param.ParameterizedSupport
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.{IllformedParametersException, InvalidParametersException, MissingParametersException}
 
-import scala.collection.JavaConversions._
-
 /**
   * Support for managing parameters for ProjectDelta.
   */

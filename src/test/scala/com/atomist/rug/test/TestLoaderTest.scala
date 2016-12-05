@@ -4,8 +4,6 @@ import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class TestLoaderTest extends FlatSpec with Matchers {
 
   val ac = DefaultAtomistConfig
@@ -68,5 +66,4 @@ class TestLoaderTest extends FlatSpec with Matchers {
     scenarios.size should be (2)
     scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
   }
-
 }

@@ -28,7 +28,7 @@ object YmlProjectOperationInfoParser {
 
     Try(mapper.readValue(yml, classOf[BoundProjectOperationInfo])) match {
       case s: Success[BoundProjectOperationInfo] =>
-        val badPatterns = s.value.parameters().flatMap(p => patternError(p))
+        val badPatterns = s.value.parameters.flatMap(p => patternError(p))
         if (badPatterns.nonEmpty)
           throw new InvalidYmlDescriptorException(s"Bad regexp patterns: ${badPatterns.mkString(",")}")
         s.value
@@ -81,9 +81,9 @@ private class BoundProjectOperationInfo extends TemplateBasedProjectOperationInf
   @JsonProperty("tags")
   private var _tags: Seq[TagHolder] = Nil
 
-  override def parameters(): Seq[Parameter] = _params
+  override def parameters: Seq[Parameter] = _params
 
-  override def tags(): Seq[Tag] = _tags.map(tw => tw.toTag)
+  override def tags: Seq[Tag] = _tags.map(tw => tw.toTag)
 
   override def toString = ReflectionToStringBuilder.toString(this)
 }

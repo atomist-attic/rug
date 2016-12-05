@@ -4,7 +4,7 @@ import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMuta
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 import com.atomist.source.FileArtifact
 
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 
 class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, pv) {
@@ -22,7 +22,7 @@ class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableV
     I'd also rather return a java.util.Set here, but so far our typescript support
     doesn't seem to like that - only java.util.List is supported
      */
-    return JavaConversions.seqAsJavaList(exposePorts.toSeq)
+    exposePorts.toSeq.asJava
   }
 
   @ExportFunction(readOnly = false, description = "Add or update FROM directive")

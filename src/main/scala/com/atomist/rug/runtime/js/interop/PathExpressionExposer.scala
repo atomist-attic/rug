@@ -83,21 +83,15 @@ class PathExpressionExposer {
     ms.size() match {
       case 0 => throw new Exception("No matches found!")
       case 1 =>
-        //print(s"The node type is ${ms.get(0).nodeType}")
         ms.get(0)
       case _ => throw new Exception("Too many matches found!")
     }
   }
 
   /**
-    * Try to cast the given node to the required type
-    *
-    * @param root
-    * @param name
-    * @return
+    * Try to cast the given node to the required type.
     */
-  def as(root: TreeNode, name: String): Object =
-    scalar(root, s"->$name")
+  def as(root: TreeNode, name: String): Object = scalar(root, s"->$name")
 
   // Find the children of the current node of this time
   def children(root: TreeNode, name: String) = {
@@ -164,7 +158,6 @@ class SafeCommittingProxy(typ: Typed, n: TreeNode)
               n match {
                 //case c: { def commit(): Unit } =>
                 case c: MutableView[_] if !op.readOnly =>
-                  println(s"Calling commit on $c")
                   c.commit()
                 case _ =>
               }

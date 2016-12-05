@@ -28,7 +28,7 @@ class EditorInvokingProjectGenerator(val name: String,
     addTag(t)
   }
 
-  override def description(): String = editor.description
+  override def description: String = editor.description
 
   @throws(classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {

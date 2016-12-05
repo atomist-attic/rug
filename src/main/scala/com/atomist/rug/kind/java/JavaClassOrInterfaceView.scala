@@ -37,20 +37,16 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
   }
 
   @ExportFunction(readOnly = true, description = "Is this an interface?")
-  def isInterface: Boolean = {
-    currentBackingObject.isInterface
-  }
+  def isInterface: Boolean = currentBackingObject.isInterface
 
   @ExportFunction(readOnly = true, description = "Is this abstract?")
-  def isAbstract: Boolean = {
+  def isAbstract: Boolean =
     isInterface || ModifierSet.isAbstract(currentBackingObject.getModifiers)
-  }
 
   @ExportFunction(readOnly = true, description = "Does this type extend the given type?")
   def inheritsFrom(
                     @ExportFunctionParameterDescription(name = "simpleName",
                       description = "Simple name of the ancestor class we're looking for")
-                    simpleName: String): Boolean = {
+                    simpleName: String): Boolean =
     currentBackingObject.getExtends.exists(t => t.getName.equals(simpleName))
-  }
 }

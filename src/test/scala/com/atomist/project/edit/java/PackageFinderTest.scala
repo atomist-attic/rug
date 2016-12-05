@@ -4,8 +4,6 @@ import com.atomist.rug.kind.java.support.{PackageFinder, PackageInfo}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class PackageFinderTest extends FlatSpec with Matchers {
 
   it should "find default package in no-package source" in {

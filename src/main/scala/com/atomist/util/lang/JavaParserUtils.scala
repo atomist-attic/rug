@@ -209,12 +209,10 @@ object JavaParserUtils {
   )
 
   def shouldIgnoreAsCustomTypeMember(bd: BodyDeclaration): Boolean =
-    bd.getAnnotations.exists(a =>
-      IgnoreDataFieldAnnotations.contains(a.getName.getName))
+    bd.getAnnotations.exists(a => IgnoreDataFieldAnnotations.contains(a.getName.getName))
 
   def shouldExposeAsCustomTypeMember(bd: BodyDeclaration): Boolean =
-    bd.getAnnotations.exists(a =>
-      ExposeDataFieldAnnotations.contains(a.getName.getName))
+    bd.getAnnotations.exists(a => ExposeDataFieldAnnotations.contains(a.getName.getName))
 
   def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
     fqns.foreach(fqn => {

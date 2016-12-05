@@ -29,13 +29,13 @@ case class ChildTypeJump(typeName: String) extends AxisSpecifier {
 
   def follow(tn: TreeNode): Seq[TreeNode] = tn match {
     case mv: MutableView[_] =>
-      if (mv.childNodeTypes.contains(typeName)) {
-        // TODO inefficient
-        val k = mv.childNodes.filter(n => typeName.equals(n.nodeType))
-        println(s"Looked for children of type [$typeName] on $mv, found $k")
-        k
-      }
-      else {
+//      if (mv.childNodeTypes.contains(typeName)) {
+//        val k = mv.childNodes.filter(n => typeName.equals(n.nodeType))
+//        println(s"Looked for children of type [$typeName] on $mv, found $k")
+//        k
+//      }
+//      else
+      {
         println(s"Using ChildResolver")
         childResolver.findAllIn(mv).getOrElse(Nil)
       }

@@ -4,6 +4,7 @@ import java.util
 import java.util.Comparator
 
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.ScriptFunction
 
 /**
   * Decorate a java.util.List instance with anything required to implement the TS array methods:
@@ -115,13 +116,19 @@ class TypescriptArray[T](var lyst: java.util.List[T])
       case "filter" =>
         new AbstractJSObject {
           override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-            val filterfn = args.head.asInstanceOf[ScriptObjectMirror]
             val iter = lyst.listIterator()
             while (iter.hasNext) {
               val thing = iter.next()
               val thisArg = if (args.length > 1) args(1) else thiz
-              if (!filterfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]) {
-                iter.remove()
+              args.head match {
+                case filterfn: ScriptObjectMirror =>
+                  if (!filterfn.call(thisArg, thing.asInstanceOf[Object]).asInstanceOf[Boolean]) {
+                    iter.remove()
+                  }
+                case sf: ScriptFunction =>
+                  // DO nothing
+                  println(sf)
+                  ???
               }
             }
             lyst

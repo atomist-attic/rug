@@ -12,7 +12,7 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
   override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
 
   // Note that we do not support .endsWith
-  it should "execute simple program with parameters, simple JavaScript file function and transform function using default type " in {
+  it should "execute simple program with parameters, simple JavaScript file function and transform function using default type" in {
     val goBowling =
       s"""
          |@description "That's over the line!"

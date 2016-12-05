@@ -6,6 +6,7 @@ import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.interop.{DefaultUserModelContext, UserModelContext}
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.util.lang.TypescriptArray
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
@@ -93,6 +94,8 @@ class TypescriptArrayDecoratingProjectMutableView(rugAs: ArtifactSource,
                                                   context: Seq[ProjectOperation] = Nil)
   extends ProjectMutableView(rugAs, originalBackingObject , atomistConfig, context) {
 
+  @ExportFunction(readOnly = false,
+    description = "Files in this archive")
   override def files: java.util.List[FileArtifactBackedMutableView] = {
     new TypescriptArray[FileArtifactBackedMutableView](super.files)
   }

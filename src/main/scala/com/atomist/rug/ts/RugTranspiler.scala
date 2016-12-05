@@ -216,7 +216,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         }).mkString("\n")
 
     val typeParams = s"<TreeNode,${helper.typeScriptClassNameForTypeName(wb.kind)}>"
-    val pathExpr = s"'//->${wb.kind}'"
+    val pathExpr = s"'->${wb.kind}'"
     val descent = s"this.eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
 
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)

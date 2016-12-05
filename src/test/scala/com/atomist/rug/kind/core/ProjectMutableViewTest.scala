@@ -72,19 +72,12 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
   it should "merge" is pending
 
-  // Why is this failing on travis only
   it should "return default children" in {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
-    println("*** \n" + project.artifacts.mkString("\n"))
     val pmv = new ProjectMutableView(backingTemplates, project)
-    println("*** " + pmv.childrenNames.mkString(","))
     val kids = pmv.defaultChildViews
     kids.nonEmpty should be(true)
-    kids.foreach(k => {
-      println(s"**** ${k.getClass.getName}: instance of ArtifactContainerMutableView? : ${k.isInstanceOf[ArtifactContainerMutableView[_]]}" )
-      // k.isInstanceOf[ArtifactContainerMutableView[_]] should be(true)
-    })
-    // kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be(true)
+    kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be(true)
   }
 
   it should "handle path and content replace" in {

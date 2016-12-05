@@ -4,8 +4,6 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class RugPackagingTest extends FlatSpec with Matchers {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig

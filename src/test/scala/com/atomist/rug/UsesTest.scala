@@ -10,8 +10,6 @@ import com.atomist.rug.runtime.rugdsl.RugDrivenProjectEditor
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class UsesTest extends FlatSpec with Matchers {
 
   val simpleAs = new SimpleFileBasedArtifactSource("name",

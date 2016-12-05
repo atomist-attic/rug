@@ -51,7 +51,6 @@ case class TypeParameter(
   }
 }
 
-// TODO flesh out parameters to include type information
 case class TypeOperation(
                           name: String,
                           description: String,
@@ -62,9 +61,9 @@ case class TypeOperation(
 
   def parametersAsJava: JList[TypeParameter] = parameters.asJava
 
-  def hasExample = example.isDefined
+  def hasExample: Boolean = example.isDefined
 
-  def exampleAsJava = example.getOrElse("")
+  def exampleAsJava: String = example.getOrElse("")
 
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
     val args = rawArgs.map(a => NashornUtils.toJavaType(a))

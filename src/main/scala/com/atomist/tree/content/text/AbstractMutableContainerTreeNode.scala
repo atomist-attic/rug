@@ -146,8 +146,6 @@ abstract class AbstractMutableContainerTreeNode(
   /**
     * This allows parsed fields to be added in any order. Position will be checked
     * to ensure that they're each added in the right place.
-    *
-    * @param newField
     */
   def insertFieldCheckingPosition(newField: TreeNode): Unit = newField match {
     case np: PositionedTreeNode if np.startPosition != null =>
@@ -186,8 +184,6 @@ abstract class AbstractMutableContainerTreeNode(
   /**
     * Convenience method to add a field just before the last field.
     * If there are no existing fields, just append it.
-    *
-    * @param newField
     */
   def addFieldBeforeLast(newField: TreeNode): Unit = {
     if (_fieldValues.isEmpty)

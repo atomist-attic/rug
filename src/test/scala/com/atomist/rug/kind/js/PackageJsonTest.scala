@@ -4,8 +4,6 @@ import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 object PackageJsonTest {
 
   val packageJson =

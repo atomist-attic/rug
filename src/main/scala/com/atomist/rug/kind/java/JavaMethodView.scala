@@ -2,7 +2,7 @@ package com.atomist.rug.kind.java
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
-import com.github.javaparser.ast.body.{MethodDeclaration, Parameter}
+import com.github.javaparser.ast.body.MethodDeclaration
 
 import scala.collection.JavaConversions._
 

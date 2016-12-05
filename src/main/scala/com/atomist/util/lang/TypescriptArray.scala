@@ -197,33 +197,30 @@ class TypescriptArray[T](var lyst: java.util.List[T])
 
           args.length match {
             case 0 => new util.ArrayList[T](lyst)
-            case _ => {
+            case _ =>
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
               args.length match {
                 case 1 => lyst.subList(begin, lyst.size())
-                case _ => {
+                case _ =>
                   val theEnd = args(1).asInstanceOf[Int]
                   val end = if (theEnd >= 0) theEnd else lyst.size() + theEnd
                   lyst.subList(begin, end)
-                }
               }
-            }
           }
         }
       }
       case "sort" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           args.length match {
-            case 0 => {
+            case 0 =>
               lyst.sort(new Comparator[T]() {
                 override def compare(t: T, t1: T): Int = {
                   t.toString.compareTo(t1.toString)
                 }
               })
               lyst
-            }
-            case 1 => {
+            case 1 =>
               val filterfn = args.head.asInstanceOf[ScriptObjectMirror]
               lyst.sort(new Comparator[T] {
                 override def compare(t: T, t1: T): Int = {
@@ -237,7 +234,6 @@ class TypescriptArray[T](var lyst: java.util.List[T])
                 }
               })
               lyst
-            }
           }
         }
       }
@@ -245,19 +241,18 @@ class TypescriptArray[T](var lyst: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           args.length match {
             case 0 => throw new RuntimeException("splice requires at least one parameter")
-            case _ => {
+            case _ =>
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= lyst.size()) lyst.size() else if (head < 0) lyst.size() + head - 1 else head
               args.length match {
-                case 1 => {
+                case 1 =>
                   val deleteCount = lyst.size() - begin
                   val result = new TypescriptArray[T](new util.ArrayList[T])
                   for (i <- 1 to deleteCount) {
                     result.add(lyst.remove(begin))
                   }
                   result
-                }
-                case _ => {
+                case _ =>
                   val deleteCount = Math.min(args(1).asInstanceOf[Int], lyst.size())
                   val result = new TypescriptArray[T](new util.ArrayList[T])
 
@@ -266,14 +261,11 @@ class TypescriptArray[T](var lyst: java.util.List[T])
                   }
                   args.length match {
                     case 2 => result
-                    case _ => {
+                    case _ =>
                       args.drop(2).foreach(t => lyst.add(t.asInstanceOf[T]))
                       result
-                    }
                   }
-                }
               }
-            }
           }
         }
       }
@@ -287,10 +279,9 @@ class TypescriptArray[T](var lyst: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val item = args.head.asInstanceOf[T]
           args.length match {
-            case 1 => {
+            case 1 =>
               lyst.indexOf(item).asInstanceOf[AnyRef]
-            }
-            case _ => {
+            case _ =>
               val start = args(1).asInstanceOf[Int]
               val res = lyst.subList(start, lyst.size()).indexOf(item)
               if (res >= 0) {
@@ -298,7 +289,6 @@ class TypescriptArray[T](var lyst: java.util.List[T])
               } else {
                 res.asInstanceOf[AnyRef]
               }
-            }
           }
         }
       }
@@ -306,10 +296,9 @@ class TypescriptArray[T](var lyst: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val item = args.head.asInstanceOf[T]
           args.length match {
-            case 1 => {
+            case 1 =>
               lyst.lastIndexOf(item).asInstanceOf[AnyRef]
-            }
-            case _ => {
+            case _ =>
               val start = args(1).asInstanceOf[Int]
               val res = lyst.subList(start, lyst.size()).lastIndexOf(item)
               if (res >= 0) {
@@ -317,7 +306,6 @@ class TypescriptArray[T](var lyst: java.util.List[T])
               } else {
                 res.asInstanceOf[AnyRef]
               }
-            }
           }
         }
       }
@@ -384,11 +372,10 @@ class TypescriptArray[T](var lyst: java.util.List[T])
 
       case "reduce" => new ReducerJSObject[T](lyst)
 
-      case "reduceRight" => {
+      case "reduceRight" =>
         val reversed = new TypescriptArray[T](new util.ArrayList[T](lyst))
         util.Collections.reverse(reversed)
         new ReducerJSObject[T](reversed)
-      }
 
       case _ => super.getMember(name)
     }

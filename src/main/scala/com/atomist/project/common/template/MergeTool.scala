@@ -65,10 +65,8 @@ trait MergeTool {
 
 case class MergeContext(map: Map[String, Any]) {
 
-  def this(m: JMap[String, Object]) =
-    this(m.toMap)
+  def this(m: JMap[String, Object]) = this(m.toMap)
 
-  def this(pd: ParameterValues) = {
+  def this(pd: ParameterValues) =
     this(pd.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap)
-  }
 }

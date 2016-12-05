@@ -25,8 +25,6 @@ class AddClassAnnotationEditor(selector: TypeSelector,
   extends JavaParserProjectEditor("AddClassAnnotation", javaSourcePath)
     with LazyLogging {
 
-  import JavaParserProjectEditor._
-
   private def annotationFqn: String =
     if (annotationPackageName.isEmpty)
       annotationName
@@ -58,5 +56,5 @@ class AddClassAnnotationEditor(selector: TypeSelector,
       None
   }
 
-  override def description(): String = s"Add @$annotationFqn annotation to class"
+  override def description: String = s"Add @$annotationFqn annotation to class"
 }

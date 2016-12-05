@@ -15,8 +15,6 @@ import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.apache.commons.io.IOUtils
 
-import scala.collection.JavaConversions._
-
 object TypeDoc {
 
   val DefaultTemplateName = "kind.vm"

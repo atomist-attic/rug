@@ -7,8 +7,6 @@ class ProjectOperationInfoTest extends FlatSpec with Matchers {
 
   import com.atomist.util.Utils.toOptional
 
-  import scala.collection.JavaConversions._
-
   it should "not create default gav appropriately without group" in {
     val poi = SimpleProjectOperationInfo("name", "desc", Some("group"), None, Nil, Nil)
     poi.gav.isPresent should be(false)

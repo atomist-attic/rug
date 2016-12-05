@@ -11,10 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.collection.JavaConversions._
 
 /**
-  * Fronts a local JavaScript expression
-  *
-  * @param script
-  * @param functionName
+  * Fronts a local JavaScript expression.
   */
 class NashornExpressionEngine private(
                                        script: Script,
@@ -30,8 +27,7 @@ class NashornExpressionEngine private(
     val argsToUse: Seq[Object] =
       Seq(context) ++ parameterMap.values ++ Seq(parameterMap)
 
-    val r = invocable.invokeFunction(functionName, argsToUse: _*)
-    r
+    invocable.invokeFunction(functionName, argsToUse: _*)
   }
 
   def evaluate(ic: FunctionInvocationContext[_]): Object = {
@@ -43,8 +39,7 @@ class NashornExpressionEngine private(
         localArgs ++
         ic.identifierMap.values
 
-    val r = invocable.invokeFunction(functionName, argsToUse: _*)
-    r
+    invocable.invokeFunction(functionName, argsToUse: _*)
   }
 }
 

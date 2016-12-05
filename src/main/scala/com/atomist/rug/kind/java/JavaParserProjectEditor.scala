@@ -6,8 +6,7 @@ import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.java.support.{IsJavaProject, JavaFilesExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
 import com.atomist.util.lang.JavaConstants
-import com.github.javaparser.ast.expr.NameExpr
-import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
+import com.github.javaparser.ast.CompilationUnit
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConversions._
@@ -25,7 +24,7 @@ abstract class JavaParserProjectEditor(val name: String,
   private val extractJavaFiles: ArtifactSource => Seq[FileArtifact] =
     a => JavaFilesExtractor(a / javaSourcePath)
 
-  override def impacts(): Set[Impact] = Set(CodeImpact)
+  override def impacts: Set[Impact] = Set(CodeImpact)
 
   final override def applicability(as: ArtifactSource): Applicability = {
     Applicability(IsJavaProject(as), "IsJava")
@@ -57,7 +56,7 @@ abstract class JavaParserProjectEditor(val name: String,
 
       result.allFiles.filter(_.name.endsWith("java")).foreach(f => logger.debug(s"${f.path}\n${f.content}\n"))
 
-      SuccessfulModification(result, impacts(), s"$name success")
+      SuccessfulModification(result, impacts, s"$name success")
     }
   }
 

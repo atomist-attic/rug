@@ -6,8 +6,6 @@ import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class PackageJsonMutableViewTest extends FlatSpec with Matchers {
 
   import PackageJsonTest._
@@ -29,5 +27,4 @@ class PackageJsonMutableViewTest extends FlatSpec with Matchers {
       SimpleProjectOperationArguments.Empty, Nil)
     v.packageName(ic) should be ("module-name")
   }
-
 }

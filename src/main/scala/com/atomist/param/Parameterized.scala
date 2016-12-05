@@ -40,5 +40,4 @@ trait Parameterized {
     */
   def areValid(pvs: ParameterValues): Boolean =
     findMissingParameters(pvs).isEmpty && findInvalidParameterValues(pvs).isEmpty
-
 }

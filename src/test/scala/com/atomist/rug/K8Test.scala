@@ -5,8 +5,6 @@ import com.atomist.rug.ts.RugTranspiler
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class K8Test extends FlatSpec with Matchers {
 
   val spec =

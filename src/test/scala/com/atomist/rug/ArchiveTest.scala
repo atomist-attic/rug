@@ -7,8 +7,6 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 /**
   * Test for rug archive format
   */

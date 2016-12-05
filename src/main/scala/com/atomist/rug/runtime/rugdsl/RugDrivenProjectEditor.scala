@@ -30,10 +30,12 @@ class RugDrivenProjectEditor(
   override protected def onSetContext(): Unit =
     (program.preconditions ++ program.postcondition).foreach(pre => {
       if (getCondition(pre).parameters.nonEmpty)
-        throw new InvalidRugUsesException(name, s"Condition '${pre.predicateOrReviewerName}' has parameters. This is not allowed", pre.predicateOrReviewerName)
+        throw new InvalidRugUsesException(name,
+          s"Condition '${pre.predicateOrReviewerName}' has parameters. This is not allowed",
+          pre.predicateOrReviewerName)
     })
 
-  override def impacts(): Set[Impact] = {
+  override def impacts: Set[Impact] = {
     Set[Impact](CodeImpact)
   }
 
@@ -84,7 +86,7 @@ class RugDrivenProjectEditor(
           NoModificationNeeded(
             program.successBlock.map(m => m.message).getOrElse("OK"))
         } else
-          SuccessfulModification(currentProjectState.currentBackingObject, impacts(),
+          SuccessfulModification(currentProjectState.currentBackingObject, impacts,
             program.successBlock.map(m => m.message).getOrElse("OK"))
       } catch {
         case f: InstantEditorFailureException =>

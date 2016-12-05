@@ -3,6 +3,7 @@ package com.atomist.param
 import scala.language.postfixOps
 
 trait ParameterValues {
+
   /**
     * Parameters exposed to template. Will include input parameters
     * but there may be additional computed or other parameters.

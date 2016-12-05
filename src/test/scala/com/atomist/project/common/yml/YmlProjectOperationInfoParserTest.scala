@@ -4,8 +4,6 @@ import com.atomist.tree.content.project.SimpleResourceSpecifier
 import com.atomist.param.ParameterValidationPatterns
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 object YmlProjectOperationInfoParserTest {
 
   val noParameters =

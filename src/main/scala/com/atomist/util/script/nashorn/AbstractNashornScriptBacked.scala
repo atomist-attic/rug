@@ -17,16 +17,14 @@ abstract class AbstractNashornScriptBacked(javaScripts: Seq[Script])
 
   private val engine = new ScriptEngineManager(null).getEngineByName("nashorn")
 
-  protected val js =
-    globalTypeDeclarations + combineScripts(javaScripts)
+  protected val js = globalTypeDeclarations + combineScripts(javaScripts)
 
   protected def globalTypeDeclarations: String
 
-  private def combineScripts(scripts: JList[Script]) = {
+  private def combineScripts(scripts: JList[Script]) =
     scripts
       .map(script => s"// ${script.name}\n//----------------------\n${script.content}")
       .mkString("\n\n")
-  }
 
   private val startupException: Option[InvalidScriptException] =
     try {
@@ -53,9 +51,6 @@ abstract class AbstractNashornScriptBacked(javaScripts: Seq[Script])
 
 /**
   * Enables convenient validation of scripts.
-  *
-  * @param globalTypeDeclarations
-  * @param javaScripts
   */
 abstract class NashornScriptValidator(
                                        val globalTypeDeclarations: String,

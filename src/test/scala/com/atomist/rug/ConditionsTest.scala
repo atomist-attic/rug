@@ -6,8 +6,6 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
-
 class ConditionsTest extends FlatSpec with Matchers {
 
   val simpleAs = new SimpleFileBasedArtifactSource("name",

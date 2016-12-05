@@ -69,4 +69,3 @@ case class TypeJump(typeName: String) extends NodeTest {
       }
   }
 }
-

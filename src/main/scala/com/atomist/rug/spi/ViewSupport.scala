@@ -16,15 +16,11 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
 
   private var _dirty: Boolean = false
 
-  override def currentBackingObject: T = {
-    _currentBackingObject
-  }
+  override def currentBackingObject: T = _currentBackingObject
 
   override def dirty: Boolean = _dirty
 
-  def previousBackingObject: T = {
-    _previousBackingObject
-  }
+  def previousBackingObject: T = _previousBackingObject
 
   /**
     * Subclasses can call this to update the state of this object.
@@ -44,9 +40,7 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
   protected def updateParent(): Unit = {
   }
 
-  override def registerUpdater(u: Updater[T]): Unit = {
-    updaters.append(u)
-  }
+  override def registerUpdater(u: Updater[T]): Unit = updaters.append(u)
 
   /**
     * Convenience method to register an update function.

@@ -45,7 +45,7 @@ class ProjectMutableView(
 
   // We need this, rather than merely a default, for Java subclasses
   def this(rugAs: ArtifactSource, originalBackingObject: ArtifactSource) =
-  this(rugAs, originalBackingObject, DefaultAtomistConfig)
+      this(rugAs, originalBackingObject, DefaultAtomistConfig)
 
   import ProjectMutableView._
 
@@ -67,7 +67,7 @@ class ProjectMutableView(
     description = "Return the name of the project. If it's in GitHub, it will be the repo name." +
       "If it's on the local filesystem it will be the directory name")
   override def name: String = {
-    val segments = currentBackingObject.id.name.split('/')
+    val segments = currentBackingObject.id.name.split("/")
     segments.reverse(0)
   }
 

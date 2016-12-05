@@ -69,4 +69,3 @@ abstract class JavaParserProjectEditor(val name: String,
     */
   protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit]
 }
-

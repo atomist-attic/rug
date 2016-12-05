@@ -260,4 +260,3 @@ trait RugOperationSupport extends LazyLogging {
     }
   }
 }
-

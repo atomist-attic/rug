@@ -20,7 +20,6 @@ import scala.collection.JavaConverters._
   */
 case class Match(root: TreeNode, matches: _root_.java.util.List[Object])
 
-
 /**
   * JavaScript-friendly facade to PathExpressionEngine.
   * Paralleled by a UserModel TypeScript interface.
@@ -36,7 +35,7 @@ class PathExpressionExposer {
     *
     * @param root root node to evaluate path expression against
     * @param pe   path expression to evaluate
-    * @return
+    * @return a Match
     */
   def evaluate(root: TreeNode, pe: Object): Match = {
     pe match {
@@ -119,7 +118,6 @@ class PathExpressionExposer {
       k).asInstanceOf[Object]).asJava
   }
 }
-
 
 private object MagicJavaScriptMethods {
 

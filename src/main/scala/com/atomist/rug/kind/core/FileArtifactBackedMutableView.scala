@@ -13,7 +13,7 @@ import com.atomist.source.{FileArtifact, StringFileArtifact}
   */
 abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact,
                                              override val parent: ProjectMutableView)
-  extends ViewSupport[FileArtifact](originalBackingObject: FileArtifact, parent)
+ extends ViewSupport[FileArtifact](originalBackingObject: FileArtifact, parent)
     with FileMetrics {
 
   override def nodeName: String = currentBackingObject.name
@@ -112,9 +112,7 @@ abstract class LazyFileArtifactBackedMutableView(
     */
   protected def currentContent: String
 
-  override def commit(): Unit = {
-    if (dirty) {
+  override def commit(): Unit =
+    if (dirty)
       parent.updateFile(originalBackingObject, currentBackingObject)
-    }
-  }
 }

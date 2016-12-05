@@ -93,9 +93,7 @@ class TypescriptArrayDecoratingProjectMutableView(rugAs: ArtifactSource,
                                                   context: Seq[ProjectOperation] = Nil)
   extends ProjectMutableView(rugAs, originalBackingObject , atomistConfig, context) {
 
-
   override def files: java.util.List[FileArtifactBackedMutableView] = {
     new TypescriptArray[FileArtifactBackedMutableView](super.files)
   }
-
 }

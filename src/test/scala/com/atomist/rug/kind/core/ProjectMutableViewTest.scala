@@ -76,6 +76,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "return default children" in {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
+    println("*** " + pmv.childrenNames.mkString(","))
     val kids = pmv.defaultChildViews
     kids.nonEmpty should be(true)
     kids.foreach(k => {

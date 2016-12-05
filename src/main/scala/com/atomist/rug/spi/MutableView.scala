@@ -27,8 +27,6 @@ trait View[T] extends ContainerTreeNode {
     * Values that can be passed to children method.
     * Ordering is significant. If there is more than one child name,
     * the first returned will be the default.
-    *
-    * @return
     */
   def childrenNames: Seq[String]
 
@@ -38,7 +36,7 @@ trait View[T] extends ContainerTreeNode {
   def children(fieldName: String): Seq[MutableView[_]]
 
   /**
-    * Return the default child views: Corresponding to the 0th element in the collection of childViewNames.
+    * Return the default child views: corresponding to the 0th element in the collection of childViewNames.
     * If there are no child views this method will returns an empty sequence.
     */
   def defaultChildViews: Seq[MutableView[_]] =

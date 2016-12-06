@@ -43,6 +43,9 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
       |       this.lyst[0].toString()
       |
+      |       //ensure we return another TypeArray
+      |       project.files().sort().sort()
+      |
       |       this.lyst.filter(t => true)
       |       if(this.lyst.length != 1){
       |          throw new Error("Array length should be 1 after filtering none");

@@ -131,7 +131,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   ???
               }
             }
-            lyst
+            TypeScriptArray.this
           }
         }
       case "length" => lyst.size().asInstanceOf[AnyRef]
@@ -184,7 +184,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
       case "reverse" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           util.Collections.reverse(lyst)
-          lyst
+          this
         }
       }
       case "shift" => new AbstractJSObject {
@@ -201,11 +201,11 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
               args.length match {
-                case 1 => lyst.subList(begin, lyst.size())
+                case 1 => new TypeScriptArray[T](lyst.subList(begin, lyst.size()))
                 case _ =>
                   val theEnd = args(1).asInstanceOf[Int]
                   val end = if (theEnd >= 0) theEnd else lyst.size() + theEnd
-                  lyst.subList(begin, end)
+                  new TypeScriptArray[T](lyst.subList(begin, end))
               }
           }
         }
@@ -219,7 +219,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   t.toString.compareTo(t1.toString)
                 }
               })
-              lyst
+              TypeScriptArray.this
             case 1 =>
               val filterfn = args.head.asInstanceOf[ScriptObjectMirror]
               lyst.sort(new Comparator[T] {
@@ -233,7 +233,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   }
                 }
               })
-              lyst
+              TypeScriptArray.this
           }
         }
       }

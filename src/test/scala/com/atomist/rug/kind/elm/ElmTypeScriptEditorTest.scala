@@ -5,9 +5,9 @@ import com.atomist.rug.{CompilerChainPipeline, RugPipeline}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class ElmTypescriptEditorTest extends FlatSpec with Matchers {
+class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
 
-  import ElmTypescriptEditorTestResources._
+  import ElmTypeScriptEditorTestResources._
 
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
@@ -42,7 +42,7 @@ class ElmTypescriptEditorTest extends FlatSpec with Matchers {
   }
 }
 
-object ElmTypescriptEditorTestResources {
+object ElmTypeScriptEditorTestResources {
 
   val Editor =
     """

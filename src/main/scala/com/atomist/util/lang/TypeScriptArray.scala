@@ -10,13 +10,13 @@ import jdk.nashorn.internal.runtime.ScriptFunction
   * Decorate a java.util.List instance with anything required to implement the TS array methods:
   * https://www.tutorialspoint.com/typescript/typescript_arrays.htm
   */
-class TypescriptArray[T](var lyst: java.util.List[T])
+class TypeScriptArray[T](val toProxy: java.util.List[T])
   extends AbstractJSObject
     with java.util.List[T] {
 
   // Let's create a new mutable list as operating on an immutable array from JS is kinda pointless - can't even filter!
   //TODO - is there a way to check if collection is immutable? Would be nice if we could just pass the reference here for mutable lists
-  this.lyst = new util.ArrayList[T](lyst)
+  val lyst = new util.ArrayList[T](toProxy)
 
   override def removeAll(collection: util.Collection[_]): Boolean = {
     lyst.removeAll(collection)
@@ -165,7 +165,7 @@ class TypescriptArray[T](var lyst: java.util.List[T])
           }
 
           newList.addAll(lyst)
-          new TypescriptArray(newList)
+          new TypeScriptArray(newList)
         }
       }
       case "pop" => new AbstractJSObject {
@@ -247,14 +247,14 @@ class TypescriptArray[T](var lyst: java.util.List[T])
               args.length match {
                 case 1 =>
                   val deleteCount = lyst.size() - begin
-                  val result = new TypescriptArray[T](new util.ArrayList[T])
+                  val result = new TypeScriptArray[T](new util.ArrayList[T])
                   for (i <- 1 to deleteCount) {
                     result.add(lyst.remove(begin))
                   }
                   result
                 case _ =>
                   val deleteCount = Math.min(args(1).asInstanceOf[Int], lyst.size())
-                  val result = new TypescriptArray[T](new util.ArrayList[T])
+                  val result = new TypeScriptArray[T](new util.ArrayList[T])
 
                   for (i <- 1 to deleteCount) {
                     result.add(lyst.remove(begin))
@@ -360,7 +360,7 @@ class TypescriptArray[T](var lyst: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val map = args.head.asInstanceOf[ScriptObjectMirror]
           val iter = lyst.listIterator()
-          val res = new TypescriptArray[AnyRef](new util.ArrayList[AnyRef]())
+          val res = new TypeScriptArray[AnyRef](new util.ArrayList[AnyRef]())
           while (iter.hasNext) {
             val thing = iter.next()
             val thisArg = if (args.length > 1) args(1) else thiz
@@ -373,7 +373,7 @@ class TypescriptArray[T](var lyst: java.util.List[T])
       case "reduce" => new ReducerJSObject[T](lyst)
 
       case "reduceRight" =>
-        val reversed = new TypescriptArray[T](new util.ArrayList[T](lyst))
+        val reversed = new TypeScriptArray[T](new util.ArrayList[T](lyst))
         util.Collections.reverse(reversed)
         new ReducerJSObject[T](reversed)
 

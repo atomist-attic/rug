@@ -6,7 +6,7 @@ import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
-import com.atomist.util.lang.TypescriptArray
+import com.atomist.util.lang.TypeScriptArray
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
@@ -176,7 +176,7 @@ class SafeCommittingProxy(typ: Typed, val node: TreeNode)
               // a collection
               returned match {
                 case l: java.util.List[_] =>
-                  new TypescriptArray(l)
+                  new TypeScriptArray(l)
                 case _ => returned
               }
           }

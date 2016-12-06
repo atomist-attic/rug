@@ -9,7 +9,7 @@ import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOp
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class TypescriptArrayTest extends FlatSpec with Matchers {
+class TypeScriptArrayTest extends FlatSpec with Matchers {
 
   val EditorWithFancyListArray =
     """import {Project} from 'user-model/model/Core'
@@ -253,7 +253,7 @@ class TypescriptArrayTest extends FlatSpec with Matchers {
     val lyst = new util.ArrayList[String]()
     lyst.add("blah")
     override val registry = Map(
-      "FancyList" -> new TypescriptArray[String](lyst)
+      "FancyList" -> new TypeScriptArray[String](lyst)
     )
   }
 }

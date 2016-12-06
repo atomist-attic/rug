@@ -53,7 +53,7 @@ class ParameterTest extends FlatSpec with Matchers {
   }
 
   it should "reject a parameter that doesn't match the pattern" in {
-    shouldAccept(InputParamStrict, Seq("FavoriteColour"))
+    shouldReject(InputParamStrict, Seq("FavoriteColour"))
   }
 
   private def shouldAccept(p: Parameter, values: Seq[String]): Unit = {

@@ -111,11 +111,11 @@ class PathNavigationTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "double descend into Java type" in pendingUntilFixed {
+  it should "double descend into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
 
-    val expr2 = "src//*:java.class"
+    val expr2 = "src//*:file->java.class"
     val rtn2 = ee.evaluate(pmv, expr2)
     rtn2.right.get.size should be(2)
     rtn2.right.get.foreach {
@@ -123,11 +123,23 @@ class PathNavigationTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "double descend into Java type and select class" in pendingUntilFixed {
+  it should "double descend into Java type under directory" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
 
-    val expr2 = "src//*:java.class[name='DemoApplication']"
+    val expr2 = "src/main/java//*:file->java.class"
+    val rtn2 = ee.evaluate(pmv, expr2)
+    rtn2.right.get.size should be(1)
+    rtn2.right.get.foreach {
+      case j: JavaClassOrInterfaceView =>
+    }
+  }
+
+  it should "double descend into Java type and select class" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+
+    val expr2 = "src//*:file->java.class[name='DemoApplication']"
     val rtn2 = ee.evaluate(pmv, expr2)
     rtn2.right.get.size should be (1)
     rtn2.right.get.foreach {

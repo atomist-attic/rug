@@ -44,6 +44,18 @@ class ParameterTest extends FlatSpec with Matchers {
     shouldReject(AllowedValuesParam, Seq("ff", "long_parameter"))
   }
 
+  it should "don't reject parameter that matches the pattern" in {
+    shouldAccept(InputParam, Seq("FavoriteColour"))
+  }
+
+  it should "don't reject parameter that matches a stricter pattern" in {
+    shouldAccept(InputParamStrict, Seq("eColour"))
+  }
+
+  it should "reject a parameter that doesn't match the pattern" in {
+    shouldAccept(InputParamStrict, Seq("FavoriteColour"))
+  }
+
   private def shouldAccept(p: Parameter, values: Seq[String]): Unit = {
     values.foreach(v => p.isValidValue(v) should be(true))
   }

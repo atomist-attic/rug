@@ -6,6 +6,10 @@ object ParametersToTest {
 
   val AgeParam = Parameter("age", "[0-9]+")
 
+  val InputParam = Parameter("input_param", """[a-z][\w]*""")
+
+  val InputParamStrict = Parameter("input_param", """^[a-z][\w]*$""")
+
   val ParamStartingWithX = Parameter("mystery", "x.*")
 
   val ParameterizedToTest = new ParameterizedSupport {

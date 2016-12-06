@@ -162,7 +162,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "allow invocation of other operation from TypeScript editor" in pending
 
-  it should "find and invoke plain javascript generators" in{
+  it should "find and invoke plain javascript generators" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
@@ -176,4 +176,45 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     ops.editors.size should be(1)
     ops.editors.head.parameters.size should be(1)
   }
+
+  it should "ignore unbound handler" in {
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val f1 = StringFileArtifact("package.json", "{}")
+    val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
+
+    // We don't know the Atomist declared variable. So ignore it.
+    val handler =
+      s"""
+         |import {Atomist} from "user-model/operations/Handler"
+         |import {Project,File} from "user-model/model/Core"
+         |
+         |declare var atomist: Atomist  // <= this is for the compiler only
+         |
+         |declare var print: any
+         |
+         |atomist.on<Project,File>('/src/main/**.java', m => {
+         |   print(`in handler with $${m}`)
+         |   print(`Root=$${m.root()}, leaves=$${m.matches()}`)
+         |})
+         |
+      """.stripMargin
+    val rugAs = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
+        TypeScriptRugEditorTest.SimpleGenerator),
+      f1,
+      f2,
+      StringFileArtifact(".atomist/handlers/sub.ts", handler)
+    )
+    val ops = apc.findOperations(rugAs, None, Nil)
+    ops.generators.size should be(1)
+    ops.generators.head.parameters.size should be(0)
+    val result = ops.generators.head.generate(SimpleProjectOperationArguments.Empty)
+    // Should preserve content from the backing archive
+    result.findFile(f1.path).get.content.equals(f1.content) should be(true)
+    result.findFile(f2.path).get.content.equals(f2.content) should be(true)
+
+    // Should contain new contain
+    result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+  }
+
 }

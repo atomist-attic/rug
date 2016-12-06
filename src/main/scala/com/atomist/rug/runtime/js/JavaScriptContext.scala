@@ -56,7 +56,6 @@ class JavaScriptContext extends LazyLogging {
         case Some(s: String) => Some(s)
         case _ => None
       }
-
   }
 
   /**

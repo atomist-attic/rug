@@ -1,9 +1,10 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
@@ -26,19 +27,37 @@ object JavaScriptOperationFinder {
     */
   val KnownOperationTypes = Set(ExecutorType, EditorType, GeneratorType)
 
-  // All known JS and TS files not in user_modules
-  val allJsFiles: FileArtifact => Boolean = f => f.name.endsWith(".js")
-  val allTsFiles: FileArtifact => Boolean = f => f.name.endsWith(".ts")
+  val jsFile: FileArtifact => Boolean = f => f.name.endsWith(".js")
+  val tsFile: FileArtifact => Boolean = f => f.name.endsWith(".ts")
 
+  /**
+    * Find and instantiate project operations in the given Rug archive
+    *
+    * @param rugAs          archive to look into
+    * @param registry       registry to allow operations to be looked up.
+    *                       Injected into operations that ask for it
+    * @param shouldSuppress function allowing us to specify which JS
+    *                       files we should suppress. Suppresses none by default.
+    * @return a sequence of instantiated operations backed by JavaScript compiled
+    *         from TypeScript
+    */
   def fromTypeScriptArchive(rugAs: ArtifactSource,
-                            registry: UserModelContext = DefaultAtomistFacade): Seq[ProjectOperation] = {
+                            registry: UserModelContext = DefaultAtomistFacade,
+                            atomistConfig: AtomistConfig = DefaultAtomistConfig,
+                            shouldSuppress: FileArtifact => Boolean = f => false): Seq[ProjectOperation] = {
     val jsc = new JavaScriptContext
 
     // First, compile any TypeScript files
     val tsc = new TypeScriptCompiler
-    val compiled = tsc.compile(rugAs)
-    compiled.allFiles.filter(f => !f.path.startsWith(ExcludedTypeScriptPath))
-      .filter(allJsFiles)
+    val filtered = atomistConfig.atomistContent(rugAs)
+        .filter(d => true,
+          f => (jsFile(f) || tsFile(f))
+          && !f.path.startsWith(ExcludedTypeScriptPath) && !shouldSuppress(f))
+
+    val compiled = tsc.compile(filtered)
+
+    // All known JS and TS files not in user_modules
+    compiled.allFiles
       .foreach(f => {
         //println(f.content)
         jsc.eval(f)
@@ -67,9 +86,9 @@ object JavaScriptOperationFinder {
       }
 
       val eObj = jsc.engine.eval(v.key).asInstanceOf[JSObject]
-      val newEditor = eObj.newObject(args: _*)
+      val newOperation = eObj.newObject(args: _*)
       // Lower case type name for instance!
-      jsc.engine.put(v.key.toLowerCase, newEditor)
+      jsc.engine.put(v.key.toLowerCase, newOperation)
     }
   }
 

@@ -64,6 +64,14 @@ trait AtomistConfig {
     */
   def defaultTypeScriptFilepath = s"$editorsRoot/$defaultRugFileBase.ts"
 
+  /**
+    * Return the atomist content only
+    * @param rugArchive artifact source
+    * @return only the Atomist content from the archive
+    */
+  def atomistContent(rugArchive: ArtifactSource): ArtifactSource =
+    rugArchive.filter(d => d.path.startsWith(atomistRoot), f => f.path.startsWith(atomistRoot))
+
   def isRugSource(f: FileArtifact): Boolean = {
     f.name.endsWith(rugExtension) && (
       f.path.startsWith(editorsRoot) ||
@@ -82,7 +90,8 @@ trait AtomistConfig {
       )
   }
 
-  def templateContentIn(rugAs: ArtifactSource) = rugAs / templatesRoot + rugAs / templatesDirectory
+  def templateContentIn(rugAs: ArtifactSource): ArtifactSource =
+    rugAs / templatesRoot + rugAs / templatesDirectory
 
 }
 

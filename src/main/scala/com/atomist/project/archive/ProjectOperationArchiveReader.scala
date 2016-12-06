@@ -9,7 +9,7 @@ import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOp
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
-import com.atomist.source.ArtifactSource
+import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.Seq
@@ -31,9 +31,16 @@ class ProjectOperationArchiveReader(
     oldInterpreterPipeline.parseRugFiles(startingProject).foldLeft(Nil: Seq[Import]) { (acc, rugProgram) => acc ++ rugProgram.imports }
   }
 
-  def findOperations(startingProject: ArtifactSource, namespace: Option[String], otherOperations: Seq[ProjectOperation]): Operations = {
+  // We skip any file with declare var atomist as we can't satisfy it here
+  private val hasDeclareVarAtomist: FileArtifact => Boolean = f =>
+    f.name.endsWith(".ts") && "declare[\\s]+var[\\s]+atomist".r.findAllMatchIn(f.content).nonEmpty
+
+  def findOperations(startingProject: ArtifactSource,
+                     namespace: Option[String],
+                     otherOperations: Seq[ProjectOperation],
+                     shouldSuppress: FileArtifact => Boolean = hasDeclareVarAtomist): Operations = {
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations)
-    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject)
+    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject, shouldSuppress = shouldSuppress)
 
     val operations = fromOldPipeline ++ fromTs
 

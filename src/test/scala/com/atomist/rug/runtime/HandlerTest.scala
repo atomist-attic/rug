@@ -1,13 +1,9 @@
 package com.atomist.rug.runtime
 
-import java.util.Collections
-
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.{AtomistFacade, DefaultAtomistFacade, Match}
+import com.atomist.rug.runtime.js.interop.DefaultAtomistFacade
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.SimpleTerminalTreeNode
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.{FlatSpec, Matchers}
 
 class HandlerTest extends FlatSpec with Matchers {
@@ -43,7 +39,7 @@ class HandlerTest extends FlatSpec with Matchers {
       jsc.eval(ts)
     }
 
-    jsc.shutdown
+    jsc.shutdown()
   }
 }
 

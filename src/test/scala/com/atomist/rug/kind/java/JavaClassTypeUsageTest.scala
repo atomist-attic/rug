@@ -9,7 +9,6 @@ import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
 import JavaVerifier._
 import com.atomist.rug.ts.RugTranspiler
 
@@ -630,7 +629,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |do
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
-    
+
     val r = executeJava(program)
     val f = r.findFile("src/main/java/Dog.java").get
 

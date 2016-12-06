@@ -14,8 +14,6 @@ import scala.collection.JavaConverters._
   */
 object JavaScriptOperationFinder {
 
-  private val ExcludedTypeScriptPath = ".atomist/node_modules/"
-
   val ExecutorType = "executor"
 
   val EditorType = "editor"
@@ -29,6 +27,9 @@ object JavaScriptOperationFinder {
 
   val jsFile: FileArtifact => Boolean = f => f.name.endsWith(".js")
   val tsFile: FileArtifact => Boolean = f => f.name.endsWith(".ts")
+
+  private def excludedTypeScriptPath(atomistConfig: AtomistConfig) =
+    s"${atomistConfig.atomistRoot}/node_modules/"
 
   /**
     * Find and instantiate project operations in the given Rug archive
@@ -47,27 +48,42 @@ object JavaScriptOperationFinder {
                             shouldSuppress: FileArtifact => Boolean = f => false): Seq[ProjectOperation] = {
     val jsc = new JavaScriptContext
 
-    // First, compile any TypeScript files
-    val tsc = new TypeScriptCompiler
-    val filtered = atomistConfig.atomistContent(rugAs)
-        .filter(d => true,
-          f => (jsFile(f) || tsFile(f))
-          && !f.path.startsWith(ExcludedTypeScriptPath) && !shouldSuppress(f))
+    try {
+      val compiled = filterAndCompile(rugAs, atomistConfig, shouldSuppress)
 
-    val compiled = tsc.compile(filtered)
-
-    // All known JS and TS files not in user_modules
-    compiled.allFiles
-      .foreach(f => {
-        //println(f.content)
+      for (f <- compiled.allFiles) {
         jsc.eval(f)
-      })
+      }
 
-    instantiateOperationsToMakeMetadataAccessible(jsc, registry)
+      instantiateOperationsToMakeMetadataAccessible(jsc, registry)
+      val operations = operationsFromVars(rugAs, jsc)
+      operations
+    }
+    finally {
+      jsc.shutdown()
+    }
+  }
 
-    val operations = operationsFromVars(rugAs, jsc)
-    jsc.shutdown()
-    operations
+  /**
+    * Filter and compile all JavaScript files under Atomist folder in the given archive
+    *
+    * @param rugAs          Archive to look in
+    * @param atomistConfig  configuration
+    * @param shouldSuppress function allowing us to specify which JS
+    *                       files we should suppress. Suppresses none by default.
+    * @return
+    */
+  def filterAndCompile(rugAs: ArtifactSource,
+                       atomistConfig: AtomistConfig,
+                       shouldSuppress: FileArtifact => Boolean = f => false): ArtifactSource = {
+    val tsc = new TypeScriptCompiler
+    val excludePrefix = excludedTypeScriptPath(atomistConfig)
+    val filtered = atomistConfig.atomistContent(rugAs)
+      .filter(d => true,
+        f => (jsFile(f) || tsFile(f))
+          && !f.path.startsWith(excludePrefix) && !shouldSuppress(f))
+
+    tsc.compile(filtered)
   }
 
   private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {

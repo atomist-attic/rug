@@ -4,7 +4,7 @@ import java.util.Collections
 
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.Match
+import com.atomist.rug.runtime.js.interop.{AtomistFacade, DefaultAtomistFacade, Match}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -37,7 +37,7 @@ class HandlerTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
 
-    jsc.engine.put("atomist", new AtomistFacade)
+    jsc.engine.put("atomist", DefaultAtomistFacade)
 
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       jsc.eval(ts)
@@ -47,14 +47,3 @@ class HandlerTest extends FlatSpec with Matchers {
   }
 }
 
-class AtomistFacade {
-
-  def on(s: String, handler: Any): Unit = {
-    handler match {
-      case som: ScriptObjectMirror =>
-        val arg = Match(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())
-        val args = Seq(arg)
-        som.call("apply", args:_*)
-    }
-  }
-}

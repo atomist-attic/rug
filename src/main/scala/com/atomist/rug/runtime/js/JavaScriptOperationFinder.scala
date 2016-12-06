@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.rug.runtime.js.interop.{DefaultUserModelContext, UserModelContext}
+import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
 
@@ -31,7 +31,7 @@ object JavaScriptOperationFinder {
   val allTsFiles: FileArtifact => Boolean = f => f.name.endsWith(".ts")
 
   def fromTypeScriptArchive(rugAs: ArtifactSource,
-                            registry: UserModelContext = DefaultUserModelContext): Seq[ProjectOperation] = {
+                            registry: UserModelContext = DefaultAtomistFacade): Seq[ProjectOperation] = {
     val jsc = new JavaScriptContext
 
     // First, compile any TypeScript files

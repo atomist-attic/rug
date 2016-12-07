@@ -34,13 +34,13 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   protected def wellFormed: Boolean = true
 
   @ExportFunction(readOnly = true, description = "Return file content")
-  def content = currentBackingObject.content
+  def content: String = currentBackingObject.content
 
   @ExportFunction(readOnly = true, description = "Return file name, excluding path")
-  def filename = currentBackingObject.name
+  def filename: String = currentBackingObject.name
 
   @ExportFunction(readOnly = true, description = "Return file path, with forward slashes")
-  def path = currentBackingObject.path
+  def path: String = currentBackingObject.path
 
   @ExportFunction(readOnly = true, description = "Return the number of lines in the file")
   override def lineCount: Int = FileMetrics.lineCount(currentBackingObject.content)
@@ -49,12 +49,12 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   def permissions: Int = currentBackingObject.mode
 
   @ExportFunction(readOnly = false, description = "Make the file executable")
-  def makeExecutable() = updateTo(currentBackingObject.withMode(FileArtifact.ExecutableMode))
+  def makeExecutable(): Unit = updateTo(currentBackingObject.withMode(FileArtifact.ExecutableMode))
 
   @ExportFunction(readOnly = true,
     description = "Does this path begin with the given pattern? Pattern should contain slashes but not begin with a /")
   def underPath(@ExportFunctionParameterDescription(name = "root",
-    description = "The root path to begin searching from") root: String) =
+    description = "The root path to begin searching from") root: String): Boolean =
     path.startsWith(root)
 
   /**

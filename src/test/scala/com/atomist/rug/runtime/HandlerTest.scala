@@ -27,7 +27,6 @@ class HandlerTest extends FlatSpec with Matchers {
         |   print(`in handler with $${m}`)
         |   print(`Root=$${m.root()}, leaves=$${m.matches()}`)
         |})
-        |
       """.stripMargin
     val r = tsc.compile(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)

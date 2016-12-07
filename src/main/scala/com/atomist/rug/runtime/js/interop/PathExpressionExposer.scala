@@ -112,13 +112,19 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     }
   }
 
-  private def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
-    nodes.map(k => new SafeCommittingProxy({
+  /**
+    * Wrap the given sequence of nodes so they can be accessed from
+    * TypeScript. Intended for use from Scala, not TypeScript.
+    * @param nodes sequence to wrap
+    * @return TypeScript and JavaScript-friendly list
+    */
+  def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
+    new TypeScriptArray(nodes.map(k => new SafeCommittingProxy({
       typeRegistry.findByName(k.nodeType).getOrElse(
         throw new UnsupportedOperationException(s"Cannot find type for node type [${k.nodeType}]")
       )
     },
-      k).asInstanceOf[Object]).asJava
+      k).asInstanceOf[Object]).asJava)
   }
 }
 

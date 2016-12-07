@@ -1,9 +1,13 @@
 package com.atomist.rug.runtime
 
+import java.util.Collections
+
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.DefaultAtomistFacade
+import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, PathExpressionExposer}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.SimpleTerminalTreeNode
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.{FlatSpec, Matchers}
 
 class HandlerTest extends FlatSpec with Matchers {
@@ -24,15 +28,15 @@ class HandlerTest extends FlatSpec with Matchers {
         |declare var print: any
         |
         |atomist.on<Project,File>('TYPESCRIPT/src/main/**.java', m => {
-        |   print(`in handler with $${m}`)
-        |   print(`Root=$${m.root()}, leaves=$${m.matches()}`)
+        |   //print(`in handler with $${m}`)
+        |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
         |})
       """.stripMargin
     val r = tsc.compile(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
 
-    jsc.engine.put("atomist", DefaultAtomistFacade)
+    jsc.engine.put("atomist", TestAtomistFacade)
 
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       jsc.eval(ts)
@@ -42,3 +46,19 @@ class HandlerTest extends FlatSpec with Matchers {
   }
 }
 
+
+object TestAtomistFacade extends AtomistFacade {
+
+  def on(s: String, handler: Any): Unit = {
+    handler match {
+      case som: ScriptObjectMirror =>
+        val arg = Match(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())
+        val args = Seq(arg)
+        som.call("apply", args:_*)
+    }
+  }
+
+  override val registry = Map(
+    "PathExpressionEngine" -> new PathExpressionExposer
+  )
+}

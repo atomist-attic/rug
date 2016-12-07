@@ -113,7 +113,11 @@ abstract class JavaScriptInvokingProjectOperation(
               p.setDefaultRef(details.asInstanceOf[ScriptObjectMirror].get("defaultRef").asInstanceOf[String])
               p.setDisplayable(details.asInstanceOf[ScriptObjectMirror].get("displayable").asInstanceOf[Boolean])
               p.setRequired(details.asInstanceOf[ScriptObjectMirror].get("required").asInstanceOf[Boolean])
-              p.setDefaultValue(instance.get(name).toString)
+              val pvalue = instance.get(name)
+              if (pvalue != null){
+                p.setDefaultValue((pvalue.toString))
+              }
+
               p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
               p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
               details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {

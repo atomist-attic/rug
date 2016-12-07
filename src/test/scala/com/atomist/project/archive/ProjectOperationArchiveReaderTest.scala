@@ -104,7 +104,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     )
     val ops = apc.findOperations(as, None, Nil)
     ops.editors.size should be(1)
-    ops.editors.head.parameters.size should be(1)
+    ops.editors.head.parameters.size should be(2)
   }
 
   val SimpleExecutor =

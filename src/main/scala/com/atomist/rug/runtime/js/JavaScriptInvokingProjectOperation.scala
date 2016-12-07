@@ -99,7 +99,9 @@ abstract class JavaScriptInvokingProjectOperation(
     Try {
       val vars = jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
       val pclass = jsc.engine.invokeFunction("get_metadata", jsVar, "parameter-class").asInstanceOf[String]
-      jsc.engine.invokeFunction("get_metadata", vars.get(pclass).asInstanceOf[ScriptObjectMirror], "params") match {
+      val pvar = vars.get(pclass).asInstanceOf[ScriptObjectMirror]
+      val instance = jsc.engine.eval(s"""new $pclass()""").asInstanceOf[ScriptObjectMirror]
+      jsc.engine.invokeFunction("get_metadata", pvar, "params") match {
         case som: ScriptObjectMirror =>
           val values = som.asScala collect {
             case (name: String, details: AnyRef) =>
@@ -111,7 +113,7 @@ abstract class JavaScriptInvokingProjectOperation(
               p.setDefaultRef(details.asInstanceOf[ScriptObjectMirror].get("defaultRef").asInstanceOf[String])
               p.setDisplayable(details.asInstanceOf[ScriptObjectMirror].get("displayable").asInstanceOf[Boolean])
               p.setRequired(details.asInstanceOf[ScriptObjectMirror].get("required").asInstanceOf[Boolean])
-              p.setDefaultValue(details.asInstanceOf[ScriptObjectMirror].get("defaultValue").asInstanceOf[String])
+              p.setDefaultValue(instance.get(name).toString)
               p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
               p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
               details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {

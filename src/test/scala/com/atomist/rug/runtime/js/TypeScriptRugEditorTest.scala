@@ -145,8 +145,10 @@ object TypeScriptRugEditorTest {
        |abstract class ContentInfo extends ParametersSupport {
        |
        |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
-       |  content: string = null
+       |  content: string = "Anders"
        |
+       |   @parameter({description: "some num", displayName: "num", pattern: "[\\d]+", maxLength: 100})
+       |   num: number = 10
        |}
        |
        |@editor("A nice little editor")
@@ -377,7 +379,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "find parameter metadata" in {
     val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
       SimpleEditorTaggedAndMeta))
-    ed.parameters.size should be(1)
+    ed.parameters.size should be(2)
     val p = ed.parameters.head
     p.name should be("content")
     p.description should be("Content")
@@ -419,6 +421,19 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
     // This should not work beause it doesn't meet the content pattern
     an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Bjarn Stroustrup is God"))))
+  }
+
+  it should "handle default parameter values" in {
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+      SimpleEditorTaggedAndMeta))
+    ed.parameters.size should be(2)
+    val p = ed.parameters.head
+    p.name should be("content")
+    p.description should be("Content")
+    p.getDisplayName should be("content")
+    p.getPattern should be(ContentPattern)
+    p.getDefaultValue should be("Anders")
+    p.getMaxLength should be(100)
   }
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {

@@ -420,7 +420,13 @@ class ProjectMutableView(
                           params: Any): Unit = {
     val m: Map[String, Object] = params match {
       case bdp: BidirectionalParametersProxy =>
+        // The user is probably passing their operation's parameter object
+        // back up as an argument to the invoked editor
         bdp.allMemberValues
+      case som: ScriptObjectMirror =>
+        // The user has created a new JavaScript object, as in { foo: "bar" },
+        // to pass up as an argument to the invoked editor. Extract its properties
+        NashornUtils.extractProperties(som)
     }
     editWith(editorName, m)
   }

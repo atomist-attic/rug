@@ -34,6 +34,13 @@ class ServicesType(
   }
 }
 
+class ServiceTypeProvider extends TypeProvider(classOf[Service]) {
+
+  override def name: String = "service"
+
+  override def description: String = "Service"
+}
+
 class ServiceMutableView(override val parent: ServicesMutableView,
                          rugAs: ArtifactSource,
                          val service: Service,

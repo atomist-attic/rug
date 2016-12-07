@@ -2,7 +2,15 @@
 /**
    Returned when a PathExpression is evaluated
 */
-class Match<R,N> {
+interface Match<R,N> {
+
+  root(): R 
+
+  matches(): Array<N> 
+}
+
+
+class MatchImpl<R,N> implements Match<R,N> {
 
   private _root: R;
   private _matches: Array<N>;

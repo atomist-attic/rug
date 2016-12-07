@@ -25,11 +25,9 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
   * JavaScript-friendly facade to PathExpressionEngine.
   * Paralleled by a UserModel TypeScript interface.
   */
-class PathExpressionExposer {
+class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine) {
 
   val typeRegistry: TypeRegistry = DefaultTypeRegistry
-
-  val ee: ExpressionEngine = new PathExpressionEngine
 
   /**
     * Evaluate the given path expression

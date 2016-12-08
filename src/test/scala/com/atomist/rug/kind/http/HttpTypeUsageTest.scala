@@ -18,7 +18,7 @@ class HttpTypeUsageTest extends FlatSpec with Matchers {
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
 
-    override def userMessageRouter: UserMessageRouter = ConsoleUserMessageRouter
+    override def messageBuilder: MessageBuilder = ConsoleMessageBuilder
 
     override def services: Seq[Service] = Seq()
   }

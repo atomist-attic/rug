@@ -52,17 +52,6 @@ class ServiceMutableView(override val parent: ServicesMutableView,
     service.issueRouter.raiseIssue(service, Issue(name))
   }
 
-  @ExportFunction(readOnly = true, description = "Send a message to the service channel")
-  def messageChannel(msg: String): Unit = {
-    service.userMessageRouter.messageServiceChannel(service, s"$name: $msg")
-  }
-
-  // TODO this needs to be fixed
-//  @ExportFunction(readOnly = true, description = "Send a message to the current user")
-//  def messageUser(msg: String): Unit = {
-//    service.userMessageRouter.messageUser(service, "xxxx", s"$name: $msg")
-//  }
-
   def updateTo(newBackingObject: ArtifactSource, roo: RunOtherOperation): Unit = {
     super.updateTo(newBackingObject)
     service.update(newBackingObject, roo.name)

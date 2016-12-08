@@ -20,11 +20,20 @@ case class Message(sender: Message => Unit,
                    teamId: String,
                    node: TreeNode = null,
                    message: String = null,
+                   address: String = null,
                    action: String = null) {
 
   def withAction(s: String): Message = copy(action = s)
 
   def send(): Unit = sender(this)
+
+  /**
+    * Specify channel address. This can also be used
+    * for direct messages
+    * @param channelId channel to address to.
+    * @return updated message
+    */
+  def address(channelId: String): Message = copy(address = channelId)
 
 }
 

@@ -33,42 +33,12 @@ export interface ServiceSource {
 
   services(): Array<Service>
 
-  userMessageRouter(): UserMessageRouter
+  messageBuilder(): MessageBuilder
 
 }
 
-export interface UserMessageRouter {
 
-  /**
-    * Send a message to the channel associated with the current service,
-    * or `general` or some other fallback channel if the service is null
-    *
-    * @param service service we're concerned with. Null if this affects multiple services
-    * @param msg     message
-    */
- messageServiceChannel(service: Service, msg: string): void
-
-  /**
-    * Send a message to the current user, possibly associated with a current service.
-    *
-    * @param service    service we're concerned with. Null if this affects multiple services
-    * @param screenName screen name in chat
-    * @param msg        message
-    */
- messageUser(service: Service, screenName: string, msg: string): void
-
-  /**
-    * Send a message to the given channel
-    *
-    * @param channelName name of the channel
-    * @param msg         message text
-    */
- messageChannel(channelName: String, msg: string): void
-}
-
-
-
-interface MessageBuilder {
+export interface MessageBuilder {
 
  regarding(n: TreeNode, teamId: string): Message
 
@@ -77,9 +47,11 @@ interface MessageBuilder {
 }
 
 
-interface Message {
+export interface Message {
 
  withAction(s: string): Message
+
+ address(channelId: String): Message
 
  send(): void
 

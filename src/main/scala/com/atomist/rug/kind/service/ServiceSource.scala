@@ -11,12 +11,7 @@ trait ServiceSource {
 
   def services: Seq[Service]
 
-  /**
-    * Provides ability to message users
-    *
-    * @return communication object we can use to reach users
-    */
-  def userMessageRouter: UserMessageRouter
+  def messageBuilder: MessageBuilder
 
   def projectOperations: Seq[ProjectOperation] = Nil
 
@@ -31,15 +26,14 @@ trait ServiceSource {
   * @param reviewOutputPolicy policy for routing the output of ProjectReviewers. Should use issueRouter and userMessageRouter
   * @param issueRouter low-level support for raising issues. May raise an issue in an issue tracker or notify the user
   * via other means
-  * @param userMessageRouter low-level support for delivering notifications to users. Implementations might
-  * use a chat service, console output, email etc.
+  * @param messageBuilder enables us to send messages
   */
 case class Service(
                     project: ArtifactSource,
                     updatePersister: UpdatePersister,
                     reviewOutputPolicy: ReviewOutputPolicy = IssueRaisingReviewOutputPolicy,
                     issueRouter: IssueRouter = ConsoleIssueRouter,
-                    userMessageRouter: UserMessageRouter = ConsoleUserMessageRouter
+                    messageBuilder: MessageBuilder = ConsoleMessageBuilder
                   ) {
 
   /**

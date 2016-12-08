@@ -49,7 +49,7 @@ object JavaScriptOperationFinder {
     val jsc = new JavaScriptContext
 
     try {
-      val compiled = filterAndCompile(rugAs, atomistConfig, shouldSuppress)
+      val compiled = filterAndCompile(rugAs, atomistConfig, shouldSuppress, jsc)
 
       for (f <- compiled.allFiles) {
         jsc.eval(f)
@@ -75,8 +75,9 @@ object JavaScriptOperationFinder {
     */
   def filterAndCompile(rugAs: ArtifactSource,
                        atomistConfig: AtomistConfig,
-                       shouldSuppress: FileArtifact => Boolean = f => false): ArtifactSource = {
-    val tsc = new TypeScriptCompiler
+                       shouldSuppress: FileArtifact => Boolean = f => false,
+                       jsc: JavaScriptContext): ArtifactSource = {
+    val tsc = jsc.typeScriptContext.compiler()
     val excludePrefix = excludedTypeScriptPath(atomistConfig)
     val filtered = atomistConfig.atomistContent(rugAs)
       .filter(d => true,

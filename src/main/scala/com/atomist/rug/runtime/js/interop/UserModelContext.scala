@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
+import com.atomist.rug.kind.service.{ConsoleMessageBuilder, MessageBuilder}
+
 
 /**
   * Context exposed to user JavaScript.
@@ -18,6 +20,8 @@ trait AtomistFacade extends UserModelContext {
 
   def on(s: String, handler: Any): Unit
 
+  def messageBuilder: MessageBuilder
+
 }
 
 
@@ -30,4 +34,6 @@ object DefaultAtomistFacade extends AtomistFacade {
   override val registry = Map(
     "PathExpressionEngine" -> new PathExpressionExposer
   )
+
+  override def messageBuilder: MessageBuilder = ConsoleMessageBuilder
 }

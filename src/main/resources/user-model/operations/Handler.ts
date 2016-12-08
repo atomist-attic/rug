@@ -1,5 +1,5 @@
 
-import {Match,PathExpression} from "../tree/PathExpression"
+import {Match,PathExpression,TreeNode} from "../tree/PathExpression"
 import {Project,File,Service} from "../model/Core"
 
 /**
@@ -22,7 +22,7 @@ export interface ContextMatch<R,N> extends Match<R,N>, ServiceSource {
 
 // Also call unicode like  π if we want some of $ familiarity
 export interface Atomist extends CallbackRegistry {
-
+  messageBuilder(): MessageBuilder
 }
 
 
@@ -46,7 +46,7 @@ export interface UserMessageRouter {
     * @param service service we're concerned with. Null if this affects multiple services
     * @param msg     message
     */
- messageServiceChannel(service: Service, msg: String): void
+ messageServiceChannel(service: Service, msg: string): void
 
   /**
     * Send a message to the current user, possibly associated with a current service.
@@ -55,7 +55,7 @@ export interface UserMessageRouter {
     * @param screenName screen name in chat
     * @param msg        message
     */
- messageUser(service: Service, screenName: String, msg: String): void
+ messageUser(service: Service, screenName: string, msg: string): void
 
   /**
     * Send a message to the given channel
@@ -63,5 +63,24 @@ export interface UserMessageRouter {
     * @param channelName name of the channel
     * @param msg         message text
     */
- messageChannel(channelName: String, msg: String): void
+ messageChannel(channelName: String, msg: string): void
+}
+
+
+
+interface MessageBuilder {
+
+ regarding(n: TreeNode, teamId: string): Message
+
+ say(msg: string, teamId: string): Message
+
+}
+
+
+interface Message {
+
+ withAction(s: string): Message
+
+ send(): void
+
 }

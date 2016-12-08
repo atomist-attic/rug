@@ -3,6 +3,7 @@ package com.atomist.rug.runtime
 import java.util.Collections
 
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.kind.service.ConsoleMessageBuilder
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, PathExpressionExposer}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -26,6 +27,8 @@ class HandlerTest extends FlatSpec with Matchers {
         |declare var atomist: Atomist  // <= this is for the compiler only
         |
         |declare var print: any
+        |
+        |atomist.messageBuilder().say("This is a test", "xxx").send()
         |
         |atomist.on<Project,File>('TYPESCRIPT/src/main/**.java', m => {
         |   //print(`in handler with $${m}`)
@@ -61,4 +64,6 @@ object TestAtomistFacade extends AtomistFacade {
   override val registry = Map(
     "PathExpressionEngine" -> new PathExpressionExposer
   )
+
+  override def messageBuilder = ConsoleMessageBuilder
 }

@@ -53,7 +53,7 @@ class ProjectMutableView(
   private lazy val mergeTool =
     new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)
 
-  override def nodeType: String = ArtifactContainerMutableView.FileAlias
+  override def nodeType: String = "project"
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "project" =>

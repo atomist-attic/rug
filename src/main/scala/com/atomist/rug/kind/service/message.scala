@@ -7,10 +7,10 @@ class MessageBuilder(sender: Message => Unit) {
   def regarding(n: TreeNode, teamId: String): Message =
     Message(send, teamId, node = n)
 
-  def say(msg: String, teamId: String): Message =
-    Message(send, teamId, message = msg)
+  def say(msg: String, address: String, teamId: String): Message =
+    Message(send, teamId, message = msg).address(address)
 
-  def send(message: Message): Unit = sender(message)
+  private def send(message: Message): Unit = sender(message)
 
 }
 

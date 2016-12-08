@@ -42,7 +42,7 @@ export interface MessageBuilder {
 
  regarding(n: TreeNode, teamId: string): Message
 
- say(msg: string, teamId: string): Message
+ say(msg: string, address: string, teamId: string): Message
 
 }
 
@@ -51,7 +51,7 @@ export interface Message {
 
  withAction(s: string): Message
 
- address(channelId: String): Message
+ address(channelId: string): Message
 
  send(): void
 

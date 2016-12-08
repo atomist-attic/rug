@@ -28,7 +28,7 @@ class HandlerTest extends FlatSpec with Matchers {
         |
         |declare var print: any
         |
-        |atomist.messageBuilder().say("This is a test", "xxx").send()
+        |atomist.messageBuilder().say("This is a test", "channel", "xxx").send()
         |
         |atomist.on<Project,File>('TYPESCRIPT/src/main/**.java', m => {
         |   //print(`in handler with $${m}`)

@@ -58,7 +58,7 @@ export interface Message {
  */
  say(msg: string): Message
 
- withAction(s: string): Message
+ withAction(a: Action): Message
 
  address(channelId: string): Message
 

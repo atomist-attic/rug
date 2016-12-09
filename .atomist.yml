@@ -1,0 +1,13 @@
+---
+kind: "operation"
+client: "rug-cli 0.16.4-SNAPSHOT"
+executor:
+  name: "atomist-rugs.travis-editors.UpdateTravisMavenBuild"
+  group: "atomist-rugs"
+  artifact: "travis-editors"
+  version: "0.3.0"
+  origin:
+    repo: "atomist-rugs/travis-editors.git"
+    branch: "update-maven"
+    sha: "e104acb*"
+

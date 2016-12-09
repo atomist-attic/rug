@@ -16,10 +16,17 @@ $mvn install -Dmaven.javadoc.skip=true
 echo "Branch is ${TRAVIS_BRANCH}"
 
 [[ $TRAVIS_PULL_REQUEST == false ]] || exit 0
-[[ $project_version ]] || exit 0
+
 if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    if [[ ! $project_version ]]; then
+        echo "Unable to determine version"
+        exit 1
+    fi
     echo "Version is $project_version"
-    $mvn deploy -DskipTests
+    if [[ $TRAVIS_BRANCH == master ]]; then
+        mvn_deploy_args=-DaltDeploymentRepository=public-atomist-dev::default::https://atomist.jfrog.io/atomist/libs-dev-local
+    fi
+    $mvn deploy -DskipTests $mvn_deploy_args
     git config --global user.email "travis-ci@atomist.com"
     git config --global user.name "Travis CI"
     git_tag=$project_version+travis$TRAVIS_BUILD_NUMBER

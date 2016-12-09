@@ -4,14 +4,16 @@ import java.util.Collections
 
 import com.atomist.tree.TreeNode
 
-class SimpleMessageBuilder(val teamId: String, sender: Message => Unit)
+class SimpleMessageBuilder(val teamId: String,
+                           sender: Message => Unit,
+                           val actionRegistry: ActionRegistry)
   extends MessageBuilder {
 
   def regarding(n: TreeNode): Message =
-    ImmutableMessage(send, teamId, node = n)
+    ImmutableMessage(send, actionRegistry, teamId, node = n)
 
   def say(msg: String): Message =
-    ImmutableMessage(send, teamId, message = msg)
+    ImmutableMessage(send, actionRegistry, teamId, message = msg)
 
   private def send(message: Message): Unit = sender(message)
 
@@ -20,6 +22,7 @@ class SimpleMessageBuilder(val teamId: String, sender: Message => Unit)
 
 case class ImmutableMessage(
                              sender: Message => Unit,
+                             actionRegistry: ActionRegistry,
                              teamId: String,
                              node: TreeNode = null,
                              message: String = null,
@@ -52,7 +55,14 @@ case class ImmutableMessage(
 
 }
 
-class ConsoleMessageBuilder(teamId: String) extends SimpleMessageBuilder(
+object EmptyActionRegistry extends ActionRegistry {
+
+  override def findByName(name: String): Action = null
+}
+
+class ConsoleMessageBuilder(teamId: String, actionRegistry: ActionRegistry)
+  extends SimpleMessageBuilder(
   teamId,
-  m => println(m)
+  m => println(m),
+  actionRegistry
 )

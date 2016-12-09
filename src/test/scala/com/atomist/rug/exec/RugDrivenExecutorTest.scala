@@ -201,7 +201,8 @@ class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource
 
   val updatePersister = new FakeUpdatePersister
 
-  override def messageBuilder: MessageBuilder = new ConsoleMessageBuilder("TEAM_ID")
+  override def messageBuilder: MessageBuilder =
+    new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)
 
   var issues = ListBuffer.empty[Issue]
 

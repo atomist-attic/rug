@@ -3,7 +3,7 @@ package com.atomist.rug.runtime
 import java.util.Collections
 
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.rug.kind.service.ConsoleMessageBuilder
+import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, PathExpressionExposer}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -65,5 +65,5 @@ object TestAtomistFacade extends AtomistFacade {
     "PathExpressionEngine" -> new PathExpressionExposer
   )
 
-  override def messageBuilder = new ConsoleMessageBuilder("TEAM_ID")
+  override def messageBuilder = new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)
 }

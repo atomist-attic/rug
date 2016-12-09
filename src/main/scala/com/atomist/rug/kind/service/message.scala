@@ -32,6 +32,8 @@ trait MessageBuilder {
 
 trait Message {
 
+  def actionRegistry: ActionRegistry
+
   def teamId: String
 
   def node: TreeNode
@@ -58,6 +60,18 @@ trait Message {
   def address(channelId: String): Message
 
   def on(channelId: String): Message
+
+}
+
+
+trait ActionRegistry {
+
+  /**
+    * Return the named Action or null if not found
+    * @param name
+    * @return
+    */
+  def findByName(name: String): Action
 
 }
 

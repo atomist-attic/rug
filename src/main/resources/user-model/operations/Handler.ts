@@ -50,8 +50,14 @@ export interface MessageBuilder {
 
 }
 
+export interface ActionRegistry {
+
+  findByName(name: String): Action
+}
 
 export interface Message {
+
+  actionRegistry(): ActionRegistry
 
 /**
  * Set the message

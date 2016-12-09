@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
-import com.atomist.rug.kind.service.{ConsoleMessageBuilder, MessageBuilder}
+import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry, MessageBuilder}
 
 
 /**
@@ -35,5 +35,6 @@ object DefaultAtomistFacade extends AtomistFacade {
     "PathExpressionEngine" -> new PathExpressionExposer
   )
 
-  override def messageBuilder: MessageBuilder = new ConsoleMessageBuilder("TEAM_ID")
+  override def messageBuilder: MessageBuilder =
+    new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)
 }

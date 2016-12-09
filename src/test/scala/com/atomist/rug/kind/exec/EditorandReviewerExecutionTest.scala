@@ -21,7 +21,8 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
 
-    override def messageBuilder: MessageBuilder = new ConsoleMessageBuilder("TEAM_ID")
+    override def messageBuilder: MessageBuilder =
+      new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)
 
     override def services: Seq[Service] =
       Seq(emptyProject, littleProject, bigProject).map(as =>

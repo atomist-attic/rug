@@ -38,8 +38,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when name = "Dog.java"
@@ -55,8 +55,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when true
@@ -72,8 +72,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when true
@@ -91,8 +91,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when true
@@ -111,8 +111,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         |do
@@ -127,8 +127,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when true
@@ -146,7 +146,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description 'A very short tempered editor'
         |editor Caspar
         |
-        |param message: .*
+        |param message: ^.*$
         |
         |let text = "// I'm talkin' about ethics"
         |
@@ -164,7 +164,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description 'A very short tempered editor'
         |editor Caspar
         |
-        |param message: .*
+        |param message: ^.*$
         |
         |let text = { "// I'm talkin' about ethics" }
         |let random = { "" + message }
@@ -259,8 +259,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |@description "That's over the line!"
          |editor Caspar
          |
-         |param text: .*
-         |param message: .*
+         |param text: ^.*$$
+         |param message: ^.*$$
          |
          |with file f
          | when { /.*\\.java$$/.test(f.name())}
@@ -312,8 +312,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when isJava

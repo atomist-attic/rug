@@ -29,6 +29,7 @@ class ParserCombinatorRugParser(
     })
 
   private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
+    case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter pattern must contain anchors: $s")
     case p: String => RegexParameterPattern(p)
     case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
   }

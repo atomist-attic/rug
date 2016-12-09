@@ -23,10 +23,10 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |editor Renamer
       |
       |@description "Name of module we're renaming"
-      |param old_name: [A-Z][\w]+
+      |param old_name: ^[A-Z][\w]+$
       |
       |@description "New name for the module"
-      |param new_name: [A-Z][\w]+
+      |param new_name: ^[A-Z][\w]+$
       |
       |with elm.module when name = old_name
       | do rename new_name
@@ -40,7 +40,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val imp1 = if (param)
       """
         |@parameter({description: "Name of module we're renaming",
-        |    pattern: "[A-Z][\w]+", maxLength: 100, required: true
+        |    pattern: "^[A-Z][\w]+$", maxLength: 100, required: true
         |  })
       """.stripMargin
     else ""
@@ -48,7 +48,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val imp2 = if (param)
       """
         |@parameter({description: "New name for the module",
-        |    pattern: "[A-Z][\w]+", maxLength: 100
+        |    pattern: "^[A-Z][\w]+$", maxLength: 100
         |  })
       """.stripMargin
     else ""
@@ -125,10 +125,10 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |editor Renamer
       |
       |@description "Name of module we're renaming"
-      |param old_name: [A-Z][\w]+
+      |param old_name: ^[A-Z][\w]+$
       |
       |@description "New name for the module"
-      |param new_name: [A-Z][\w]+
+      |param new_name: ^[A-Z][\w]+$
       |
       | # TODO note hard coding here
       |let em = $(/->elm.module[name='Todo'])
@@ -147,10 +147,10 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |editor Renamer
       |
       |@description "Name of module we're renaming"
-      |param old_name: [A-Z][\w]+
+      |param old_name: ^[A-Z][\w]+$
       |
       |@description "New name for the module"
-      |param new_name: [A-Z][\w]+
+      |param new_name: ^[A-Z][\w]+$
       |
       |with file
       | with elm.module when name = old_name
@@ -167,10 +167,10 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |editor Renamer
       |
       |@description "Name of module we're renaming"
-      |param old_name: [A-Z][\w]+
+      |param old_name: ^[A-Z][\w]+$
       |
       |@description "New name for the module"
-      |param new_name: [A-Z][\w]+
+      |param new_name: ^[A-Z][\w]+$
       |
       |with elm.module e
       |when { e.name() == old_name}
@@ -424,8 +424,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val fieldType = "String"
     val prog =
       s"""editor AddToRecordValue
-          |param initial_value:.*
-          |param field_type:.*
+          |param initial_value:^.*$$
+          |param field_type:^.*$$
           |
          |let initial_value_careful = {
           |  var quoted = /^".*"$$/
@@ -653,7 +653,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   it should "replace the body of this function" in {
     val prog =
       """editor UpgradeMainFunction
-        |  param module: .*
+        |  param module: ^.*$
         |
         |  with file f begin
         |    with elm.module when name = module
@@ -702,8 +702,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   it should "let me switch on the type of a function" in {
     val prog =
       """editor AddCase
-        |param new_pattern: .*
-        |param body: .*
+        |param new_pattern: ^.*$
+        |param body: ^.*$
         |
         |with file
         |  with elm.module when name = "Main"

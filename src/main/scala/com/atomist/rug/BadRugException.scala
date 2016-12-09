@@ -57,3 +57,6 @@ class UnusedUsesException(op: String, msg: String, val unusedUses: Seq[String])
 
 class InvalidRugUsesException(op: String, msg: String, val uses: String)
   extends RugReferenceException(op, msg, null)
+
+class InvalidRugParameterPatternException(msg: String)
+   extends BadRugException(msg)

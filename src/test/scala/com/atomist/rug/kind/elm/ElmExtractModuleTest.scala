@@ -12,7 +12,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
       """editor ExtractAllIntoModule
         |
         |@description "Name of the module to extract into"
-        |param new_module_name: [A-Z][\w]*
+        |param new_module_name: ^[A-Z][\w]*$
         |
         |let new_file_name={ new_module_name + ".elm" }
         |
@@ -29,8 +29,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |RemoveFunction module=new_module_name, function="main"
         |
         |editor RemoveFunction
-        |  param module: .*
-        |  param function: .*
+        |  param module: ^.*$
+        |  param function: ^.*$
         |
         |  with elm.module when name = module
         |    do removeFunction function
@@ -46,11 +46,10 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
     content.contains(expectedHeader) should be(true)
     content.contains("main") should be(false)
   }
-
   it should "replace the init function" in {
     val prog =
       """editor ReplaceInit
-        |param new_module_name: .*
+        |param new_module_name: ^[\s\S]*$
         |
         |let lower_new_module={ new_module_name.charAt(0).toLowerCase() + new_module_name.slice(1) }
         |let new_init={
@@ -68,8 +67,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |
         |editor ReplaceFunctionBody
         |
-        |param function: .*
-        |param new_body: .*
+        |param function: ^.*$
+        |param new_body: ^[\s\S]*$
         |# gut all the functions in Main and make them call the new module
         |  with elm.module when name = "Main"
         |    with function when name = function
@@ -91,7 +90,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
 
     val prog =
       """editor ReplaceModel
-        |param new_module_name: .*
+        |param new_module_name: ^.*$
         |
         |let lower_new_module={ new_module_name.charAt(0).toLowerCase() + new_module_name.slice(1) }
         |let new_body={
@@ -120,7 +119,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
 
     val prog =
       """editor ReplaceSubscriptions
-        |param new_module_name: .*
+        |param new_module_name: ^.*$
         |
         |let lower_new_module={ new_module_name.charAt(0).toLowerCase() + new_module_name.slice(1) }
         |let new_body={
@@ -140,7 +139,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
 
     val prog =
       """editor ReplaceMsg
-        |param new_module_name: .*
+        |param new_module_name: ^.*$
         |
         |let new_body={
         |return ("  Noop" + "\n" +

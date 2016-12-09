@@ -40,7 +40,7 @@ object CommonRugParserTest {
        |@description '100% JavaScript free'
        |editor Triplet
        |
-       |param what: .*
+       |param what: ^.*$$
        |
        |with file f
        | when name = "thing"
@@ -120,7 +120,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |
         |editor Other
         |
-        |param num: \d+
+        |param num: ^\d+$
         |
         |with file f when name = "foooo" do setPath "doesn't matter"
       """.stripMargin
@@ -140,7 +140,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description "This is a second editor"
         |editor Other
         |
-        |param num: \d+
+        |param num: ^\d+$
         |
         |with project p
         |do
@@ -185,7 +185,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param num: \d+
+        |param num: ^\d+$
         |
         |{
         | print(project)
@@ -572,7 +572,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |param Bar: .*
+         |param Bar: ^.*$$
          |
          |with file f
          | when isJava;
@@ -667,7 +667,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |editor Triplet
          |
          |@generator
-         |param foo: .*
+         |param foo: ^.*$$
          |
          |with file f
          | when isJava

@@ -411,10 +411,10 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """
         |editor UpdateReadme
         |
-        |param name: .*
+        |param name: ^.*$
         |
         |@default 'Boy Wizard'
-        |param description: .*
+        |param description: ^.*$
         |
         |with file f when { f.name().contains(".md") } begin
         |	do replace "{{name}}" name

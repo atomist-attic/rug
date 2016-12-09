@@ -5,9 +5,9 @@ import javax.script.ScriptContext
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
+import com.atomist.rug.InvalidRugParameterPatternException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
 import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, SafeCommittingProxy}
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
@@ -96,55 +96,61 @@ abstract class JavaScriptInvokingProjectOperation(
   }
 
   protected def readParametersFromMetadata: Seq[Parameter] = {
-    Try {
-      val vars = jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
-      val pclass = jsc.engine.invokeFunction("get_metadata", jsVar, "parameter-class").asInstanceOf[String]
-      val pvar = vars.get(pclass).asInstanceOf[ScriptObjectMirror]
-      val instance = jsc.engine.eval(s"""new $pclass()""").asInstanceOf[ScriptObjectMirror]
-      jsc.engine.invokeFunction("get_metadata", pvar, "params") match {
-        case som: ScriptObjectMirror =>
-          val values = som.asScala collect {
-            case (name: String, details: AnyRef) =>
-              // TODO - can we do some fancy data binding here? map keys match setters (mostly)
-              val p = Parameter(name, details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String])
-              p.setDisplayName(details.asInstanceOf[ScriptObjectMirror].get("displayName").asInstanceOf[String])
-              p.setMaxLength(details.asInstanceOf[ScriptObjectMirror].get("maxLength").asInstanceOf[Int])
-              p.setMinLength(details.asInstanceOf[ScriptObjectMirror].get("minLength").asInstanceOf[Int])
-              p.setDefaultRef(details.asInstanceOf[ScriptObjectMirror].get("defaultRef").asInstanceOf[String])
-              p.setDisplayable(details.asInstanceOf[ScriptObjectMirror].get("displayable").asInstanceOf[Boolean])
-              p.setRequired(details.asInstanceOf[ScriptObjectMirror].get("required").asInstanceOf[Boolean])
-              val pvalue = instance.get(name)
-              if (pvalue != null){
-                p.setDefaultValue((pvalue.toString))
-              }
+    val vars = jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
+    val pclass = jsc.engine.invokeFunction("get_metadata", jsVar, "parameter-class").asInstanceOf[String]
+    if(pclass == null){
+      return Nil
+    }
+    val pvar = vars.get(pclass).asInstanceOf[ScriptObjectMirror]
+    if(pvar == null){
+      return Nil
+    }
+    val instance = jsc.engine.eval(s"""new $pclass()""").asInstanceOf[ScriptObjectMirror]
+    jsc.engine.invokeFunction("get_metadata", pvar, "params") match {
+      case som: ScriptObjectMirror =>
+        val values = som.asScala collect {
+          case (name: String, details: AnyRef) =>
+            // TODO - can we do some fancy data binding here? map keys match setters (mostly)
+            val p = Parameter(name, details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String])
+            p.setDisplayName(details.asInstanceOf[ScriptObjectMirror].get("displayName").asInstanceOf[String])
+            p.setMaxLength(details.asInstanceOf[ScriptObjectMirror].get("maxLength").asInstanceOf[Int])
+            p.setMinLength(details.asInstanceOf[ScriptObjectMirror].get("minLength").asInstanceOf[Int])
+            p.setDefaultRef(details.asInstanceOf[ScriptObjectMirror].get("defaultRef").asInstanceOf[String])
+            p.setDisplayable(details.asInstanceOf[ScriptObjectMirror].get("displayable").asInstanceOf[Boolean])
+            p.setRequired(details.asInstanceOf[ScriptObjectMirror].get("required").asInstanceOf[Boolean])
+            val pvalue = instance.get(name)
+            if (pvalue != null) {
+              p.setDefaultValue((pvalue.toString))
+            }
 
-              p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
-              p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
-              details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {
-                case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
-                  case Left(sourceOfValidIdentifiers) =>
-                    throw new RugRuntimeException(null,s"Unable to recognized predefined validation pattern: $s")
-                  case Right(pat) => p.setPattern(pat)
-                }
-                case s: String => p.setPattern(s)
+            p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
+            p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
+            details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {
+              case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
+                case Left(sourceOfValidIdentifiers) =>
+                  throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
+                case Right(pat) => p.setPattern(pat)
               }
-              // TODO it's unclear what allowedValues is for given an AllowedValue is just a name/display_name mapping
-              // p.setAllowedValues()
-              p
-          }
-          values.toSeq
-        case _ => Nil
-      }
-    }.getOrElse(Nil)
+              case s: String if (!s.startsWith("^") || !s.endsWith("$")) => throw new InvalidRugParameterPatternException(s"Parameter $name does not contain anchors: $s")
+              case s: String => p.setPattern(s)
+            }
+            // TODO it's unclear what allowedValues is for given an AllowedValue is just a name/display_name mapping
+            // p.setAllowedValues()
+            p
+        }
+        values.toSeq
+      case _ => Nil
+    }
   }
 
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
+    *
     * @param pmv project to wrap
     * @return proxy TypeScript callers can use
     */
   protected def wrapProject(pmv: ProjectMutableView): SafeCommittingProxy = {
-    new SafeCommittingProxy(projectType ,pmv)
+    new SafeCommittingProxy(projectType, pmv)
   }
 
 }

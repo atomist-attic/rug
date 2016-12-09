@@ -87,7 +87,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor AddFlaskRoute
         |
-        |param new_route: .*
+        |param new_route: ^[\s\S]*$
         |
         |with python when filename = "hello.py"
         | do append new_route

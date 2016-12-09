@@ -121,7 +121,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
   it should "parse single line script" in {
     val prog =
-      """editor AddFileAndContent param filename: ".*" param content: ".*" with project p do addFile filename content """.stripMargin
+      """editor AddFileAndContent param filename: "^.*$" param content: "^.*$" with project p do addFile filename content """.stripMargin
     ri.parse(prog)
   }
 
@@ -131,7 +131,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'No JS'
         |editor RemoveEJB
         |
-        |param name: ...
+        |param name: ^...$
         |
         |with file f
         | when isJava;
@@ -144,7 +144,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getPattern should be("...")
+    p.getPattern should be("^...$")
     p.isRequired should be(true)
     p.isDisplayable should be(true)
   }
@@ -164,7 +164,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@validInput '$validInput'
          |@displayName '$displayName'
          |@hide
-         |param name: .*
+         |param name: ^.*$$
          |
          |with file f
          | when isJava;
@@ -177,7 +177,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getPattern should be(".*")
+    p.getPattern should be("^.*$")
     p.getDescription should be(paramDesc)
     p.getDefaultValue should be(defaultVal)
     p.getValidInputDescription should be(validInput)
@@ -192,7 +192,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description "Death to EJBs"
         |editor RemoveEJB
         |
-        |param name: .*
+        |param name: ^.*$
         |
         |with file f
         | when isJava;
@@ -205,7 +205,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getPattern should be(".*")
+    p.getPattern should be("^.*$")
     p.isRequired should be(true)
   }
 
@@ -250,7 +250,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description "Something"
          |editor RemoveEJB
          |
-         |@optional param name: .*
+         |@optional param name: ^.*$$
          |
          |with file f
          | when isJava
@@ -265,7 +265,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getPattern should be(".*")
+    p.getPattern should be("^.*$")
     p.isRequired should be(false)
     actions
   }
@@ -299,7 +299,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description 'Demonstrate computation'
          |editor RemoveEJB
          |
-         |@optional param name: .*
+         |@optional param name: ^.*$$
          |
          |let ${infers.mkString("\n")}
          |
@@ -414,10 +414,10 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |editor Renamer
         |
         |@description "Name of module we're renaming"
-        |param old_name: [A-Z][\w]+
+        |param old_name: ^[A-Z][\w]+$
         |
         |@description "New name for the module"
-        |param new_name: [A-Z][\w]+
+        |param new_name: ^[A-Z][\w]+$
         |
         |with elmModule e
         |when { e.name() == old_name}

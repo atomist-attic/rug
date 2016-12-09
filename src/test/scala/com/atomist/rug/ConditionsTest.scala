@@ -205,7 +205,7 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |reviewer NeverGripe
         |
-        |param whatever: .*
+        |param whatever: ^.*$
         |
         |with file f
         |when "a" = "b"

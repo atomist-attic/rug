@@ -116,8 +116,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |let regexp = ":[a-f0-9]{7}"
         |
@@ -135,8 +135,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |let regexp = ":[a-f0-9]{7}"
         |
@@ -155,8 +155,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |let regexp = ":[a-f0-9]{7}"
         |
@@ -174,8 +174,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |with file f
         | when { f.name().indexOf("80-" + service + "-deployment") >= 0 }
@@ -195,8 +195,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |with project p;
         |do
@@ -211,8 +211,8 @@ class K8Test extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |param service: [\w.\-_]+
-        |param new_sha: [a-f0-9]{7}
+        |param service: ^[\w.\-_]+$
+        |param new_sha: ^[a-f0-9]{7}$
         |
         |with file f
         | when { f.name().indexOf("80-" + service + "-deployment") >= 0 }

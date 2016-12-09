@@ -28,9 +28,9 @@ class HandlerTest extends FlatSpec with Matchers {
         |
         |declare var print: any
         |
-        |atomist.messageBuilder().say("This is a test", "channel", "xxx").send()
+        |atomist.messageBuilder().say("This is a test").on("channel").send()
         |
-        |atomist.on<Project,File>('TYPESCRIPT/src/main/**.java', m => {
+        |atomist.on<Project,File>('project/src/main/**.java', m => {
         |   //print(`in handler with $${m}`)
         |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
         |})
@@ -65,5 +65,5 @@ object TestAtomistFacade extends AtomistFacade {
     "PathExpressionEngine" -> new PathExpressionExposer
   )
 
-  override def messageBuilder = ConsoleMessageBuilder
+  override def messageBuilder = new ConsoleMessageBuilder("TEAM_ID")
 }

@@ -35,5 +35,5 @@ object DefaultAtomistFacade extends AtomistFacade {
     "PathExpressionEngine" -> new PathExpressionExposer
   )
 
-  override def messageBuilder: MessageBuilder = ConsoleMessageBuilder
+  override def messageBuilder: MessageBuilder = new ConsoleMessageBuilder("TEAM_ID")
 }

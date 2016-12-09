@@ -21,13 +21,14 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
 
-    override def messageBuilder: MessageBuilder = ConsoleMessageBuilder
+    override def messageBuilder: MessageBuilder = new ConsoleMessageBuilder("TEAM_ID")
 
     override def services: Seq[Service] =
       Seq(emptyProject, littleProject, bigProject).map(as =>
         Service(as, new UpdatePersister {
           override def update(service: Service, newContent: ArtifactSource, updateIdentifier: String): Unit = latest += (service -> newContent)
-        }, reviewOutput.getOrElse(IssueRaisingReviewOutputPolicy)))
+        }, reviewOutput.getOrElse(IssueRaisingReviewOutputPolicy),
+          messageBuilder = messageBuilder))
   }
 
   class BufferingReviewOutputPolicy extends ReviewOutputPolicy {

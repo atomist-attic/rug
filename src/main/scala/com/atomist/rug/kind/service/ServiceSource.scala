@@ -33,7 +33,7 @@ case class Service(
                     updatePersister: UpdatePersister,
                     reviewOutputPolicy: ReviewOutputPolicy = IssueRaisingReviewOutputPolicy,
                     issueRouter: IssueRouter = ConsoleIssueRouter,
-                    messageBuilder: MessageBuilder = ConsoleMessageBuilder
+                    messageBuilder: MessageBuilder
                   ) {
 
   /**

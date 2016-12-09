@@ -38,20 +38,34 @@ export interface ServiceSource {
 }
 
 
+/**
+ * Enables us to create new messages that will be routed
+ * appropriately by the infrastructure
+ */
 export interface MessageBuilder {
 
- regarding(n: TreeNode, teamId: string): Message
+ regarding(n: TreeNode): Message
 
- say(msg: string, address: string, teamId: string): Message
+ say(msg: string): Message
 
 }
 
 
 export interface Message {
 
+/**
+ * Set the message
+ */
+ say(msg: string): Message
+
  withAction(s: string): Message
 
  address(channelId: string): Message
+
+/**
+ * Set the address (channel)
+ */
+ on(channelId: string): Message
 
  send(): void
 

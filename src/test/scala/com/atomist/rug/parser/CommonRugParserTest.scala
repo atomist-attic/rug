@@ -752,11 +752,26 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     updateWith(prog)
   }
 
+  it should "parse Python style comment lines" in {
+    val prog =
+      """
+        |# my comment
+        |editor PythonCommentsAreNice
+        |
+        |with file f
+        | when name = "thing" # oh look another comment
+        |
+        |do
+        | append "foobar"
+      """.stripMargin
+    ri.parse(prog)
+  }
+
   private def updateWith(prog: String): Unit = {
     val filename = "test.txt"
     val as = new SimpleFileBasedArtifactSource("name", Seq(StringFileArtifact(filename, "some content")))
     val r = doModification(prog, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Seq.empty))
     val f = r.findFile(".gitignore").get
-    f.content.contains("elm-stuff\ntarget") should be(true)
+    f.content.contains(s"elm-stuff${System.lineSeparator()}target") should be(true)
   }
 }

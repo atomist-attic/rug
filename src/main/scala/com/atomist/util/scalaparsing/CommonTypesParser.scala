@@ -25,7 +25,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
   val CComment = """/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/"""
 
-  val HashLineComment = """\#.*\n"""
+  val HashLineComment = """\#.*[\n|\r\n]"""
 
   /** White space honoring C style block comments and Python style # line comments */
   val CBlockCommentAndHashLineCommentWhitespace = ("""(\s|""" + HashLineComment + "|" + CComment + ")+").r

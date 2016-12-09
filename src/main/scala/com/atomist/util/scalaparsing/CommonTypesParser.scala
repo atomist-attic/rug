@@ -93,7 +93,9 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
             }
           case _ =>
             state match {
-              case SeenQuote => state = NotSeenQuote
+              case SeenQuote =>
+                state = NotSeenQuote
+                depth = 3
               case _ =>
             }
         }

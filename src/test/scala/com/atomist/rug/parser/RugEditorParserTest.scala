@@ -97,7 +97,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   }
 
   it should "parse triple quoted string" in {
-    val tripleStringContent = "Careful, there's a beverage here"
+    val tripleStringContent = "Careful man, there's a beverage here"
     val tripleString = """"""""" + tripleStringContent + """""""""
     val prog =
       s"""
@@ -108,7 +108,58 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          | when isJava;
          |
          |do
-         | append $tripleString;
+         | append $tripleString
+      """.stripMargin
+
+    val actions = ri.parse(prog).head
+
+    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size should be(1)
+    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.head match {
+      case s: WrappedFunctionArg => s.te.asInstanceOf[Literal[String]].value should equal(tripleStringContent)
+    }
+  }
+
+  it should "allow single double-quotes in a triple quoted string" in {
+    val tripleStringContent = """When manhandled into the car, the Dude exclaimed, "Careful man, there's a beverage here!", and rightly so."""
+    val tripleString = """"""""" + tripleStringContent + """""""""
+    val prog =
+      s"""
+         |@description '100% JavaScript free'
+         |editor TripleDouble
+         |
+         |with file f
+         | when isJava;
+         |
+         |do
+         | append $tripleString
+      """.stripMargin
+
+    val actions = ri.parse(prog).head
+
+    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size should be(1)
+    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.head match {
+      case s: WrappedFunctionArg => s.te.asInstanceOf[Literal[String]].value should equal(tripleStringContent)
+    }
+  }
+
+  it should "allow newlines in a triple quoted string" in {
+    val tripleStringContent =
+      """Sometimes you eat the bear and
+        |(aside) much obliged
+        |sometimes the bear, well,
+        |he eats you.
+        |""".stripMargin
+    val tripleString = """"""""" + tripleStringContent + """""""""
+    val prog =
+      s"""
+         |@description '100% JavaScript free'
+         |editor TripleNewline
+         |
+         |with file f
+         | when isJava;
+         |
+         |do
+         | append $tripleString
       """.stripMargin
 
     val actions = ri.parse(prog).head

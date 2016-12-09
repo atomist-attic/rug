@@ -1,33 +1,52 @@
 package com.atomist.rug.kind.service
 
+import com.atomist.param.ParameterValue
 import com.atomist.tree.TreeNode
 
-class MessageBuilder(val teamId: String, sender: Message => Unit) {
 
-  def regarding(n: TreeNode): Message =
-    Message(send, teamId, node = n)
+/**
+  * Interface for sending messages on behalf of a teah
+  */
+trait MessageBuilder {
 
-  def say(msg: String): Message =
-    Message(send, teamId, message = msg)
+  def teamId: String
 
-  private def send(message: Message): Unit = sender(message)
+  /**
+    * Construct a message regarding the given tree node.
+    * @param n node message concerns
+    * @return new message
+    */
+  def regarding(n: TreeNode): Message
+
+  /**
+    * Send a message without an attached tree node.
+    * Such messages should normally be addressed to a channel
+    * by using the "on" method on Message.
+    * @param msg
+    * @return
+    */
+  def say(msg: String): Message
 
 }
 
-case class Message(sender: Message => Unit,
-                   teamId: String,
-                   node: TreeNode = null,
-                   message: String = null,
-                   address: String = null,
-                   action: String = null) {
 
-  // We use null for interop and JSON
+trait Message {
 
-  def say(msg: String): Message = copy(message = message)
+  def teamId: String
 
-  def withAction(s: String): Message = copy(action = s)
+  def node: TreeNode
 
-  def send(): Unit = sender(this)
+  def message: String
+
+  def address: String
+
+  def actions: java.util.List[Action]
+
+  def say(msg: String): Message
+
+  def withAction(a: Action): Message
+
+  def send(): Unit
 
   /**
     * Specify channel address. This can also be used
@@ -36,13 +55,18 @@ case class Message(sender: Message => Unit,
     * @param channelId channel to address to.
     * @return updated message
     */
-  def address(channelId: String): Message = copy(address = channelId)
+  def address(channelId: String): Message
 
-  def on(channelId: String): Message = address(channelId)
+  def on(channelId: String): Message
 
 }
 
-class ConsoleMessageBuilder(teamId: String) extends MessageBuilder(
-  teamId,
-  m => println(m)
-)
+
+case class Action(title: String,
+                  callback: Callback,
+                  parameters: java.util.List[ParameterValue])
+
+
+case class Callback(callbackType: String, rug: String)
+
+case class Rug(group: String, artifact: String, name: String, version: String)

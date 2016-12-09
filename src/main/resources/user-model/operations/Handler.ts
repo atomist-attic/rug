@@ -70,3 +70,34 @@ export interface Message {
  send(): void
 
 }
+
+
+export interface Action {
+
+  title(): string
+  callback(): Callback
+  parameters(): Array<ParameterValue>
+  
+}
+
+export interface ParameterValue {
+
+  name: string
+  value: any
+}
+
+export interface Callback {
+
+  callbackType(): string 
+  rug(): Rug
+
+}
+
+export interface Rug {
+  
+  group: string
+  artifact: string
+  name: string
+  version: string
+
+}

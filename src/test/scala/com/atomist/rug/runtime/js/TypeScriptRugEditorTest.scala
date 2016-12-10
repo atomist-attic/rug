@@ -345,6 +345,10 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
 
+  it should "run simple editor twice and see no change the second time" in {
+    invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithoutParameters))
+  }
+
   it should "run simple editor compiled from TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))
   }
@@ -463,6 +467,29 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         sm.result.totalFileCount should be(2)
         sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+    }
+    jsed
+  }
+
+  private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+    val as = SimpleFileBasedArtifactSource(tsf)
+    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    jsed.name should be("Simple")
+    jsed.setContext(others)
+
+    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
+
+    val p = SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))
+    jsed.modify(target, p) match {
+      case sm: SuccessfulModification =>
+        sm.result.totalFileCount should be(2)
+        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+
+        jsed.modify(sm.result, p) match {
+          case _: NoModificationNeeded => //yay
+          case sm: SuccessfulModification =>
+              fail("That should not have reported modification")
+        }
     }
     jsed
   }

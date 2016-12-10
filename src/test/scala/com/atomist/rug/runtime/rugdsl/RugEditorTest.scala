@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.DefaultRugPipeline

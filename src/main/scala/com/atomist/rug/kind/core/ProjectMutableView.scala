@@ -204,7 +204,11 @@ class ProjectMutableView(
               @ExportFunctionParameterDescription(name = "content",
                 description = "The content to be placed in the new file")
               content: String): Unit = {
-    updateTo(currentBackingObject + StringFileArtifact(path, content.replace("\\n", Properties.lineSeparator)))
+    val desiredContent = content.replace("\\n", Properties.lineSeparator)
+    val exactSameFileIsAlreadyThere = currentBackingObject.findFile(path).exists(_.content == desiredContent)
+    if(!exactSameFileIsAlreadyThere) {
+      updateTo(currentBackingObject + StringFileArtifact(path, desiredContent))
+    }
   }
 
   @ExportFunction(readOnly = false,

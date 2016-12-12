@@ -19,7 +19,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
         val yamlFile = sma.result.findFile(ApplicationYmlPath)
         yamlFile should be(defined)
 
-        yamlFile.get.content contentEquals ApplicationYmlKeyAddingEditor.YamlHeader should be(true)
+        yamlFile.get.content contentEquals ApplicationYmlKeyAddingEditor.YamlHeader.replaceAll("\\n",System.lineSeparator()) should be(true)
       case _ => fail("Failed")
     }
   }
@@ -38,7 +38,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
         yamlFile should be(defined)
 
         val content = yamlFile.get.content
-        content.contains(s"\n$townPropertyName: $townPropertyValue\n") should be(true)
+        content.contains(s"${System.lineSeparator()}$townPropertyName: $townPropertyValue${System.lineSeparator()}") should be(true)
       case _ => fail("Failed")
     }
   }
@@ -57,7 +57,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
         yamlFile should be(defined)
 
         val content = yamlFile.get.content
-        content.contains(s"\n$homeScopedPropertyName:\n  $townPropertyName: $townPropertyValue\n") should be(true)
+        content.contains(s"${System.lineSeparator()}$homeScopedPropertyName:${System.lineSeparator()}  $townPropertyName: $townPropertyValue${System.lineSeparator()}") should be(true)
       case _ => fail("Failed")
     }
   }

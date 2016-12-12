@@ -15,9 +15,9 @@ private[elm] object ElmParserCombinator
 
   import ElmTokens._
 
-  val ElmMultilineComment = """\{\-([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\-+\}"""
+  val ElmMultilineComment = """\{\-([^*]|[\r\n|\n]|(\*+([^*/]|[\r\n|\n])))*\-+\}"""
 
-  val DashDashLineComment = """\-\-.*\n"""
+  val DashDashLineComment = """\-\-.*[\r\n|\n]"""
 
   // this set is actually dynamic but we can just hard-code the ones we know about for now
   val ElmInfixOperators: Seq[Parser[String]] = Seq("++", "+", "!", "-", "//", "/", "*", "==", "::", "<<", ">>")

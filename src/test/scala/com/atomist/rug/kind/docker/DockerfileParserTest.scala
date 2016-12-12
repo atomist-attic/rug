@@ -15,16 +15,16 @@ class DockerfileParserTest extends FlatSpec with Matchers {
 
   it should "parse multiline file" in {
     val parsed = parse("# test\nFROM java:8-jre\n\nRUN test \\ \n\ttest1 \\ \n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080").toString
-    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080")
+    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080".replaceAll("\\n",System.lineSeparator()))
   }
 
   it should "parse a dockerfile with a list of EXPOSE ports in a single line" in {
     val parsed = parse("# test\nFROM java:8-jre\n\nRUN test \\ \n\ttest1 \\ \n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080 8090").toString
-    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080 8090")
+    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080 8090".replaceAll("\\n",System.lineSeparator()))
   }
 
   it should "parse a dockerfile with multiple EXPOSE lines" in {
     val parsed = parse("# test\nFROM java:8-jre\n\nRUN test \\ \n\ttest1 \\ \n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080\nEXPOSE 8090").toString
-    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080\nEXPOSE 8090")
+    parsed should equal("# test\nFROM java:8-jre\n\nRUN test \\\n\ttest1 \\\n\ttest2\n\nADD test.txt test.txtww\n\nEXPOSE 8080\nEXPOSE 8090".replaceAll("\\n",System.lineSeparator()))
   }
 }

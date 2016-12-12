@@ -26,7 +26,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
     withClue(s"README content----------\n$readme\n----------\n") {
       readme.contains( s"# ${projectName}") should be(true)
 
-      readme.contains(s"\n${description}\n") should be(true)
+      readme.contains(s"${System.lineSeparator()}${description}${System.lineSeparator()}") should be(true)
 
      // readme.contains(s"https://${org}.github.io/${repo}") should be(true)
     }

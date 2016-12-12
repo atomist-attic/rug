@@ -5,6 +5,7 @@ import java.io.StringReader
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
 import com.atomist.source.FileArtifact
+import com.atomist.util.Utils.StringImprovements
 import org.yaml.snakeyaml.Yaml
 
 /**
@@ -52,7 +53,8 @@ class YmlMutableView(
 
   // Model is updated
   private def update(key: String, oldValue: String, newValue: String): Unit = {
-    val updatedYml = content.replace(oldValue, newValue)
+    //because the yaml library seems to like \n's
+    val updatedYml = content.toUnix.replace(oldValue, newValue)
     this.model = new YmlModel(updatedYml)
   }
 }

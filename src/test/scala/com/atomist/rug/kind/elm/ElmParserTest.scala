@@ -3,6 +3,7 @@ package com.atomist.rug.kind.elm
 import com.atomist.rug.kind.elm.ElmModel.ElmExpressionModels.ElmTuple
 import com.atomist.rug.kind.elm.ElmModel._
 import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.util.Utils.StringImprovements
 import org.scalatest.{FlatSpec, Matchers}
 
 class ElmParserTest extends FlatSpec with Matchers {
@@ -24,7 +25,7 @@ class ElmParserTest extends FlatSpec with Matchers {
   def parseAndVerifyCanWriteOutFromParsedStructureUnchanged(elm: String): ElmModule = {
     val em = ElmParser.parse(elm)
     // TODO shouldn't need trim
-    val expected = elm.trim
+    val expected = elm.trim.toSystem
     val actual = ElmParser.unmark(em.value.trim)
     withClue(s"[$actual]\n did not equal \n[$expected]\n:${TreeNodeUtils.toShortString(em)}") {
       actual should equal(expected)

@@ -5,6 +5,7 @@ import com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView
 import com.atomist.rug.kind.elm.ElmModel.{AllExposing, FunctionNamesExposing}
 import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
 import com.atomist.source.FileArtifact
+import com.atomist.util.Utils.StringImprovements
 
 /**
   * Mutable view for an Elm module exposed to Rug and JavaScript
@@ -22,7 +23,7 @@ class ElmModuleMutableView(
   def currentView = em
 
   override protected def currentContent: String = {
-    em.currentSource
+    em.currentSource.toSystem
   }
 
   override def nodeType: String = ElmModuleType.ModuleType

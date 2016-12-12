@@ -2,6 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import com.atomist.util.Utils.StringImprovements
 
 class ElmExtractModuleTest extends FlatSpec with Matchers {
 
@@ -158,7 +159,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), prog, Map("new_module_name" -> module))
 
     val content = r.findFile("Main.elm").get.content
-    content.contains(elm) should be(true)
+    content.contains(elm.toSystem) should be(true)
   }
 }
 

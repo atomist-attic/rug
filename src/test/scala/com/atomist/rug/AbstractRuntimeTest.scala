@@ -38,8 +38,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: @all
-        |param message: @all
+        |param text: @any
+        |param message: @any
         |
         |with file f
         | when name = "Dog.java"
@@ -55,8 +55,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "A very short tempered editor"
         |editor Caspar
         |
-        |param text: @all
-        |param message: @all
+        |param text: @any
+        |param message: @any
         |
         |with file f
         | when true

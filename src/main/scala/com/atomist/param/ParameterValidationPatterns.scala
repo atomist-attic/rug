@@ -9,7 +9,7 @@ object ParameterValidationPatterns {
   // so make sure any special characters are valid in both.  For example, you can use
   // \w but not \p{Alpha} (Java only).
 
-  val MatchAll = "^.*$"
+  val MatchAny = "^.*$"
   val ProjectName = "^[-\\w.]+$"
   val JavaIdentifier = "^[A-Za-z_$][\\w$]*$"
   val JavaPackage = "^(?:(?:[A-Za-z_$][\\w$]*\\.)*[A-Za-z_$][\\w$]*)*$"

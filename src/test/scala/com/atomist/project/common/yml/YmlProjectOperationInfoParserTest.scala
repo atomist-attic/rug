@@ -167,7 +167,7 @@ class YmlProjectOperationInfoParserTest extends FlatSpec with Matchers {
     poi.parameters(0).isRequired should equal(true)
     poi.parameters(1).getName should equal("bar")
     poi.parameters(1).isRequired should equal(false)
-    poi.parameters(1).getPattern should equal(ParameterValidationPatterns.MatchAll)
+    poi.parameters(1).getPattern should equal(ParameterValidationPatterns.MatchAny)
   }
 
   it should "honor parameter overrides without strange characters" in {

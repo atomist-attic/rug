@@ -25,7 +25,7 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     * Regular expression used to validate this parameter.
     */
   @JsonProperty
-  private var pattern: String = ParameterValidationPatterns.MatchAll
+  private var pattern: String = ParameterValidationPatterns.MatchAny
 
   /**
     * Description of what valid input looks like. This can be

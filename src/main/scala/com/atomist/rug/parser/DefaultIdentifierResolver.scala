@@ -5,6 +5,7 @@ object DefaultIdentifierResolver extends IdentifierResolver {
   import com.atomist.param.ParameterValidationPatterns._
 
   val knownIds = Map(
+    "all" -> MatchAll,
     "artifact_id" -> ArtifactId,
     "group_id" -> GroupName,
     "java_class" -> JavaClass,
@@ -12,8 +13,8 @@ object DefaultIdentifierResolver extends IdentifierResolver {
     "java_package" -> JavaPackage,
     "project_name" -> ProjectName,
     "port" -> Port,
-    "ruby_class" -> "[A-Z][A-Za-z0-9_]*",
-    "ruby_identifier" -> "[A-Za-z_][A-Za-z0-9_]*",
+    "ruby_class" -> RubyClass,
+    "ruby_identifier" -> RubyIdentifier,
     "semantic_version" -> Version,
     "url" -> Url,
     "uuid" -> Uuid

@@ -29,7 +29,7 @@ param version: @semantic_version
 @description "Summary of the new project"
 @displayName "description"
 @validInput "Under 80 characters"
-param description: .*
+param description: ^.*$
 
 
 SwitchProjectName
@@ -41,7 +41,7 @@ SetSummary
 @description "Change the description in elm-package.json"
 editor SetSummary
 
-param description: .*
+param description: ^.*$
 
 let descriptionField = $(/[name='elm-package.json']->json/summary)
 

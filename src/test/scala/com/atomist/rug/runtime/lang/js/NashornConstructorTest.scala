@@ -165,7 +165,7 @@ object NashornConstructorTest {
       |        this.content = null;
       |    }
       |    __decorate([
-      |        Metadata_1.parameter({ description: "Content", displayName: "content", pattern: "Anders .*", maxLength: 100 })
+      |        Metadata_1.parameter({ description: "Content", displayName: "content", pattern: "^Anders .*$", maxLength: 100 })
       |    ], ContentInfo.prototype, "content", void 0);
       |    return ContentInfo;
       |}(Parameters_1.ParametersSupport));

@@ -12,7 +12,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
       """
         |editor UpdateServicePort
         |
-        |param servicePort: .*
+        |param servicePort: ^.*$
         |
         |with dockerfile d when path = "src/main/docker/Dockerfile"
         |  do addOrUpdateExpose servicePort

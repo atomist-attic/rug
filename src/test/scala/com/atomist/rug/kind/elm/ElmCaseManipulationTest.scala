@@ -38,8 +38,8 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
     """
       |editor AddClause
       |
-      |param expr: .*
-      |param rhs: .*
+      |param expr: ^.*$
+      |param rhs: ^.*$
       |
       |with elm.module when name = 'Main'
       |    with case cc when matchAsString = 'msg'

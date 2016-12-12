@@ -209,7 +209,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
+        |param foo: ^.*$
         |
         |with file f
         |do replace "some" "bar"
@@ -232,7 +232,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |param foo: .*
+        |param foo: ^.*$
         |
         |with file f
         |do
@@ -241,8 +241,8 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"
@@ -257,7 +257,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |param foo: .*
+        |param foo: ^.*$
         |
         |with file f
         |do
@@ -267,16 +267,16 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"
         |
         |editor Bar
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"
@@ -299,15 +299,15 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"
         |
         |editor Bar
         |
-        |param baz: .*
+        |param baz: ^.*$
         |
         |with file f
         | do replace "some" "bar"
@@ -326,15 +326,15 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"
         |
         |editor Bar
         |
-        |param baz: .*
+        |param baz: ^.*$
         |
         |with file f
         | do replace "some" "bar"
@@ -459,8 +459,8 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: .*
-        |param bar: .*
+        |param foo: ^.*$
+        |param bar: ^.*$
         |
         |with file f
         | do replace "some" "bar"

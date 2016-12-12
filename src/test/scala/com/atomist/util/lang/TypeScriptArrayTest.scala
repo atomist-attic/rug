@@ -26,7 +26,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |import {editor} from 'user-model/support/Metadata'
       |
       |class JavaInfo extends ParametersSupport {
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: ".*", maxLength: 100})
+      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |  packageName: string = null
       |}
       |

@@ -92,7 +92,7 @@ class PackageJsonTest extends FlatSpec with Matchers {
         |@description "Update package JSON"
         |editor Rename
         |
-        |param new_name: [\w.\-_]+
+        |param new_name: ^[\w.\-_]+$
         |
         |with packageJSON f
         |do

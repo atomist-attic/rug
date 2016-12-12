@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 object TypeScriptRugEditorTest {
 
-  val ContentPattern = "Anders .*"
+  val ContentPattern = "^Anders .*$"
 
   val SimpleEditorWithoutParameters =
     """
@@ -147,7 +147,7 @@ object TypeScriptRugEditorTest {
        |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
        |  content: string = "Anders"
        |
-       |   @parameter({description: "some num", displayName: "num", pattern: "[\\d]+", maxLength: 100})
+       |   @parameter({description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100})
        |   num: number = 10
        |}
        |
@@ -184,7 +184,7 @@ object TypeScriptRugEditorTest {
       |
       |abstract class JavaInfo extends ParametersSupport {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: ".*", maxLength: 100})
+      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |  packageName: string = null
       |
       |}
@@ -243,7 +243,7 @@ object TypeScriptRugEditorTest {
       |
       |abstract class JavaInfo extends ParametersSupport {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: ".*", maxLength: 100})
+      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |  packageName: string = null
       |
       |}
@@ -299,7 +299,7 @@ object TypeScriptRugEditorTest {
       |
       |abstract class JavaInfo extends ParametersSupport {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: ".*", maxLength: 100})
+      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |  packageName: string = null
       |
       |}

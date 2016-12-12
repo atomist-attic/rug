@@ -18,8 +18,8 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
          |@description "That's over the line!"
          |editor Caspar
          |
-         |param text: .*
-         |param message: .*
+         |param text: ^.*$$
+         |param message: ^.*$$
          |
          |with file
          | #when { file.name().endsWith(".java") }
@@ -47,7 +47,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description 'A very short tempered editor'
         |editor Caspar
         |
-        |param message: .*
+        |param message: ^.*$
         |
         |let text = "// I'm talkin' about ethics"
         |
@@ -64,7 +64,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description 'A very short tempered editor'
         |editor Caspar
         |
-        |param message: .*
+        |param message: ^.*$
         |
         |let text = "// I'm talkin' about ethics"
         |
@@ -80,8 +80,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
       """
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |{
         |
@@ -103,8 +103,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "I believe in the first amendment!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when isJava
@@ -136,8 +136,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
          |@description "What is this, the high hat?"
          |editor Caspar
          |
-         |param text: .*
-         |param message: .*
+         |param text: ^.*$$
+         |param message: ^.*$$
          |
          |with file f
          | when {
@@ -159,8 +159,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when isJava
@@ -178,8 +178,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |param text: .*
-        |param message: .*
+        |param text: ^.*$
+        |param message: ^.*$
         |
         |with file f
         | when isJava
@@ -223,7 +223,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "This is a second editor"
         |editor Other
         |
-        |param num: \d+
+        |param num: ^\d+$
         |
         |with project p
         |do
@@ -247,7 +247,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "This is a second editor"
         |editor Other
         |
-        |param num: \d+
+        |param num: ^\d+$
         |
         |with project p
         |do

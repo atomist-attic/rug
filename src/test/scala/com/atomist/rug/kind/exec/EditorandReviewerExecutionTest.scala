@@ -157,7 +157,7 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
         |   editWith Bar
         |
         |editor Bar
-        |param film: .*
+        |param film: ^.*$
         |with project p
         |  do addFile "film.txt" film
       """.stripMargin

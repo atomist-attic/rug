@@ -84,7 +84,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source),
       ElmTextInputTest.AddToModel,
       Map("module" -> "Main",
-        "type_name" -> "Model",
+        "type_name" -> "model",
         "field_name" -> "topic",
         "field_type" -> "String",
         "initial_value" -> "cats"))
@@ -102,7 +102,7 @@ object ElmTextInputTest {
       |@displayName "Name"
       |@description "Name of the text input (the field to store in the model)"
       |@validInput "An elm identifier"
-      |param input_name: [a-z][\w]*
+      |param input_name: ^[a-z][\w]*$
       |
       |# capitalize
       |let type_name={ input_name.charAt(0).toUpperCase() + input_name.slice(1) }
@@ -124,7 +124,7 @@ object ElmTextInputTest {
       |  param module: [A-Z][\w]*
       |
       |  @description "The import to add, fully qualified"
-      |  param fqn: .*
+      |  param fqn: ^.*$
       |
       |  with elm.module when name = module
       |    do addImportStatement {"import " + fqn}
@@ -139,7 +139,7 @@ object ElmTextInputTest {
       |@displayName "Code"
       |@description "All the code to add"
       |@validInput "An Elm declaration"
-      |param code: .*
+      |param code: ^.*$
       |
       |with file
       |  with elm.module when name = module
@@ -149,9 +149,9 @@ object ElmTextInputTest {
   val AddToModel =
     """editor AddToModel
       |
-      |param field_name: [a-z][\w]*
-      |param field_type: .*
-      |param initial_value: .*
+      |param field_name: ^[a-z][\w]*$
+      |param field_type: ^.*$
+      |param initial_value: ^.*$
       |
       |
       |AddToRecordTypeAlias type_name="Model", module="Main"
@@ -160,10 +160,10 @@ object ElmTextInputTest {
       |
       |editor AddToRecordTypeAlias
       |
-      |  param module: .*
-      |  param type_name: [a-z][\w]*
-      |  param field_name: [a-z][\w]*
-      |  param field_type: .*
+      |  param module: ^.*$
+      |  param type_name: ^[a-z][\w]*$
+      |  param field_name: ^[a-z][\w]*$
+      |  param field_type: ^.*$
       |
       |with file
       |  with elm.module when name = module
@@ -174,10 +174,10 @@ object ElmTextInputTest {
       |
       |editor AddToModelInitialization
       |
-      |	 param module: .*
-      |  param function_name: [a-z][\w]*
-      |  param field_name: [a-z][\w]*
-      |  param field_value: .*
+      |	 param module: ^.*$
+      |  param function_name: ^[a-z][\w]*$
+      |  param field_name: ^[a-z][\w]*$
+      |  param field_value: ^.*$
       |
       |with file
       |  with elm.module when name = module
@@ -193,19 +193,19 @@ object ElmTextInputTest {
       |
       |@displayName "Message Constructor"
       |@description "Message constructor, its name and parameter types"
-      |param constructor: .*
+      |param constructor: ^.*$
       |
       |@displayName "Deconstructor"
       |@description "What this looks like in a pattern match; leave blank if there are no type parameters"
       |@optional
       |@default ""
-      |param deconstructor: .*
+      |param deconstructor: ^.*$
       |
       |@displayName "Case Clause Body"
       |@description "Value for model when the message is received"
       |@optional
       |@default "model"
-      |param update_model: .*
+      |param update_model: ^.*$
       |
       |AddToUnionType module="Main", type_name="Msg", constructor=constructor
       |AddCaseClause module="Main", function_name="update", match="msg", new_pattern=deconstructor, body=update_model
@@ -219,11 +219,11 @@ object ElmTextInputTest {
       |
       |  @description "The union type"
       |  @displayName "Type"
-      |  param type_name: [a-z][\w]*
+      |  param type_name: ^[a-z][\w]*$
       |
       |  @description "The constructor to add, with its type parameters"
       |  @displayName "Constructor"
-      |  param constructor: [a-z][\w]*
+      |  param constructor: ^[a-z][\w]*$
       |
       |with file
       |  with elm.module when name = module
@@ -236,25 +236,25 @@ object ElmTextInputTest {
       |
       |	@description "Elm module to modify"
       |	@displayName "Module Name"
-      |	param module: [A-Z][\w]*
+      |	param module: ^[A-Z][\w]*$
       |
       |  @description "Name of the function that has a case in it"
       |  @displayName "Function name"
-      |  param function_name: [a-z][\w]*
+      |  param function_name: ^[a-z][\w]*$
       |
       |  @displayName "Match Expression"
       |  @description "What the case statement is matching"
-      |  param match: .*
+      |  param match: ^.*$
       |
       |  @displayName "New Pattern"
       |  @description "new pattern the case can match"
       |  @validInput "A union type deconstructor"
-      |  param new_pattern: .*
+      |  param new_pattern: ^.*$
       |
       |  @displayName "Result"
       |  @description "body of the new case clause"
       |  @validInput "An Elm expression"
-      |  param body: .*
+      |  param body: ^.*$
       |
       |# TODO implement the selection by match expression
       |with file

@@ -1,9 +1,9 @@
 package com.atomist.tree.content.text.microgrammar.pattern
 
-import com.atomist.tree.content.text.microgrammar._
+import com.atomist.tree.content.text.microgrammar.{Microgrammar, _}
 import com.atomist.rug.kind.grammar.MicrogrammarTest
 
-abstract class MatcherMicrogrammarTest extends MicrogrammarTest {
+class MatcherMicrogrammarTest extends MicrogrammarTest {
 
   import Literal._
 
@@ -12,7 +12,10 @@ abstract class MatcherMicrogrammarTest extends MicrogrammarTest {
     new MatcherMicrogrammar(matcher)
   }
 
-  override protected def matchPrivateJavaFields: Microgrammar = ???
+  override protected def matchPrivateJavaFields: Microgrammar = {
+    val field = "private" ~~ Regex("type", "[a-zA-Z0-9]+") ~~ Regex("name", "[a-zA-Z0-9]+")
+    new MatcherMicrogrammar(field)
+  }
 
   override protected def aWasaB: Microgrammar =
     new MatcherMicrogrammar(
@@ -45,5 +48,5 @@ abstract class MatcherMicrogrammarTest extends MicrogrammarTest {
     new MatcherMicrogrammar(field)
   }
 
-  override protected def ymlKeys: Microgrammar = ???
+  override protected def ymlKeys: Microgrammar = throw new UnsupportedOperationException
 }

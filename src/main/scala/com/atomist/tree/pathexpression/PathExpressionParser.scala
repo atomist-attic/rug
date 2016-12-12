@@ -1,11 +1,12 @@
 package com.atomist.tree.pathexpression
 
+import java.util.Objects
+
 import com.atomist.source.StringFileArtifact
 import com.atomist.tree.pathexpression.PathExpressionEngine._
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.scalaparsing.CommonTypesParser
-import org.apache.commons.lang.ObjectUtils
 
 /**
   * Scala parser combinator for path expressions
@@ -68,7 +69,7 @@ trait PathExpressionParser extends CommonTypesParser {
     case methodName ~ args ~ op ~ literal =>
       Predicate(s".$methodName", (n,among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
-        ObjectUtils.equals(literal, invoked)
+        Objects.equals(literal, invoked)
       })
   }
 
@@ -140,10 +141,9 @@ trait PathExpressionParser extends CommonTypesParser {
   def parsePathExpression(expr: String): PathExpression = {
     try {
       parseTo(StringFileArtifact("<input>", expr), phrase(pathExpression))
-    }
-    catch {
-      case iex: IllegalArgumentException =>
-        throw new IllegalArgumentException(s"Path expression '$expr' is invalid: [${iex.getMessage}]", iex)
+    } catch {
+      case e: IllegalArgumentException =>
+        throw new IllegalArgumentException(s"Path expression '$expr' is invalid: [${e.getMessage}]", e)
     }
   }
 }

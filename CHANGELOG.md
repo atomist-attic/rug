@@ -41,7 +41,7 @@ The single triple double release
 
 ### Fixed
 
--   Single double-quotes are now properly ignored withing triple
+-   Single double-quotes are now properly ignored within triple
     double-quotes
 
 ### Changed

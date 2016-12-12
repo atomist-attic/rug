@@ -29,7 +29,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
 
   protected def aWasaB: Microgrammar
 
-  it should "parse 1 match of 2 parts in whole string" in pendingUntilFixed {
+  it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
     matches.count should be >= (2)
     matches("name").head match {

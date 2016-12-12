@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.ContainerTreeNode
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 import com.atomist.tree.content.text.{MutableContainerTreeNode, SimpleMutableContainerTreeNode}
@@ -24,7 +24,10 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
   override def strictMatch(input: String, l: Option[MatchListener]): MutableContainerTreeNode = {
     val nodes = findMatchesInternal(input, l)
     require(nodes.size == 1, s"Expected 1 result, not ${nodes.size}")
-    SimpleMutableContainerTreeNode.wholeInput("input", nodes, input)
+    nodes.head match {
+      case mctn: MutableContainerTreeNode => mctn
+      case tn: TreeNode => SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input)
+    }
   }
 
   private def findMatchesInternal(input: String, l: Option[MatchListener]): Seq[MatchedNode] = {

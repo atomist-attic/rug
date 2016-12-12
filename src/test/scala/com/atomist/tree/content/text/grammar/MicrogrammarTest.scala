@@ -42,7 +42,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse 1 match of 2 parts in whole string and replace both keys" in pendingUntilFixed {
+  it should "parse 1 match of 2 parts in whole string and replace both keys" in {
     val g = aWasaB
     val input = "Henry was aged 19"
     val matches = g.strictMatch(input)

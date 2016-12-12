@@ -206,7 +206,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |          throw new Error("Some should be false");
       |       }
       |
-      |       this.lyst.forEach(t => console.log(t))
+      |       //this.lyst.forEach(t => console.log(t))
       |
       |       let another: number[] = this.lyst.map(t => t.length)
       |       if(another.length != this.lyst.length){

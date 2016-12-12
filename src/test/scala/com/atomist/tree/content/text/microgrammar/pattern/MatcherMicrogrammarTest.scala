@@ -48,5 +48,16 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     new MatcherMicrogrammar(field)
   }
 
-  override protected def ymlKeys: Microgrammar = throw new UnsupportedOperationException
+  //  KEY: [A-Za-z_]+;
+  //  VALUE: [A-Za-z0-9\-]+;
+  //  keys: '-' KEY (':' | '=') VALUE ;
+  //  env_list: 'env:' 'global:' key=keys*;
+  override protected def ymlKeys: Microgrammar = {
+    val key: Matcher = Regex("key", "[A-Za-z_]+")
+    val value = Regex("value", "[A-Za-z0-9\\-]+")
+    val keys = "-" ~~ key ~? "=" /*Alternate("(", "=")*/ ~? value
+    val envList = "env:" ~~ "global:" ~~ Rep(keys)
+    new MatcherMicrogrammar(envList)
+  }
+
 }

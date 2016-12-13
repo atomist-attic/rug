@@ -117,47 +117,6 @@ case class PatternMatch(
 }
 
 /**
-  * Concatenate two patterns
-  *
-  * @param left  left pattern
-  * @param right right pattern
-  */
-case class Concat(left: Matcher, right: Matcher, name: String = "Concat") extends Matcher {
-
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] = {
-    val l = left.matchPrefix(offset, input)
-    l match {
-      case None =>
-        // We're done. It cannot match.
-        None
-      case Some(leftMatch) =>
-        // So far so good
-        right.matchPrefix(leftMatch.remainderOffset, input) match {
-          case None =>
-            // We're done. Right doesn't match.
-            None
-          case Some(rightMatch) =>
-            val mergedTree: Option[MatchedNode] = (leftMatch.node, rightMatch.node) match {
-              case (None, None) => None
-              case (Some(l), None) => Some(l)
-              case (None, Some(r)) => Some(r)
-              case (Some(l), Some(r)) =>
-                val mergedFields = (l match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
-                  case n => Seq(n)
-                }) ++ (r match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
-                  case n => Seq(n)
-                })
-                Some(new SimpleMutableContainerTreeNode("~", mergedFields, l.startPosition, r.endPosition))
-            }
-            Some(PatternMatch(mergedTree, offset, leftMatch.matched + rightMatch.matched, input, this.toString))
-        }
-    }
-  }
-}
-
-/**
   * Try first to match the left pattern, then the right
   *
   * @param left  left pattern
@@ -196,53 +155,4 @@ case class Optional(m: Matcher, name: String = "optional") extends Matcher {
       case Some(there) =>
         Some(there)
     }
-}
-
-/**
-  * We create a new subnode with the given name
-  *
-  * @param m
-  * @param name
-  */
-case class Rep(m: Matcher, name: String = "rep") extends Matcher {
-
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
-    m.matchPrefix(offset, s) match {
-      case None =>
-        // We can match zero times. Put in an empty node.
-        val pos = OffsetInputPosition(offset)
-        Some(
-          PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
-            offset = offset, matched = "", s, this.toString))
-      case Some(there) =>
-        // We matched once. Let's keep going
-        var matched = there.matched
-        val offset = there.offset
-        var nodes = there.node.toSeq
-        val pos = OffsetInputPosition(offset)
-        val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
-        val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
-        Some(
-          PatternMatch(node = Some(combinedNode),
-            offset, matched, s, this.toString)
-        )
-    }
-}
-
-object Repsep {
-
-  def apply(m: Matcher, sep: Matcher): Matcher =
-    m.? ~? Rep(sep ~? m)
-
-}
-
-
-case class EmptyContainerTreeNode(name: String, pos: InputPosition)
-  extends MutableTerminalTreeNode(name, "", pos) {
-
-  override def endPosition: InputPosition = startPosition
-
-  override def nodeType: String = "empty"
-
-  override def value: String = ""
 }

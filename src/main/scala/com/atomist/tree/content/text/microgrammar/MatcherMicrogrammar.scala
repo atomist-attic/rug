@@ -43,7 +43,7 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
         case None =>
           offset += 1
         case Some(m) =>
-          println(s"Found match $m, remainderOffset=${m.remainderOffset}")
+          //println(s"Found match $m, remainderOffset=${m.remainderOffset}")
           l.foreach(l => m.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })

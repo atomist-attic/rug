@@ -56,7 +56,7 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     val key: Matcher = Regex("key", "[A-Za-z_]+")
     val value = Regex("value", "[A-Za-z0-9\\-]+")
     val keys = "-" ~~ key ~? "=" /*Alternate("(", "=")*/ ~? value
-    val envList = "env:" ~~ "global:" ~~ Rep(keys)
+    val envList = "env:" ~~ "global:" ~~ Rep(keys, "keys")
     new MatcherMicrogrammar(envList)
   }
 

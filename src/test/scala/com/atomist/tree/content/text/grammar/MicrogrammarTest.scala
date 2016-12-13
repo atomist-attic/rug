@@ -345,6 +345,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = g1.findMatches(input)
     m.size should be(1)
+    println(m.head)
     val keys = m.head("keys")
     keys.size should be >= (2)
     val k1 = keys.head.asInstanceOf[MutableContainerTreeNode]

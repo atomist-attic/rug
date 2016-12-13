@@ -4,10 +4,8 @@ import com.atomist.project.{FunctionProjectAssertion, ProjectAssertion}
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.{JavaHelpers, MavenConstants}
 
-import scala.collection.JavaConversions._
-
 object IsJavaProject extends FunctionProjectAssertion(project =>
-  project.allFiles.exists(f => JavaHelpers.isJavaSourceArtifact(f))
+  project.allFiles.exists(JavaHelpers.isJavaSourceArtifact(_))
 )
 
 object IsMavenProject extends FunctionProjectAssertion(project =>

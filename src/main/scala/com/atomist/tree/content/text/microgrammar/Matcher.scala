@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 import com.atomist.tree.content.text._
-import com.atomist.tree.{ContainerTreeNode, MutableTreeNode}
+import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 
 case class MatcherConfig(
                           greedy: Boolean = true
@@ -30,7 +30,7 @@ trait Matcher {
 
   def concat(m: Matcher): Matcher = Concat(this, m)
 
-  def ~(m: Matcher) = concat(m)
+  def ~(m: Matcher): Matcher = concat(m)
 
   /**
     * Concatenation requiring whitespace
@@ -38,7 +38,7 @@ trait Matcher {
     * @param m
     * @return
     */
-  def ~~(m: Matcher) = concat(WhitespaceOrNewLine.concat(m))
+  def ~~(m: Matcher): Matcher = concat(WhitespaceOrNewLine.concat(m))
 
   /**
     * Concatenation with optional whitespace
@@ -46,7 +46,7 @@ trait Matcher {
     * @param m
     * @return
     */
-  def ~?(m: Matcher) = concat(Whitespace.?.concat(m))
+  def ~?(m: Matcher): Matcher = concat(Whitespace.?.concat(m))
 
   def alternate(m: Matcher): Matcher = Alternate(this, m)
 
@@ -54,9 +54,9 @@ trait Matcher {
 
   def opt: Matcher = Optional(this)
 
-  def |(m: Matcher) = alternate(m)
+  def |(m: Matcher): Matcher = alternate(m)
 
-  def -() = Discard(this)
+  def -(): Matcher = Discard(this)
 
   /**
     * Utility method to take next characters from input
@@ -106,7 +106,7 @@ case class PatternMatch(
                          matcherId: String)
   extends Positioned {
 
-  def remainderOffset = offset + matched.length
+  def remainderOffset: Int = offset + matched.length
 
   override def startPosition: InputPosition = OffsetInputPosition(offset)
 
@@ -114,47 +114,6 @@ case class PatternMatch(
 
   def remainder: CharSequence = input.subSequence(remainderOffset, input.length())
 
-}
-
-/**
-  * Concatenate two patterns
-  *
-  * @param left  left pattern
-  * @param right right pattern
-  */
-case class Concat(left: Matcher, right: Matcher, name: String = "Concat") extends Matcher {
-
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] = {
-    val l = left.matchPrefix(offset, input)
-    l match {
-      case None =>
-        // We're done. It cannot match.
-        None
-      case Some(leftMatch) =>
-        // So far so good
-        right.matchPrefix(leftMatch.remainderOffset, input) match {
-          case None =>
-            // We're done. Right doesn't match.
-            None
-          case Some(rightMatch) =>
-            val mergedTree: Option[MatchedNode] = (leftMatch.node, rightMatch.node) match {
-              case (None, None) => None
-              case (Some(l), None) => Some(l)
-              case (None, Some(r)) => Some(r)
-              case (Some(l), Some(r)) =>
-                val mergedFields = (l match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
-                  case n => Seq(n)
-                }) ++ (r match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
-                  case n => Seq(n)
-                })
-                Some(new SimpleMutableContainerTreeNode("~", mergedFields, l.startPosition, r.endPosition))
-            }
-            Some(PatternMatch(mergedTree, offset, leftMatch.matched + rightMatch.matched, input, this.toString))
-        }
-    }
-  }
 }
 
 /**
@@ -189,30 +148,11 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] = {
+  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
       case None =>
-        Some(PatternMatch(None, offset, "", s, this.toString))
-      case Some(there) => Some(there)
+        Some(PatternMatch(None, offset = offset, matched = "", s, this.toString))
+      case Some(there) =>
+        Some(there)
     }
-  }
-}
-
-case class Rep(m: Matcher, name: String = "rep") extends Matcher {
-
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] = {
-    m.matchPrefix(offset, s) match {
-      case None =>
-        Some(PatternMatch(None, offset, "", s, this.toString))
-      case Some(there) => Some(there)
-      // TODO KEEP MATCHING
-    }
-  }
-}
-
-object Repsep {
-
-  def apply(m: Matcher, sep: Matcher): Matcher =
-    m.? ~? Rep(sep ~? m)
-
 }

@@ -9,7 +9,7 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Add a class annotation if it doesn't exist.
@@ -37,13 +37,13 @@ class AddClassAnnotationEditor(selector: TypeSelector,
       .filter(JavaHelpers.isJavaSourceArtifact)
       .exists(f => {
         val cu = JavaParser.parse(f.inputStream())
-        cu.getTypes.exists(t => t.getAnnotations.exists(ann => ann.getName.getName.equals(annotationName)))
+        cu.getTypes.asScala.exists(_.getAnnotations.asScala.exists(_.getName.getName.equals(annotationName)))
       })
     annotatedFiles
   }
 
   override protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit] = {
-    val modifiedTypes: Traversable[ClassOrInterfaceDeclaration] = cu.getTypes collect {
+    val modifiedTypes: Traversable[ClassOrInterfaceDeclaration] = cu.getTypes.asScala. collect {
       case coit: ClassOrInterfaceDeclaration if selector(coit) && JavaClassType.annotationAddedTo(coit, annotationName) =>
         coit
     }

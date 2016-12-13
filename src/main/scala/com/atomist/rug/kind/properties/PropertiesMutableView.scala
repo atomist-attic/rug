@@ -7,7 +7,7 @@ import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMuta
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
 import com.atomist.source.FileArtifact
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class PropertiesMutableView(
                              originalBackingObject: FileArtifact,
@@ -74,6 +74,6 @@ class PropertiesMutableView(
   def keys: List[Any] = {
     val properties = new Properties()
     properties.load(new StringReader(content))
-    properties.propertyNames().toList
+    properties.propertyNames().asScala.toList
   }
 }

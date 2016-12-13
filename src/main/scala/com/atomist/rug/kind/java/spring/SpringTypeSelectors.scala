@@ -2,7 +2,7 @@ package com.atomist.rug.kind.java.spring
 
 import com.atomist.rug.kind.java.TypeSelection._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * AddClassAnnotationEditor TypeSelectors fo
@@ -10,11 +10,11 @@ import scala.collection.JavaConversions._
 object SpringTypeSelectors {
 
   val SpringBootApplicationClassSelector: TypeSelector =
-    coit => coit.getAnnotations.exists(ann => "SpringBootApplication".equals(ann.getName.getName))
+    coit => coit.getAnnotations.asScala.exists(ann => "SpringBootApplication".equals(ann.getName.getName))
 
   val SpringMvcControllerClassSelector: TypeSelector =
-    coit => coit.getAnnotations.exists(ann => "RestController".equals(ann.getName.getName))
+    coit => coit.getAnnotations.asScala.exists(ann => "RestController".equals(ann.getName.getName))
 
   val FeignProxyClassSelector: TypeSelector =
-    coit => coit.getAnnotations.exists(ann => "FeignClient".equals(ann.getName.getName))
+    coit => coit.getAnnotations.asScala.exists(ann => "FeignClient".equals(ann.getName.getName))
 }

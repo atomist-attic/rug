@@ -2,8 +2,9 @@ package com.atomist.rug.kind.java.support
 
 import com.atomist.rug.kind.java.GitHubJavaParserExtractor
 import com.atomist.source.{ArtifactSource, StringFileArtifact}
+import com.atomist.util.Converters._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Utility methods to find packages in Java files
@@ -11,7 +12,8 @@ import scala.collection.JavaConversions._
 object PackageFinder {
 
   def findPackage(src: String): String = {
-    val cu = GitHubJavaParserExtractor(Seq(StringFileArtifact("Src.java", src))).head.compilationUnit
+    val cu = GitHubJavaParserExtractor(Seq(StringFileArtifact("Src.java", src)).asJavaColl)
+      .head.compilationUnit
     if (cu.getPackage == null) ""
     else cu.getPackage.getName.toString
   }
@@ -23,7 +25,7 @@ object PackageFinder {
     * @return all identified packages
     */
   def packages(as: ArtifactSource): Seq[PackageInfo] = {
-    JavaFilesExtractor(as)
+    JavaFilesExtractor(as).asScala
       .map(f => (findPackage(f.content), f))
       .groupBy(_._1)
       .map {
@@ -34,6 +36,7 @@ object PackageFinder {
 
 /**
   * Information about a package.
+  *
   * @param name FQN of the package
   * @param files number of Java files in the package
   */

@@ -20,7 +20,7 @@ import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object RugOperationSupport {
 
@@ -37,7 +37,7 @@ object RugOperationSupport {
     }
     // Remember to add default parameters that weren't set
     val defaultParameterValuesNotSet: Map[String, String] = parameters.collect {
-      case p if !parametersPassedIn.keys.contains(p.getName) && p.hasDefaultValue => (p.getName, p.getDefaultValue)
+      case p if !parametersPassedIn.keys.asJavaCollection.contains(p.getName) && p.hasDefaultValue => (p.getName, p.getDefaultValue)
     }.toMap
     parametersPassedIn ++ defaultParameterValuesNotSet
   }

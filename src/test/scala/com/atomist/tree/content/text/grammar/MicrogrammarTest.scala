@@ -29,7 +29,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
 
   protected def aWasaB: Microgrammar
 
-  it should "parse 1 match of 2 parts in whole string" in pendingUntilFixed {
+  it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
     matches.count should be >= (2)
     matches("name").head match {
@@ -42,7 +42,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse 1 match of 2 parts in whole string and replace both keys" in pendingUntilFixed {
+  it should "parse 1 match of 2 parts in whole string and replace both keys" in {
     val g = aWasaB
     val input = "Henry was aged 19"
     val matches = g.strictMatch(input)
@@ -345,6 +345,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = g1.findMatches(input)
     m.size should be(1)
+    println(m.head)
     val keys = m.head("keys")
     keys.size should be >= (2)
     val k1 = keys.head.asInstanceOf[MutableContainerTreeNode]

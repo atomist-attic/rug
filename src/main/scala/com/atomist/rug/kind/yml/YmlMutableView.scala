@@ -61,13 +61,12 @@ class YmlMutableView(
 
 private[yml] class YmlModel(val yml: String) {
 
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   val y = new Yaml()
 
   val map: scala.collection.mutable.Map[String, Object] = y.load(new StringReader(yml)) match {
-    case map: java.util.Map[String @unchecked, Object @unchecked] =>
-      map
+    case map: java.util.Map[String @unchecked, Object @unchecked] => map.asScala
     case _ => throw new IllegalStateException(s"Unrecognized result parsing yml '$yml'")
   }
 

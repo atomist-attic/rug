@@ -19,7 +19,7 @@ class ParameterGeneratorTest extends FlatSpec with Matchers {
   }
 
   private def testGenerationFor(p: Parameter) {
-    val generatedPv = validValueFor(p)
+    val generatedPv = validValueFor(p, 4)
     p.isValidValue(generatedPv.getValue) should be(true)
   }
 }

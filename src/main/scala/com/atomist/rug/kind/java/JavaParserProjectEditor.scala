@@ -9,7 +9,7 @@ import com.atomist.util.lang.JavaConstants
 import com.github.javaparser.ast.CompilationUnit
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Support for in-place editing of Java files using GitHubJavaParser.
@@ -22,7 +22,7 @@ abstract class JavaParserProjectEditor(val name: String,
   addTag(JavaTag)
 
   private val extractJavaFiles: ArtifactSource => Seq[FileArtifact] =
-    a => JavaFilesExtractor(a / javaSourcePath)
+    a => JavaFilesExtractor(a / javaSourcePath).asScala
 
   override def impacts: Set[Impact] = Set(CodeImpact)
 
@@ -33,7 +33,7 @@ abstract class JavaParserProjectEditor(val name: String,
   protected final override def modifyInternal(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val javaFiles = extractJavaFiles(as)
 
-    val filesAndCompilationUnits = GitHubJavaParserExtractor(javaFiles)
+    val filesAndCompilationUnits = GitHubJavaParserExtractor(javaFiles.asJava)
 
     val modifiedFiles: Seq[FileArtifact] =
       for {

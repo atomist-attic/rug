@@ -1,10 +1,7 @@
 package com.atomist.project.edit
 
-import _root_.java.util.{List => JList}
 import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
-
-import scala.collection.JavaConversions._
 
 /**
   * Convenience methods for working with results.
@@ -21,7 +18,7 @@ object ProjectEditorUtils extends LazyLogging {
       mf.path equals f.path
     }), f => f)
     val result = as ✎ fe
-    val nonExistingFiles: JList[Artifact] = modifiedFiles.filter(mf => as.findFile(mf.path).isEmpty)
+    val nonExistingFiles = modifiedFiles.filter(mf => as.findFile(mf.path).isEmpty)
     result + nonExistingFiles
   }
 

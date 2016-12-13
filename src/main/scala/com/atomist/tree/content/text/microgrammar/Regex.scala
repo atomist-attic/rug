@@ -41,6 +41,6 @@ class Placeholder extends Matcher {
       None
 }
 
-object Whitespace extends Regex("ws", """\s+""")
+object Whitespace extends Discard(Regex("whitespace", """\s+"""))
 
-object WhitespaceOrNewLine extends Regex("wsnl", """[\s\n]+""")
+object WhitespaceOrNewLine extends Discard(Regex("whitespace-or-newline", """[\s\n]+"""))

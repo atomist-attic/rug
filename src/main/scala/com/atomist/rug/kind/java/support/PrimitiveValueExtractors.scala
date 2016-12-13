@@ -3,6 +3,7 @@ package com.atomist.rug.kind.java.support
 import com.atomist.project.{ArtifactSourceFilter, FilesExtractor, MaybeFileExtractor, ProjectValueExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.util.lang.{JavaHelpers, MavenConstants}
+import scala.collection.JavaConverters._
 
 case class SourcePaths(
                         baseSourcePath: String,
@@ -38,6 +39,7 @@ class UnderPathExtractor(path: String = "") extends ArtifactSourceFilter {
   * Extract Java files under base path.
   */
 object JavaBaseTreeExtractor extends ArtifactSourceFilter {
+
   override def apply(project: ArtifactSource): ArtifactSource = {
     val sourcePaths = SourcePathExtractor.apply(project)
     val javaSource: ArtifactSource = project / sourcePaths.baseSourcePath
@@ -45,14 +47,12 @@ object JavaBaseTreeExtractor extends ArtifactSourceFilter {
   }
 }
 
-import scala.collection.JavaConversions._
-
 /**
   * Preserve existing paths in entire artifact.
   */
 object JavaFilesExtractor extends FilesExtractor {
 
   override def apply(project: ArtifactSource) = {
-    project.allFiles.filter(f => JavaHelpers.isJavaSourceArtifact(f))
+    project.allFiles.filter(JavaHelpers.isJavaSourceArtifact(_)).asJava
   }
 }

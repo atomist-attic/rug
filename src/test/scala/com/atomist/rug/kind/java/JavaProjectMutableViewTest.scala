@@ -7,7 +7,7 @@ import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaProjectMutableViewTest extends FlatSpec with Matchers {
 
@@ -31,7 +31,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val jpv = new JavaProjectMutableView(pmv)
 
     val oldPackage = "com.atomist.test1"
-    jpv.packages.map(_.name).contains(oldPackage) should be(true)
+    jpv.packages.asScala.map(_.name).contains(oldPackage) should be(true)
     jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
 
     val newPackage = "com.whatever"
@@ -97,8 +97,8 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.dirty should be(true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
-    jpv.directoryExists(copiedInDir) should be (false)
-    jpv.currentBackingObject.findDirectory(copiedInDir).isDefined should be (false)
+    jpv.directoryExists(copiedInDir) should be(false)
+    jpv.currentBackingObject.findDirectory(copiedInDir).isDefined should be(false)
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -143,8 +143,8 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.dirty should be(true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
-    jpv.directoryExists(copiedInDir) should be (false)
-    jpv.currentBackingObject.findDirectory(copiedInDir).isDefined should be (false)
+    jpv.directoryExists(copiedInDir) should be(false)
+    jpv.currentBackingObject.findDirectory(copiedInDir) shouldBe empty
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -227,5 +227,4 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     }
     verifyJavaIsWellFormed(jpv.currentBackingObject)
   }
-
 }

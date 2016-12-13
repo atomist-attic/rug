@@ -22,12 +22,12 @@ object ExtractorOps {
   implicit class OpsExtractor[T, R](extractor: Extractor[T, R])
     extends Extractor[T, R] {
 
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     /** Right associative, as names ends with : */
     def >-:(t: T) = apply(t): R
 
-    def extractAll(ts: JList[T]): JList[R] = ts.map(t => apply(t))
+    def extractAll(ts: JList[T]): JList[R] = ts.asScala.map(apply).asJava
 
     def *:(ts: JList[T]): JList[R] = extractAll(ts)
 

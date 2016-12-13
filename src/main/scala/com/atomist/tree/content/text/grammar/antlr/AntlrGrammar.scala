@@ -1,7 +1,6 @@
 package com.atomist.tree.content.text.grammar.antlr
 
 import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
-import com.atomist.tree.content.text.TreeNodeOperations.{NodeTransformer, TreeOperation}
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode}
 import org.antlr.v4.runtime.InputMismatchException
 import org.snt.inmemantlr.GenericParser
@@ -28,7 +27,7 @@ class AntlrGrammar(
         None
     }
     val name = names.toSeq.headOption.getOrElse(throw new IllegalArgumentException("Cannot match grammar name"))
-    val parser = GenericParser.independentInstance(grammar, name, this)
+    val parser = GenericParser.independentInstance(this, grammar)
     ParserSetup(grammar, parser, production)
   }
 

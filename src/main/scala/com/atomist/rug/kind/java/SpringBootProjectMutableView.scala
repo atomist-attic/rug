@@ -13,7 +13,7 @@ import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 class SpringBootProjectType(
@@ -63,7 +63,7 @@ class SpringBootProjectMutableView(pv: JavaProjectMutableView)
 
   @ExportFunction(readOnly = true, description = "The FQN of the Spring Boot Application class")
   def applicationClassFQN: String = {
-    val bootAppCompilationUnit: CompilationUnit = compilationUnits.find(cu => cu.getTypes.collect {
+    val bootAppCompilationUnit: CompilationUnit = compilationUnits.find(cu => cu.getTypes.asScala.collect {
       case coit: ClassOrInterfaceDeclaration if SpringTypeSelectors.SpringBootApplicationClassSelector(coit) => coit
     }.nonEmpty)
       .getOrElse(

@@ -6,7 +6,7 @@ import javax.script.{Invocable, ScriptEngineManager, ScriptException}
 import com.atomist.project.common.ReportingUtils
 import com.atomist.util.script.{InvalidScriptException, Script, ScriptBacked}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -17,12 +17,12 @@ abstract class AbstractNashornScriptBacked(javaScripts: Seq[Script])
 
   private val engine = new ScriptEngineManager(null).getEngineByName("nashorn")
 
-  protected val js = globalTypeDeclarations + combineScripts(javaScripts)
+  protected val js = globalTypeDeclarations + combineScripts(javaScripts.asJava)
 
   protected def globalTypeDeclarations: String
 
   private def combineScripts(scripts: JList[Script]) =
-    scripts
+    scripts.asScala
       .map(script => s"// ${script.name}\n//----------------------\n${script.content}")
       .mkString("\n\n")
 
@@ -55,7 +55,7 @@ abstract class AbstractNashornScriptBacked(javaScripts: Seq[Script])
 abstract class NashornScriptValidator(
                                        val globalTypeDeclarations: String,
                                        javaScripts: JList[Script])
-  extends AbstractNashornScriptBacked(javaScripts) {
+  extends AbstractNashornScriptBacked(javaScripts.asScala) {
 
   /**
     * Try something with the Invocable (letting any exception pass through)

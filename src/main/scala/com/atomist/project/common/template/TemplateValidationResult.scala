@@ -4,18 +4,18 @@ import java.util.{List => JList}
 
 import com.atomist.project.ProjectOperation
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-@deprecated
+@deprecated("", "")
 object TemplateValidationResult {
 
   def apply(name: String, error: TemplateError) =
-    new TemplateValidationResult(None, Seq(error), Nil)
+    new TemplateValidationResult(None, Seq(error).asJava, Nil.asJava)
 
   implicit def stringToTemplateError(s: String): TemplateError = TemplateError(s)
 }
 
-@deprecated
+@deprecated("", "")
 trait ValidationResult {
 
   def errors: JList[TemplateError]
@@ -34,7 +34,7 @@ trait ValidationResult {
   * Errors are definite mistakes in the template. Warnings may or may not
   * mean problems: for example, the use of $ other.
   */
-@deprecated("Copied from generator-lib and used by rug-botlet-runner. Is this still valid?")
+@deprecated("Copied from generator-lib and used by rug-botlet-runner. Is this still valid?", "")
 case class TemplateValidationResult(
                                      projectOperation: Option[ProjectOperation],
                                      errors: JList[TemplateError],
@@ -45,7 +45,7 @@ case class TemplateValidationResult(
 /**
   * Information about a template error.
   */
-@deprecated
+@deprecated("", "")
 case class TemplateError(
                           msg: String,
                           templateName: Option[String] = None,

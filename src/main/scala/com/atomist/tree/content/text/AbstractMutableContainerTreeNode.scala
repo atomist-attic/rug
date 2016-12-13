@@ -11,9 +11,7 @@ import scala.collection.mutable.ListBuffer
   *
   * @param nodeName name of the node
   */
-abstract class AbstractMutableContainerTreeNode(
-                                                 val nodeName: String
-                                               )
+abstract class AbstractMutableContainerTreeNode(val nodeName: String)
   extends MutableContainerTreeNode
     with PositionedTreeNode {
 
@@ -225,7 +223,7 @@ abstract class AbstractMutableContainerTreeNode(
   final override def value: String = {
     if (!_padded)
       throw new IllegalStateException(s"Call pad before getting value from $this")
-    _fieldValues.map(f => f.value).mkString("")
+    _fieldValues.map(_.value).mkString("")
   }
 
   override def toString =

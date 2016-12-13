@@ -38,12 +38,10 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
     var offset = 0
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
     while (offset < input.length) {
-      //println(s"Offset is $offset in [$input] of length ${input.length}")
       matcher.matchPrefix(offset, input) match {
         case None =>
           offset += 1
         case Some(m) =>
-          //println(s"Found match $m, remainderOffset=${m.remainderOffset}")
           l.foreach(l => m.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })

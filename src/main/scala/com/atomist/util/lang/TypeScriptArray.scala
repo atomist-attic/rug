@@ -106,7 +106,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
     lyst.add(i, e)
   }
 
-  //TODO - odd that intellij doens't like this, but generates a guff implementation by default...
+  // TODO - odd that intellij doens't like this, but generates a guff implementation by default...
   override def toArray[X](ts: Array[X with Object]): Array[X with Object] = {
     lyst.toArray[X](ts)
   }

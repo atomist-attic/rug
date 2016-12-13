@@ -4,7 +4,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body.ConstructorDeclaration
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent: JavaClassOrInterfaceView)
   extends BodyDeclarationView[ConstructorDeclaration](originalBackingObject, parent) {
@@ -17,7 +17,7 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "java.parameter" =>
-      currentBackingObject.getParameters.map(m => new JavaConstructorParameterView(m, this))
+      currentBackingObject.getParameters.asScala.map(new JavaConstructorParameterView(_, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 

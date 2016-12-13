@@ -3,7 +3,7 @@ package com.atomist.rug.kind.core
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
 import com.atomist.source.{FileArtifact, StringFileArtifact}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Mutable view for working directly with files.
@@ -71,7 +71,7 @@ class FileArtifactMutableView(
     description = "The regular expression to search for")
                   regexp: String): java.util.List[String] = {
     val pat = regexp.r
-    pat.findAllIn(currentBackingObject.content).toSeq
+    pat.findAllIn(currentBackingObject.content).toSeq.asJava
   }
 
   @ExportFunction(readOnly = false,

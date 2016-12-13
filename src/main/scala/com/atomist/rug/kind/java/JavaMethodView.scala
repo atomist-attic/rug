@@ -4,7 +4,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body.MethodDeclaration
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaMethodView(originalBackingObject: MethodDeclaration, parent: JavaClassOrInterfaceView)
   extends BodyDeclarationView[MethodDeclaration](originalBackingObject, parent) {
@@ -17,7 +17,7 @@ class JavaMethodView(originalBackingObject: MethodDeclaration, parent: JavaClass
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "java.parameter" =>
-      currentBackingObject.getParameters.map(m => new JavaMethodParameterView(m, this))
+      currentBackingObject.getParameters.asScala.map(new JavaMethodParameterView(_, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 

@@ -5,7 +5,7 @@ import com.atomist.rug.kind.java.JavaClassType._
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSourceMutableView)
   extends TypeDeclarationView[ClassOrInterfaceDeclaration](old, parent) {
@@ -18,20 +18,20 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case ConstructorAlias =>
-      currentBackingObject.getMembers
+      currentBackingObject.getMembers.asScala
         .collect {
           case c: ConstructorDeclaration => c
-        }.map(c => new JavaConstructorView(c, this))
+        }.map(new JavaConstructorView(_, this))
     case MethodAlias =>
-      currentBackingObject.getMembers
+      currentBackingObject.getMembers.asScala
         .collect {
           case m: MethodDeclaration => m
-        }.map(m => new JavaMethodView(m, this))
+        }.map(new JavaMethodView(_, this))
     case FieldAlias =>
-      currentBackingObject.getMembers
+      currentBackingObject.getMembers.asScala
         .collect {
           case f: FieldDeclaration => f
-        }.map(m => new JavaFieldView(m, this))
+        }.map(new JavaFieldView(_, this))
     case _ =>
       throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
@@ -48,5 +48,5 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
                     @ExportFunctionParameterDescription(name = "simpleName",
                       description = "Simple name of the ancestor class we're looking for")
                     simpleName: String): Boolean =
-    currentBackingObject.getExtends.exists(t => t.getName.equals(simpleName))
+    currentBackingObject.getExtends.asScala.exists(_.getName.equals(simpleName))
 }

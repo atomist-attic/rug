@@ -14,7 +14,7 @@ import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaProjectType(
                                     evaluator: Evaluator
@@ -67,7 +67,7 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
 
   @ExportFunction(readOnly = true, description = "List the packages in this project")
   def packages: JList[PackageInfo] = {
-    PackageFinder.packages(currentBackingObject)
+    PackageFinder.packages(currentBackingObject).asJava
   }
 
   @ExportFunction(readOnly = false, description = "Rename the given package. All package under it will also be renamed")
@@ -106,10 +106,9 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
     javaSourceViews.flatMap(jsv => jsv.compilationUnit)
 
   def classes: Seq[ClassOrInterfaceDeclaration] =
-    javaSourceViews.flatMap(jsv => jsv.compilationUnit).flatMap(cu => cu.getTypes collect {
+    javaSourceViews.flatMap(_.compilationUnit).flatMap(cu => cu.getTypes.asScala collect {
       case coit: ClassOrInterfaceDeclaration => coit
     })
-
 }
 
 import com.atomist.rug.kind.core.ProjectType.ProvenanceFilePath

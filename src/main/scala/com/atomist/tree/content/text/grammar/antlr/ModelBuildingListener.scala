@@ -1,12 +1,12 @@
 package com.atomist.tree.content.text.grammar.antlr
 
-import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
-import com.atomist.tree.content.text.grammar.{MatchListener, PositionalString}
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.antlr.v4.runtime.{ParserRuleContext, Token}
-import org.snt.inmemantlr.DefaultListener
+import org.snt.inmemantlr.listener.DefaultListener
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -56,9 +56,9 @@ class ModelBuildingListener(
     if (rc.exception != null) throw rc.exception
 
     val startPos = // position(rc.getStart)
-    OffsetInputPosition(rc.getStart.getStartIndex)
+      OffsetInputPosition(rc.getStart.getStartIndex)
     val endPos = // position(rc.stop) + rc.getStop.getText.size
-    OffsetInputPosition(rc.getStop.getStopIndex + 1)
+      OffsetInputPosition(rc.getStop.getStopIndex + 1)
 
     // Create an empty model node that we'll fill
     val mof = new SimpleMutableContainerTreeNode(rule, Nil, startPos, endPos)

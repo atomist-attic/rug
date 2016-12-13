@@ -8,7 +8,7 @@ import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class ProjectMutableViewTest extends FlatSpec with Matchers {
 
@@ -289,7 +289,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   private def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
     val project = JavaClassTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
-    val fmv = pmv.files.head
+    val fmv = pmv.files.asScala.head
     val oldPath = fmv.path
     fmv.dirty should be(false)
     val newPath = "foobar/name"
@@ -298,7 +298,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     fmv.dirty should be(true)
     fmv.path should equal(newPath)
     fmv.currentBackingObject.path should equal(newPath)
-    pmv.files.map(_.path).contains(oldPath) should be(false)
-    pmv.files.map(_.path).contains(newPath) should be(true)
+    pmv.files.asScala.map(_.path).contains(oldPath) should be(false)
+    pmv.files.asScala.map(_.path).contains(newPath) should be(true)
   }
 }

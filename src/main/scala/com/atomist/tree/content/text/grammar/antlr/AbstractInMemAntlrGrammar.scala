@@ -4,7 +4,8 @@ import com.atomist.rug.RugRuntimeException
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.Tool
 import org.antlr.v4.tool.{ANTLRMessage, ANTLRToolListener}
-import org.snt.inmemantlr.{GenericParser, ToolCustomizer}
+import org.snt.inmemantlr.GenericParser
+import org.snt.inmemantlr.tool.ToolCustomizer
 import org.stringtemplate.v4.ST
 
 import scala.collection.mutable.ListBuffer

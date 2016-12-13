@@ -82,7 +82,7 @@ object JavaScriptOperationFinder {
     val filtered = atomistConfig.atomistContent(rugAs)
       .filter(d => true,
         f => (jsFile(f) || tsFile(f))
-          && !f.path.startsWith(excludePrefix) && !shouldSuppress(f))
+          && f.path.startsWith(atomistConfig.atomistRoot) && !f.path.startsWith(excludePrefix) && !shouldSuppress(f))
 
     tsc.compile(filtered)
   }

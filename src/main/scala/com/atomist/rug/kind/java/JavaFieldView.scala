@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import com.atomist.rug.spi.{ExportFunction, TerminalView}
 import com.github.javaparser.ast.body.FieldDeclaration
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOrInterfaceView)
   extends BodyDeclarationView[FieldDeclaration](originalBackingObject, parent)
@@ -17,6 +17,6 @@ class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOr
   def name = {
     if (currentBackingObject.getVariables.size != 1)
       throw new UnsupportedOperationException(s"Can only handle 1 variable declaration: $currentBackingObject")
-    currentBackingObject.getVariables.head.getId.getName
+    currentBackingObject.getVariables.asScala.head.getId.getName
   }
 }

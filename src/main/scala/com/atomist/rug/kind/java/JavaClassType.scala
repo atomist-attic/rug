@@ -11,7 +11,7 @@ import com.atomist.source.ArtifactSource
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class JavaClassType(evaluator: Evaluator)
   extends Type(evaluator)
@@ -55,8 +55,8 @@ object JavaClassType {
 
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val newAnnotation = new MarkerAnnotationExpr(new NameExpr(annotationName))
-    if (!bd.getAnnotations.map(ann => ann.getName).contains(newAnnotation.getName)) {
-      bd.setAnnotations(bd.getAnnotations :+ newAnnotation)
+    if (!bd.getAnnotations.asScala.map(ann => ann.getName).contains(newAnnotation.getName)) {
+      bd.setAnnotations((bd.getAnnotations.asScala :+ newAnnotation).asJava)
       true
     } else // It's already there
       false

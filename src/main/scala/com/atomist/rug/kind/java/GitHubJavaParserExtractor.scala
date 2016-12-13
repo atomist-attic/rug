@@ -13,7 +13,7 @@ case class FileAndCompilationUnit(file: FileArtifact, compilationUnit: Compilati
 
 import com.atomist.util.Utils.withCloseable
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Extract JavaParser CompilationUnits from Artifact Source.
@@ -21,7 +21,7 @@ import scala.collection.JavaConversions._
 object GitHubJavaParserExtractor extends Extractor[JList[FileArtifact], Seq[FileAndCompilationUnit]] with LazyLogging {
 
   override def apply(javaFiles: JList[FileArtifact]): Seq[FileAndCompilationUnit] = {
-    javaFiles.map(f => {
+    javaFiles.asScala.map(f => {
       logger.debug(s"Looking at Java artifact $f using $this")
       withCloseable(f.inputStream())(is =>
         withCloseable(new InputStreamReader(is))(reader => {

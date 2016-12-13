@@ -6,7 +6,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor}
 import com.atomist.util.BinaryDecider
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Simple abstraction for a template engine.
@@ -65,7 +65,7 @@ trait MergeTool {
 
 case class MergeContext(map: Map[String, Any]) {
 
-  def this(m: JMap[String, Object]) = this(m.toMap)
+  def this(m: JMap[String, Object]) = this(m.asScala.toMap)
 
   def this(pd: ParameterValues) =
     this(pd.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap)

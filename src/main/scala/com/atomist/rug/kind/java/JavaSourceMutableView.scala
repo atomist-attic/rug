@@ -11,7 +11,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.{CompilationUnit, PackageDeclaration}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import JavaClassType._
 
 import scala.util.Try
@@ -38,7 +38,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
   override def children(fieldName: String): Seq[MutableView[_]] = (compilationUnit, fieldName) match {
     case (None, _) => Nil
     case (Some(cu), JavaTypeAlias) =>
-      cu.getTypes
+      cu.getTypes.asScala
         .collect {
           case c: ClassOrInterfaceDeclaration => c
         }

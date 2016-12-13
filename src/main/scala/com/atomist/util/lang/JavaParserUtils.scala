@@ -7,7 +7,7 @@ import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr._
 import com.github.javaparser.ast.stmt.{BlockStmt, ReturnStmt, Statement, ThrowStmt}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Utility methods to simplify working with JavaParser.
@@ -75,7 +75,7 @@ object JavaParserUtils {
 
   // TODO why doesn't a structural type seem to work here?
   def getAnnotation(bd: BodyDeclaration, name: String): Option[AnnotationExpr] =
-    bd.getAnnotations.find(a => a.getName.getName equals name)
+    bd.getAnnotations.asScala.find(_.getName.getName equals name)
 
   def getAnnotationValueAsString(an: AnnotationExpr): Option[String] = {
     an match {
@@ -90,7 +90,7 @@ object JavaParserUtils {
   }
 
   def getAnnotation(p: Parameter, name: String): Option[AnnotationExpr] =
-    p.getAnnotations.find(a => a.getName.getName equals name)
+    p.getAnnotations.asScala.find(a => a.getName.getName equals name)
 
   import scala.language.reflectiveCalls
 
@@ -108,7 +108,8 @@ object JavaParserUtils {
   def implementMeBlock(message: String): BlockStmt = {
     val block = new BlockStmt()
     val arg = new StringLiteralExpr(message)
-    val newUoe = new ObjectCreationExpr(null, new ClassOrInterfaceType("UnsupportedOperationException"), Seq(arg))
+    val newUoe = new ObjectCreationExpr(null,
+      new ClassOrInterfaceType("UnsupportedOperationException"), Seq(arg.asInstanceOf[Expression]).asJava)
     val throws = new ThrowStmt(newUoe)
     ASTHelper.addStmt(block, throws)
     block
@@ -142,10 +143,10 @@ object JavaParserUtils {
     * @return field name if it's a simple getter
     */
   def simpleGetterOfField(md: MethodDeclaration): Option[String] = {
-    val statements: List[Statement] = md.getBody.getStmts.toList
+    val statements: List[Statement] = md.getBody.getStmts.asScala.toList
     statements match {
       case (r: ReturnStmt) :: Nil =>
-        r.getChildrenNodes.toList match {
+        r.getChildrenNodes.asScala.toList match {
           case (n: NameExpr) :: Nil =>
             Some(n.getName)
           case _ => None
@@ -162,7 +163,7 @@ object JavaParserUtils {
       val exposedNameFromMethod = JavaHelpers.getterNameToPropertyName(md.getName)
       Some(exposedNameFromMethod)
     case fd: FieldDeclaration if isPublicField(fd) && !shouldIgnoreAsCustomTypeMember(bd) =>
-      Some(fd.getVariables.head.getId.getName)
+      Some(fd.getVariables.asScala.head.getId.getName)
     case _ => None
   }
 
@@ -172,13 +173,13 @@ object JavaParserUtils {
       Some(dataModelNameFromAnnotation(bd).getOrElse(exposedNameFromMethod))
     case fd: FieldDeclaration
       if shouldExposeAsCustomTypeMember(fd) =>
-      Some(dataModelNameFromAnnotation(bd).getOrElse(fd.getVariables.head.getId.getName))
+      Some(dataModelNameFromAnnotation(bd).getOrElse(fd.getVariables.asScala.head.getId.getName))
     case _ => None
   }
 
   // TODO handle non JSON annotations if we support any
   private def dataModelNameFromAnnotation(bd: BodyDeclaration): Option[String] = {
-    bd.getAnnotations.find(a => JsonPropertyAnnotationName.equals(a.getName.getName))
+    bd.getAnnotations.asScala.find(a => JsonPropertyAnnotationName.equals(a.getName.getName))
       .flatMap(a => getAnnotationValueAsString(a))
   }
 
@@ -209,14 +210,14 @@ object JavaParserUtils {
   )
 
   def shouldIgnoreAsCustomTypeMember(bd: BodyDeclaration): Boolean =
-    bd.getAnnotations.exists(a => IgnoreDataFieldAnnotations.contains(a.getName.getName))
+    bd.getAnnotations.asScala.exists(a => IgnoreDataFieldAnnotations.contains(a.getName.getName))
 
   def shouldExposeAsCustomTypeMember(bd: BodyDeclaration): Boolean =
-    bd.getAnnotations.exists(a => ExposeDataFieldAnnotations.contains(a.getName.getName))
+    bd.getAnnotations.asScala.exists(a => ExposeDataFieldAnnotations.contains(a.getName.getName))
 
   def addImportsIfNeeded(fqns: Seq[String], cu: CompilationUnit): Unit = {
     fqns.foreach(fqn => {
-      val importDefinition = cu.getImports.find(imp => imp.toString contains fqn)
+      val importDefinition = cu.getImports.asScala.find(imp => imp.toString contains fqn)
       if (importDefinition.isEmpty) {
         cu.getImports.add(new ImportDeclaration(new NameExpr(fqn), false, false))
       }

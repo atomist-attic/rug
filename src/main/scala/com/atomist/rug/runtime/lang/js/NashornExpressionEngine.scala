@@ -8,7 +8,7 @@ import com.atomist.util.script.Script
 import com.atomist.util.script.nashorn.AbstractNashornScriptBacked
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Fronts a local JavaScript expression.
@@ -22,16 +22,16 @@ class NashornExpressionEngine private(
   override protected def globalTypeDeclarations: String = ""
 
   def evaluate(context: Object, alias: String, identifierMap: Map[String, Object]): Object = {
-    val parameterMap: JMap[String, Object] = identifierMap
+    val parameterMap: JMap[String, Object] = identifierMap.asJava
 
     val argsToUse: Seq[Object] =
-      Seq(context) ++ parameterMap.values ++ Seq(parameterMap)
+      Seq(context) ++ parameterMap.values.asScala ++ Seq(parameterMap)
 
     invocable.invokeFunction(functionName, argsToUse: _*)
   }
 
   def evaluate(ic: FunctionInvocationContext[_]): Object = {
-    val parameterMap: JMap[String, Object] = ic.identifierMap
+    val parameterMap: JMap[String, Object] = ic.identifierMap.asJava
 
     val localArgs = if (ic.localArgs != null) ic.localArgs else Nil
     val argsToUse: Seq[Object] =

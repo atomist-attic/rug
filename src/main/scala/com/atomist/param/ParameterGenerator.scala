@@ -12,11 +12,13 @@ object ParameterGenerator {
     * Provide a valid parameter value for this parameter. There's no guarantee
     * of randomness: successive calls may or may not return the same value.
     */
-  def validValueFor(p: Parameter): ParameterValue = p.hasDefaultValue match {
+  def validValueFor(p: Parameter): ParameterValue = validValueFor(p, 1)
+
+  def validValueFor(p: Parameter, minLength: Int): ParameterValue = p.hasDefaultValue match {
     case true => SimpleParameterValue(p.getName, p.getDefaultValue)
     case false =>
       val generex = new Generex(p.getPattern)
-      val generated = generex.random()
+      val generated = generex.random(minLength)
       SimpleParameterValue(p.getName, generated)
   }
 
@@ -25,5 +27,5 @@ object ParameterGenerator {
     */
   @throws[IllegalArgumentException]
   def validParameterValuesFor(p: Parameterized): ParameterValues =
-    new SimpleParameterValues(p.parameters.map(p => validValueFor(p)))
+    new SimpleParameterValues(p.parameters.map(validValueFor(_)))
 }

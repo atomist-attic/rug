@@ -251,7 +251,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val cont = r.findFile("Todo.elm").get.content
     cont.contains(newImportStatement) should be(true)
     // TODO had to add 4 returns here. Maybe 3 is correct?
-    cont should be(todoSource.content + "\n\n\n\n" + newImportStatement)
+    cont should be(todoSource.content + s"${System.lineSeparator()}${System.lineSeparator()}${System.lineSeparator()}${System.lineSeparator()}" + newImportStatement)
   }
 
   it should "add import when one existing import" in {
@@ -273,7 +273,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Todo.elm").get.content
     content.contains(newImportStatement) should be(true)
-    content should be(todoSource.content + newImportStatement + "\n")
+    content should be(todoSource.content + newImportStatement + System.lineSeparator())
   }
 
   it should "not add import when it is already there" in {

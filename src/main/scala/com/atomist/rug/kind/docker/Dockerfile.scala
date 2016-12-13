@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.docker
 
 import java.util.concurrent.atomic.AtomicInteger
+import com.atomist.util.Utils.StringImprovements
 
 class Dockerfile(val lines: Seq[DockerfileLine]) {
 
@@ -117,7 +118,7 @@ class Dockerfile(val lines: Seq[DockerfileLine]) {
       }
       builder.append(d.getRaw)
     })
-    builder.toString
+    builder.toString.toSystem
   }
 
   private def add(cmd: Command, arg: Any) = {

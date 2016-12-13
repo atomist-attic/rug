@@ -17,6 +17,6 @@ object ReportingUtils {
       s.lines
         .zipWithIndex
         .map(tup => s"${tup._2 + 1} ${tup._1}")
-        .mkString("\n")
+        .mkString(System.lineSeparator())
   }
 }

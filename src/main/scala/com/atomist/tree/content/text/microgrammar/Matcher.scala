@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 import com.atomist.tree.content.text._
-import com.atomist.tree.{ContainerTreeNode, MutableTreeNode}
+import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 
 case class MatcherConfig(
                           greedy: Boolean = true
@@ -30,7 +30,7 @@ trait Matcher {
 
   def concat(m: Matcher): Matcher = Concat(this, m)
 
-  def ~(m: Matcher) = concat(m)
+  def ~(m: Matcher): Matcher = concat(m)
 
   /**
     * Concatenation requiring whitespace
@@ -38,7 +38,7 @@ trait Matcher {
     * @param m
     * @return
     */
-  def ~~(m: Matcher) = concat(WhitespaceOrNewLine.concat(m))
+  def ~~(m: Matcher): Matcher = concat(WhitespaceOrNewLine.concat(m))
 
   /**
     * Concatenation with optional whitespace
@@ -46,7 +46,7 @@ trait Matcher {
     * @param m
     * @return
     */
-  def ~?(m: Matcher) = concat(Whitespace.?.concat(m))
+  def ~?(m: Matcher): Matcher = concat(Whitespace.?.concat(m))
 
   def alternate(m: Matcher): Matcher = Alternate(this, m)
 
@@ -54,9 +54,9 @@ trait Matcher {
 
   def opt: Matcher = Optional(this)
 
-  def |(m: Matcher) = alternate(m)
+  def |(m: Matcher): Matcher = alternate(m)
 
-  def -() = Discard(this)
+  def -(): Matcher = Discard(this)
 
   /**
     * Utility method to take next characters from input
@@ -106,7 +106,7 @@ case class PatternMatch(
                          matcherId: String)
   extends Positioned {
 
-  def remainderOffset = offset + matched.length
+  def remainderOffset: Int = offset + matched.length
 
   override def startPosition: InputPosition = OffsetInputPosition(offset)
 
@@ -189,25 +189,44 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] = {
+  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
       case None =>
-        Some(PatternMatch(None, offset, "", s, this.toString))
-      case Some(there) => Some(there)
+        Some(PatternMatch(None, offset = offset, matched = "", s, this.toString))
+      case Some(there) =>
+        Some(there)
     }
-  }
 }
 
+/**
+  * We create a new subnode with the given name
+  *
+  * @param m
+  * @param name
+  */
 case class Rep(m: Matcher, name: String = "rep") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] = {
+  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
       case None =>
-        Some(PatternMatch(None, offset, "", s, this.toString))
-      case Some(there) => Some(there)
-      // TODO KEEP MATCHING
+        // We can match zero times. Put in an empty node.
+        val pos = OffsetInputPosition(offset)
+        Some(
+          PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
+            offset = offset, matched = "", s, this.toString))
+      case Some(there) =>
+        // We matched once. Let's keep going
+        var matched = there.matched
+        val offset = there.offset
+        var nodes = there.node.toSeq
+        val pos = OffsetInputPosition(offset)
+        val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
+        val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
+        Some(
+          PatternMatch(node = Some(combinedNode),
+            offset, matched, s, this.toString)
+        )
     }
-  }
 }
 
 object Repsep {
@@ -215,4 +234,15 @@ object Repsep {
   def apply(m: Matcher, sep: Matcher): Matcher =
     m.? ~? Rep(sep ~? m)
 
+}
+
+
+case class EmptyContainerTreeNode(name: String, pos: InputPosition)
+  extends MutableTerminalTreeNode(name, "", pos) {
+
+  override def endPosition: InputPosition = startPosition
+
+  override def nodeType: String = "empty"
+
+  override def value: String = ""
 }

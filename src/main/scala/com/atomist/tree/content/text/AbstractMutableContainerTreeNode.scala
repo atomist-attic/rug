@@ -215,7 +215,7 @@ abstract class AbstractMutableContainerTreeNode(
 
   private var dirtied = false
 
-  override def dirty = super.dirty || dirtied
+  override def dirty: Boolean = super.dirty || dirtied
 
   override def update(to: String): Unit = {
     replaceFields(Seq(SimpleTerminalTreeNode(nodeName, to)))

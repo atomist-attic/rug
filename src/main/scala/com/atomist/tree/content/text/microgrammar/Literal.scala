@@ -29,7 +29,7 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
 object Literal {
 
-  implicit def stringToLiteral(s: String): Literal = Literal(s)
+  implicit def stringToMatcher(s: String): Matcher = Literal(s)
 }
 
 /**

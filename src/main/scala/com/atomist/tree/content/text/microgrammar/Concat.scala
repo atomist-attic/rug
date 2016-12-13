@@ -10,7 +10,7 @@ import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
   * @param left  left pattern
   * @param right right pattern
   */
-case class Concat(left: Matcher, right: Matcher, name: String = "Concat") extends Matcher {
+case class Concat(left: Matcher, right: Matcher, name: String) extends Matcher {
 
   override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] = {
     val l = left.matchPrefix(offset, input)
@@ -37,7 +37,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = "Concat") extend
                   case ctn: ContainerTreeNode => ctn.childNodes
                   case n => Seq(n)
                 })
-                Some(new SimpleMutableContainerTreeNode("~", mergedFields, l.startPosition, r.endPosition))
+                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition))
             }
             Some(PatternMatch(mergedTree, offset, leftMatch.matched + rightMatch.matched, input, this.toString))
         }

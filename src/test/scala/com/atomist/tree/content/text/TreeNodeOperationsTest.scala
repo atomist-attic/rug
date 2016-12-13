@@ -33,7 +33,7 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     transformed.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (false)
   }
 
-  it should "collapse selected nodes" in {
+  it should "collapse named nodes" in {
     val input = "The quick brown fox"
     val f1 = new MutableTerminalTreeNode("f1", "The", OffsetInputPosition(0))
     val f2 = new MutableTerminalTreeNode("f2", "quick", OffsetInputPosition(4))

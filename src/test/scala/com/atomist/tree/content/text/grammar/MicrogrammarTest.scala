@@ -4,6 +4,7 @@ import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTree
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text._
+import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 abstract class MicrogrammarTest extends FlatSpec with Matchers {
@@ -329,8 +330,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
 
   protected def ymlKeys: Microgrammar
 
-  it should "edit yml" in pendingUntilFixed {
-    val g1 = ymlKeys
+  it should "edit yml" in {
     val input =
       """
         |language: java
@@ -343,12 +343,14 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
         |  - secure: nnWB6oO1NDgLHLCpiDiuWHnfh3t66KkE0K6Z1rbYv/uGMAMP+8R/YkrRJFpRRB2YoOCTJ+nxefjeEJTqlXlz9+tNLO90ctxyabH6QMnCT+KC/S237GxjczXXP1eFI5r8PKuY1Hdf7G1YIFhH9RKS8lFJjDbV4IX70hFJynj6lQhu/eLhjh6CRFpWPCFHrZd1k3OVVQ4WHfumKpBxHp/0hAe+BFLO3HlIuZYbyChLWzvYpc0yPRTOd82i2jZ+JUotlQcZ5ttyvCj4QjCNjPvg6zjcpPo+qK7Oh9R5wvYHmDkOmjSPO83COz0uvFO1XBKuINLJM6Iwc7Aw8wptmDxTlxcKbf7wPB8r7KWq6uT2WdrG/euUtI76k137SZOx4BmgJARuUr6FXyOjzoba10531O3T9bzIgXbxcR50NU5UWpMLqjgYfNTezs9PtQLXZMBxMYeCsVt6VwxCYhDR8lPcq3+EjOS8iMxO3jnIqY2qawOMYE4iofY/wUv/uMWP5z+A5YE8fjjvrVV1kGCLK/1OBAfcnA2OktD3OrwNmz9kPulwn5f+YHyLQHCZHsbyovrGwOahN/qV1I+/zMAiRsevrI67JiOerAf6efQCvtPKmi8ZvM6YMksjbwZvQqiANi+dOMk5W7zr0GVmO2QiZ+5gFRB/Nr486jo+Xm0/ZZwzlj0=
         |
       """.stripMargin
-    val m = g1.findMatches(input)
+    val m = ymlKeys.findMatches(input)
     m.size should be(1)
-    println(m.head)
-    val keys = m.head("keys")
-    keys.size should be >= (2)
-    val k1 = keys.head.asInstanceOf[MutableContainerTreeNode]
-    k1("KEY").head.asInstanceOf[TerminalTreeNode].value should equal("CI_DEPLOY_USERNAME")
+    //println(TreeNodeUtils.toShortString(m.head))
+    val keys = m.head("key")
+    val values = m.head("value")
+    keys.size should be (2)
+    val k1 = keys.head
+    k1.value should equal("CI_DEPLOY_USERNAME")
+    values.head.value should equal ("travis-mvn-deploy")
   }
 }

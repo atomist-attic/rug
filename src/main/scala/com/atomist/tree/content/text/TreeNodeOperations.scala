@@ -7,7 +7,7 @@ import org.springframework.util.ReflectionUtils
 import scala.collection.mutable.ListBuffer
 
 /**
-  * Defines operations on TreeNodes such as tree pruning.
+  * Pperations on TreeNodes such as tree pruning.
   */
 object TreeNodeOperations {
 
@@ -57,13 +57,22 @@ object TreeNodeOperations {
 
   /**
     * Get rid of this level, pulling up its children
+    * @param name name of node level to get rid of
     */
-  def collapse(name: String): TreeOperation = treeOperation {
+  def collapse(name: String): TreeOperation =
+    collapse(ctn => ctn.nodeName.equals(name))
+
+  /**
+    * Get rid of this level, pulling up its children
+    * @param f test for which nodes should be removed
+    * @return new tree
+    */
+  def collapse(f: ContainerTreeNode => Boolean): TreeOperation = treeOperation {
     def filter: NodeTransformer = {
       case ofv: MutableContainerTreeNode =>
         val pulledUp = ListBuffer.empty[TreeNode]
         val kids = ofv.childNodes flatMap {
-          case ctn: ContainerTreeNode if ctn.nodeName.equals(name) =>
+          case ctn: ContainerTreeNode if f(ctn) =>
             pulledUp.appendAll(ctn.childNodes.flatMap(n => filter(n)))
             None
           case x => Some(x)
@@ -89,6 +98,9 @@ object TreeNodeOperations {
       Some(x)
   }
 
+  /**
+    * TreeOperation that removes padding nodes
+    */
   val RemovePadding: TreeOperation = treeOperation {
     case pn: PaddingNode =>
       None

@@ -14,9 +14,15 @@ object TreeNodeUtils {
     * @param s
     * @return
     */
-  def inlineReturns(s: String) = s.replace("\n", "ø")
+  def inlineReturns(s: String): String = s.replace("\n", "ø")
 
-  def toShortString(fv: TreeNode): String = {
+  /**
+    * Return a directory tree like representation of the node, using newlines and tabs
+    * to show nesting and structure. For use in diagnostics.
+    * @param tn node to represent
+    * @return string representation of the node
+    */
+  def toShortString(tn: TreeNode): String = {
 
     def tabs(n: Int) = List.fill(n)("\t").mkString("")
 
@@ -41,6 +47,6 @@ object TreeNodeUtils {
       case f => tabs(depth) + info(f) + "\n"
     }
 
-    toShortStr(fv, 0)
+    toShortStr(tn, 0)
   }
 }

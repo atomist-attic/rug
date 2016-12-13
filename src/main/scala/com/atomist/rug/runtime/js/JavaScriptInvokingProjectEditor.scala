@@ -15,16 +15,13 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   */
 class JavaScriptInvokingProjectEditor(
                                    jsc: JavaScriptContext,
-                                   className: String,
                                    jsVar: ScriptObjectMirror,
                                    rugAs: ArtifactSource
                                  )
-  extends JavaScriptInvokingProjectOperation(jsc, className, jsVar, rugAs)
+  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectEditorSupport {
 
-  override val name: String =
-    if (className.endsWith("Editor")) className.dropRight("Editor".length)
-    else className
+  override val name: String = jsVar.getMember("name").asInstanceOf[String]
 
   override def impacts: Set[Impact] = Impacts.UnknownImpacts
 

@@ -79,33 +79,28 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "find boot package using let and typescript" in {
     val program =
       """
-        |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
-        |import {Status, Result} from "user-model/operations/Result"
+        |import {ProjectEditor} from "user-model/operations/ProjectEditor"
+        |import {Status, Result} from "user-model/operations/RugOperation"
         |import {Project,SpringBootProject} from 'user-model/model/Core'
+        |import {Registry} from 'user-model/services/Registry'
         |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
         |
-        |import {editor, inject} from '@atomist/rug/support/Metadata'
         |
         |declare var print
         |
-        |@editor("Package finder")
-        |class PackageFinder extends ParameterlessProjectEditor {
-        |
-        | private eng: PathExpressionEngine;
-        |
-        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-        |      super();
-        |      this.eng = _eng;
-        |    }
-        |
-        |    editWithoutParameters(project: Project): Result {
-        |
-        |    let pe = new PathExpression<Project,SpringBootProject>(`->spring.bootProject`)
-        |    let p = this.eng.scalar(project, pe)
-        |    //if (p == null)
-        |    return new Result(Status.Success, "OK");
+        |class PackageFinder implements ProjectEditor {
+        |    name: string = "package.finder"
+        |    description: string = "Find a spring boot package"
+        |    edit(project: Project): Result {
+        |      let eng = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+        |      let pe = new PathExpression<Project,SpringBootProject>(`->spring.bootProject`)
+        |      let p = eng.scalar(project, pe)
+        |      //if (p == null)
+        |      return new Result(Status.Success, "OK");
         |    }
         |}
+        |
+        |var finder = new PackageFinder()
       """.stripMargin
 
     attemptToModify(program, NewSpringBootProject, Map(), runtime = ccPipeline) match {

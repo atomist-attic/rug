@@ -7,16 +7,13 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 class JavaScriptInvokingExecutor(
                                   jsc: JavaScriptContext,
-                                  className: String,
                                   jsVar: ScriptObjectMirror,
                                   rugAs: ArtifactSource
                                 )
-  extends JavaScriptInvokingProjectOperation(jsc, className, jsVar, rugAs)
+  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with Executor {
 
-  override val name: String =
-    if (className.endsWith("Executor")) className.dropRight("Executor".length)
-    else className
+  override val name: String = jsVar.getMember("name").asInstanceOf[String]
 
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
     val smv = new ServicesMutableView(rugAs, serviceSource)

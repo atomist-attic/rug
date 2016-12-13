@@ -16,8 +16,11 @@
     "url": "https://github.com/atomist/rug/issues"
   },
   "homepage": "https://github.com/atomist/rug#readme",
-  "atomist" : {
+  "atomist": {
     "group": "com.atomist",
     "artifact": "rug"
+  },
+  "dependencies": {
+    "@types/js-yaml": "^3.5.28"
   }
 }

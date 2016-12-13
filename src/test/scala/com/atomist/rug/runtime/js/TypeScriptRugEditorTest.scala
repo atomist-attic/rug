@@ -12,202 +12,155 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorWithoutParameters =
     """
-      |import {ParameterlessProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
-      |import {editor} from 'user-model/support/Metadata'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
+      |import {Result,Status} from 'user-model/operations/RugOperation'
       |
-      |@editor("My simple editor")
-      |class SimpleEditor extends ParameterlessProjectEditor {
-      |
-      |    editWithoutParameters(project: Project):Result {
+      |class SimpleEditor implements ProjectEditor {
+      |    name: string = "Simple"
+      |    description: string = "My simple editor"
+      |    edit(project: Project):Result {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success,
       |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
+      |var editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditor =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
-      |import {editor} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status} from 'user-model/operations/RugOperation'
       |
-      |@editor("My simple editor")
-      |class SimpleEditor implements ProjectEditor<Parameters> {
-      |
-      |    edit(project: Project, @parameters("Parameters") p: Parameters):Result {
+      |class SimpleEditor implements ProjectEditor {
+      |    name: string = "Simple"
+      |    description: string = "My simple editor"
+      |    edit(project: Project):Result {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success,
       |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
+      |
+      |var editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditor =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
-      |import {editor} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
+      |import {Result,Status} from 'user-model/operations/RugOperation'
       |
-      |@editor("My simple editor")
-      |class SimpleEditor implements ProjectEditor<Parameters> {
-      |
-      |    edit(project: Project, @parameters("Parameters") p: Parameters) {
+      |class SimpleEditor implements ProjectEditor {
+      |    name: string = "Simple"
+      |    description: string = "My simple editor"
+      |    edit(project: Project) {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
-      |        return "thing"
+      |        return new Result(Status.Success,
+      |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
+      |var editor = new SimpleEditor()
+
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
     s"""
        |import {Project} from 'user-model/model/Core'
-       |import {ParametersSupport} from 'user-model/operations/Parameters'
        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-       |import {Parameters} from 'user-model/operations/Parameters'
        |import {File} from 'user-model/model/Core'
-       |import {Result,Status} from 'user-model/operations/Result'
+       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
        |
-       |import {parameter} from 'user-model/support/Metadata'
-       |import {inject} from 'user-model/support/Metadata'
-       |import {parameters} from 'user-model/support/Metadata'
-       |import {tag} from 'user-model/support/Metadata'
-       |import {editor} from 'user-model/support/Metadata'
-       |
-       |abstract class ContentInfo extends ParametersSupport {
-       |
-       |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
-       |  content: string = null
-       |
-       |}
-       |
-       |@editor("A nice little editor")
-       |@tag("java")
-       |@tag("maven")
-       |class SimpleEditor implements ProjectEditor<ContentInfo> {
-       |
-       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
-       |      p["otherParam"] = p.content
-       |      project.editWith("other", p)
+       |class SimpleEditor implements ProjectEditor {
+       |    name: string = "Simple"
+       |    description: string = "My simple editor"
+       |    tags: string[] = ["java", "maven"]
+       |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100}]
+       |    edit(project: Project, content: string) {
+       |      //TODO p["otherParam"] = p.content
+       |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |      return new Result(Status.Success,
        |        `Edited Project now containing $${project.fileCount()} files: \n`
        |        );
        |    }
        |  }
-       |
+       |var editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleGenerator =
     """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {GeneratorParameters} from 'user-model/operations/ProjectGenerator'
       |import {ProjectGenerator} from 'user-model/operations/ProjectGenerator'
       |import {Project} from 'user-model/model/Core'
-      |import {Status,Result} from 'user-model/operations/Result'
+      |import {Status,Result} from 'user-model/operations/RugOperation'
       |
-      |import {generator} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
       |
-      |@generator("My simple Generator")
-      |class SimpleGenerator implements ProjectGenerator<GeneratorParameters> {
-      |
-      |     populate(project: Project, parameters: GeneratorParameters) {
+      |class SimpleGenerator implements ProjectGenerator{
+      |     description: string = "My simple Generator"
+      |     name: string = "SimpleGenerator"
+      |     populate(project: Project, projectName: string) {
       |        project.copyEditorBackingFilesPreservingPath("")
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
+      |var gen = new SimpleGenerator()
     """.stripMargin
 
   val SimpleEditorTaggedAndMeta =
     s"""
        |import {Project} from 'user-model/model/Core'
-       |import {ParametersSupport} from 'user-model/operations/Parameters'
        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-       |import {Parameters} from 'user-model/operations/Parameters'
+       |import {Parameter, Result, Status} from 'user-model/operations/RugOperation'
        |import {File} from 'user-model/model/Core'
-       |import {Result,Status} from 'user-model/operations/Result'
        |
-       |import {parameter} from 'user-model/support/Metadata'
-       |import {inject} from 'user-model/support/Metadata'
-       |import {parameters} from 'user-model/support/Metadata'
-       |import {tag} from 'user-model/support/Metadata'
-       |import {editor} from 'user-model/support/Metadata'
+       |class SimpleEditor implements ProjectEditor {
        |
-       |abstract class ContentInfo extends ParametersSupport {
+       |    name: string = "Simple"
+       |    description: string = "A nice little editor"
+       |    tags: string[] = ["java", "maven"]
+       |    parameters: Parameter[] = [
+       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders"},
+       |        {name: "num", description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100, default: 10}
+       |    ]
        |
-       |  @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
-       |  content: string = "Anders"
-       |
-       |   @parameter({description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100})
-       |   num: number = 10
-       |}
-       |
-       |@editor("A nice little editor")
-       |@tag("java")
-       |@tag("maven")
-       |class SimpleEditor implements ProjectEditor<ContentInfo> {
-       |
-       |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo): Result {
-       |      project.addFile("src/from/typescript", p.content);
+       |    edit(project: Project, content: string, num: number): Result {
+       |      project.addFile("src/from/typescript", content);
        |      return new Result(Status.Success,
        |      `Edited Project now containing $${project.fileCount()} files: \n`);
        |    }
        |  }
-       |
+       |var myeditor = new SimpleEditor()
     """.stripMargin
 
   val EditorInjectedWithPathExpression =
     """import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {PathExpression} from 'user-model/tree/PathExpression'
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {Registry} from 'user-model/services/Registry'
       |
-      |import {parameter} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
+      |class ConstructedEditor implements ProjectEditor {
       |
-      |abstract class JavaInfo extends ParametersSupport {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |  packageName: string = null
+      |    name: string = "Constructed"
+      |    description: string = "A nice little editor"
+      |    tags: string[] = ["java", "maven"]
+      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
+      |    edit(project: Project, packageName: string) {
       |
-      |}
-      |
-      |@editor("A nice little editor")
-      |@tag("java")
-      |@tag("maven")
-      |class ConstructedEditor implements ProjectEditor<Parameters> {
-      |
-      |    private eng: PathExpressionEngine;
-      |
-      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-      |      this.eng = _eng;
-      |    }
-      |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
-      |
+      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
       |      let pe = new PathExpression<Project,File>(`/*:file[name='pom.xml']`)
       |      //console.log(pe.expression);
-      |      let m: Match<Project,File> = this.eng.evaluate(project, pe)
+      |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
-      |      ji["whatever"] = "thing"
+      |      //ji["whatever"] = "thing"
       |
-      |      var t: string = `param=${ji.packageName},filecount=${m.root().fileCount()}`
+      |      var t: string = `param=${packageName},filecount=${m.root().fileCount()}`
       |      for (let n of m.matches()) {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
@@ -222,49 +175,34 @@ object TypeScriptRugEditorTest {
       |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
+      |  var editor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWith =
     """import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {PathExpression} from 'user-model/tree/PathExpression'
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {Registry} from 'user-model/services/Registry'
       |
-      |import {parameter} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
       |
-      |abstract class JavaInfo extends ParametersSupport {
+      |class ConstructedEditor implements ProjectEditor {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |  packageName: string = null
+      |    name: string = "Constructed"
+      |    description: string = "A nice little editor"
+      |    tags: string[] = ["java", "maven"]
+      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
       |
-      |}
+      |    edit(project: Project, packageName: string) {
       |
-      |@editor("A nice little editor")
-      |@tag("java")
-      |@tag("maven")
-      |class ConstructedEditor implements ProjectEditor<Parameters> {
-      |
-      |    private eng: PathExpressionEngine;
-      |
-      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-      |      this.eng = _eng;
-      |    }
-      |
-      |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
-      |
+      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
       |      project.files().filter(t => false)
-      |      var t: string = `param=${ji.packageName},filecount=${project.fileCount()}`
+      |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      this.eng.with<File>(project, "/*:file[name='pom.xml']", n => {
+      |      eng.with<File>(project, "/*:file[name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
@@ -278,48 +216,33 @@ object TypeScriptRugEditorTest {
       |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
+      |
+      |  var editor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump =
     """import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {PathExpression} from 'user-model/tree/PathExpression'
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {Registry} from 'user-model/services/Registry'
       |
-      |import {parameter} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
+      |class ConstructedEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "A nice little editor"
+      |    tags: string[] = ["java", "maven"]
       |
-      |abstract class JavaInfo extends ParametersSupport {
+      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
+      |    edit(project: Project, packageName: string) {
       |
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |  packageName: string = null
+      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
       |
-      |}
+      |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |@editor("A nice little editor")
-      |@tag("java")
-      |@tag("maven")
-      |class ConstructedEditor implements ProjectEditor<Parameters> {
-      |
-      |    private eng: PathExpressionEngine;
-      |
-      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-      |      this.eng = _eng;
-      |    }
-      |
-      |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
-      |
-      |      var t: string = `param=${ji.packageName},filecount=${project.fileCount()}`
-      |
-      |      this.eng.with<File>(project, "->file", n => {
+      |      eng.with<File>(project, "->file", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
@@ -333,6 +256,7 @@ object TypeScriptRugEditorTest {
       |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
+      |  var editor = new ConstructedEditor()
       | """.stripMargin
 
 }
@@ -353,7 +277,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))
   }
 
-  it should "run simple editor compiled from TypeScript that invokes another editor with separate parameters object" in pendingUntilFixed {
+  it should "run simple editor compiled from TypeScript that invokes another editor with separate parameters object" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorInvokingOtherEditor), Seq(otherEditor))
   }
 
@@ -410,7 +334,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     ed.description should be ("A nice little editor")
   }
 
-  it should "have the PathExpressionEngine injected using PathExpressionEngine.with typejump" in {
+  it should "have the PathExpressionEngine injected using PathExpressionEngine.with type-jump" in {
     val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionUsingWithTypeJump))
   }

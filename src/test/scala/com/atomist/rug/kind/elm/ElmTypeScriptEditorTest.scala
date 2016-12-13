@@ -46,29 +46,25 @@ object ElmTypeScriptEditorTestResources {
 
   val Editor =
     """
-      |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
-      |import {Parameters} from "user-model/operations/Parameters"
-      |import {Status, Result} from "user-model/operations/Result"
+      |import {Status, Result} from "user-model/operations/RugOperation"
       |import {Project} from 'user-model/model/Core'
+      |import {Registry} from 'user-model/services/Registry'
+      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
       |
-      |import {editor, inject} from '@atomist/rug/support/Metadata'
       |
-      |@editor("Release editor")
-      |class Release extends ParameterlessProjectEditor  {
+      |class Release implements ProjectEditor  {
       |
-      |    private eng: PathExpressionEngine;
+      |    name: string = "Release"
+      |    description: string  ="Release editor"
       |
-      |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-      |      super();
-      |      this.eng = _eng;
-      |    }
+      |    edit(project: Project): Result {
       |
-      |    editWithoutParameters(project: Project): Result {
+      |    let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
       |
       |    let pe = new PathExpression<Project,TreeNode>(
       |     `/*:file[name='elm-package.json']->json/summary/[1]`)
-      |    let description: TreeNode = this.eng.scalar(project, pe)
+      |    let description: TreeNode = eng.scalar(project, pe)
       |
       |     if (!project.fileExists("README.md")) {
       |       project.addFile("README.md", `# ${project.name()}
@@ -83,6 +79,7 @@ object ElmTypeScriptEditorTestResources {
       |  }
       |
       |}
+      |var editor = new Release()
       | """.stripMargin
 
   val description = "i am the description yo"

@@ -16,19 +16,19 @@ trait Microgrammar {
     * @param l listener to be notified on matches. Useful for test infrastructure etc
     * @return a sequence of MutableContainerTreeNode's
     */
-  def findMatches(input: String, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
+  def findMatches(input: CharSequence, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
 
   /**
     * Match all input, which must exactly match input.
     */
-  def strictMatch(input: String, l: Option[MatchListener] = None): MutableContainerTreeNode
+  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode
 
   /**
     * Return a single container object holding all matches.
     */
-  def matchesInContainer(input: String, l: Option[MatchListener] = None): MutableContainerTreeNode = {
+  def matchesInContainer(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode = {
     val matches = findMatches(input, l)
-    val container = SimpleMutableContainerTreeNode.wholeInput("container", matches, input)
+    val container = SimpleMutableContainerTreeNode.wholeInput("container", matches, input.toString)
     container
   }
 }

@@ -4,13 +4,19 @@ import com.atomist.tree.ContainerTreeNode
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 
+object Concat {
+
+  val DefaultConcatName = "concat"
+}
+
 /**
   * Concatenate two patterns
   *
   * @param left  left pattern
   * @param right right pattern
   */
-case class Concat(left: Matcher, right: Matcher, name: String) extends Matcher {
+case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultConcatName)
+  extends Matcher {
 
   override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] = {
     val l = left.matchPrefix(offset, input)

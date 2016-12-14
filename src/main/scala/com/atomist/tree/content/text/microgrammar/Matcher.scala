@@ -28,7 +28,7 @@ trait Matcher {
     */
   def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch]
 
-  def concat(m: Matcher): Matcher = Concat(this, m, this.name)
+  def concat(m: Matcher): Matcher = Concat(this, m)
 
   def ~(m: Matcher): Matcher = concat(m)
 

@@ -1,24 +1,21 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
-
-import com.atomist.tree.content.text.TreeNodeOperations._
 
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
 class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
 
-  // TODO input should be a CharSequence, not a string
+  // Transformation to run on matched nodes
+  private val transform = collapse(ctn => ctn.nodeName.equals(Concat.DefaultConcatName)) andThen Clean
 
-  private val transform = collapse(ctn => ctn.nodeName.equals("literal")) andThen Clean
-
-  override def findMatches(input: String, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
+  override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val nodes = findMatchesInternal(input, l)
     nodes collect {
       case mut: MutableContainerTreeNode =>
@@ -26,23 +23,23 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
     }
   }
 
-  private def outputNode(input: String, n: TreeNode) = n match {
+  private def outputNode(input: CharSequence, n: TreeNode) = n match {
     case mctn: AbstractMutableContainerTreeNode =>
-      mctn.pad(input)
+      mctn.pad(input.toString)
       transform(mctn)
     case mctn: MutableContainerTreeNode =>
       transform(mctn)
     case tn: TreeNode =>
-      SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input)
+      SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input.toString)
   }
 
-  override def strictMatch(input: String, l: Option[MatchListener]): MutableContainerTreeNode = {
+  override def strictMatch(input: CharSequence, l: Option[MatchListener]): MutableContainerTreeNode = {
     val nodes = findMatchesInternal(input, l)
     require(nodes.size == 1, s"Expected 1 result, not ${nodes.size}")
     outputNode(input, nodes.head)
   }
 
-  private def findMatchesInternal(input: String, l: Option[MatchListener]) = {
+  private def findMatchesInternal(input: CharSequence, l: Option[MatchListener]) = {
     var offset = 0
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
     while (offset < input.length) {

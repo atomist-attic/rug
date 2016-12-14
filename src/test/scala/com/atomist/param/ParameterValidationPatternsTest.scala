@@ -4,6 +4,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ParameterValidationPatternsTest extends FlatSpec with Matchers {
 
+  val MatchAnyPattern = ParameterValidationPatterns.MatchAny.r
+
   val ProjectNamePattern = ParameterValidationPatterns.ProjectName.r
   val GroupNamePattern = ParameterValidationPatterns.GroupName.r
 
@@ -16,6 +18,21 @@ class ParameterValidationPatternsTest extends FlatSpec with Matchers {
   val UrlPattern = ParameterValidationPatterns.Url.r
 
   val UuidPattern = ParameterValidationPatterns.Uuid.r
+
+  "match any regexp" should "match multiline string" in {
+    val multiLineString =
+      """This is a glorious
+        |and mutli-faceted
+        |string with notable
+        |newline characters
+        |plus °ther characters
+        |øf íñterê∫t ©
+      """.stripMargin
+    multiLineString match {
+      case MatchAnyPattern(_*) =>
+      case s => fail(s"<$s> did not match $MatchAnyPattern")
+    }
+  }
 
   "project name regexp" should "match valid names" in {
     Seq("com", "dog-catcher", "dog_catcher", "dogCatcher", "_dog.catcher-", "8675309") foreach {

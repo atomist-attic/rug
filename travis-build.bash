@@ -72,6 +72,7 @@ function main() {
             err "failed to create git tag: $git_tag"
             return 1
         fi
+        echo "https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG"
         if ! git push --quiet --tags "https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG" > /dev/null 2>&1; then
             err "failed to push git tags"
             return 1

@@ -1,8 +1,7 @@
 package com.atomist.rug.kind.java.support
 
 import com.atomist.rug.kind.java.GitHubJavaParserExtractor
-import com.atomist.source.{ArtifactSource, StringFileArtifact}
-import com.atomist.util.Converters._
+import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
 
 import scala.collection.JavaConverters._
 
@@ -12,7 +11,7 @@ import scala.collection.JavaConverters._
 object PackageFinder {
 
   def findPackage(src: String): String = {
-    val cu = GitHubJavaParserExtractor(Seq(StringFileArtifact("Src.java", src)).asJavaColl)
+    val cu = GitHubJavaParserExtractor(Seq(StringFileArtifact("Src.java", src).asInstanceOf[FileArtifact]).asJava)
       .head.compilationUnit
     if (cu.getPackage == null) ""
     else cu.getPackage.getName.toString

@@ -36,7 +36,7 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
   override protected def matchScalaMethodHeaderRepsep: Microgrammar = {
     val identifier = Regex("identifier", "[a-zA-Z0-9]+")
     val paramDef = identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type")
-    val params = Rep(paramDef)
+    val params = Repsep(paramDef, ",", "params")
     val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~? params ~? ")" ~? ":" ~? identifier.copy(name = "type")
     new MatcherMicrogrammar(method)
   }

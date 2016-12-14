@@ -30,6 +30,15 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
 }
 
+case class Renamed(m: Matcher, newName: String) extends Matcher {
+
+  override def name: String = newName
+
+  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
+    m.matchPrefix(offset, input).map(matched => matched.copy(node = None))
+
+}
+
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =

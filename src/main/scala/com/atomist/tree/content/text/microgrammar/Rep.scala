@@ -49,8 +49,8 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
 
 object Repsep {
 
-  def apply(m: Matcher, sep: Matcher): Matcher =
-    m.? ~? Rep(sep ~? m)
+  def apply(m: Matcher, sep: Matcher, name: String): Matcher =
+    Renamed(m.? ~? Rep(sep ~? m), name)
 
 }
 

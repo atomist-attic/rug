@@ -51,7 +51,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
         |import {Project,ElmModule} from 'user-model/model/Core'
         |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-        |import {Registry} from "user-model/services/Registry"
         |
         |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
         |
@@ -65,9 +64,9 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    parameters: Parameter[] = params
         |
         |
-        |    edit(project: Project, old_name: string, new_name: string): Result {
+        |    edit(project: Project, {old_name, new_name }: {old_name: string, new_name: string}): Result {
         |
-        |        let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine")
+        |        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |        let allModules: Array<ElmModule> =
         |             eng.children<ElmModule>(project, "elm.module")
         |

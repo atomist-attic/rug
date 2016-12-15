@@ -124,7 +124,6 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |import {ProjectEditor} from "user-model/operations/ProjectEditor"
         |import {Status, Result} from "user-model/operations/RugOperation"
         |import {Project,Pair} from 'user-model/model/Core'
-        |import {Registry} from 'user-model/services/Registry'
         |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
         |
         |class PackageFinder implements ProjectEditor {
@@ -132,7 +131,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |    description: string = "Finds package.json dependencies"
         |    edit(project: Project): Result {
         |
-        |      let eng = Registry.lookup<PathExpressionEngine>("PathExpressionEngine")
+        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let pe = new PathExpression<Project,Pair>(`/[name='package.json']->json/dependencies`)
         |      let p = eng.scalar(project, pe)
         |      //if (p == null)

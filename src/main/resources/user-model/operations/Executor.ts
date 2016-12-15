@@ -8,5 +8,5 @@ export interface Executor extends RugOperation{
   /**
    * Run against the given model
    */
-  execute(services: Services, ...args: string[]): Result
+  execute(services: Services, params: Object): Result
 }

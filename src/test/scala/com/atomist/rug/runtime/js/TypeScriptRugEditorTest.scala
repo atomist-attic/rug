@@ -78,7 +78,7 @@ object TypeScriptRugEditorTest {
        |    description: string = "My simple editor"
        |    tags: string[] = ["java", "maven"]
        |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100}]
-       |    edit(project: Project, content: string) {
+       |    edit(project: Project, {content} : {content: string}) {
        |      //TODO p["otherParam"] = p.content
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |      return new Result(Status.Success,
@@ -125,7 +125,7 @@ object TypeScriptRugEditorTest {
        |        {name: "num", description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100, default: 10}
        |    ]
        |
-       |    edit(project: Project, content: string, num: number): Result {
+       |    edit(project: Project, {content, num }: {content: string, num: number}): Result {
        |      project.addFile("src/from/typescript", content);
        |      return new Result(Status.Success,
        |      `Edited Project now containing $${project.fileCount()} files: \n`);
@@ -142,7 +142,6 @@ object TypeScriptRugEditorTest {
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
-      |import {Registry} from 'user-model/services/Registry'
       |
       |class ConstructedEditor implements ProjectEditor {
       |
@@ -151,9 +150,9 @@ object TypeScriptRugEditorTest {
       |    description: string = "A nice little editor"
       |    tags: string[] = ["java", "maven"]
       |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
-      |    edit(project: Project, packageName: string) {
+      |    edit(project: Project, {packageName } : {packageName: string}) {
       |
-      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      let pe = new PathExpression<Project,File>(`/*:file[name='pom.xml']`)
       |      //console.log(pe.expression);
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
@@ -186,7 +185,6 @@ object TypeScriptRugEditorTest {
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
-      |import {Registry} from 'user-model/services/Registry'
       |
       |
       |class ConstructedEditor implements ProjectEditor {
@@ -196,9 +194,9 @@ object TypeScriptRugEditorTest {
       |    tags: string[] = ["java", "maven"]
       |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
       |
-      |    edit(project: Project, packageName: string) {
+      |    edit(project: Project, {packageName } : {packageName: string}) {
       |
-      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      project.files().filter(t => false)
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
@@ -228,7 +226,6 @@ object TypeScriptRugEditorTest {
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
-      |import {Registry} from 'user-model/services/Registry'
       |
       |class ConstructedEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -236,9 +233,9 @@ object TypeScriptRugEditorTest {
       |    tags: string[] = ["java", "maven"]
       |
       |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
-      |    edit(project: Project, packageName: string) {
+      |    edit(project: Project, {packageName } : { packageName: string}) {
       |
-      |      let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |

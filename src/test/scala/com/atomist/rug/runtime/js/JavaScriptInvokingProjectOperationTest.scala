@@ -24,7 +24,7 @@ object JavaScriptInvokingProjectOperationTest {
            |    description: string = "A nice little editor"
            |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
            |
-           |    edit(project: Project, content: string) {
+           |    edit(project: Project, {content} : {content: string}) {
            |      //p["otherParam"] = p.content
            |      return new Result(Status.Success,
            |        `Edited Project now containing $${project.fileCount()} files: \n`
@@ -45,7 +45,7 @@ object JavaScriptInvokingProjectOperationTest {
            |    name: string = "Simple"
            |    description: string = "A nice little editor"
            |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
-           |    edit(project: Project, content: string) {
+           |    edit(project: Project, {content} : {content: string}) {
            |      //p["otherParam"] = p.content
            |      return new Result(Status.Success,
            |        `Edited Project now containing $${project.fileCount()} files: \n`

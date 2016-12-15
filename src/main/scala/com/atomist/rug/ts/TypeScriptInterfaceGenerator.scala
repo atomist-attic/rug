@@ -187,7 +187,8 @@ case class InterfaceGenerationConfig(
 
   val imports =
     """
-      |import {TreeNode} from '../tree/PathExpression'""".stripMargin
+      |import {TreeNode} from '../tree/PathExpression'
+      |import {ProjectContext} from '../operations/ProjectEditor' """.stripMargin
 
   val licenseHeader =
     """

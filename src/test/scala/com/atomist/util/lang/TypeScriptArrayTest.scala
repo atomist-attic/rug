@@ -15,18 +15,26 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
     """import {Project} from 'user-model/model/Core'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {File} from 'user-model/model/Core'
-      |import {Registry} from "user-model/services/Registry"
       |
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |
+      |
+      |declare var Java
+      |
+      |var ArrayList = Java.type("java.util.ArrayList");
+      |var jlist = new ArrayList;
+      |jlist.add("blah");
+      |var FancyList = Java.type("com.atomist.util.lang.TypeScriptArray");
+      |var javaList = new FancyList(jlist);
       |
       |class ConstructedEditor implements ProjectEditor {
       |    name: string = "Constructed"
       |    description: string = "A nice little editor"
       |    parameters: Parameter[] = [{name: "packageName", description: "The java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
       |    lyst: string[]
-      |    edit(project: Project, packageName: string) {
+      |    edit(project: Project, {packageName}: {packageName: string}) {
       |
-      |       this.lyst = Registry.lookup<string[]>("FancyList")
+      |       this.lyst = javaList as string[];
       |
       |       this.lyst[0].toString()
       |
@@ -245,7 +253,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
     val lyst = new util.ArrayList[String]()
     lyst.add("blah")
     override val registry = Map(
-      "FancyList" -> new TypeScriptArray[String](lyst)
+      "PathExpressionEngine" -> new TypeScriptArray[String](lyst)
     )
   }
 }

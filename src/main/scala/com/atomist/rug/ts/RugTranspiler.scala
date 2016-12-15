@@ -50,7 +50,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     } {
       ts ++= tsProg(rug)
     }
-
     ts.toString
   }
 
@@ -72,11 +71,28 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     }).toSet
   }
 
+  private def paramsInterface(params: Seq[Parameter]) : String = {
+    if(params.isEmpty){
+      return ""
+    }
+    s"""interface Parameters {
+       |
+       |${helper.indented(params.map(p => p.getName + ": string").mkString("\n"),1)}
+       |
+       |}
+     """.stripMargin
+  }
 
   // Emit an entire program
   private def tsProg(rug: RugProgram): String = {
     val ts = new StringBuilder()
     ts ++= helper.toJsDoc(rug.description)
+
+    rug match {
+      case ed: RugEditor =>
+        ts ++= config.separator
+        ts ++= paramsInterface(rug.parameters)
+    }
 
     ts ++= s"\nclass ${rug.name} "
     rug match {
@@ -115,15 +131,20 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     }
     ts ++= config.separator
 
-    ts ++= s"${config.editMethodName}(${config.projectVarName}: Project${genParamList(ed.parameters)}) {${config.separator}"
+    ts ++= s"${config.editMethodName}(${config.projectVarName}: Project${if(ed.parameters.nonEmpty) ", parameters: Parameters" else ""}) {${config.separator}"
 
-    ts ++= helper.indented(s"""let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");${config.separator}""", 1)
+    ts ++= helper.indented(s"""let eng: PathExpressionEngine = project.context().pathExpressionEngine();${config.separator}""", 1)
 
     ts ++= config.separator
     // Add aliases needed in this case
     val v = new SaveAllDescendantsVisitor
     ed.accept(v, 0)
-
+    if ((ed.computations.nonEmpty || v.descendants.exists(_.isInstanceOf[JavaScriptBlock])) && ed.parameters.nonEmpty) {
+      for (p <- ed.parameters) {
+        ts ++= helper.indented(s"let ${p.name} = parameters.${p.name}\n", 1)
+      }
+      ts ++= config.separator
+    }
     for (l <- ed.computations) {
       ts ++= helper.indented(letCode(ed, l), 1)
       ts ++= config.separator
@@ -139,15 +160,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   private def letCode(prog: RugProgram, l: Computation): String = {
     s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)}"
-  }
-
-  private def genParamList(params: Seq[Parameter]): String = {
-    if(params == null || params.isEmpty){
-      return ""
-    }
-    ", " + params.map(p => {
-      s"${p.name}: string"
-    }).mkString(", ")
   }
 
   private def actionCode(prog: RugProgram, a: Action, outerAlias: String, indentDepth: Int): String = a match {
@@ -196,8 +208,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       emit(rf, outerAlias)
     case idf: IdentifierFunctionArg =>
       if (prog.parameters.exists(_.name.equals(idf.name)))
-        //config.parametersVarName + "." + idf.name
-        idf.name
+        "parameters." + idf.name
+        //idf.name
       else
         idf.name
     case wfa: WrappedFunctionArg => extractValue(prog, wfa.te, outerAlias)
@@ -317,7 +329,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Project} from 'user-model/model/Core'
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
-      |import {Registry} from 'user-model/services/Registry'
       |
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |

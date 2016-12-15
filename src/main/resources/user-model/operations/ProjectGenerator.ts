@@ -6,7 +6,7 @@ import {Parameter, RugOperation} from "./RugOperation"
  * Top level interface for all project generators
  */
 interface ProjectGenerator extends RugOperation{
-    populate(emptyProject: Project, projectName: string, ...params: string[])
+    populate(emptyProject: Project, projectName: string, args: Object)
 }
 
 /**

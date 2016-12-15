@@ -5,7 +5,6 @@ interface RugOperation {
   parameters?: Parameter[]
 }
 
-
 class ParameterPattern {
   //TODO - add more from rug lib
   public static java_package: string ="@java_package"
@@ -22,7 +21,6 @@ interface Parameter {
   maxLength?: number
   minLength?: number
 }
-
 
 /**
  * Status of an operation.

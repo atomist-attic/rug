@@ -7,7 +7,7 @@ import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.js.interop.BidirectionalParametersProxy
+import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, DefaultAtomistFacade, PathExpressionExposer, UserModelContext}
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.rug.ts.NashornUtils
@@ -39,7 +39,8 @@ class ProjectMutableView(
                           val rugAs: ArtifactSource,
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
-                          context: Seq[ProjectOperation] = Nil)
+                          po: Seq[ProjectOperation] = Nil,
+                          ctx: UserModelContext = DefaultAtomistFacade)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null) {
 
   // We need this, rather than merely a default, for Java subclasses
@@ -411,7 +412,7 @@ class ProjectMutableView(
   }
 
   protected def editWith(editorName: String, params: Map[String, Object]): Unit = {
-    editWith(editorName, params, this.context)
+    editWith(editorName, params, this.po)
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
@@ -437,7 +438,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true, description="Return a new Project View based on the original backing object (normally the .atomist/ directory)")
   def backingArchiveProject(): ProjectMutableView ={
-    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,context)
+    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,po)
   }
   /**
     * Convenient method to apply an editor.
@@ -451,5 +452,14 @@ class ProjectMutableView(
       case wtf =>
         throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
     }
+  }
+  @ExportFunction(readOnly = true,
+    description = "Provides access additional context, such as the PathExpressionEngine")
+  def context = new ProjectContext(ctx)
+}
+class ProjectContext(ctx: UserModelContext) {
+
+  def pathExpressionEngine() : PathExpressionExposer = {
+    ctx.registry("PathExpressionEngine").asInstanceOf[PathExpressionExposer]
   }
 }

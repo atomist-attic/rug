@@ -82,7 +82,6 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |import {ProjectEditor} from "user-model/operations/ProjectEditor"
         |import {Status, Result} from "user-model/operations/RugOperation"
         |import {Project,SpringBootProject} from 'user-model/model/Core'
-        |import {Registry} from 'user-model/services/Registry'
         |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
         |
         |
@@ -92,7 +91,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    name: string = "package.finder"
         |    description: string = "Find a spring boot package"
         |    edit(project: Project): Result {
-        |      let eng = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let pe = new PathExpression<Project,SpringBootProject>(`->spring.bootProject`)
         |      let p = eng.scalar(project, pe)
         |      //if (p == null)

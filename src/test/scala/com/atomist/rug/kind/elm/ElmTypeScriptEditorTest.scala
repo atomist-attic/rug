@@ -48,7 +48,6 @@ object ElmTypeScriptEditorTestResources {
     """
       |import {Status, Result} from "user-model/operations/RugOperation"
       |import {Project} from 'user-model/model/Core'
-      |import {Registry} from 'user-model/services/Registry'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
       |
@@ -60,7 +59,7 @@ object ElmTypeScriptEditorTestResources {
       |
       |    edit(project: Project): Result {
       |
-      |    let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");
+      |    let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
       |    let pe = new PathExpression<Project,TreeNode>(
       |     `/*:file[name='elm-package.json']->json/summary/[1]`)

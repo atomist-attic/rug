@@ -2,14 +2,14 @@ package com.atomist.rug.runtime.js
 
 import javax.script.ScriptContext
 
-import com.atomist.param.{Parameter, Tag}
+import com.atomist.param.{Parameter, ParameterValue, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.rug.InvalidRugParameterPatternException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.js.interop.{SafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.SafeCommittingProxy
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -69,7 +69,7 @@ abstract class JavaScriptInvokingProjectOperation(
     val processedArgs = args.foldLeft(Seq[Object]())(
       (acc: Seq[Object], cur: Object) => cur match {
         case poa: ProjectOperationArguments => {
-          acc ++ poa.parameterValues.map(p => p.getValue)
+          acc :+ poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
         }
         case x => acc :+ x
       }

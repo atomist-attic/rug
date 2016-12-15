@@ -9,7 +9,8 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
   * @param m
   * @param name
   */
-case class Rep(m: Matcher, name: String = "rep") extends Matcher {
+case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
+  extends Matcher {
 
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
@@ -19,17 +20,21 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
         Some(
           PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
             offset = offset, matched = "", s, this.toString))
-      case Some(there) =>
+      case Some(initialMatch) =>
         // We matched once. Let's keep going
-        var matched = there.matched
-        val offset = there.offset
+        val matched = initialMatch.matched
+        val offset = initialMatch.offset
         var upToOffset = offset
-        var nodes = there.node.toSeq
-        while (m.matchPrefix(upToOffset, s) match {
+        var nodes = initialMatch.node.toSeq
+        val secondaryMatch = separator match {
+          case None => m
+          case Some(sep) => m ~? Optional(sep)
+        }
+        while (secondaryMatch.matchPrefix(upToOffset, s) match {
           case None => false
-          case Some(m) =>
-            upToOffset = m.endPosition.offset
-            nodes ++= m.node.toSeq
+          case Some(lastMatch) =>
+            upToOffset = lastMatch.endPosition.offset
+            nodes ++= lastMatch.node.toSeq
             true
         }) {
           // Do nothing
@@ -49,7 +54,7 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
 object Repsep {
 
   def apply(m: Matcher, sep: Matcher, name: String): Matcher =
-    Wrap(m.? ~? Rep(sep ~? m), name)
+    Rep(m, name, Some(sep))
 
 }
 

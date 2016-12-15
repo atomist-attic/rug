@@ -58,4 +58,10 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     new MatcherMicrogrammar(envList)
   }
 
+  override protected def repTest: Microgrammar = {
+    val key: Matcher = Regex("key", "[A-Za-z_]+,")
+    val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, "keys"), "keys")
+    new MatcherMicrogrammar(sentence)
+  }
+
 }

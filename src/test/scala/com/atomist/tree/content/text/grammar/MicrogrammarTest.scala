@@ -4,7 +4,7 @@ import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode}
+import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 abstract class MicrogrammarTest extends FlatSpec with Matchers {
@@ -186,7 +186,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse several scala method headers in other content" in pendingUntilFixed {
+  it should "parse several scala method headers in other content" in {
     val g = matchScalaMethodHeaderRepsep
     val input =
       """
@@ -353,5 +353,24 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val k1 = keys.head
     k1.value should equal("CI_DEPLOY_USERNAME")
     values.head.value should equal ("travis-mvn-deploy")
+  }
+
+  protected def repTest: Microgrammar
+
+  it should "handle simple rep" in {
+    val input =
+      """
+        |keys: a,b,cde,f,
+        |And this is unrelated
+        |   bollocks
+        |      keys: x,y,
+      """.stripMargin
+    val m = repTest.findMatches(input)
+    m.size should be(2)
+    //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
+    m.head("keys").size should be (1)
+    val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
+    keys.size should be (4)
+    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
   }
 }

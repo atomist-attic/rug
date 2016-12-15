@@ -35,7 +35,6 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
           // Do nothing
         }
 
-
         val pos = OffsetInputPosition(offset)
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
         val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
@@ -50,7 +49,7 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
 object Repsep {
 
   def apply(m: Matcher, sep: Matcher, name: String): Matcher =
-    Renamed(m.? ~? Rep(sep ~? m), name)
+    Wrap(m.? ~? Rep(sep ~? m), name)
 
 }
 

@@ -22,20 +22,18 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
       Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+")
     )
 
-  //
-  """
-    | IDENTIFIER : [a-zA-Z0-9]+;
-    | LPAREN : '(';
-    | RPAREN : ')';
-    | param_def : name=IDENTIFIER ':' type=IDENTIFIER;
-    | params : param_def (',' param_def)*;
-    | method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
-  """.stripMargin
 
-  //
+//  IDENTIFIER : [a-zA-Z0-9]+;
+//  LPAREN : '(';
+//  RPAREN : ')';
+//  param_def : name=IDENTIFIER ':' type=IDENTIFIER;
+//  params : param_def (',' param_def)*;
+//  method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
   override protected def matchScalaMethodHeaderRepsep: Microgrammar = {
     val identifier = Regex("identifier", "[a-zA-Z0-9]+")
-    val paramDef = identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type")
+    val paramDef = Wrap(
+      identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type"),
+      "param_def")
     val params = Repsep(paramDef, ",", "params")
     val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~? params ~? ")" ~? ":" ~? identifier.copy(name = "type")
     new MatcherMicrogrammar(method)

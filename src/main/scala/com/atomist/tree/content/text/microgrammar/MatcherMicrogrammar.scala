@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
+import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
@@ -13,7 +14,9 @@ import scala.collection.mutable.ListBuffer
 class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
 
   // Transformation to run on matched nodes
-  private val transform = collapse(ctn => ctn.nodeName.equals(Concat.DefaultConcatName)) andThen Clean
+  private val transform = collapse(
+    ctn => ctn.nodeName.equals(Concat.DefaultConcatName)
+  ) andThen RemovePadding andThen Prune
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val nodes = findMatchesInternal(input, l)
@@ -23,14 +26,17 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
     }
   }
 
-  private def outputNode(input: CharSequence, n: TreeNode) = n match {
-    case mctn: AbstractMutableContainerTreeNode =>
-      mctn.pad(input.toString)
-      transform(mctn)
-    case mctn: MutableContainerTreeNode =>
-      transform(mctn)
-    case tn: TreeNode =>
-      SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input.toString)
+  private def outputNode(input: CharSequence, n: TreeNode) = {
+    println(s"Before transform, node=\n${TreeNodeUtils.toShortString(n)}")
+    n match {
+      case mctn: AbstractMutableContainerTreeNode =>
+        mctn.pad(input.toString)
+        transform(mctn)
+      case mctn: MutableContainerTreeNode =>
+        transform(mctn)
+      case tn: TreeNode =>
+        SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input.toString)
+    }
   }
 
   override def strictMatch(input: CharSequence, l: Option[MatchListener]): MutableContainerTreeNode = {

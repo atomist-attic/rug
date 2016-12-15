@@ -1,10 +1,10 @@
 package com.atomist.rug.kind.grammar
 
-import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode}
-import com.atomist.tree.content.text.microgrammar._
-import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
+import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 abstract class MicrogrammarTest extends FlatSpec with Matchers {
@@ -147,9 +147,8 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse 1 scala method with repsep parameters" in pendingUntilFixed(
+  it should "parse 1 scala method with repsep parameters" in
     matchScalaMethodHeaderUsing(matchScalaMethodHeaderRepsep)
-  )
 
   private def matchScalaMethodHeaderUsing(mg: Microgrammar, ml: Option[MatchListener] = None) {
     val input =
@@ -160,6 +159,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = mg.findMatches(input, ml)
     if (ml.isDefined) ml.get.matches should equal(1)
     m.size should be(1)
+    println(TreeNodeUtils.toShortString(m.head))
     m.head("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("bar")
@@ -168,9 +168,10 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Unit")
     }
-    val params = m.head("params").head.asInstanceOf[ContainerTreeNode]("param_def")
-    params.size should be(1)
-    params.head match {
+    val params = m.head("params")
+    val paramDef1 = params.head.asInstanceOf[ContainerTreeNode]("param_def")
+    paramDef1.size should be(1)
+    paramDef1.head match {
       case ov: ContainerTreeNode =>
         ov("name").toList match {
           case (fv: TerminalTreeNode) :: Nil =>

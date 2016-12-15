@@ -44,7 +44,11 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
           .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type[$kind]") {})
     }
 
-  private def matcherExpression()(implicit registry: MatcherRegistry): Parser[Matcher] = descendantClause | concatenation | literal | variableReference()
+  private def matcherExpression()(implicit registry: MatcherRegistry): Parser[Matcher] =
+    descendantClause |
+      concatenation |
+      literal |
+      variableReference()
 
   private def microgrammar(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 
@@ -88,6 +92,7 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
 
     def register(m: Matcher): Unit = matchers = matchers :+ m
   }
+
 }
 
 case class MicrogrammarDefinition(name: String, sentence: String)

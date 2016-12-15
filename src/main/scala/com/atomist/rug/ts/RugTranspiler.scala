@@ -50,8 +50,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     } {
       ts ++= tsProg(rug)
     }
-    println(ts.toString())
-
     ts.toString
   }
 

@@ -15,75 +15,44 @@ object JavaScriptInvokingProjectOperationTest {
     val SimpleEditorWithBrokenParameterPattern =
         s"""
            |import {Project} from 'user-model/model/Core'
-           |import {ParametersSupport} from 'user-model/operations/Parameters'
            |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-           |import {Parameters} from 'user-model/operations/Parameters'
            |import {File} from 'user-model/model/Core'
-           |import {Result,Status} from 'user-model/operations/Result'
+           |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
            |
-           |import {parameter} from 'user-model/support/Metadata'
-           |import {inject} from 'user-model/support/Metadata'
-           |import {parameters} from 'user-model/support/Metadata'
-           |import {tag} from 'user-model/support/Metadata'
-           |import {editor} from 'user-model/support/Metadata'
+           |class SimpleEditor implements ProjectEditor {
+           |    name: string = "Simple"
+           |    description: string = "A nice little editor"
+           |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
            |
-           |abstract class ContentInfo extends ParametersSupport {
-           |
-           |  @parameter({description: "Content", displayName: "content", pattern: ".*", maxLength: 100})
-           |  content: string = null
-           |
-           |}
-           |
-           |@editor("A nice little editor")
-           |@tag("java")
-           |@tag("maven")
-           |class SimpleEditor implements ProjectEditor<ContentInfo> {
-           |
-           |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
-           |      p["otherParam"] = p.content
+           |    edit(project: Project, content: string) {
+           |      //p["otherParam"] = p.content
            |      return new Result(Status.Success,
            |        `Edited Project now containing $${project.fileCount()} files: \n`
            |        );
            |    }
            |  }
-           |
+           |var editor = new SimpleEditor()
     """.stripMargin
 
     val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
         s"""
            |import {Project} from 'user-model/model/Core'
-           |import {ParametersSupport} from 'user-model/operations/Parameters'
            |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-           |import {Parameters} from 'user-model/operations/Parameters'
            |import {File} from 'user-model/model/Core'
-           |import {Result,Status} from 'user-model/operations/Result'
+           |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
            |
-           |import {parameter} from 'user-model/support/Metadata'
-           |import {inject} from 'user-model/support/Metadata'
-           |import {parameters} from 'user-model/support/Metadata'
-           |import {tag} from 'user-model/support/Metadata'
-           |import {editor} from 'user-model/support/Metadata'
-           |
-           |abstract class ContentInfo extends ParametersSupport {
-           |
-           |  @parameter({description: "Content", displayName: "content", pattern: "@url", maxLength: 100})
-           |  content: string = null
-           |
-           |}
-           |
-           |@editor("A nice little editor")
-           |@tag("java")
-           |@tag("maven")
-           |class SimpleEditor implements ProjectEditor<ContentInfo> {
-           |
-           |    edit(project: Project, @parameters("ContentInfo") p: ContentInfo) {
-           |      p["otherParam"] = p.content
+           |class SimpleEditor implements ProjectEditor {
+           |    name: string = "Simple"
+           |    description: string = "A nice little editor"
+           |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+           |    edit(project: Project, content: string) {
+           |      //p["otherParam"] = p.content
            |      return new Result(Status.Success,
            |        `Edited Project now containing $${project.fileCount()} files: \n`
            |        );
            |    }
            |  }
-           |
+           |var editor = new SimpleEditor()
     """.stripMargin
 
 }

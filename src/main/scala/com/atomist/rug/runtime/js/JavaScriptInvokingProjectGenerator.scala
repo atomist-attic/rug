@@ -16,16 +16,13 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   */
 class JavaScriptInvokingProjectGenerator(
                                           jsc: JavaScriptContext,
-                                          className: String,
                                           jsVar: ScriptObjectMirror,
                                           rugAs: ArtifactSource
                                         )
-  extends JavaScriptInvokingProjectOperation(jsc, className, jsVar, rugAs)
+  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
 
-  override val name: String =
-    if (className.endsWith("Generator")) className.dropRight("Generator".length)
-    else className
+  override val name: String = jsVar.getMember("name").asInstanceOf[String]
 
   @throws(classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {

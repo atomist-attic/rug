@@ -83,7 +83,7 @@ export interface Action {
   title(): string
   callback(): Callback
   parameters(): Array<ParameterValue>
-  
+
 }
 
 export interface ParameterValue {
@@ -94,13 +94,13 @@ export interface ParameterValue {
 
 export interface Callback {
 
-  callbackType(): string 
-  rug(): Rug
+  callbackType(): string
+  rug(): RugArchive
 
 }
 
-export interface Rug {
-  
+export interface RugArchive {
+
   group: string
   artifact: string
   name: string

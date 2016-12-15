@@ -384,6 +384,10 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
   override def isArray: Boolean = true
 
   override def getSlot(index: Int): AnyRef = lyst.get(index).asInstanceOf[AnyRef]
+
+  override def getDefaultValue(hint: Class[_]): AnyRef = {
+    lyst.toString
+  }
 }
 
 class ReducerJSObject[Y](lst: util.List[Y]) extends AbstractJSObject {

@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
 
-  val target = if (args.length < 1 ) "src/test/resources/user-model/model/Core.ts" else args.head
+  val target = if (args.length < 1 ) "target/classes/user-model/model/Core.ts" else args.head
   val generator = new TypeScriptInterfaceGenerator
 
   val output = generator.generate(SimpleProjectOperationArguments("",

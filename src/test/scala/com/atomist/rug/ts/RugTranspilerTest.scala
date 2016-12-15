@@ -50,12 +50,6 @@ class RugTranspilerTest extends FlatSpec with Matchers {
   private def verify(rug: RugProgram, ts: String): Unit = {
     ts.contains(s"class ${rug.name}") should be (true)
     ts.contains(rug.description) should be (true)
-    rug.parameters.map(p => {
-      ts.contains(s"<${rug.name}Parameters>") should be (true)
-    })
-    rug.computations.foreach(comp => {
-      ts.contains(s"let ${comp.name} =") should be (true)
-    })
     rug match {
       case ed: RugEditor =>
         ts.contains("implements ProjectEditor") should be (true)
@@ -64,9 +58,8 @@ class RugTranspilerTest extends FlatSpec with Matchers {
     rug.runs.foreach(roo => {
       // Should bring it in in the constructor
       val varName = JavaHelpers.lowerize(roo.name)
-      ts.contains(s"$varName: ${roo.name}") should be (true)
       // Should invoke it in the editor body
-      ts.contains(s"$varName.edit(project, parameters)") should be (true)
+      ts.contains(s"""project.editWith("${roo.name}", """) should be (true)
     }
     )
   }

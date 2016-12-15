@@ -1,11 +1,14 @@
 package com.atomist.rug.runtime.js
 
+import java.rmi.registry.Registry
+import javax.script.ScriptContext
+
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
-import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
+import com.atomist.source.{ArtifactSource, FileArtifact}
+import jdk.nashorn.api.scripting.{JSObject, NashornScriptEngine, ScriptObjectMirror}
+import com.atomist.rug.runtime.js.JavaScriptContext
 
 import scala.collection.JavaConverters._
 
@@ -21,9 +24,13 @@ object JavaScriptOperationFinder {
   val GeneratorType = "generator"
 
   /**
-    * Rug types expressed in decorators that we know about
+    * Used to recognise JS operations that we can call.
+    * TODO - this should probably include type checking too!
     */
-  val KnownOperationTypes = Set(ExecutorType, EditorType, GeneratorType)
+  val KnownSignatures = Map(
+    ExecutorType -> JsRugOperationSignature(Set("execute")),
+    EditorType -> JsRugOperationSignature(Set("edit")),
+    GeneratorType -> JsRugOperationSignature(Set("populate")))
 
   val jsFile: FileArtifact => Boolean = f => f.name.endsWith(".js")
   val tsFile: FileArtifact => Boolean = f => f.name.endsWith(".ts")
@@ -55,7 +62,7 @@ object JavaScriptOperationFinder {
         jsc.eval(f)
       }
 
-      instantiateOperationsToMakeMetadataAccessible(jsc, registry)
+      insertRegistry(jsc,registry)
       val operations = operationsFromVars(rugAs, jsc)
       operations
     }
@@ -87,36 +94,53 @@ object JavaScriptOperationFinder {
     tsc.compile(filtered)
   }
 
-  private def instantiateOperationsToMakeMetadataAccessible(jsc: JavaScriptContext, registry: UserModelContext): Unit = {
-    for {
-      v <- jsc.vars
-      rugType <- v.getMetaString("rug-type")
-      if KnownOperationTypes.contains(rugType.toString)
-    } {
-      val args = jsc.getMeta(v.scriptObjectMirror, "injects") match {
-        case Some(i: ScriptObjectMirror) =>
-          val sorted = i.asInstanceOf[ScriptObjectMirror].values().asScala.toSeq.sortBy(arg => arg.asInstanceOf[ScriptObjectMirror].get("parameterIndex").asInstanceOf[Int])
-          sorted.flatMap { arg =>
-            registry.registry.get(arg.asInstanceOf[ScriptObjectMirror].get("typeToInject").asInstanceOf[String])
-          }
-        case _ => Seq()
-      }
 
-      val eObj = jsc.engine.eval(v.key).asInstanceOf[JSObject]
-      val newOperation = eObj.newObject(args: _*)
-      // Lower case type name for instance!
-      jsc.engine.put(v.key.toLowerCase, newOperation)
+  //todo clean up this dispatch/signature stuff - too coupled
+  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
+    jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
+      case (v, Some(EditorType)) =>
+        new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
+      case (v, Some(GeneratorType)) =>
+        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs)
+      case (v, Some(ExecutorType)) =>
+        new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
     }
   }
 
-  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
-    jsc.vars.map(v => (v, v.getMetaString("rug-type"))) collect {
-      case (v, Some(EditorType)) =>
-        new JavaScriptInvokingProjectEditor(jsc, v.key, v.scriptObjectMirror, rugAs)
-      case (v, Some(GeneratorType)) =>
-        new JavaScriptInvokingProjectGenerator(jsc, v.key, v.scriptObjectMirror, rugAs)
-      case (v, Some(ExecutorType)) =>
-        new JavaScriptInvokingExecutor(jsc, v.key, v.scriptObjectMirror, rugAs)
+  private def extractOperation(obj: ScriptObjectMirror): Option[String] = {
+    val matches = KnownSignatures.foldLeft(Seq[String]())((acc : Seq[String], kv) => {
+      //does it contain all the matching functions and props?
+      val fns = kv._2.functionsNames
+      val props = kv._2.propertyNames
+      val fnCount = fns.count (fn => {
+        obj.hasMember(fn) && obj.getMember(fn).asInstanceOf[ScriptObjectMirror].isFunction
+      })
+      val propsCount = props.count (prop => {
+        obj.hasMember(prop)//TODO make stronger check
+      })
+      if(fnCount == fns.size && propsCount == props.size){
+        acc :+ kv._1
+      }else{
+        acc
+      }
+    })
+    matches.headOption
+  }
+
+  case class JsRugOperationSignature(functionsNames: Set[String], propertyNames: Set[String] = Set("name", "description")){
+
+  }
+
+  /**
+    * Inject a registry implementation in to the context
+    * @param jsc
+    */
+  private def insertRegistry(jsc: JavaScriptContext, ctx: UserModelContext = DefaultAtomistFacade){
+    jsc.engine.getContext().setAttribute("atomist_registry", new Registry(ctx.registry), ScriptContext.ENGINE_SCOPE)
+  }
+  class Registry(registry: Map[String,Object]){
+    def lookup(id: String): Object ={
+      registry.getOrElse(id, Nil)
     }
   }
 }

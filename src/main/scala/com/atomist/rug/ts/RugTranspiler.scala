@@ -48,14 +48,9 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     for {
       rug <- rugs
     } {
-      val pc = parameterClassWithName(rug)
-      if (pc.isDefined) {
-        ts ++= helper.indented(pc.get.body, 0)
-      }
-      ts ++= tsProg(rug, pc)
+      ts ++= tsProg(rug)
     }
 
-    //println(ts)
     ts.toString
   }
 
@@ -77,86 +72,57 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     }).toSet
   }
 
-  case class ParamClass(name: String, body: String)
-
-  private def parameterClassWithName(rug: RugProgram): Option[ParamClass] = {
-    def emitParam(p: Parameter): String = {
-      s"${p.name}: string"
-    }
-
-    if (rug.parameters.nonEmpty) {
-      val paramClassName = rug.name + "Parameters"
-      val params = rug.parameters.map(emitParam).mkString(config.separator)
-      val headerComment = s"${helper.toJsDoc(s"Parameters for operation ${rug.name}")}"
-      val body =
-        s"""
-           |$headerComment
-           |class $paramClassName extends ParametersSupport {
-           |
-           |${helper.indented(params, 1)}
-           |
-           |}
-      """.stripMargin
-      Some(ParamClass(paramClassName, body))
-    }
-    else None
-  }
 
   // Emit an entire program
-  private def tsProg(rug: RugProgram, pc: Option[ParamClass]): String = {
+  private def tsProg(rug: RugProgram): String = {
     val ts = new StringBuilder()
     ts ++= helper.toJsDoc(rug.description)
-
-    ts ++= decorators(rug)
 
     ts ++= s"\nclass ${rug.name} "
     rug match {
       case ed: RugEditor =>
-        ts ++= editorHeader(ed, pc)
-        ts ++= helper.indented(editorBody(ed, pc), 1)
+        ts ++= editorHeader(ed)
+        ts ++= helper.indented(editorBody(ed), 1)
         ts ++= "}"
         ts ++= config.separator
     }
     ts ++= "}\n"
+    ts ++= s"""var editor = new ${rug.name}();"""
     ts.toString()
   }
 
-  private def decorators(rug: RugProgram): String = {
-    (s"@editor('${rug.name}')"
-      +: rug.tags.map(tag =>
-      s"@tag('$tag')"))
-      .mkString("\n")
+
+  private def editorHeader(ed: RugEditor): String = {
+    s"implements ProjectEditor {\n\n"
   }
 
-  private def paramClassName(pc: Option[ParamClass]) = pc match {
-    case None => "Parameters"
-    case Some(t) => t.name
-  }
-
-  private def editorHeader(ed: RugEditor, pc: Option[ParamClass]): String = {
-    s"implements ProjectEditor<${paramClassName(pc)}> {\n\n"
-  }
-
-  private def editorBody(ed: RugEditor, pc: Option[ParamClass]): String = {
+  private def editorBody(ed: RugEditor): String = {
     val ts = new StringBuilder()
 
-    ts ++= "private eng: PathExpressionEngine"
+    ts ++= s"""name: string = "${ed.name}""""
     ts ++= config.separator
-    ts ++= constructorCode(ed)
-
+    ts ++= s"""description: string = "${ed.description}""""
     ts ++= config.separator
 
-    ts ++= s"${config.editMethodName}(${config.projectVarName}: Project, ${config.parametersVarName}: ${paramClassName(pc)}) {${config.separator}"
+    if(ed.tags.nonEmpty){
+      ts ++= s"""tags: string[] = ${ed.tags.toArray};"""
+      ts ++= config.separator
+    }
 
+    if(ed.parameters.nonEmpty){
+      ts ++= s"""parameters: Parameter[] = ${toTSParameters(ed.parameters)};"""
+      ts ++= config.separator
+    }
+    ts ++= config.separator
+
+    ts ++= s"${config.editMethodName}(${config.projectVarName}: Project${genParamList(ed.parameters)}) {${config.separator}"
+
+    ts ++= helper.indented(s"""let eng: PathExpressionEngine = Registry.lookup<PathExpressionEngine>("PathExpressionEngine");${config.separator}""", 1)
+
+    ts ++= config.separator
     // Add aliases needed in this case
     val v = new SaveAllDescendantsVisitor
     ed.accept(v, 0)
-    if ((ed.computations.nonEmpty || v.descendants.exists(_.isInstanceOf[JavaScriptBlock])) && ed.parameters.nonEmpty) {
-      for (p <- ed.parameters) {
-        ts ++= helper.indented(s"let ${p.name} = ${config.parametersVarName}.${p.name}\n", 1)
-      }
-      ts ++= config.separator
-    }
 
     for (l <- ed.computations) {
       ts ++= helper.indented(letCode(ed, l), 1)
@@ -175,37 +141,25 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)}"
   }
 
-  private def constructorCode(ed: RugEditor): String = {
-    def argList = (ed.runs
-      .map(roo => {
-        s"${JavaHelpers.lowerize(roo.name)}: ${roo.name}"
-      })
-      :+
-      """@inject("PathExpressionEngine") eng: PathExpressionEngine""")
-      .mkString(" ,")
-
-    def body = ed.runs.map(roo => {
-      s"this.${JavaHelpers.lowerize(roo.name)} = ${JavaHelpers.lowerize(roo.name)}"
-    }).mkString(" ,")
-
-    s"""
-       |constructor($argList) {
-       |  ${helper.indented(body, 1)}
-       |  this.eng = eng
-       |}
-     """.stripMargin
+  private def genParamList(params: Seq[Parameter]): String = {
+    if(params == null || params.isEmpty){
+      return ""
+    }
+    ", " + params.map(p => {
+      s"${p.name}: string"
+    }).mkString(", ")
   }
 
   private def actionCode(prog: RugProgram, a: Action, outerAlias: String, indentDepth: Int): String = a match {
     case w: With =>
       helper.indented(withBlockCode(prog, w, outerAlias), indentDepth)
     case roo: RunOtherOperation =>
-      helper.indented(rooCode(roo), indentDepth)
+      helper.indented(rooCode(roo,prog.parameters), indentDepth)
   }
 
-  private def rooCode(roo: RunOtherOperation): String = {
-    val opName = JavaHelpers.lowerize(roo.name)
-    s"$opName.${config.editMethodName}(${config.projectVarName}, ${config.parametersVarName})"
+  private def rooCode(roo: RunOtherOperation, params: Seq[Parameter]): String = {
+    val kvs = if(params.nonEmpty) ", {"+ params.map(p => s"""${p.getName}: ${p.getName}""").mkString(", ") + "}" else ""
+    s"""project.editWith("${roo.name}"$kvs)"""
   }
 
   private def withBlockCode(prog: RugProgram, wb: With, outerAlias: String): String = {
@@ -217,7 +171,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
     val typeParams = s"<TreeNode,${helper.typeScriptClassNameForTypeName(wb.kind)}>"
     val pathExpr = s"'->${wb.kind}'"
-    val descent = s"this.eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
+    val descent = s"eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
 
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
 
@@ -242,7 +196,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       emit(rf, outerAlias)
     case idf: IdentifierFunctionArg =>
       if (prog.parameters.exists(_.name.equals(idf.name)))
-        config.parametersVarName + "." + idf.name
+        //config.parametersVarName + "." + idf.name
+        idf.name
       else
         idf.name
     case wfa: WrappedFunctionArg => extractValue(prog, wfa.te, outerAlias)
@@ -289,9 +244,12 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val computations = prog.computations
       .map(comp => extractValue(prog, comp.te, outerAlias))
       .mkString("\n")
+    val params = prog.parameters
+    val kvs = if(params.nonEmpty) ", {"+ params.map(p => s"""${p.getName}: ${p.getName}""").mkString(", ") + "}" else "{}"
+
     val js =
       s"""
-         |let allParams = clone(${config.parametersVarName})
+         |let allParams = $kvs
          |$computations
          |return allParams
        """.stripMargin
@@ -311,6 +269,43 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     s"if ($argContent) {\n${helper.indented(block, 1)}\n}"
   }
 
+  private def toTSParameters(params: Seq[Parameter]) : String = {
+
+    val b = new StringBuilder("[")
+
+    params.foreach(p => {
+      b.append("{")
+      val pb = new StringBuilder()
+      appendIfNotNull(pb,"name", p.getName)
+      appendIfNotNull(pb,"description", p.getDescription)
+
+      appendIfNotNull(pb,"pattern", p.getPattern.replace("\\","\\\\"))
+      appendIfNotNull(pb,"maxLength",p.getMaxLength)
+      appendIfNotNull(pb,"minLength",p.getMinLength)
+      appendIfNotNull(pb,"defaultValue",p.getDefaultValue)
+      appendIfNotNull(pb, "defaultRef",p.getDefaultRef)
+      appendIfNotNull(pb, "displayName",p.getDisplayName)
+      appendIfNotNull(pb, "validInputDescription",p.getValidInputDescription)
+      pb.setLength(pb.length - 2)
+      b.append(pb)
+      b.append("}, ")
+    })
+
+    b.setLength(b.length - 2)
+
+    b.append("]").toString()
+  }
+
+  private def appendIfNotNull(b: StringBuilder, key: String, value: Any): Unit ={
+    if(value != null && !"".equals(value)){
+      b.append(key).append(": ")
+      value match {
+        case s: String => b.append("\"").append(value).append("\"")
+        case s: Int => b.append(value)
+      }
+      b.append(", ")
+    }
+  }
   val licenseHeader =
     """
       |// Generated by Rug to TypeScript transpiler.
@@ -320,22 +315,12 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   val standardImports =
     """
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
       |import {Project} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
+      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {Registry} from 'user-model/services/Registry'
       |
       |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
       |
-      |import {tag, editor, inject} from 'user-model/support/Metadata'
-      |
-      |function clone(obj) {
-      |    if (null == obj || "object" != typeof obj) return obj;
-      |    var copy = {};
-      |    for (var attr in obj) {
-      |        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
-      |    }
-      |    return copy;
-      |}
     """.stripMargin
 
 }
@@ -344,7 +329,6 @@ case class RugTranspilerConfig(
                                 indent: String = "    ",
                                 separator: String = "\n\n",
                                 projectVarName: String = "project",
-                                parametersVarName: String = "parameters",
                                 editMethodName: String = "edit"
                               )
   extends TypeScriptGenerationConfig

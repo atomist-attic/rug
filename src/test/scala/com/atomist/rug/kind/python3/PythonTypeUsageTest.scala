@@ -50,7 +50,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
         |
         |with python
         | with import imp
-        |   do eval { print("From Rug!! " + imp) }
+        |   do eval { 4 + 4 }
       """.stripMargin
     val r = executePython(prog, Simple)
     r match {
@@ -75,7 +75,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
     f.content.contains("newImport") should be(true)
   }
 
-  val newRoute =
+  private val newRoute =
     """
       |@app.route("/")
       |def hello2():

@@ -15,7 +15,8 @@ class JavaScriptScriptBlockExecutorTest extends FlatSpec with Matchers {
     val project = new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.JavaAndText)
 
     val script =
-      """        |
+      """
+        |var print = function(s) {}
         |for (i = 0; i < project.files().length; i++) {
         |    print("The file is" + project.files().get(i));
         |}
@@ -69,7 +70,8 @@ class JavaScriptScriptBlockExecutorTest extends FlatSpec with Matchers {
     val project = new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.JavaAndText)
 
     val script =
-      """ print("{}")
+      """ var print = function(s) {}
+          print("{}")
       """.stripMargin
 
     DefaultScriptBlockActionExecutor.execute(ScriptBlockAction(JavaScriptBlock(script)), project,

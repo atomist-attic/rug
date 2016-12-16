@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 object NashornConstructorTest {
 
-  val SimpleJavascriptEditor =
+  val SimpleJavascriptEditor: String =
     """
       |"use strict";
       |var RugOperation_1 = require('user-model/operations/RugOperation');
@@ -30,17 +30,17 @@ object NashornConstructorTest {
 
 class NashornConstructorTest extends FlatSpec with Matchers {
 
-  val engine = new ScriptEngineManager(null).getEngineByName("nashorn")
+  private val engine = new ScriptEngineManager(null).getEngineByName("nashorn")
 
   it should "inject a constructor param" in {
     val withConstructor =
       """var ConstructedEditor = (function () {
         |    function ConstructedEditor(eng) {
-        |        print("cons:" + eng);
+        |        //print("cons:" + eng);
         |        this._eng = eng;
         |    }
         |    ConstructedEditor.prototype.edit = function () {
-        |        print("blah:" + this._eng);
+        |        //print("blah:" + this._eng);
         |        return this._eng.split(".");
         |    };
         |    return ConstructedEditor;

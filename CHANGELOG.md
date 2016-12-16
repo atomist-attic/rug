@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.7.0] - 2016-12-16
 
+[0.7.0]: https://github.com/atomist/rug/compare/0.6.0...0.7.0
+
 ### Changed
 
 - Breaking change to the Typescript Rug programming model. Decorators are no longer used, the interface signatures have changed, and the mechanism for retrieving the PathExpressionEngine has changed. See atomist/rug#24 for details.
@@ -26,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added new node levels in microgrammar returns
 
 ## [0.6.0] - 2016-12-14
+
+[0.6.0]: https://github.com/atomist/rug/compare/0.5.4...0.6.0
 
 ### Changed
 

@@ -83,6 +83,6 @@ case class Action(title: String,
                   parameters: java.util.List[ParameterValue])
 
 
-case class Callback(callbackType: String, rug: Rug)
+case class Callback(rug: Rug)
 
-case class Rug(group: String, artifact: String, name: String, version: String)
+case class Rug(`type`: String, group: String, artifact: String, name: String, version: String)

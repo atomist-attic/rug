@@ -48,6 +48,8 @@ trait Message {
 
   def withAction(a: Action): Message
 
+  def withActionNamed(a: String): Message
+
   def send(): Unit
 
   /**

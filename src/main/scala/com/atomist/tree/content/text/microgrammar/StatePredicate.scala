@@ -14,7 +14,7 @@ trait InputConsumer {
 /**
   * Report a state that can change as input is consumed
   *
-  * @tparam R
+  * @tparam R type of the returned predicate
   */
 trait StatePredicate[R <: Any] extends InputConsumer {
 
@@ -35,21 +35,21 @@ class StatePredicateManager extends InputConsumer {
 
   def registeredPredicates: Set[String] = predicates.keySet
 
-  def registered(predicateName: String) = predicates.contains(predicateName)
+  def registered(predicateName: String): Boolean = predicates.contains(predicateName)
 
   override def consume(c: Char): Unit = predicates.values.foreach(_.consume(c))
 
   def valueOf[R](predicateName: String): Option[R] = predicates.get(predicateName).map(p => p.state) match {
     case or: Option[R] => or
     case x =>
-      println(s"Warning: No predicate value or bad vaue found for [$predicateName]($x)")
+      println(s"Warning: No predicate value or bad value found for [$predicateName]($x)")
       None
   }
 }
 
 object StatePredicateManager {
 
-  def nameFor(p: StatePredicate[_]) = JavaHelpers.lowerize(p.getClass.getSimpleName)
+  def nameFor(p: StatePredicate[_]): String = JavaHelpers.lowerize(p.getClass.getSimpleName)
 
 }
 

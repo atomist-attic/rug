@@ -16,9 +16,10 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   private def whitespaceSep = """\s+""".r
 
   private def literal: Parser[Literal] =
-    """[^▶\s\[\]$]+""".r ^^ {
-      case l => Literal(l)
-    }
+    """[^▶\s\[\]$]+""".r ^^ (l => Literal(l))
+
+  private def regex: Parser[Regex] =
+    "[" ~> "[^\\]]+".r <~ "]" ^^ (r => Regex("name", r))
 
   // [curlyDepth=1]
   private def boxedClause(implicit registry: MatcherRegistry): Parser[Matcher] = "[" ~> matcherExpression <~ "]"
@@ -44,11 +45,19 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
           .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type[$kind]") {})
     }
 
+  // We define it inline as a regex
+  private def inlineReference()(implicit registry: MatcherRegistry): Parser[Matcher] =
+    "$" ~> ident ~ ":" ~ regex ^^ {
+      case newName ~ _ ~ regex => regex.copy(name = newName)
+    }
+
   private def matcherExpression()(implicit registry: MatcherRegistry): Parser[Matcher] =
     descendantClause |
       concatenation |
       literal |
-      variableReference()
+      regex |
+      variableReference() |
+      inlineReference()
 
   private def microgrammar(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 

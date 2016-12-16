@@ -5,6 +5,11 @@ import com.atomist.tree.content.text.InputPosition
 import com.atomist.util.ConsoleVisitor
 import com.typesafe.scalalogging.LazyLogging
 
+/**
+  * Decorates a string with its position in input
+  * @param value string
+  * @param inputPosition position in input
+  */
 case class PositionalString(value: String, inputPosition: InputPosition)
 
 /**

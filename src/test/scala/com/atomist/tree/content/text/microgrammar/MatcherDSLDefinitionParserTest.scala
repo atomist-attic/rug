@@ -11,21 +11,37 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
     val bogusInputs = Seq(null, "", "$", "[", "▶")
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy (mgp.parse(bad))
+        an[BadRugException] should be thrownBy mgp.parse(bad)
       }
   }
 
   it should "accept valid literal" in {
     val validLiterals = Seq("a", "aa", "a&a", "woiurwieur", "def")
     for (v <- validLiterals) mgp.parse(v) match {
-      case Literal(v, None) =>
+      case Literal(`v`, None) =>
+    }
+  }
+
+  it should "accept valid regex" in {
+    val validLiterals = Seq("[a]", "[.*]", "[.]")
+    for (v <- validLiterals) mgp.parse(v) match {
+      case Regex(_, rex, _) =>
+    }
+  }
+
+  it should "accept valid inline regex" in {
+    val validLiterals = Seq("$foo:[a]", "$foo:[.*]", "$foo:[.]")
+    for (v <- validLiterals) mgp.parse(v) match {
+      case Regex("foo", rex, _) =>
+        withClue(s"String [$v] should contain regex [$rex]") {
+          v.contains(rex) should be (true) }
     }
   }
 
   it should "accept valid descendant phrase" in pendingUntilFixed {
     val validDescendantPhrases = Seq("▶[foobar]", "▶[foo bar]")
     for (v <- validDescendantPhrases) mgp.parse(v) match {
-      case Literal(v, None) =>
+      case Literal(l, None) =>
     }
   }
 
@@ -34,7 +50,7 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
     val scalaMethod = Literal("x", named = Some("ScalaMethod"))
     val theMethod = scalaMethod.copy(named = Some("theMethod"))
 
-    val mr = new SimpleMatcherRegistry(Seq(otherPattern, scalaMethod, theMethod))
+    val mr = SimpleMatcherRegistry(Seq(otherPattern, scalaMethod, theMethod))
     val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
     for (v <- validUseOfVars) mgp.parse(v, mr) match {
       case m: Matcher =>
@@ -45,7 +61,7 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
     val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
     for (v <- validUseOfVars) {
       withClue(s"[$v] is not a bound valid microgrammar definition") {
-        an[BadRugException] should be thrownBy(mgp.parse(v))
+        an[BadRugException] should be thrownBy mgp.parse(v)
       }
     }
   }
@@ -54,7 +70,7 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
     val bogusInputs = Seq("$", "$$", "$***", "$7iud:eiruieur", "$ foo:bar")
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy (mgp.parse(bad))
+        an[BadRugException] should be thrownBy mgp.parse(bad)
       }
   }
 
@@ -65,7 +81,7 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
         mgp.parse(v) match {
           case cat: Concat =>
             cat.matchPrefix(0, v) match {
-              case Some(PatternMatch(_, _, v, `v`, _)) =>
+              case Some(PatternMatch(_, _, matched, `v`, _)) =>
               case None => fail(s"Failed to match on [$v]")
             }
         }

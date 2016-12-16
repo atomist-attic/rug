@@ -1,6 +1,5 @@
-package com.atomist.tree.content.text.microgrammar.pattern
+package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.content.text.microgrammar.{PatternMatch, Regex}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

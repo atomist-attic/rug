@@ -214,6 +214,13 @@ case class AndExpression(a: Predicate, b: Predicate) extends ComparisonPredicate
 
 case class OrExpression(a: Predicate, b: Predicate) extends ComparisonPredicate
 
+case class NotExpression(inner: Predicate) extends Predicate {
+  override def accept(v: Visitor, depth: Int): Unit = {
+    v.visit(this, depth)
+    inner.accept(v, depth + 1)
+  }
+}
+
 sealed trait DoStep extends Action
 
 /**

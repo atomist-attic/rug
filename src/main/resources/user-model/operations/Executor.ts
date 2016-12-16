@@ -1,15 +1,12 @@
-import {Parameters} from "./Parameters"
-import {Result} from "./Result"
+import {Result,RugOperation} from "./RugOperation"
 import {Services} from "../model/Core"
 
 /**
  * Main entry point for cross project operations
  */
-export interface Executor<P extends Parameters> {
-
-    /**
-     * Run against the given model
-     */
-    execute(services: Services, p: P): Result
-
+export interface Executor extends RugOperation{
+  /**
+   * Run against the given model
+   */
+  execute(services: Services, params: Object): Result
 }

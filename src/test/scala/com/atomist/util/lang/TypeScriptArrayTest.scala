@@ -4,7 +4,7 @@ import java.util
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.NoModificationNeeded
-import com.atomist.rug.runtime.js.interop.UserModelContext
+import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -13,34 +13,29 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
 
   val EditorWithFancyListArray =
     """import {Project} from 'user-model/model/Core'
-      |import {ParametersSupport} from 'user-model/operations/Parameters'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Parameters} from 'user-model/operations/Parameters'
       |import {File} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/Result'
       |
-      |import {parameter} from 'user-model/support/Metadata'
-      |import {inject} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {tag} from 'user-model/support/Metadata'
-      |import {editor} from 'user-model/support/Metadata'
+      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
       |
-      |class JavaInfo extends ParametersSupport {
-      |  @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |  packageName: string = null
-      |}
       |
-      |@editor("A nice little editor")
-      |@tag("java")
-      |@tag("maven")
-      |class ConstructedEditor implements ProjectEditor<Parameters> {
+      |declare var Java
       |
-      |    private lyst: string[];
+      |var ArrayList = Java.type("java.util.ArrayList");
+      |var jlist = new ArrayList;
+      |jlist.add("blah");
+      |var FancyList = Java.type("com.atomist.util.lang.TypeScriptArray");
+      |var javaList = new FancyList(jlist);
       |
-      |    constructor(@inject("FancyList") _lyst: string[] ){
-      |      this.lyst = _lyst;
-      |    }
-      |    edit(project: Project, @parameters("JavaInfo") ji: JavaInfo) {
+      |class ConstructedEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "A nice little editor"
+      |    parameters: Parameter[] = [{name: "packageName", description: "The java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
+      |    lyst: string[]
+      |    edit(project: Project, {packageName}: {packageName: string}) {
+      |
+      |       this.lyst = javaList as string[];
+      |
       |       this.lyst[0].toString()
       |
       |       //ensure we return another TypeArray
@@ -230,6 +225,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |       return new Result(Status.Success, "")
       |    }
       |  }
+      |  var editor = new ConstructedEditor()
       | """.stripMargin
 
   it should "behave just like a normal JS/TS array, but also support some cool Java stuff!" in {
@@ -239,6 +235,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
+
     val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as, TemporaryRegistry).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
 
@@ -256,7 +253,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
     val lyst = new util.ArrayList[String]()
     lyst.add("blah")
     override val registry = Map(
-      "FancyList" -> new TypeScriptArray[String](lyst)
+      "PathExpressionEngine" -> new TypeScriptArray[String](lyst)
     )
   }
 }

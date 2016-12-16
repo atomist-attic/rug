@@ -23,6 +23,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
       override def edit(f: FileArtifact): FileArtifact =
         f.withContent(f.content.replace(new InterfaceGenerationConfig().imports,
           """
+            |interface ProjectContext {}
             |interface TreeNode {}
           """.stripMargin))
     }

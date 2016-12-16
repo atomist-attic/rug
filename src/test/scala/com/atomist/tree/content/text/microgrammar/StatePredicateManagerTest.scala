@@ -1,6 +1,5 @@
-package com.atomist.tree.content.text.microgrammar.pattern
+package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.content.text.microgrammar.{CurlyDepth, StatePredicateManager}
 import org.scalatest.{FlatSpec, Matchers}
 
 class StatePredicateManagerTest extends FlatSpec with Matchers {

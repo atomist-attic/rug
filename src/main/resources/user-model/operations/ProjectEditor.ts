@@ -1,25 +1,11 @@
 import {Project} from "../model/Core"
-import {Parameters} from "./Parameters"
-import {Result} from "./Result"
+import {Parameter, Result, RugOperation} from "./RugOperation"
+import {PathExpressionEngine} from "../tree/PathExpression"
 
-/**
- * Main entry point for project editing
- */
-export interface ProjectEditor<P extends Parameters> {
-
-    edit(project: Project, p: P): Result
-
+export interface ProjectContext{
+  pathExpressionEngine(): PathExpressionEngine
 }
 
-
-/**
- * Convenience superclass for editors without parameters
- */
-export abstract class ParameterlessProjectEditor implements ProjectEditor<Parameters> {
-
-    edit(project: Project, p: Parameters) {
-        return this.editWithoutParameters(project)
-    }
-
-    protected abstract editWithoutParameters(project: Project): Result
+export interface ProjectEditor extends RugOperation{
+  edit(project: Project, params: Object): Result
 }

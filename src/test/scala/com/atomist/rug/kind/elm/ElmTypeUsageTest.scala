@@ -36,71 +36,57 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
+
   private def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
-    val imp1 = if (param)
-      """
-        |@parameter({description: "Name of module we're renaming",
-        |    pattern: "^[A-Z][\w]+$", maxLength: 100, required: true
-        |  })
-      """.stripMargin
-    else ""
 
-    val imp2 = if (param)
-      """
-        |@parameter({description: "New name for the module",
-        |    pattern: "^[A-Z][\w]+$", maxLength: 100
-        |  })
-      """.stripMargin
-    else ""
 
-    s"""import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-        |import {Parameters, ParametersSupport} from 'user-model/operations/Parameters'
+    val p1 = """{name: "old_name", description: "Name of module we're renaming", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
+    val p2 = """{name: "new_name", description: "New name for the module", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
+
+    var params = "[]"
+    if(param){
+       params = s"""[$p1, $p2]"""
+    }
+    s"""
+        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
         |import {Project,ElmModule} from 'user-model/model/Core'
         |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
         |
-        |import {editor, parameter, parameters,inject} from 'user-model/support/Metadata'
-        |import {Result,Status} from 'user-model/operations/Result'
+        |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
         |
-        |abstract class ElmRenamerParameters extends ParametersSupport {
-        |
-        |   $imp1
-        |   old_name: string = null
-        |
-        |   $imp2
-        |   new_name: string = null
-        |}
+        |let params: Parameter[] = $params
         |
         |declare var print
         |
-        |@editor("Renames an Elm module")
-        |class Renamer implements ProjectEditor<ElmRenamerParameters> {
+        |class Renamer implements ProjectEditor {
+        |    name: string = "ModuleRenamer"
+        |    description: string = "Renames an Elm module"
+        |    parameters: Parameter[] = params
         |
-        |     private eng: PathExpressionEngine;
         |
-        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-        |      this.eng = _eng;
-        |    }
+        |    edit(project: Project, {old_name, new_name }: {old_name: string, new_name: string}): Result {
         |
-        |    edit(project: Project,
-        |        @parameters("ElmRenamerParameters") p: ElmRenamerParameters): Result {
+        |        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |        let allModules: Array<ElmModule> =
-        |             this.eng.children<ElmModule>(project, "elm.module")
+        |             eng.children<ElmModule>(project, "elm.module")
         |
-        |         for (let em of allModules) if (em.name() == p.old_name) {
-        |            ${if (prints) "print(`Modifying $${em} to have name $${p.new_name}`)" else ""}
-        |            em.rename(p.new_name)
+        |         for (let em of allModules) if (em.name() == old_name) {
+        |            ${if (prints) "print(`Modifying $${em} to have name $${new_name}`)" else ""}
+        |            em.rename(new_name)
         |         }
         |
         |         //print(`found $${allModules.length} elm modules in $${project}`)
         |         for (let em of allModules) {
         |            ${if (prints) "print(`Module $${em}`)" else ""}
-        |           if (em.imports(p.old_name)) {
-        |             em.updateImport(p.old_name, p.new_name)
+        |           if (em.imports(old_name)) {
+        |             em.updateImport(old_name, new_name)
         |           }
         |        }
         |        return new Result(Status.Success, "OK")
         |    }
         |}
+        |
+        |var editor = new Renamer()
           """.stripMargin
   }
 

@@ -3,10 +3,12 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
 /**
-  * Similar to a SNOBOL break. If we don't eventually find the literal,
-  * we don't match.
+  * Similar to a SNOBOL "break". If we don't eventually find the literal,
+  * we don't match. Matches the content up to and including the final matcher.
   *
   * @param breakToMatcher matcher that might match
+  * @param named          Name if we have one. If we don't,
+  *                       no node will be created, which effectively discards the content
   */
 case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends Matcher {
 
@@ -25,11 +27,14 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends 
         case None =>
           None
         case Some(m) =>
-          val eaten = take(offset, input, last - offset)
+          val eaten = take(offset, input, m.endPosition.offset - offset)
           Some(PatternMatch(
-            named.map(n => new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
+            named.map(n =>
+              new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
             offset,
-            eaten, input, this.toString))
+            eaten,
+            input,
+            this.toString))
       }
     }
     else

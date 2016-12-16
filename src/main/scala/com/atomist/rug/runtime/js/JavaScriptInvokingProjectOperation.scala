@@ -2,14 +2,14 @@ package com.atomist.rug.runtime.js
 
 import javax.script.ScriptContext
 
-import com.atomist.param.{Parameter, Tag}
+import com.atomist.param.{Parameter, ParameterValue, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.rug.InvalidRugParameterPatternException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, SafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.SafeCommittingProxy
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -23,13 +23,11 @@ import scala.util.Try
   * Superclass for all operations that delegate to JavaScript.
   *
   * @param jsc       JavaScript context
-  * @param className name of the class
   * @param jsVar     var reference in Nashorn
   * @param rugAs     backing artifact source for the Rug archive
   */
 abstract class JavaScriptInvokingProjectOperation(
                                                    jsc: JavaScriptContext,
-                                                   className: String,
                                                    jsVar: ScriptObjectMirror,
                                                    rugAs: ArtifactSource
                                                  )
@@ -53,7 +51,7 @@ abstract class JavaScriptInvokingProjectOperation(
 
   protected def context: Seq[ProjectOperation] = _context
 
-  override def description: String = jsc.engine.invokeFunction("get_metadata", jsVar, "editor-description") match {
+  override def description: String = jsVar.getMember("description").asInstanceOf[String] match {
     case s: String => s
     case _ => name
   }
@@ -68,23 +66,22 @@ abstract class JavaScriptInvokingProjectOperation(
     */
   protected def invokeMemberWithParameters(member: String, args: Object*): Any = {
     // Translate parameters if necessary
-    val processedArgs = args.map {
-      case poa: ProjectOperationArguments =>
-        // Create the special type we create on the fly to imitate parameter
-        // classes and allow writing values back
-        new BidirectionalParametersProxy(poa)
-      case x => x
-    }
+    val processedArgs = args.foldLeft(Seq[Object]())(
+      (acc: Seq[Object], cur: Object) => cur match {
+        case poa: ProjectOperationArguments => {
+          acc :+ poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
+        }
+        case x => acc :+ x
+      }
+    )
 
-    // Important that we don't invoke methods on the prototype as otherwise all constructor effects are lost!
-    jsc.engine.get(className.toLowerCase) match {
-      case som: ScriptObjectMirror => som.callMember(member, processedArgs: _*)
-    }
+    jsVar.callMember(member,processedArgs: _* )
+
   }
 
   protected def readTagsFromMetadata: Seq[Tag] = {
     Try {
-      jsc.engine.invokeFunction("get_metadata", jsVar, "tags") match {
+      jsVar.getMember("tags") match {
         case som: ScriptObjectMirror =>
           val stringValues = som.values().asScala collect {
             case s: String => s
@@ -96,53 +93,44 @@ abstract class JavaScriptInvokingProjectOperation(
   }
 
   protected def readParametersFromMetadata: Seq[Parameter] = {
-    val vars = jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
-    val pclass = jsc.engine.invokeFunction("get_metadata", jsVar, "parameter-class").asInstanceOf[String]
-    if(pclass == null){
-      return Nil
-    }
-    val pvar = vars.get(pclass).asInstanceOf[ScriptObjectMirror]
-    if(pvar == null){
-      return Nil
-    }
-    val instance = jsc.engine.eval(s"""new $pclass()""").asInstanceOf[ScriptObjectMirror]
-    jsc.engine.invokeFunction("get_metadata", pvar, "params") match {
-      case som: ScriptObjectMirror =>
-        val values = som.asScala collect {
-          case (name: String, details: AnyRef) =>
-            // TODO - can we do some fancy data binding here? map keys match setters (mostly)
-            val p = Parameter(name, details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String])
-            p.setDisplayName(details.asInstanceOf[ScriptObjectMirror].get("displayName").asInstanceOf[String])
-            p.setMaxLength(details.asInstanceOf[ScriptObjectMirror].get("maxLength").asInstanceOf[Int])
-            p.setMinLength(details.asInstanceOf[ScriptObjectMirror].get("minLength").asInstanceOf[Int])
-            p.setDefaultRef(details.asInstanceOf[ScriptObjectMirror].get("defaultRef").asInstanceOf[String])
-            p.setDisplayable(details.asInstanceOf[ScriptObjectMirror].get("displayable").asInstanceOf[Boolean])
-            p.setRequired(details.asInstanceOf[ScriptObjectMirror].get("required").asInstanceOf[Boolean])
-            val pvalue = instance.get(name)
-            if (pvalue != null) {
-              p.setDefaultValue((pvalue.toString))
-            }
 
-            p.setValidInputDescription(details.asInstanceOf[ScriptObjectMirror].get("validInputDescription").asInstanceOf[String])
-            p.describedAs(details.asInstanceOf[ScriptObjectMirror].get("description").asInstanceOf[String])
-            details.asInstanceOf[ScriptObjectMirror].get("pattern").asInstanceOf[String] match {
-              case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
-                case Left(sourceOfValidIdentifiers) =>
-                  throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
-                case Right(pat) => p.setPattern(pat)
-              }
-              case s: String if (!s.startsWith("^") || !s.endsWith("$")) => throw new InvalidRugParameterPatternException(s"Parameter $name does not contain anchors: $s")
-              case s: String => p.setPattern(s)
-            }
-            // TODO it's unclear what allowedValues is for given an AllowedValue is just a name/display_name mapping
-            // p.setAllowedValues()
-            p
+    val pvar = jsVar.get("parameters").asInstanceOf[ScriptObjectMirror]
+    if(pvar == null || pvar.asScala.isEmpty){
+      return Nil
+    }
+    val values = pvar.asScala.collect {
+      case (_, _details: AnyRef) =>
+        val details = _details.asInstanceOf[ScriptObjectMirror]
+
+        val p = Parameter(details.get("name").asInstanceOf[String], details.get("pattern").asInstanceOf[String])
+        p.setDisplayName(details.get("displayName").asInstanceOf[String])
+        p.setMaxLength(details.get("maxLength").asInstanceOf[Int])
+        p.setMinLength(details.get("minLength").asInstanceOf[Int])
+        p.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
+        p.setDisplayable(details.get("displayable").asInstanceOf[Boolean])
+        p.setRequired(details.get("required").asInstanceOf[Boolean])
+        details.get("default") match {
+          case x: String => p.setDefaultValue(x.toString)
+          case _ =>
         }
-        values.toSeq
-      case _ => Nil
-    }
-  }
 
+        p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
+        p.describedAs(details.get("description").asInstanceOf[String])
+        details.get("pattern").asInstanceOf[String] match {
+          case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
+            case Left(sourceOfValidIdentifiers) =>
+              throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
+            case Right(pat) => p.setPattern(pat)
+          }
+          case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter $name does not contain anchors: $s")
+          case s: String => p.setPattern(s)
+          case _ =>
+        }
+        // p.setAllowedValues()
+        p
+    }
+    values.toSeq
+  }
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
     *

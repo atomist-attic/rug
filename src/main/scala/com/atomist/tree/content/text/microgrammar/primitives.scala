@@ -1,5 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
+
 /**
   * Try first to match the left pattern, then the right
   *
@@ -36,6 +38,25 @@ case class Renamed(m: Matcher, newName: String) extends Matcher {
 
   override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, input).map(matched => matched.copy(node = None))
+
+}
+
+/**
+  * Wrap the matcher with a new name and in a higher level container node
+  *
+  * @param m    matcher to wrap
+  * @param name new name that will be used for the matcher and the new node level
+  */
+case class Wrap(m: Matcher, name: String)
+  extends Matcher {
+
+  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
+    m.matchPrefix(offset, input).map(matched =>
+      matched.copy(node = matched.node.map(mn => {
+        val n = SimpleMutableContainerTreeNode.wrap(name, mn)
+        println(s"New node is $n")
+        n
+      })))
 
 }
 

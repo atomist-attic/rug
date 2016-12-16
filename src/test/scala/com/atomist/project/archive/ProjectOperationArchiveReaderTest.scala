@@ -110,20 +110,18 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   val SimpleExecutor =
     """
       |import {Executor} from 'user-model/operations/Executor'
-      |import {Parameters} from 'user-model/operations/Parameters'
+      |import {Parameter, Result, Status} from 'user-model/operations/RugOperation'
       |import {Services} from 'user-model/model/Core'
-      |import {executor} from 'user-model/support/Metadata'
-      |import {parameters} from 'user-model/support/Metadata'
-      |import {Result,Status} from 'user-model/operations/Result'
       |
-      |@executor("My simple executor")
-      |class SimpleExecutor implements Executor<Parameters> {
-      |
-      |    execute(services: Services, @parameters("Parameters") p: Parameters):Result {
+      |class SimpleExecutor implements Executor{
+      |    name: string = "SimpleExecutor"
+      |    description: string = "A nice little executionist"
+      |    execute(services: Services): Result {
       |        return new Result(Status.Success,
       |         `We are clever`)
       |    }
       |}
+      |var exec = new SimpleExecutor()
     """.stripMargin
   it should "find typescript executor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
@@ -167,8 +165,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
     val rugAs = SimpleFileBasedArtifactSource(
-      StringFileArtifact(".atomist/editors/SimpleGenerator.js",
-        NashornConstructorTest.SimpleJavascriptGenerator),
+      StringFileArtifact(".atomist/editors/SimpleEditor.js",
+        NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
     )

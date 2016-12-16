@@ -121,34 +121,26 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   it should "add dependency using TypeScript" in {
     val program =
       """
-        |import {ParameterlessProjectEditor} from "user-model/operations/ProjectEditor"
-        |import {Status, Result} from "user-model/operations/Result"
+        |import {ProjectEditor} from "user-model/operations/ProjectEditor"
+        |import {Status, Result} from "user-model/operations/RugOperation"
         |import {Project,Pair} from 'user-model/model/Core'
         |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
         |
-        |import {editor, inject} from '@atomist/rug/support/Metadata'
+        |class PackageFinder implements ProjectEditor {
+        |    name: string = "node.deps"
+        |    description: string = "Finds package.json dependencies"
+        |    edit(project: Project): Result {
         |
-        |declare var print
-        |
-        |@editor("Dependency adder")
-        |class PackageFinder extends ParameterlessProjectEditor {
-        |
-        | private eng: PathExpressionEngine;
-        |
-        |    constructor(@inject("PathExpressionEngine") _eng: PathExpressionEngine ){
-        |      super();
-        |      this.eng = _eng;
-        |    }
-        |
-        |    editWithoutParameters(project: Project): Result {
-        |
-        |    let pe = new PathExpression<Project,Pair>(`/[name='package.json']->json/dependencies`)
-        |    let p = this.eng.scalar(project, pe)
-        |    //if (p == null)
-        |    p.addKeyValue("foo", "bar")
-        |    return new Result(Status.Success, "OK");
+        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        |      let pe = new PathExpression<Project,Pair>(`/[name='package.json']->json/dependencies`)
+        |      let p = eng.scalar(project, pe)
+        |      //if (p == null)
+        |      p.addKeyValue("foo", "bar")
+        |      return new Result(Status.Success, "OK");
         |    }
         |}
+        |
+        |var finder = new PackageFinder();
       """.stripMargin
     val edited = updateWith(program, ccPipeline)
   }

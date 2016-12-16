@@ -1,6 +1,5 @@
-package com.atomist.tree.content.text.microgrammar.pattern
+package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.content.text.microgrammar.{Break, Literal, PatternMatch}
 import org.scalatest.{FlatSpec, Matchers}
 
 class BreakTest extends FlatSpec with Matchers {
@@ -8,14 +7,14 @@ class BreakTest extends FlatSpec with Matchers {
   it should "match break in whole string" in {
     val l = Literal("thing") ~ Break(Literal("Y"))
     l.matchPrefix(0, "thingxxxY") match {
-      case Some(PatternMatch(tn, 0, "thingxxx", "thingxxxY", _)) =>
+      case Some(PatternMatch(tn, 0, "thingxxxY", "thingxxxY", _)) =>
     }
   }
 
   it should "match break in part of string" in {
     val l = Literal("thing") ~ Break(Literal("Y"))
     l.matchPrefix(0, "thingxxxYzzz") match {
-      case Some(PatternMatch(tn, 0, "thingxxx", "thingxxxYzzz", _)) =>
+      case Some(PatternMatch(tn, 0, "thingxxxY", "thingxxxYzzz", _)) =>
     }
   }
 

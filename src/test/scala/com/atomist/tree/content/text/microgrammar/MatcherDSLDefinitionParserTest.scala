@@ -1,7 +1,6 @@
-package com.atomist.tree.content.text.microgrammar.pattern
+package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.rug.BadRugException
-import com.atomist.tree.content.text.microgrammar._
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {

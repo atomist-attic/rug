@@ -131,23 +131,22 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
     val content = "What is this, the high hat?"
     updateAllProjects(content,
       s"""
-         |import {Executor} from "@atomist/rug/operations/Executor"
-         |import {Parameters} from "@atomist/rug/operations/Parameters"
-         |import {Services} from "@atomist/rug/model/Core"
-         |import {Result,Status} from "@atomist/rug/operations/Result"
+         |import {Executor} from "user-model/operations/Executor"
+         |import {Services} from "user-model/model/Core"
+         |import {Result,Status} from "user-model/operations/RugOperation"
          |
-         |import {executor} from "@atomist/rug/support/Metadata"
-         |
-         |@executor("An angry executor")
-         |class AddSomeCaspar implements Executor<Parameters> {
-         |
-         |    execute(services: Services, p: Parameters): Result {
+         |class AddSomeCaspar implements Executor {
+         |    description: string = "An angry executor"
+         |    name: string = "AddSomeCaspar"
+         |    execute(services: Services): Result {
          |        for (let s of services.services())
          |            s.addFile("Caspar", "$content");
          |
          |      return new Result(Status.Success, "OK")
          |    }
          |}
+         |
+         |var caspar = new AddSomeCaspar()
       """.stripMargin,
       rugPath = ".atomist/executors/AddSomeCaspar.ts",
       ccPipeline

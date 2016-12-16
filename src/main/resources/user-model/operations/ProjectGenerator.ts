@@ -1,42 +1,27 @@
 import {Project} from "../model/Core"
-import {ParametersSupport} from "./Parameters"
-import {parameter} from "../support/Metadata"
+import {Parameter, RugOperation} from "./RugOperation"
 
-
-abstract class GeneratorParameters extends ParametersSupport {
-
-  // TODO need standard regex for package name etc as in Rug
-  @parameter({description: "Name of the new project", 
-        displayName: "Java Package", 
-        pattern: ".*", 
-        maxLength: 21})
-    project_name: string
-}
 
 /**
  * Top level interface for all project generators
  */
-interface ProjectGenerator<P extends GeneratorParameters> {
-
-    populate(emptyProject: Project, parameters: P)
-
+interface ProjectGenerator extends RugOperation{
+    populate(emptyProject: Project, projectName: string, args: Object)
 }
 
 /**
  * The commonest case. We want to customize a new project
  */
-abstract class CustomizingProjectGenerator<P extends GeneratorParameters> 
-    implements ProjectGenerator<P> {
-
-    populate(emptyProject: Project, parameters: P) {
+abstract class CustomizingProjectGenerator implements ProjectGenerator {
+    abstract name: string
+    abstract description: string
+    populate(emptyProject: Project, projectName: string, ...params: string[]) {
         emptyProject.copyEditorBackingFilesPreservingPath("")
-        //this.customize(emptyProject, parameters)
+        this.customize(emptyProject, projectName, params)
     }
 
-   abstract customize(project: Project, parameters: P): void
-
+   abstract customize(project: Project, projectName: string, params: string[]): void
 }
 
-export {GeneratorParameters}
 export {ProjectGenerator}
 export {CustomizingProjectGenerator}

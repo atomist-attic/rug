@@ -9,7 +9,15 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
   * @param m
   * @param name
   */
-case class Rep(m: Matcher, name: String = "rep") extends Matcher {
+case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
+  extends Matcher {
+
+  private val secondaryMatch = separator match {
+    case None => m
+    case Some(sep) => Discard(sep) ~? m
+  }
+
+  println(s"SecondaryMatch=$secondaryMatch,first=$m")
 
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
@@ -19,22 +27,26 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
         Some(
           PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
             offset = offset, matched = "", s, this.toString))
-      case Some(there) =>
+      case Some(initialMatch) =>
         // We matched once. Let's keep going
-        var matched = there.matched
-        val offset = there.offset
-        var upToOffset = offset
-        var nodes = there.node.toSeq
-        while (m.matchPrefix(upToOffset, s) match {
+        println(s"Found initial match for $initialMatch")
+        var matched = initialMatch.matched
+        val offset = initialMatch.offset
+        var upToOffset = initialMatch.endPosition.offset
+        var nodes = initialMatch.node.toSeq
+        //println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
+        while (secondaryMatch.matchPrefix(upToOffset, s) match {
           case None => false
-          case Some(m) =>
-            upToOffset = m.endPosition.offset
-            nodes ++= m.node.toSeq
+          case Some(lastMatch) =>
+            //if (separator.isDefined) ???
+            //println(s"Made it to secondary match [$lastMatch]")
+            upToOffset = lastMatch.endPosition.offset
+            matched += lastMatch.matched
+            nodes ++= lastMatch.node.toSeq
             true
         }) {
           // Do nothing
         }
-
 
         val pos = OffsetInputPosition(offset)
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
@@ -50,7 +62,7 @@ case class Rep(m: Matcher, name: String = "rep") extends Matcher {
 object Repsep {
 
   def apply(m: Matcher, sep: Matcher, name: String): Matcher =
-    Renamed(m.? ~? Rep(sep ~? m), name)
+    Rep(m, name, Some(sep))
 
 }
 

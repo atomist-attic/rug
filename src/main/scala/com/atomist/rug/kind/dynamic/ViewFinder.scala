@@ -81,6 +81,8 @@ trait ViewFinder {
       case or: OrExpression =>
         invokePredicate(rugAs, poa, identifierMap, or.a, targetAlias, v) ||
           invokePredicate(rugAs, poa, identifierMap, or.b, targetAlias, v)
+      case not: NotExpression =>
+        !invokePredicate(rugAs, poa, identifierMap, not.inner, targetAlias, v)
       case eq: EqualsExpression =>
         val l = v.evaluator.evaluate[MutableView[_], Object](eq.a, null, null, v, targetAlias, identifierMap, poa)
         val r = v.evaluator.evaluate[MutableView[_], Object](eq.b, null, null, v, targetAlias, identifierMap, poa)

@@ -1,16 +1,12 @@
 package com.atomist.rug.runtime.js
 
-import java.rmi.registry.Registry
 import javax.script.ScriptContext
 
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
 import com.atomist.source.{ArtifactSource, FileArtifact}
-import jdk.nashorn.api.scripting.{JSObject, NashornScriptEngine, ScriptObjectMirror}
-import com.atomist.rug.runtime.js.JavaScriptContext
-
-import scala.collection.JavaConverters._
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Find and instantiate JavaScript editors in a Rug archive

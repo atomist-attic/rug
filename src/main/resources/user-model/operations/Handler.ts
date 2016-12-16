@@ -66,6 +66,8 @@ export interface Message {
 
  withAction(a: Action): Message
 
+ withActionNamed(a: String): Message
+
  address(channelId: string): Message
 
 /**

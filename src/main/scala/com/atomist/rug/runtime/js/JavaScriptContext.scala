@@ -41,7 +41,7 @@ class JavaScriptContext extends LazyLogging {
     */
   def eval(f: FileArtifact): Unit = {
     if (f.name.endsWith(".js"))
-      eval(f.content)
+      typeScriptContext.eval(f, engine)
   }
 
   /**

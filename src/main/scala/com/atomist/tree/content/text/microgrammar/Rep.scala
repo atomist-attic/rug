@@ -6,8 +6,9 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
   * Match 0 or more occurrences of a node.
   * We create a new subnode with the given name
   *
-  * @param m
-  * @param name
+  * @param m         matcher that may match 0 or more times
+  * @param name      name of the matcher
+  * @param separator separator. If this is supplied, this is handled as a repsep rather than a straight rep
   */
 case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
   extends Matcher {
@@ -16,8 +17,6 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
     case None => m
     case Some(sep) => Discard(sep) ~? m
   }
-
-  println(s"SecondaryMatch=$secondaryMatch,first=$m")
 
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
@@ -29,7 +28,7 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
             offset = offset, matched = "", s, this.toString))
       case Some(initialMatch) =>
         // We matched once. Let's keep going
-        println(s"Found initial match for $initialMatch")
+        //println(s"Found initial match for $initialMatch")
         var matched = initialMatch.matched
         val offset = initialMatch.offset
         var upToOffset = initialMatch.endPosition.offset
@@ -38,7 +37,6 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
         while (secondaryMatch.matchPrefix(upToOffset, s) match {
           case None => false
           case Some(lastMatch) =>
-            //if (separator.isDefined) ???
             //println(s"Made it to secondary match [$lastMatch]")
             upToOffset = lastMatch.endPosition.offset
             matched += lastMatch.matched

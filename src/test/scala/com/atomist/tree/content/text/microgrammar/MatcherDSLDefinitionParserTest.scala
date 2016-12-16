@@ -38,10 +38,24 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "accept valid descendant phrase" in pendingUntilFixed {
-    val validDescendantPhrases = Seq("▶[foobar]", "▶[foo bar]")
-    for (v <- validDescendantPhrases) mgp.parse(v) match {
-      case Literal(l, None) =>
+  it should "accept valid descendant phrase" in {
+    val dog = Literal("dog", named = Some("dog"))
+    val cat = Literal("cat", named = Some("cat"))
+    val mr = SimpleMatcherRegistry(Seq(dog,cat))
+    val validDescendantPhrases = Seq("▶$:cat", "▶$d:dog")
+    for (v <- validDescendantPhrases) mgp.parse(v, mr) match {
+      case w: Wrap =>
+    }
+  }
+
+  it should "accept valid descendant phrase with predicate" in {
+    val dog = Literal("dog", named = Some("dog"))
+    val cat = Literal("cat", named = Some("Cat"))
+    val mr = SimpleMatcherRegistry(Seq(dog,cat))
+    val validDescendantPhrases = Seq("▶$fido:dog[curlyDepth=3]", "▶$felix:Cat[fat=false]")
+    for (v <- validDescendantPhrases) mgp.parse(v, mr) match {
+      //case Literal(l, None) =>
+      case _ =>
     }
   }
 

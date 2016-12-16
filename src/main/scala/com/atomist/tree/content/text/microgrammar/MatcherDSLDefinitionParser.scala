@@ -21,10 +21,20 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   private def regex: Parser[Regex] =
     "[" ~> "[^\\]]+".r <~ "]" ^^ (r => Regex("name", r))
 
-  // [curlyDepth=1]
-  private def boxedClause(implicit registry: MatcherRegistry): Parser[Matcher] = "[" ~> matcherExpression <~ "]"
+  private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
 
-  private def descendantClause(implicit registry: MatcherRegistry): Parser[Matcher] = "▶" ~> boxedClause
+  // [curlyDepth=1]
+  private def predicate(implicit registry: MatcherRegistry): Parser[StatePredicateTest] = "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
+    case predicateName ~ "=" ~ predicateVal => StatePredicateTest(predicateName, predicateVal)
+  }
+
+  private def boxedClause(implicit registry: MatcherRegistry): Parser[Matcher] = "[" ~> matcherExpression <~ "]" ~ opt(predicate)
+
+  // There is a deeper level to this game
+  // The boxed clause should be a subnode of this node, rather than have its fields added directly
+  private def descendantClause(implicit registry: MatcherRegistry): Parser[Matcher] = "▶" ~> variableReference() ^^ (
+    vr => Wrap(vr, vr.name)
+  )
 
   private def matcherTerm: Parser[Matcher] = literal
 
@@ -32,20 +42,23 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
     case left ~ _ ~ right => left ~~ right
   }
 
+  // TODO mixin that adds predicate check to a matcher
+
+  // $name:Identifier
   private def variableReference()(implicit registry: MatcherRegistry): Parser[Matcher] =
-    "$" ~> opt(ident) ~ ":" ~ ident ^^ {
-      case Some(name) ~ _ ~ kind =>
+    "$" ~> opt(ident) ~ ":" ~ ident ~ opt(predicate) ^^ {
+      case Some(name) ~ _ ~ kind ~ predicate =>
         registry
           .find(kind)
           .map(m => Reference(m, name))
           .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind]") {})
-      case None ~ _ ~ kind =>
+      case None ~ _ ~ kind ~ predicate =>
         registry
           .find(kind)
-          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type[$kind]") {})
+          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind]") {})
     }
 
-  // We define it inline as a regex
+  // $name:[.*]
   private def inlineReference()(implicit registry: MatcherRegistry): Parser[Matcher] =
     "$" ~> ident ~ ":" ~ regex ^^ {
       case newName ~ _ ~ regex => regex.copy(name = newName)
@@ -105,3 +118,6 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
 }
 
 case class MicrogrammarDefinition(name: String, sentence: String)
+
+
+private case class StatePredicateTest(name: String, value: String)

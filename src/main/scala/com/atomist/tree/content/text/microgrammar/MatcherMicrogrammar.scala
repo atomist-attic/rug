@@ -29,7 +29,7 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
   }
 
   private def outputNode(input: CharSequence, n: TreeNode) = {
-    println(s"Before transform, node=\n${TreeNodeUtils.toShortString(n)}")
+    //println(s"Before transform, node=\n${TreeNodeUtils.toShortString(n)}")
     n match {
       case mctn: AbstractMutableContainerTreeNode =>
         mctn.pad(input.toString)

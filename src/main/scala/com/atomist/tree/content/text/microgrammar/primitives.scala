@@ -23,7 +23,8 @@ case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") 
 /**
   * Match but discard the node output of the matcher
   *
-  * @param m
+  * @param m    matcher whose node result we'll discard
+  * @param name name of this discarding matcher
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
@@ -54,7 +55,7 @@ case class Wrap(m: Matcher, name: String)
     m.matchPrefix(offset, input).map(matched =>
       matched.copy(node = matched.node.map(mn => {
         val n = SimpleMutableContainerTreeNode.wrap(name, mn)
-        println(s"New node is $n")
+        //println(s"New node is $n")
         n
       })))
 

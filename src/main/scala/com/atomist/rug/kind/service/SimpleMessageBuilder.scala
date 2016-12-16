@@ -40,6 +40,11 @@ case class ImmutableMessage(
     this
   }
 
+  override def withActionNamed(a: String): Message = {
+    actions.add(actionRegistry.findByName(a))
+    this
+  }
+
   override def send(): Unit = sender(this)
 
   /**

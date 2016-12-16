@@ -130,7 +130,7 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
   }
 
   protected def predicateTerm: Parser[Predicate] =
-    (literalBoolean | comparison | functionCall | javaScriptBlock) ^^ {
+    (nottedTerm | literalBoolean | comparison | functionCall | javaScriptBlock) ^^ {
       case fn: Predicate => fn
       case js: JavaScriptBlock => ParsedJavaScriptFunction(js)
       case true => TruePredicate
@@ -143,6 +143,11 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
       case "OR" => OrExpression(left, right)
     }
   }
+
+  protected def nottedTerm: Parser[Predicate] =
+    NotToken ~> predicateTerm ^^ {
+      case pt => NotExpression(pt)
+    }
 
   protected def andedTerm: Parser[Term] = AndToken ~> predicateExpression ^^ (right => Term(right, "AND"))
 

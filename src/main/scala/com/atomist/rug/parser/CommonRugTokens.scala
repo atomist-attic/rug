@@ -7,6 +7,8 @@ trait CommonRugTokens {
 
   val AndToken = "and"
 
+  val NotToken = "not"
+
   val OrToken = "or"
 
   val TrueToken = "true"

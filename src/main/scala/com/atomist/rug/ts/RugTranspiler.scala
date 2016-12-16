@@ -297,7 +297,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       appendIfNotNull(pb,"defaultValue",p.getDefaultValue)
       appendIfNotNull(pb, "defaultRef",p.getDefaultRef)
       appendIfNotNull(pb, "displayName",p.getDisplayName)
-      appendIfNotNull(pb, "validInputDescription",p.getValidInputDescription)
+      appendIfNotNull(pb, "validInput",p.getValidInputDescription)
       pb.setLength(pb.length - 2)
       b.append(pb)
       b.append("}, ")

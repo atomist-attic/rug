@@ -40,21 +40,22 @@ object JavaScriptOperationFinder {
     * @param rugAs          archive to look into
     * @param registry       registry to allow operations to be looked up.
     *                       Injected into operations that ask for it
-    * @param shouldSuppress function allowing us to specify which JS
-    *                       files we should suppress. Suppresses none by default.
     * @return a sequence of instantiated operations backed by JavaScript compiled
     *         from TypeScript
     */
   def fromTypeScriptArchive(rugAs: ArtifactSource,
                             registry: UserModelContext = DefaultAtomistFacade,
-                            atomistConfig: AtomistConfig = DefaultAtomistConfig,
-                            shouldSuppress: FileArtifact => Boolean = f => false): Seq[ProjectOperation] = {
+                            atomistConfig: AtomistConfig = DefaultAtomistConfig): Seq[ProjectOperation] = {
     val jsc = new JavaScriptContext
 
     try {
-      val compiled = filterAndCompile(rugAs, atomistConfig, shouldSuppress, jsc)
+      val compiled = filterAndCompile(rugAs, atomistConfig, jsc)
+      val filtered = atomistConfig.atomistContent(compiled)
+        .filter(d => true,
+          f => (jsFile(f) || tsFile(f))
+            && (f.path.startsWith(atomistConfig.editorsRoot) || f.path.startsWith(atomistConfig.executorsRoot)))
 
-      for (f <- compiled.allFiles) {
+      for (f <- filtered.allFiles) {
         jsc.eval(f)
       }
 
@@ -72,22 +73,13 @@ object JavaScriptOperationFinder {
     *
     * @param rugAs          Archive to look in
     * @param atomistConfig  configuration
-    * @param shouldSuppress function allowing us to specify which JS
-    *                       files we should suppress. Suppresses none by default.
     * @return
     */
   def filterAndCompile(rugAs: ArtifactSource,
                        atomistConfig: AtomistConfig,
-                       shouldSuppress: FileArtifact => Boolean = f => false,
                        jsc: JavaScriptContext): ArtifactSource = {
     val tsc = jsc.typeScriptContext.compiler()
-    val excludePrefix = excludedTypeScriptPath(atomistConfig)
-    val filtered = atomistConfig.atomistContent(rugAs)
-      .filter(d => true,
-        f => (jsFile(f) || tsFile(f))
-          && f.path.startsWith(atomistConfig.atomistRoot) && !f.path.startsWith(excludePrefix) && !shouldSuppress(f))
-
-    tsc.compile(filtered)
+    tsc.compile(rugAs)
   }
 
 

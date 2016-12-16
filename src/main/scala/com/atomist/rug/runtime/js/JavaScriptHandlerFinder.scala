@@ -8,10 +8,6 @@ object JavaScriptHandlerFinder {
 
   import com.atomist.rug.runtime.js.JavaScriptOperationFinder._
 
-  private val notHasDeclareVarAtomist: FileArtifact => Boolean = f =>
-    // TODO should fix this
-    !(f.name.endsWith(".ts") && "atomist".r.findAllMatchIn(f.content).nonEmpty)
-
   /**
     * Find and handlers operations in the given Rug archive
     *
@@ -28,9 +24,13 @@ object JavaScriptHandlerFinder {
     jsc.engine.put("atomist", atomist)
 
     try {
-      val compiled = filterAndCompile(rugAs, atomistConfig, notHasDeclareVarAtomist, jsc)
+      val compiled = filterAndCompile(rugAs, atomistConfig, jsc)
+      val filtered = atomistConfig.atomistContent(compiled)
+        .filter(d => true,
+          f => (jsFile(f) || tsFile(f))
+            && f.path.startsWith(atomistConfig.handlersRoot))
 
-      for (f <- compiled.allFiles) {
+      for (f <- filtered.allFiles) {
         jsc.eval(f)
       }
     }

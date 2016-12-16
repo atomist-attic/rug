@@ -60,12 +60,12 @@ class JavaScriptInvokingProjectOperationTest  extends FlatSpec with Matchers {
     import JavaScriptInvokingProjectOperationTest._
 
     it should "run simple editor compiled from TypeScript and validate the pattern correctly" in {
-        invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters))
+        invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters))
     }
 
   it should "run simple editor and throw an exception for the bad pattern" in {
     assertThrows[InvalidRugParameterPatternException]{
-      invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithBrokenParameterPattern))
+      invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBrokenParameterPattern))
     }
   }
 

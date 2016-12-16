@@ -39,7 +39,7 @@ class ProjectOperationArchiveReader(
                      namespace: Option[String],
                      otherOperations: Seq[ProjectOperation],
                      shouldSuppress: FileArtifact => Boolean = hasDeclareVarAtomist): Operations = {
-    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject, shouldSuppress = shouldSuppress)
+    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject)
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations ++ fromTs)
 
     val operations = fromOldPipeline ++ fromTs

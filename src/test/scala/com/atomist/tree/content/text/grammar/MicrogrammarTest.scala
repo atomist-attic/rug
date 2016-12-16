@@ -186,10 +186,40 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse several scala method headers in other content" in {
-    val g = matchScalaMethodHeaderRepsep
+  it should "match method with multiple parameters" in {
     val input =
       """
+         |class Something {
+         |
+         | def single(a: Int,b:Int):Int = a + b
+         |}
+      """.stripMargin
+    val m = matchScalaMethodHeaderRepsep.findMatches(input)
+    m.size should be(1)
+    val last: MutableContainerTreeNode = m.head
+    val params = last("params").head.asInstanceOf[ContainerTreeNode]("param_def")
+    params.size should be >= (2)
+    params foreach {
+      case pad: SimpleTerminalTreeNode => pad.nodeName.contains("pad") should be(true)
+      case soo: MutableContainerTreeNode =>
+        soo("type").head.asInstanceOf[TerminalTreeNode].value should be("Int")
+        val value = soo("name").head.asInstanceOf[TerminalTreeNode].value
+        Set("a", "b").contains(value) should be(true)
+    }
+  }
+
+  it should "parse several scala method headers in other content without whitespace" in
+    parseSeveralScalaMethodHeadersInOtherContent("", "")
+
+  it should "parse several scala method headers in other content with spaces" in
+    parseSeveralScalaMethodHeadersInOtherContent("   ", "  \t")
+
+  it should "parse several scala method headers in other content with other whitespace" in
+    parseSeveralScalaMethodHeadersInOtherContent(" ", " ")
+
+  private def parseSeveralScalaMethodHeadersInOtherContent(pad1: String, pad2: String) {
+    val input =
+      s"""
         |class Something {
         |
         | def bar(barParamName: String): Unit = {
@@ -197,10 +227,10 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
         |
         | def baz(): String = null
         |
-        | def other(a: Int, b: Int): Int = a + b
+        | def other(a: Int,${pad1}b${pad1}:${pad2}Int): Int = a + b
         |}
       """.stripMargin
-    val m = g.findMatches(input)
+    val m = matchScalaMethodHeaderRepsep.findMatches(input)
     m.size should be(3)
     m.head("name").head match {
       case sm: MutableTerminalTreeNode =>
@@ -372,5 +402,24 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
     keys.size should be (4)
     keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
+  }
+
+  protected def repsepTest: Microgrammar
+
+  it should "handle simple repsep" in {
+    val input =
+      """
+        |keys: a,b,cde,f
+        |And this is unrelated
+        |   bollocks
+        |      keys: x,y
+      """.stripMargin
+    val m = repsepTest.findMatches(input)
+    m.size should be(2)
+    //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
+    m.head("keys").size should be (1)
+    val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
+    keys.size should be (4)
+    keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
   }
 }

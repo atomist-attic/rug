@@ -12,6 +12,13 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
 case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
   extends Matcher {
 
+  private val secondaryMatch = separator match {
+    case None => m
+    case Some(sep) => Discard(sep) ~? m
+  }
+
+  println(s"SecondaryMatch=$secondaryMatch,first=$m")
+
   override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
     m.matchPrefix(offset, s) match {
       case None =>
@@ -22,18 +29,19 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
             offset = offset, matched = "", s, this.toString))
       case Some(initialMatch) =>
         // We matched once. Let's keep going
-        val matched = initialMatch.matched
+        println(s"Found initial match for $initialMatch")
+        var matched = initialMatch.matched
         val offset = initialMatch.offset
-        var upToOffset = offset
+        var upToOffset = initialMatch.endPosition.offset
         var nodes = initialMatch.node.toSeq
-        val secondaryMatch = separator match {
-          case None => m
-          case Some(sep) => m ~? Optional(sep)
-        }
+        println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
         while (secondaryMatch.matchPrefix(upToOffset, s) match {
           case None => false
           case Some(lastMatch) =>
+            //if (separator.isDefined) ???
+            println(s"Made it to secondary match [$lastMatch]")
             upToOffset = lastMatch.endPosition.offset
+            matched += lastMatch.matched
             nodes ++= lastMatch.node.toSeq
             true
         }) {

@@ -16,6 +16,7 @@ interface Parameter {
   description?: string
   displayName?: string
   validInputDescription?: string
+  validInput?: string
   default?: any
   pattern: string
   maxLength?: number

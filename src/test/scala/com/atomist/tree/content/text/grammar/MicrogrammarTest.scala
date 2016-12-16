@@ -189,10 +189,10 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
   it should "match method with multiple parameters" in {
     val input =
       """
-         |class Something {
-         |
-         | def single(a: Int,b:Int):Int = a + b
-         |}
+        |class Something {
+        |
+        | def single(a: Int,b:Int):Int = a + b
+        |}
       """.stripMargin
     val m = matchScalaMethodHeaderRepsep.findMatches(input)
     m.size should be(1)
@@ -220,15 +220,15 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
   private def parseSeveralScalaMethodHeadersInOtherContent(pad1: String, pad2: String) {
     val input =
       s"""
-        |class Something {
-        |
-        | def bar(barParamName: String): Unit = {
-        | }
-        |
-        | def baz(): String = null
-        |
-        | def other(a: Int,${pad1}b${pad1}:${pad2}Int): Int = a + b
-        |}
+         |class Something {
+         |
+         | def bar(barParamName: String): Unit = {
+         | }
+         |
+         | def baz(): String = null
+         |
+         | def other(a: Int,${pad1}b${pad1}:${pad2}Int): Int = a + b
+         |}
       """.stripMargin
     val m = matchScalaMethodHeaderRepsep.findMatches(input)
     m.size should be(3)
@@ -379,10 +379,10 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     //println(TreeNodeUtils.toShortString(m.head))
     val keys = m.head("key")
     val values = m.head("value")
-    keys.size should be (2)
+    keys.size should be(2)
     val k1 = keys.head
     k1.value should equal("CI_DEPLOY_USERNAME")
-    values.head.value should equal ("travis-mvn-deploy")
+    values.head.value should equal("travis-mvn-deploy")
   }
 
   protected def repTest: Microgrammar
@@ -398,9 +398,9 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = repTest.findMatches(input)
     m.size should be(2)
     //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    m.head("keys").size should be (1)
+    m.head("keys").size should be(1)
     val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
-    keys.size should be (4)
+    keys.size should be(4)
     keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
   }
 
@@ -417,9 +417,28 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = repsepTest.findMatches(input)
     m.size should be(2)
     //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    m.head("keys").size should be (1)
+    m.head("keys").size should be(1)
     val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
-    keys.size should be (4)
+    keys.size should be(4)
     keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
+  }
+
+  protected def printlns: Microgrammar
+
+  it should "find printlns" in {
+    val input =
+      """
+        |class Foo {
+        |
+        |   println("The first thing")
+        |
+        |   println("The second thing")
+        |
+        |   println(s"And this");
+        |
+        |}
+      """.stripMargin
+    val m = printlns.findMatches(input)
+    m.size should be(3)
   }
 }

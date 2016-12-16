@@ -71,4 +71,10 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     new MatcherMicrogrammar(sentence)
   }
 
+  override protected def printlns: Microgrammar = {
+    // Yes this is naive because of linebreaks and escaped )
+    val printlns = "println(" ~ Break(")", Some("content"))
+    new MatcherMicrogrammar(printlns)
+  }
+
 }

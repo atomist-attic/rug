@@ -34,12 +34,12 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
         val offset = initialMatch.offset
         var upToOffset = initialMatch.endPosition.offset
         var nodes = initialMatch.node.toSeq
-        println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
+        //println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
         while (secondaryMatch.matchPrefix(upToOffset, s) match {
           case None => false
           case Some(lastMatch) =>
             //if (separator.isDefined) ???
-            println(s"Made it to secondary match [$lastMatch]")
+            //println(s"Made it to secondary match [$lastMatch]")
             upToOffset = lastMatch.endPosition.offset
             matched += lastMatch.matched
             nodes ++= lastMatch.node.toSeq

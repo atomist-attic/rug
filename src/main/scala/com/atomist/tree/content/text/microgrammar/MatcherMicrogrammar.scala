@@ -4,7 +4,7 @@ import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -23,6 +23,8 @@ class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
     nodes collect {
       case mut: MutableContainerTreeNode =>
         outputNode(input, mut)
+      case tn: TerminalTreeNode =>
+        new SimpleMutableContainerTreeNode(tn.nodeName, Seq(tn), tn.startPosition, tn.endPosition)
     }
   }
 

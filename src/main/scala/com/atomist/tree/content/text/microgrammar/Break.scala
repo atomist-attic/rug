@@ -4,7 +4,7 @@ import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPositi
 
 /**
   * Similar to a SNOBOL break. If we don't eventually find the literal,
-  * we don't match.
+  * we don't match. Matches the content up to and including the final matcher.
   *
   * @param breakToMatcher matcher that might match
   */
@@ -25,11 +25,14 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends 
         case None =>
           None
         case Some(m) =>
-          val eaten = take(offset, input, last - offset)
+          val eaten = take(offset, input, m.endPosition.offset - offset)
           Some(PatternMatch(
-            named.map(n => new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
+            named.map(n =>
+              new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
             offset,
-            eaten, input, this.toString))
+            eaten,
+            input,
+            this.toString))
       }
     }
     else

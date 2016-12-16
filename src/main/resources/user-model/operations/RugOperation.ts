@@ -5,9 +5,19 @@ interface RugOperation {
   parameters?: Parameter[]
 }
 
-class ParameterPattern {
-  //TODO - add more from rug lib
+abstract class Pattern {
+  public static url: string ="@java_package"
+  public static any: string ="@any"
+  public static group_id: string ="@group_id"
+  public static java_class: string ="@java_class"
+  public static java_identifier: string ="@java_identifier"
   public static java_package: string ="@java_package"
+  public static project_name: string ="@project_name"
+  public static port: string ="@port"
+  public static ruby_class: string ="@ruby_class"
+  public static ruby_identifier: string ="@ruby_identifier"
+  public static semantic_version: string ="@semantic_version"
+  public static uuid: string ="@uuid"
 }
 
 interface Parameter {
@@ -15,7 +25,6 @@ interface Parameter {
   name: string
   description?: string
   displayName?: string
-  validInputDescription?: string
   validInput?: string
   default?: any
   pattern: string
@@ -41,4 +50,4 @@ class Result {
         public message: string = "") {}
 }
 
-export {RugOperation, Parameter, ParameterPattern, Result, Status}
+export {RugOperation, Parameter, Pattern, Result, Status}

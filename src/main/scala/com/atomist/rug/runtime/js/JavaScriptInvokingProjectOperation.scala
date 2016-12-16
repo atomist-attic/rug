@@ -114,7 +114,7 @@ abstract class JavaScriptInvokingProjectOperation(
           case _ =>
         }
 
-        p.setValidInputDescription(details.get("validInputDescription").asInstanceOf[String])
+        p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
         p.describedAs(details.get("description").asInstanceOf[String])
         details.get("pattern").asInstanceOf[String] match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {

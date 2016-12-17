@@ -13,9 +13,7 @@ import com.atomist.tree.TreeNode
   */
 case class ChildTypeJump(typeName: String) extends AxisSpecifier {
 
-  private val typeRegistry: TypeRegistry = DefaultTypeRegistry
-
-  private val _childResolver: Option[ChildResolver] = typeRegistry.findByName(typeName) match {
+  private def _childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] = typeRegistry.findByName(typeName) match {
     case Some(cr: ChildResolver) => Some(cr)
     case None => throw new IllegalArgumentException(s"No type with name [$typeName]")
     case _ =>
@@ -23,13 +21,13 @@ case class ChildTypeJump(typeName: String) extends AxisSpecifier {
       None
   }
 
-  private def childResolver = _childResolver.getOrElse(
+  private def childResolver(typeRegistry: TypeRegistry) = _childResolver(typeRegistry).getOrElse(
     throw new IllegalArgumentException(s"Type [$typeName] does not support contextless resolution")
   )
 
-  def follow(tn: TreeNode): Seq[TreeNode] = tn match {
+  def follow(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = tn match {
     case mv: MutableView[_] =>
-      childResolver.findAllIn(mv).getOrElse(Nil)
+      childResolver(typeRegistry).findAllIn(mv).getOrElse(Nil)
     case x =>
       throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
   }

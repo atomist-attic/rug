@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
@@ -15,7 +16,7 @@ trait NodeTest {
     * @param axis AxisSpecifier indicating the kind of navigation
     * @return Resulting nodes
     */
-  def follow(tn: TreeNode, axis: AxisSpecifier): ExecutionResult
+  def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult
 
 }
 
@@ -26,7 +27,8 @@ trait NodeTest {
   */
 abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
 
-  final override def follow(tn: TreeNode, axis: AxisSpecifier): ExecutionResult = sourceNodes(tn, axis) match {
+  final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
+    sourceNodes(tn, axis, typeRegistry) match {
     case Right(nodes) =>
       Right(nodes.filter(tn => predicate(tn, nodes)))
     case failure => failure
@@ -36,7 +38,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     * Subclasses can override this to provide a more efficient implementation.
     * This one works but can be expensive.
     */
-  protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier): ExecutionResult = axis match {
+  protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Self => Right(List(tn))
     case Child => tn match {
       case ctn: ContainerTreeNode =>
@@ -48,12 +50,12 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
       val kids = Descendant.allDescendants(tn).toList
       Right(kids)
     case DescendantOrSelf =>
-      sourceNodes(tn, Descendant) match {
+      sourceNodes(tn, Descendant, typeRegistry) match {
         case Right(nodes) => Right(tn +: nodes)
         case failure => failure
       }
     case ctj: ChildTypeJump =>
-      ExecutionResult(ctj.follow(tn))
+      ExecutionResult(ctj.follow(tn, typeRegistry))
   }
 }
 
@@ -65,7 +67,7 @@ object All extends PredicatedNodeTest("All", TruePredicate)
 case class NamedNodeTest(name: String)
   extends NodeTest {
 
-  override def follow(tn: TreeNode, axis: AxisSpecifier): ExecutionResult = axis match {
+  override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Child =>
       tn match {
         case ctn: ContainerTreeNode =>

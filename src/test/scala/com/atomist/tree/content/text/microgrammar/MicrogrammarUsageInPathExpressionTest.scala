@@ -16,7 +16,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDSLDefinitionParser
 
-  it should "use simple microgrammar against single file" in {
+  it should "use simple microgrammar against single file" in pendingUntilFixed {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     // TODO should we insist on a starting axis specifier for consistency?
@@ -24,6 +24,10 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val rtn = ee.evaluate(pmv, findFile)
     rtn.right.get.size should be(1)
     val mg: Microgrammar = new MatcherMicrogrammar(mgp.parse("<groupId>$groupId:§[a-zA-Z0-9_]+§</groupId>"))
+    // TODO do we need the name
+    val findGroupId = findFile + "->gid"
+    val grtn = ee.evaluate(pmv, findGroupId)
+    grtn.right.get.size should be(1)
   }
 
 }

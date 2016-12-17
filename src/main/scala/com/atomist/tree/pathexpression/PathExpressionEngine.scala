@@ -1,5 +1,7 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult._
 import com.atomist.tree.pathexpression.{ExecutionResult => _}
@@ -34,18 +36,19 @@ class PathExpressionEngine extends ExpressionEngine {
   }
 
   override def evaluateParsed(node: TreeNode, parsed: PathExpression, nodePreparer: Option[NodePreparer]): ExecutionResult = {
+    val typeRegistry = DefaultTypeRegistry
     var r: ExecutionResult = ExecutionResult(List(node))
     for (e <- parsed.elements) {
       r = r match {
         case Right(n :: Nil) =>
-          val next = e.follow(n, nodePreparer.getOrElse(n => n))
+          val next = e.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
           next
         case Right(Nil) =>
           Right(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
-              e.follow(kid, nodePreparer.getOrElse(n => n))
+              e.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
           Right(kids.distinct)
@@ -61,15 +64,16 @@ case class LocationStep(axis: AxisSpecifier, test: NodeTest, predicate: Option[P
 
   import ExpressionEngine.NodePreparer
 
-  def follow(tn: TreeNode, nodePreparer: NodePreparer): ExecutionResult = test.follow(tn, axis) match {
-    case Right(nodes) => Right(
-      nodes
-        .map(nodePreparer)
-        .filter(tn => predicate.getOrElse(TruePredicate)(tn, nodes))
-    )
+  def follow(tn: TreeNode, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
+    test.follow(tn, axis, typeRegistry) match {
+      case Right(nodes) => Right(
+        nodes
+          .map(nodePreparer)
+          .filter(tn => predicate.getOrElse(TruePredicate)(tn, nodes))
+      )
 
-    case failure => failure
-  }
+      case failure => failure
+    }
 }
 
 case class PathExpression(

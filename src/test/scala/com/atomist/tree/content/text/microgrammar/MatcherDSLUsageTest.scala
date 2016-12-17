@@ -24,7 +24,7 @@ class MatcherDSLUsageTest extends FlatSpec with Matchers {
   }
 
   it should "match regex using microgrammar" in {
-    val matcher = mgp.parse("def $foo:[f.o]")
+    val matcher = mgp.parse("def $foo:§f.o§")
     //println(matcher)
     val mg = new MatcherMicrogrammar(matcher)
     val input = "def foo bar"

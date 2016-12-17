@@ -13,13 +13,14 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   // So we need to override this value.
   override protected val whiteSpace = "".r
 
-  private def whitespaceSep = """\s+""".r
+  private def whitespaceSep = """\s*""".r
 
   private def literal: Parser[Literal] =
     """[^▶\s\[\]$]+""".r ^^ (l => Literal(l))
 
-  private def regex: Parser[Regex] =
-    "[" ~> "[^\\]]+".r <~ "]" ^^ (r => Regex("name", r))
+  private def rex: Parser[Regex] =
+  //regex('[', ']')
+    "§" ~> "[^\\§]+".r <~ "§" ^^ (r => Regex("name", r))
 
   private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
 
@@ -34,9 +35,13 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   // The boxed clause should be a subnode of this node, rather than have its fields added directly
   private def descendantClause(implicit registry: MatcherRegistry): Parser[Matcher] = "▶" ~> variableReference() ^^ (
     vr => Wrap(vr, vr.name)
-  )
+    )
 
-  private def matcherTerm: Parser[Matcher] = literal
+  private def matcherTerm(implicit registry: MatcherRegistry): Parser[Matcher] =
+    rex |
+      literal |
+      variableReference() |
+      inlineReference()
 
   private def concatenation(implicit registry: MatcherRegistry): Parser[Matcher] = matcherTerm ~ whitespaceSep ~ matcherExpression ^^ {
     case left ~ _ ~ right => left ~~ right
@@ -60,17 +65,14 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
 
   // $name:[.*]
   private def inlineReference()(implicit registry: MatcherRegistry): Parser[Matcher] =
-    "$" ~> ident ~ ":" ~ regex ^^ {
+    "$" ~> ident ~ ":" ~ rex ^^ {
       case newName ~ _ ~ regex => regex.copy(name = newName)
     }
 
   private def matcherExpression()(implicit registry: MatcherRegistry): Parser[Matcher] =
     descendantClause |
       concatenation |
-      literal |
-      regex |
-      variableReference() |
-      inlineReference()
+      matcherTerm
 
   private def microgrammar(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 

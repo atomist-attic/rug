@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.rug.BadRugException
+import com.atomist.source.StringFileArtifact
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
@@ -23,14 +24,24 @@ class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
   }
 
   it should "accept valid regex" in {
-    val validLiterals = Seq("[a]", "[.*]", "[.]")
+    val validLiterals = Seq("§a§", "§[.*]§", "§[.]§")
     for (v <- validLiterals) mgp.parse(v) match {
       case Regex(_, rex, _) =>
     }
   }
 
+//  it should "parse regex in isolaion" in {
+//    val l = "[0-]"
+//    val mgp2 = new MatcherDSLDefinitionParser {
+//      def p(s: String) = {
+//        parseTo(StringFileArtifact("x", s), regex('[', ']'))
+//      }
+//    }
+//    mgp2.p(l)
+//  }
+
   it should "accept valid inline regex" in {
-    val validLiterals = Seq("$foo:[a]", "$foo:[.*]", "$foo:[.]")
+    val validLiterals = Seq("$foo:§a§", "$foo:§.*§", "$foo:§.§")
     for (v <- validLiterals) mgp.parse(v) match {
       case Regex("foo", rex, _) =>
         withClue(s"String [$v] should contain regex [$rex]") {

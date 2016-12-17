@@ -12,8 +12,11 @@ import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import scala.collection.JavaConverters._
 
 /**
-  * Represents a Match from executing a PathExpression.
-  * Matches are actually TreeNodes, but wrapped in SafeCommittingProxy
+  * Represents a Match from executing a PathExpression, exposed
+  * to JavaScript/TypeScript.
+  * Matches are actually TreeNodes, but wrapped in SafeCommittingProxy,
+  * hence the list of matches is a list of Object. We need to use a
+  * Java, rather than Scala, collection, for interop.
   *
   * @param root    root we evaluated path from
   * @param matches matches
@@ -22,23 +25,33 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
 
 
 /**
-  * JavaScript-friendly facade to PathExpressionEngine.
-  * Paralleled by a UserModel TypeScript interface.
+  * JavaScript-friendly facade to an ExpressionEngine.
+  * Paralleled by a user model TypeScript interface.
+  * Parameters are detyped for interop. Not intended for use directly by Scala or Java callers,
+  * which should use PathExpressionEngine.
+  *
+  * @see ExpressionEngine
+  * @param ee underlying ExpressionEngine that does the actual work
   */
 class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine) {
 
   val typeRegistry: TypeRegistry = DefaultTypeRegistry
 
   /**
-    * Evaluate the given path expression
+    * Evaluate the given path expression.
     *
     * @param root root node to evaluate path expression against. It's a tree node but we may need to unwrap it
-    * @param pe   path expression to evaluate
+    *             from a SafeCommittingProxy that we've passed to the JavaScript layer
+    * @param pe   path expression to evaluate, which may be either a string or a
+    *             JavaScript object visible with an "expression" property to allow reuse.
+    *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
   def evaluate(root: Object, pe: Object): Match = {
     pe match {
       case som: ScriptObjectMirror =>
+        // Examine a JavaScript object passed to us. It's probably a
+        // TypeScript class with an "expression" property
         val expr: String = som.get("expression").asInstanceOf[String]
         ee.evaluate(toTreeNode(root), expr) match {
           case Right(nodes) =>
@@ -54,6 +67,7 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     }
   }
 
+  // If the node is a SafeCommittingProxy, find the underlying object
   private def toTreeNode(o: Object): TreeNode = o match {
     case tn: TreeNode => tn
     case scp: SafeCommittingProxy => scp.node
@@ -79,7 +93,7 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
   }
 
   /**
-    * Return a single match. Throw an exception otherwise.
+    * Return a single match to the given path expression. Throw an exception otherwise.
     *
     * @param root root of Tree. SafeComittingProxy wrapping a TreeNode
     * @param pe   path expression of object
@@ -88,6 +102,7 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
+      // TODO use more specific exception type
       case 0 => throw new Exception("No matches found!")
       case 1 =>
         ms.get(0)
@@ -100,11 +115,16 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     */
   def as(root: Object, name: String): Object = scalar(root, s"->$name")
 
-  // Find the children of the current node of this type
-  def children(root: Object, name: String) = {
-    val rootTn = toTreeNode(root)
+  /**
+    * Find the children of the current node of the named type
+    *
+    * @param parent parent node we want to look under
+    * @param name name of the children we want to look for
+    */
+  def children(parent: Object, name: String) = {
+    val rootTn = toTreeNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(???)
-    (typ,rootTn) match {
+    (typ, rootTn) match {
       case (cvf: ContextlessViewFinder, mv: MutableView[_]) =>
         val kids = cvf.findAllIn(mv).getOrElse(Nil)
         wrap(kids)
@@ -115,6 +135,7 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
   /**
     * Wrap the given sequence of nodes so they can be accessed from
     * TypeScript. Intended for use from Scala, not TypeScript.
+    *
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */

@@ -33,20 +33,30 @@ object ExpressionEngine {
 }
 
 /**
-  * Evaluates path expressions.
+  * Evaluates path expressions, whether as raw strings or parsed.
   */
 trait ExpressionEngine {
 
   import ExpressionEngine._
 
-  def evaluateParsed(node: TreeNode, parsed: PathExpression, nodePreparer: Option[NodePreparer] = None): ExecutionResult
-
   /**
     * Return the result of evaluating the expression. If the expression is invalid
     * return a message, otherwise the result of invoking the valid expression.
     *
-    * @param node
-    * @param expression
+    * @param node root node to evaluate the path against
+    * @param parsed Parsed path expression. It's already been validated
+    * @param nodePreparer called on nodes before any methods (including navigation)
+    *                     are called on them. This can be used to set state.
+    * @return
+    */
+  def evaluateParsed(node: TreeNode, parsed: PathExpression, nodePreparer: Option[NodePreparer] = None): ExecutionResult
+
+  /**
+    * Convenience method to parse and execute a path expression string directly. If the expression is invalid
+    * return a message, otherwise the result of invoking the valid expression.
+    *
+    * @param node root node to evaluate the path against
+    * @param expression string expression to evaluate
     * @param nodePreparer called on nodes before any methods (including navigation)
     *                     are called on them. This can be used to set state.
     * @return

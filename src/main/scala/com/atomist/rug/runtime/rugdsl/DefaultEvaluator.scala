@@ -112,7 +112,7 @@ class DefaultEvaluator(
         case PathExpressionValue(pathExpression, Some(scalarProperty)) =>
           // TODO should cache this
           val pex = new PathExpressionEngine()
-          pex.evaluateParsed(ic.target.asInstanceOf[TreeNode], pathExpression) match {
+          pex.evaluate(ic.target.asInstanceOf[TreeNode], pathExpression) match {
             case Left(err) => throw new InstantEditorFailureException(s"Failed to evaluate [$pathExpression]: $err")
             case Right(nodes) =>
               if (nodes.size != 1)

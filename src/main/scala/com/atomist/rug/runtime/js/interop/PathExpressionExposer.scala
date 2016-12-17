@@ -5,7 +5,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
+import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
@@ -53,13 +53,15 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
         // Examine a JavaScript object passed to us. It's probably a
         // TypeScript class with an "expression" property
         val expr: String = som.get("expression").asInstanceOf[String]
-        ee.evaluate(toTreeNode(root), expr) match {
+        val parsed = PathExpressionParser.parsePathExpression(expr)
+        ee.evaluate(toTreeNode(root), parsed) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
-      case s: String =>
-        ee.evaluate(toTreeNode(root), s) match {
+      case expr: String =>
+        val parsed = PathExpressionParser.parsePathExpression(expr)
+        ee.evaluate(toTreeNode(root), parsed) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m

@@ -50,7 +50,7 @@ class JavaScriptEventHandler(
     val targetNode = materializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
     val root = new SimpleMutableContainerTreeNode("root", Seq(targetNode), null, null)
-    pexe.ee.evaluateParsed(root, pathExpression, Some(np)) match {
+    pexe.ee.evaluate(root, pathExpression, Some(np)) match {
       case Right(Nil) =>
         println("Nothing to do: No nodes found")
       case Right(matches) =>

@@ -148,4 +148,12 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 }
 
-object PathExpressionParser extends PathExpressionParser
+/**
+  * Default implementation of PathExpressionParser. Import this
+  * class for default conversion from Strings to path expressions. 
+  */
+object PathExpressionParser extends PathExpressionParser {
+
+  implicit def parseString(expr: String): PathExpression = PathExpressionParser.parsePathExpression(expr)
+
+}

@@ -12,6 +12,8 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
+  import com.atomist.tree.pathexpression.PathExpressionParser._
+
   val ee: ExpressionEngine = new PathExpressionEngine
 
   val mgp = new MatcherDSLDefinitionParser

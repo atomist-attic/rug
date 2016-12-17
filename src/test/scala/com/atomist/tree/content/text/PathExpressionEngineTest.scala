@@ -6,6 +6,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class PathExpressionEngineTest extends FlatSpec with Matchers {
 
+  import com.atomist.tree.pathexpression.PathExpressionParser._
+
   val ee: ExpressionEngine = new PathExpressionEngine
 
   it should "find property in container tree node" in {

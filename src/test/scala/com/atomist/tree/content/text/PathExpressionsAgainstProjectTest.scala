@@ -14,6 +14,8 @@ import org.scalatest.{FlatSpec, Matchers}
   */
 class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
 
+  import com.atomist.tree.pathexpression.PathExpressionParser._
+
   val ee: ExpressionEngine = new PathExpressionEngine
 
   it should "not find missing property in project" in {

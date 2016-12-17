@@ -9,6 +9,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class JsonMutableViewTest extends FlatSpec with Matchers {
 
   import JsonParserTest._
+  import com.atomist.tree.pathexpression.PathExpressionParser._
 
   it should "parse and find node in root" in {
     val f = StringFileArtifact("glossary.json", simple)

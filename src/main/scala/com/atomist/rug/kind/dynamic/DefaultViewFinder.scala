@@ -39,7 +39,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           // TODO cache this
           val pe = new PathExpressionEngine()
           // TODO pass in NodePreparer?
-          val evaluated: Either[String, List[TreeNode]] = pe.evaluateParsed(context, pex, None)
+          val evaluated: Either[String, List[TreeNode]] = pe.evaluate(context, pex, None)
           evaluated match {
             case Right(nodes) =>
               //nodes.map(tn => new MutableContainerTreeNodeMutableView(tn.asInstanceOf[MutableContainerTreeNode], context))

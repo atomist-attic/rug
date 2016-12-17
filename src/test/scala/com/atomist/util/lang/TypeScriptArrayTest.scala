@@ -229,7 +229,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       | """.stripMargin
 
   it should "behave just like a normal JS/TS array, but also support some cool Java stuff!" in {
-    invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+    invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorWithFancyListArray))
   }
 

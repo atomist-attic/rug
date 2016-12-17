@@ -263,19 +263,19 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   import TypeScriptRugEditorTest._
 
   it should "run simple editor compiled from TypeScript without parameters using support class" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithoutParameters))
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
 
   it should "run simple editor twice and see no change the second time" in {
-    invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorWithoutParameters))
+    invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
 
   it should "run simple editor compiled from TypeScript" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditor))
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditor))
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor with separate parameters object" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts", SimpleEditorInvokingOtherEditor), Seq(otherEditor))
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor), Seq(otherEditor))
   }
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
@@ -290,19 +290,19 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor adding to our parameters object" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters), Seq(otherEditor))
   }
 
   it should "find tags" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorTaggedAndMeta))
     ed.tags.size should be(2)
     ed.tags.map(_.name).toSet should equal(Set("java", "maven"))
   }
 
   it should "find parameter metadata" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorTaggedAndMeta))
     ed.parameters.size should be(2)
     val p = ed.parameters.head
@@ -314,25 +314,25 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "find description" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorTaggedAndMeta))
     ed.description should be("A nice little editor")
   }
 
   it should "have the PathExpressionEngine injected" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpression))
     ed.description should be ("A nice little editor")
   }
 
   it should "have the PathExpressionEngine injected using PathExpressionEngine.with" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionUsingWith))
     ed.description should be ("A nice little editor")
   }
 
   it should "have the PathExpressionEngine injected using PathExpressionEngine.with type-jump" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/ConstructedEditor.ts",
+    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionUsingWithTypeJump))
   }
 
@@ -349,7 +349,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "handle default parameter values" in {
-    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/SimpleEditor.ts",
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorTaggedAndMeta))
     ed.parameters.size should be(2)
     val p = ed.parameters.head

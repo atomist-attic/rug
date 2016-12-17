@@ -19,8 +19,5 @@
   "atomist": {
     "group": "com.atomist",
     "artifact": "rug"
-  },
-  "dependencies": {
-    "@types/js-yaml": "^3.5.28"
   }
 }

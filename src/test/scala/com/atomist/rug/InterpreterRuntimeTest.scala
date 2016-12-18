@@ -37,7 +37,6 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 class InterpreterRuntimeTest extends AbstractRuntimeTest {
 
   import RugCompilerTest._
-  import TestUtils._
 
   override val pipeline: InterpreterRugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
 

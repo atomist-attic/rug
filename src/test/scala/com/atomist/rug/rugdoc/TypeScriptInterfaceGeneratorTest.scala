@@ -21,7 +21,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val withoutImport = output ✎ new FileEditor {
       override def canAffect(f: FileArtifact): Boolean = true
       override def edit(f: FileArtifact): FileArtifact =
-        f.withContent(f.content.replace(new InterfaceGenerationConfig().imports,
+        f.withContent(f.content.replace(InterfaceGenerationConfig().imports,
           """
             |interface ProjectContext {}
             |interface TreeNode {}
@@ -31,23 +31,6 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val d = output.allFiles.head
     val compiled = tsc.compile(withoutImport)
     val js = compiled.allFiles.find(_.name.endsWith(".js")).get
-    // println(js.content)
+    println(js.content)
   }
-
-}
-
-/**
-  * Use this to actually generate interfaces. Of course, we
-  * should ultimately use the interface generator as an editor.
-  */
-object TypeScriptInterfaceGen extends App {
-
-  val td = new TypeScriptInterfaceGenerator()
-  // Make it puts the generated files where our compiler will look for them
-  val output = td.generate(SimpleProjectOperationArguments("",
-    Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
-  val d = output.allFiles.head
-
-  //println(d.content)
-
 }

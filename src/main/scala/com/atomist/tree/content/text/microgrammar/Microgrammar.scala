@@ -12,6 +12,8 @@ import com.atomist.tree.content.text.{SimpleMutableContainerTreeNode, MutableCon
   */
 trait Microgrammar {
 
+  def name: String
+
   /**
     * Match input separated.
     *

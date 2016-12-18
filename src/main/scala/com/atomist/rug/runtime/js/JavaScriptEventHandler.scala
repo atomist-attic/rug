@@ -4,6 +4,7 @@ import com.atomist.event.{HandlerContext, ModelContextAware, SystemEvent, System
 import com.atomist.param.Tag
 import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
 import com.atomist.rug.runtime.js.interop.{ContextMatch, PathExpressionExposer}
 import com.atomist.source.ArtifactSource
@@ -50,7 +51,7 @@ class JavaScriptEventHandler(
     val targetNode = materializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
     val root = new SimpleMutableContainerTreeNode("root", Seq(targetNode), null, null)
-    pexe.ee.evaluate(root, pathExpression, Some(np)) match {
+    pexe.ee.evaluate(root, pathExpression, DefaultTypeRegistry, Some(np)) match {
       case Right(Nil) =>
         println("Nothing to do: No nodes found")
       case Right(matches) =>

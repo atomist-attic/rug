@@ -3,7 +3,6 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
@@ -11,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
-class MatcherMicrogrammar(matcher: Matcher) extends Microgrammar {
+class MatcherMicrogrammar(val name: String, matcher: Matcher) extends Microgrammar {
 
   // Transformation to run on matched nodes
   private val transform = collapse(

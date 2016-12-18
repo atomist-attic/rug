@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.json
 
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.pathexpression.PathExpressionEngine
@@ -26,7 +27,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv)
-    val rtn = ee.evaluate(j, expr)
+    val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
     rtn.right.get.head.asInstanceOf[ContainerTreeNode]("STRING").head.value should be ("S")
   }
@@ -38,7 +39,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv)
-    val rtn = ee.evaluate(j, expr)
+    val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
     val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode]("STRING").head.asInstanceOf[MutableTreeNode]
     target.value should be ("markup")

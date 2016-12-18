@@ -8,16 +8,17 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
 
   override protected def thingGrammar: Microgrammar = {
     val matcher = Regex("thing", ".*")
-    new MatcherMicrogrammar(matcher)
+    new MatcherMicrogrammar("thing", matcher)
   }
 
   override protected def matchPrivateJavaFields: Microgrammar = {
     val field = "private" ~~ Regex("type", "[a-zA-Z0-9]+") ~~ Regex("name", "[a-zA-Z0-9]+")
-    new MatcherMicrogrammar(field)
+    new MatcherMicrogrammar("privateJavaField", field)
   }
 
   override protected def aWasaB: Microgrammar =
     new MatcherMicrogrammar(
+      "aWasaB",
       Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+")
     )
 
@@ -36,14 +37,14 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     val params = Repsep(paramDef, ",", "params")
     val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~?
       Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(name = "type")
-    new MatcherMicrogrammar(method)
+    new MatcherMicrogrammar("scalaMethodHeader", method)
   }
 
   override protected def matchAnnotatedJavaFields: Microgrammar = {
     val visibility: Matcher = "public" | "private"
     val annotation = "@" ~ Regex("annotationType", "[a-zA-Z0-9]+")
     val field = annotation ~~ visibility ~~ Regex("type", "[a-zA-Z0-9]+") ~~ Regex("name", "[a-zA-Z0-9]+")
-    new MatcherMicrogrammar(field)
+    new MatcherMicrogrammar("field", field)
   }
 
   //  KEY: [A-Za-z_]+;
@@ -55,25 +56,25 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
     val value = Regex("value", "[A-Za-z0-9\\-]+")
     val pair = "-" ~? key ~? Alternate(":", "=") ~? value
     val envList = "env:" ~~ "global:" ~~ Repsep(pair, WhitespaceOrNewLine, "keys")
-    new MatcherMicrogrammar(envList)
+    new MatcherMicrogrammar("envList", envList)
   }
 
   override protected def repTest: Microgrammar = {
     val key: Matcher = Regex("key", "[A-Za-z_]+,")
     val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, "keys"), "keys")
-    new MatcherMicrogrammar(sentence)
+    new MatcherMicrogrammar("sentence", sentence)
   }
 
   override protected def repsepTest: Microgrammar = {
     val key: Matcher = Regex("key", "[A-Za-z_]+")
     val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Repsep(key, ",", "keys"), "keys")
-    new MatcherMicrogrammar(sentence)
+    new MatcherMicrogrammar("sentence", sentence)
   }
 
   override protected def printlns: Microgrammar = {
     // Yes this is naive because of linebreaks and escaped )
     val printlns = "println(" ~ Break(")", Some("content"))
-    new MatcherMicrogrammar(printlns)
+    new MatcherMicrogrammar("printlns", printlns)
   }
 
 }

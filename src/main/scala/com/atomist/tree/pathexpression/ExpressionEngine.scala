@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
@@ -43,12 +44,17 @@ trait ExpressionEngine {
     * Return the result of evaluating the expression. If the expression is invalid
     * return a message, otherwise the result of invoking the valid expression.
     *
-    * @param node root node to evaluate the path against
-    * @param parsed Parsed path expression. It's already been validated
+    * @param node         root node to evaluate the path against
+    * @param parsed       Parsed path expression. It's already been validated
+    * @param typeRegistry type registry, which may contain user-specific types
     * @param nodePreparer called on nodes before any methods (including navigation)
     *                     are called on them. This can be used to set state.
     * @return
     */
-  def evaluate(node: TreeNode, parsed: PathExpression, nodePreparer: Option[NodePreparer] = None): ExecutionResult
+  def evaluate(node: TreeNode,
+               parsed: PathExpression,
+               typeRegistry: TypeRegistry,
+               nodePreparer: Option[NodePreparer] = None
+              ): ExecutionResult
 
 }

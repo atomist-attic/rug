@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug._
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.lang.js.NashornExpressionEngine
 import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
@@ -112,7 +113,7 @@ class DefaultEvaluator(
         case PathExpressionValue(pathExpression, Some(scalarProperty)) =>
           // TODO should cache this
           val pex = new PathExpressionEngine()
-          pex.evaluate(ic.target.asInstanceOf[TreeNode], pathExpression) match {
+          pex.evaluate(ic.target.asInstanceOf[TreeNode], pathExpression, DefaultTypeRegistry) match {
             case Left(err) => throw new InstantEditorFailureException(s"Failed to evaluate [$pathExpression]: $err")
             case Right(nodes) =>
               if (nodes.size != 1)

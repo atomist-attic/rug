@@ -54,14 +54,14 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
         // TypeScript class with an "expression" property
         val expr: String = som.get("expression").asInstanceOf[String]
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed) match {
+        ee.evaluate(toTreeNode(root), parsed, DefaultTypeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
       case expr: String =>
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed) match {
+        ee.evaluate(toTreeNode(root), parsed, DefaultTypeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m

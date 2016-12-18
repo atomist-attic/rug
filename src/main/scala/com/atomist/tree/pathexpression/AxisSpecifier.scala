@@ -5,15 +5,28 @@ import com.atomist.util.{Visitable, Visitor}
 
 import scala.collection.mutable.ListBuffer
 
+/**
+  * Inspire by XPath axis specifier concept. Represents a direction
+  * of navigation rom a node.
+  */
 trait AxisSpecifier {
 
-  override def toString = this.getClass.getSimpleName
+  override def toString: String = this.getClass.getSimpleName
 }
 
+/**
+  * The current node
+  */
 object Self extends AxisSpecifier
 
+/**
+  * Any child of the current node
+  */
 object Child extends AxisSpecifier
 
+/**
+  * Any descendant of the current node.
+  */
 object Descendant extends AxisSpecifier {
 
   // TODO this is very inefficient and needs to be optimized.

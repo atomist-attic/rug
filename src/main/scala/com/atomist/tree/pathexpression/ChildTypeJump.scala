@@ -1,6 +1,5 @@
 package com.atomist.tree.pathexpression
 
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.tree.TreeNode

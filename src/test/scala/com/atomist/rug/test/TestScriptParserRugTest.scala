@@ -5,9 +5,9 @@ import com.atomist.rug.parser.{ParsedRegisteredFunctionPredicate, WrappedFunctio
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class TestScriptParserTest extends FlatSpec with Matchers {
+class TestScriptParserRugTest extends FlatSpec with Matchers {
 
-  val parser: TestScriptParser = ParserCombinatorTestScriptParser
+  val parser = RugTestParser
 
   it should "parse computations" in {
     val f = InlineFileSpec("src/main/java/Dog.java", "class Dog {}")
@@ -27,7 +27,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
@@ -77,7 +77,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "${filepath.replace("Dog", "Cat")}" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
@@ -113,7 +113,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
@@ -140,7 +140,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
@@ -172,7 +172,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.given.fileSpecs should equal(Seq(EmptyArchiveFileSpec))
@@ -194,7 +194,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.given.fileSpecs should equal(Seq(ArchiveRootFileSpec))
@@ -216,7 +216,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
@@ -244,7 +244,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  and contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.given.fileSpecs should equal(Seq(f, f))
@@ -279,7 +279,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
          |  # and fileHasContent "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
     test.given.fileSpecs should equal(Seq(f, f))
@@ -309,7 +309,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
         |  NoChange
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.head.outcome.assertions should equal(Seq(NoChangeAssertion))
   }
 
@@ -328,7 +328,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
         |  NotApplicable
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.head.outcome.assertions should equal(Seq(NotApplicableAssertion))
   }
 
@@ -347,7 +347,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
         |  ShouldFail
       """.stripMargin
 
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.head.outcome.assertions should equal(Seq(ShouldFailAssertion))
   }
 
@@ -383,7 +383,7 @@ class TestScriptParserTest extends FlatSpec with Matchers {
         |  and fileContains pomPath v
         |  and fileContains readmePath project_name
       """.stripMargin
-    val tp = parser.parse(StringFileArtifact("x.ts", prog))
+    val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.head.outcome.assertions.size should be(6)
   }
 }

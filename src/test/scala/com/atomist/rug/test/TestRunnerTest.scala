@@ -26,7 +26,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  # fileCount 1
          |  contentEquals "src/main/java/Cat.java" "class Cat {}"
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), Nil)
     executedTests.tests.size should be(1)
     executedTests.tests.head.passed should be(false)
@@ -192,7 +192,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg, namespace)
-    val testProg = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.rt", prog))
+    val testProg = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(testProg, rugAs, eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -228,7 +228,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  and dumpAll
          |  and fileContains "src/main/java/Cat.java" "class Cat"
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -260,7 +260,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  fileCount = 1
          |  and fileContains "src/main/java/Cat.java" "class Cat"
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -292,7 +292,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  NoChange
       """.stripMargin
 
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -324,7 +324,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |then
          |  ShouldFail
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head.eventLog.input.shouldBe(defined)
@@ -358,7 +358,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |then
          |  MissingParameters
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -391,7 +391,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |then
          |  InvalidParameters
       """.stripMargin
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", prog))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -444,7 +444,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |
         |## {{description}}
       """.stripMargin)
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", readme), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -480,7 +480,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
     val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/AddDocumentation.rug", prog)))
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -521,7 +521,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
     val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {
@@ -566,7 +566,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
     val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {

@@ -6,10 +6,10 @@ import com.atomist.source.FileArtifact
 /**
   * Use Scala ParserCombinators to parse test scenario scripts
   */
-object ParserCombinatorTestScriptParser
-  extends CommonRugProductionsParser with TestScriptParser {
+object RugTestParser
+  extends CommonRugProductionsParser {
 
-  import TestScriptParser._
+  import RugTestTokens._
 
   override def identifierRef: Parser[IdentifierRef] =
     identifierRef(KeywordsToAvoidInBody, camelCaseIdentifier)
@@ -78,7 +78,7 @@ object ParserCombinatorTestScriptParser
 
   private def testPrograms: Parser[Seq[TestScenario]] = phrase(rep1(testProgram))
 
-  override def parse(f: FileArtifact): Seq[TestScenario] =
+  def parse(f: FileArtifact): Seq[TestScenario] =
     parseTo(f, testPrograms)
 
 }

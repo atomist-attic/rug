@@ -60,6 +60,16 @@ class MutableContainerTreeNodeMutableView(
     }
   }
 
+  @ExportFunction(readOnly = false, description = "Update the whole value")
+  def update(newValue: String): Unit = {
+    originalBackingObject match {
+      case msoo: SimpleMutableContainerTreeNode =>
+        msoo.update(newValue)
+        println(s"Updated to $msoo")
+    }
+    require(dirty)
+  }
+
   override protected def viewFrom(o: ContainerTreeNode): ContainerTreeNodeView[_] = o match {
     case suov: MutableContainerTreeNode => new MutableContainerTreeNodeMutableView(suov, this)
     case _ => super.viewFrom(o)

@@ -5,9 +5,11 @@ import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerTreeNodeMuta
 import com.atomist.rug.spi.{MutableView, TypeProvider, TypeRegistry, Typed}
 
 /**
-  * Dynamic microgrammar
+  * Type information for the results of evaluating a microgrammar.
+  * It will have the name of the microgrammar, and can be
+  * evaluated against any file
   *
-  * @param microgrammar
+  * @param microgrammar microgrammar to evaluate
   */
 class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   extends TypeProvider(classOf[MutableContainerTreeNodeMutableView])
@@ -22,7 +24,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
     case f: FileArtifactBackedMutableView =>
       val matches = microgrammar.findMatches(f.content)
-      println(s"Matches for mg=$matches in ${f.content}")
+      //println(s"Matches for mg=$matches in ${f.content}")
       Some(matches.map(m => new MutableContainerTreeNodeMutableView(m, f)))
     case _ => None
   }

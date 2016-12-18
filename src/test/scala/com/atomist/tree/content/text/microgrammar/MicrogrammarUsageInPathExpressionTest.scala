@@ -28,10 +28,12 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   it should "use simple microgrammar in a single file and modify content" in pendingUntilFixed {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
+    nodes.size should be (1)
     nodes.head match {
-      case mtn: MutableContainerTreeNodeMutableView => mtn.update(highlyImprobableValue)
+      case mtn: MutableContainerTreeNodeMutableView =>
+        mtn.update(highlyImprobableValue)
         val newContent = pmv.findFile("pom.xml").content
-        println(s"New content=\n$newContent")
+        //println(s"New content=\n$newContent")
         newContent.contains(highlyImprobableValue) should be(true)
     }
   }

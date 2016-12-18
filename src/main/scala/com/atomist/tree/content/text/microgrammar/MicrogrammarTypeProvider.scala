@@ -1,23 +1,39 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
-import com.atomist.rug.spi.{TypeProvider, TypeRegistry, Typed}
+import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerTreeNodeMutableView}
+import com.atomist.rug.spi.{MutableView, TypeProvider, TypeRegistry, Typed}
 
 /**
   * Dynamic microgrammar
   *
-  * @param name
+  * @param microgrammar
   */
-class MicrogrammarTypeProvider(val name: String)
-  extends TypeProvider(classOf[MutableContainerTreeNodeMutableView]) {
+class MicrogrammarTypeProvider(microgrammar: Microgrammar)
+  extends TypeProvider(classOf[MutableContainerTreeNodeMutableView])
+    with ChildResolver {
+
+  override def name: String = microgrammar.name
 
   override def description: String = s"Microgrammar type for [$name]"
+
+  override def resolvesFromNodeTypes: Set[String] = Set("file")
+
+  override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
+    case f: FileArtifactBackedMutableView =>
+      val matches = microgrammar.findMatches(f.content)
+      println(s"Matches for mg=$matches in ${f.content}")
+      Some(matches.map(m => new MutableContainerTreeNodeMutableView(m, f)))
+    case _ => None
+  }
 }
 
 
 /**
+  * Decorating TypeRegistry
   * Try to resolve from the new types first, then fallback to the shared delegate.
   * One of these is instantiated per usage.
+  *
   * @param delegate
   * @param newTypes
   */

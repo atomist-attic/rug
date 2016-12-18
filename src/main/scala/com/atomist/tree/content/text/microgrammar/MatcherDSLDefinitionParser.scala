@@ -5,7 +5,7 @@ import com.atomist.source.StringFileArtifact
 import com.atomist.util.scalaparsing.CommonTypesParser
 
 /**
-  * Parse our matcher DSL.
+  * Parse our matcher DSL using a Scala parser combinator.
   */
 class MatcherDSLDefinitionParser extends CommonTypesParser {
 
@@ -13,8 +13,9 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
   // So we need to override this value.
   override protected val whiteSpace = "".r
 
-  private def whitespaceSep = """\s*""".r
+  private def whitespaceSep: Parser[String] = """\s*""".r
 
+  // TODO may want to consider whether we want to use $
   private def literal: Parser[Literal] =
     """[^▶\s\[\]$]+""".r ^^ (l => Literal(l))
 
@@ -43,9 +44,10 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
       variableReference() |
       inlineReference()
 
-  private def concatenation(implicit registry: MatcherRegistry): Parser[Matcher] = matcherTerm ~ whitespaceSep ~ matcherExpression ^^ {
-    case left ~ _ ~ right => left ~~ right
-  }
+  private def concatenation(implicit registry: MatcherRegistry): Parser[Matcher] =
+    matcherTerm ~ opt(whitespaceSep) ~ matcherExpression ^^ {
+      case left ~ _ ~ right => left ~? right
+    }
 
   // TODO mixin that adds predicate check to a matcher
 

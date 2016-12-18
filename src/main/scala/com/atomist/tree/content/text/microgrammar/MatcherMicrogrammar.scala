@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
-class MatcherMicrogrammar(val name: String, matcher: Matcher) extends Microgrammar {
+class MatcherMicrogrammar(val name: String, val matcher: Matcher) extends Microgrammar {
 
   // Transformation to run on matched nodes
   private val transform = collapse(

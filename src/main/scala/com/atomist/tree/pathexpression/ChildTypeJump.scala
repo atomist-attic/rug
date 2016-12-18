@@ -16,7 +16,7 @@ case class ChildTypeJump(typeName: String) extends AxisSpecifier {
     case Some(cr: ChildResolver) => Some(cr)
     case None => throw new IllegalArgumentException(s"No type with name [$typeName]")
     case _ =>
-      // Doesn't support contextless resolution
+      // The parent node doesn't support contextless resolution
       None
   }
 

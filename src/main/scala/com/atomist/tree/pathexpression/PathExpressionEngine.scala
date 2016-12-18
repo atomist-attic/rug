@@ -33,7 +33,6 @@ class PathExpressionEngine extends ExpressionEngine {
   override def evaluate(node: TreeNode, parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
-    val typeRegistry = DefaultTypeRegistry
     var r: ExecutionResult = ExecutionResult(List(node))
     for (e <- parsed.elements) {
       r = r match {

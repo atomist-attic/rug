@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.7.0] - 2016-12-16
 
+### Added
+
+- Assertions can use 'not'
+
 [0.7.0]: https://github.com/atomist/rug/compare/0.6.0...0.7.0
 
 ### Changed

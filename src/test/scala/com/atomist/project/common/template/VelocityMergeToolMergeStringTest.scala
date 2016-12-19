@@ -1,4 +1,4 @@
-package com.atomist.generate.velocity
+package com.atomist.project.common.template
 
 import com.atomist.project.common.template.{MergeContext, VelocityMergeTool}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}

@@ -16,7 +16,7 @@ trait TreeNode extends Visitable {
   def nodeName: String
 
   /**
-    * Type of the node, such as "file" or "java". There may be multiple
+    * Type of the node, such as "File" or "JavaType". There may be multiple
     * nodes in a tree with the same type.
     * @return the type of the node.
     */

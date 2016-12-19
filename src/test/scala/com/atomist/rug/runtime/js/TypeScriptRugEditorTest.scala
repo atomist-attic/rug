@@ -134,7 +134,7 @@ object TypeScriptRugEditorTest {
        |var myeditor = new SimpleEditor()
     """.stripMargin
 
-  val EditorInjectedWithPathExpression =
+  val EditorInjectedWithPathExpression: String =
     """import {Project} from 'user-model/model/Core'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {PathExpression} from 'user-model/tree/PathExpression'
@@ -145,7 +145,6 @@ object TypeScriptRugEditorTest {
       |
       |class ConstructedEditor implements ProjectEditor {
       |
-      |
       |    name: string = "Constructed"
       |    description: string = "A nice little editor"
       |    tags: string[] = ["java", "maven"]
@@ -153,11 +152,9 @@ object TypeScriptRugEditorTest {
       |    edit(project: Project, {packageName } : {packageName: string}) {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-      |      let pe = new PathExpression<Project,File>(`/*:file[name='pom.xml']`)
+      |      let pe = new PathExpression<Project,File>(`/*:File[name='pom.xml']`)
       |      //console.log(pe.expression);
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
-      |
-      |      //ji["whatever"] = "thing"
       |
       |      var t: string = `param=${packageName},filecount=${m.root().fileCount()}`
       |      for (let n of m.matches()) {
@@ -177,7 +174,7 @@ object TypeScriptRugEditorTest {
       |  var editor = new ConstructedEditor()
       | """.stripMargin
 
-  val EditorInjectedWithPathExpressionUsingWith =
+  val EditorInjectedWithPathExpressionUsingWith: String =
     """import {Project} from 'user-model/model/Core'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {PathExpression} from 'user-model/tree/PathExpression'
@@ -185,7 +182,6 @@ object TypeScriptRugEditorTest {
       |import {Match} from 'user-model/tree/PathExpression'
       |import {File} from 'user-model/model/Core'
       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
-      |
       |
       |class ConstructedEditor implements ProjectEditor {
       |
@@ -195,12 +191,11 @@ object TypeScriptRugEditorTest {
       |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
       |
       |    edit(project: Project, {packageName } : {packageName: string}) {
-      |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      project.files().filter(t => false)
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      eng.with<File>(project, "/*:file[name='pom.xml']", n => {
+      |      eng.with<File>(project, "/*:File[name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
@@ -218,7 +213,7 @@ object TypeScriptRugEditorTest {
       |  var editor = new ConstructedEditor()
       | """.stripMargin
 
-  val EditorInjectedWithPathExpressionUsingWithTypeJump =
+  val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
     """import {Project} from 'user-model/model/Core'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {PathExpression} from 'user-model/tree/PathExpression'
@@ -239,7 +234,7 @@ object TypeScriptRugEditorTest {
       |
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      eng.with<File>(project, "->file", n => {
+      |      eng.with<File>(project, "->File", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
@@ -365,9 +360,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
-
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
-
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
       //sm.comment.contains("OK") should be(true)

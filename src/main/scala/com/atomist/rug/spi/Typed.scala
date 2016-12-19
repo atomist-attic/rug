@@ -10,6 +10,12 @@ object Typed {
 
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =
     tcs.map(tc => typeClassToTypeName(tc)).toSet
+
+  def typeToTypeName(tc: Class[_]): String = tc.getSimpleName match {
+    case n if n.endsWith("TreeNode") => n.dropRight("TreeNode".size)
+    case n if n.endsWith("MutableView") => n.dropRight("MutableView".size)
+    case n => n
+  }
 }
 
 /**

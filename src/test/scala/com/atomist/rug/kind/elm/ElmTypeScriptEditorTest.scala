@@ -72,7 +72,6 @@ object ElmTypeScriptEditorTestResources {
       |     }
       |
       |     var readme = project.files();
-      |
       |     return new Result(Status.Success, "yay woo");
       |  }
       |

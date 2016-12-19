@@ -31,7 +31,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.core.ProjectMutableView>" => "Project[]"
       case "class com.atomist.rug.kind.core.ProjectMutableView" => "Project"
       case "java.util.List<java.lang.Object>" => "any[]"
-      case "class com.atomist.rug.kind.core.FileArtifactMutableView" => "File"
+      case "class com.atomist.rug.kind.core.FileMutableView" => "File"
       case "class com.atomist.rug.kind.core.ProjectContext" => "ProjectContext"
       case "scala.collection.immutable.List<java.lang.Object>" => "any[]"
       case "java.util.List<com.atomist.rug.kind.core.FileArtifactBackedMutableView>" => "File[]"
@@ -44,6 +44,6 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   }
 
   def typeScriptClassNameForTypeName(name: String) = {
-    JavaHelpers.toJavaClassName(name)
+    name//JavaHelpers.toJavaClassName(name)
   }
 }

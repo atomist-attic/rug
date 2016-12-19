@@ -37,7 +37,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       """
          |editor First
          |
-         |let m = $(/src/main/java/com/example/->java.class[name='DemoApplication']/[type='method']).name
+         |let m = $(/src/main/java/com/example/->JavaType[name='DemoApplication']/[type='method']).name
          |
          |with File when path = "src/main/resources/application.properties"
          |  do append m

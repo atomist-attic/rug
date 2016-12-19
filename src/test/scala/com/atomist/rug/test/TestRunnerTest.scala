@@ -503,7 +503,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |end
         |
         |predicate IsMaven
-        |  with pom
+        |  with Pom
         |
       """.stripMargin
     val scenario =
@@ -545,7 +545,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |end
         |
         |predicate IsMaven
-        |  with pom
+        |  with Pom
         |
         |predicate IsOk
         |   with Project

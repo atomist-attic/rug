@@ -19,7 +19,7 @@ class LineType(
     with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
-  
+
   override def resolvesFromNodeTypes: Set[String] = Set("file")
 
   override def description = "Represents a line within a text file"
@@ -31,7 +31,7 @@ class LineType(
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
-      case fa: FileArtifactMutableView =>
+      case fa: FileMutableView =>
         Some(fa.originalBackingObject.content.lines
           .zipWithIndex
           .map(tup => new LineMutableView(tup._1, tup._2, fa))
@@ -46,13 +46,11 @@ class LineType(
 class LineMutableView(
                        originalBackingObject: String,
                        linenum: Int,
-                       override val parent: FileArtifactMutableView)
+                       override val parent: FileMutableView)
   extends ViewSupport[String](originalBackingObject, parent)
     with TerminalView[String] {
 
   override def nodeName: String = "line"
-
-  override def nodeType: String = "line"
 
   @ExportFunction(readOnly = false, description = "Update this line's content")
   def update(@ExportFunctionParameterDescription(name = "s2",
@@ -75,7 +73,7 @@ class LineMutableView(
     applied(parent)
   }
 
-  private def applied(f: FileArtifactMutableView) = {
+  private def applied(f: FileMutableView) = {
     var i = 0
     val newLines =
       for {

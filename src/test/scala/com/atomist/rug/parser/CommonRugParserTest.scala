@@ -163,7 +163,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
     val rp = ri.parse(prog).head
     rp.withs.size should be(1)
-    rp.withs.head.alias should be("project")
+    rp.withs.head.alias should be("Project")
   }
 
   it should "allow alias to dotted type to be omitted and default correctly" in {

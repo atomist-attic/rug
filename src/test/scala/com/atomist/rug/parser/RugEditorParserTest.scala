@@ -572,7 +572,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     val actions = ri.parse(prog).head
     actions.withs.size should be(2)
     actions.withs.head.alias should be("f")
-    actions.withs.head.kind should be("file")
+    actions.withs.head.kind should be("File")
     actions.withs(1).alias should be("t")
     actions.withs(1).kind should be("thing")
   }

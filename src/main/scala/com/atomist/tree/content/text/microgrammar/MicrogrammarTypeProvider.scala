@@ -21,7 +21,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
 
   override def description: String = s"Microgrammar type for [$name]"
 
-  override def resolvesFromNodeTypes: Set[String] = Set("file")
+  override def resolvesFromNodeTypes: Set[String] = Set("File")
 
   override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
     case f: FileArtifactBackedMutableView =>

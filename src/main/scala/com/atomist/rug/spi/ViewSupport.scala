@@ -16,6 +16,8 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
 
   private var _dirty: Boolean = false
 
+  override def nodeType: String = Typed.typeToTypeName(getClass)
+
   override def currentBackingObject: T = _currentBackingObject
 
   override def dirty: Boolean = _dirty

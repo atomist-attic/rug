@@ -110,7 +110,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       """
         |predicate Maybe
         |# This won't match as it's not a Spring boot project
-        |with java.project
+        |with JavaProject
       """.stripMargin
 
     val shouldDoIts = Seq(truePred1, truePred2).map(pred => prog + "\n\n" + pred)

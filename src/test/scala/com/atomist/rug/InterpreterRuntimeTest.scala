@@ -21,7 +21,7 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
          |param text: ^.*$$
          |param message: ^.*$$
          |
-         |with File
+         |with File file
          | #when { file.name().endsWith(".java") }
          |  when { file.name().match(".java$$") }
          |do

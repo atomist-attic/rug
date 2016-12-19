@@ -17,6 +17,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv)
+    j.nodeType should be ("Json")
     j.children("glossary").size should be(1)
   }
 

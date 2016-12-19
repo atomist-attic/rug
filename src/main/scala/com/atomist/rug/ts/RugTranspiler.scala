@@ -50,6 +50,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     } {
       ts ++= tsProg(rug)
     }
+    println(ts)
     ts.toString
   }
 
@@ -67,7 +68,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val v = new SaveAllDescendantsVisitor()
     rugs.foreach(rug => rug.accept(v, 0))
     (v.descendants collect {
-      case w: With if !"project".equals(w.kind) => w.kind
+      case w: With if !"Project".equals(w.kind) => w.kind
     }).toSet
   }
 
@@ -181,10 +182,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
           doStepCode(prog, d, wb.alias)
         }).mkString("\n")
 
-    val typeParams = s"<TreeNode,${helper.typeScriptClassNameForTypeName(wb.kind)}>"
     val pathExpr = s"'->${wb.kind}'"
     val descent = s"eng.with<${helper.typeScriptClassNameForTypeName(wb.kind)}>($outerAlias, $pathExpr, ${wb.alias} => {"
-
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
 
     if (!wb.kind.equals(outerAlias)) {

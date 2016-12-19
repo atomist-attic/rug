@@ -38,7 +38,6 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
       val repositoryLine = s""""repository": "https://github.com/${org}/${projectName.toLowerCase()}.git","""
       elmPackageDotJson.content.contains(repositoryLine) should be(true)
     }
-
   }
 
   def invokeGenerator(rugArchiveDirectoryOnTheClasspath: String,
@@ -69,9 +68,7 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
         SimpleProjectOperationArguments(
           "wut",
           parameters))
-
     freshArtifactSource
-
   }
 
   def archiveFromDirectoryOnClasspath(resourceName: String): ArtifactSource = {

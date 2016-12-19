@@ -58,8 +58,6 @@ class JsonType(
 
 object JsonType {
 
-  val TypeName = "json"
-
   val Extension = ".json"
 
   val pe = new PathExpressionEngine
@@ -100,17 +98,13 @@ class JsonMutableView(
                        parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  val originalParsed = new JsonParser().parse(originalBackingObject.content)
+  val originalParsed: MutableContainerTreeNode = new JsonParser().parse(originalBackingObject.content)
 
   private var currentParsed = originalParsed
 
   override def dirty = true
 
   override def value: String = currentParsed.value
-
-  override def nodeName = "json"
-
-  override def nodeType = TypeName
 
   // There's just one value
   /*
@@ -148,6 +142,8 @@ private class PairMutableView(
                                parent: MutableView[_])
   extends ViewSupport[MutableContainerTreeNode](originalBackingObject, parent) {
 
+  // The backing node has a different name, as the Antlr
+  // grammar doesn't adhere to our capitalization rules
   require(currentBackingObject.nodeName.equals("pair"))
 
   private val kids: Seq[MutableView[_]] =
@@ -170,8 +166,6 @@ private class PairMutableView(
   override def nodeName: String = nodeNameFromValue(currentBackingObject)
 
   private def nodeNameFromValue(tn: TreeNode): String = deJsonize(requiredSingleFieldValue(tn, "STRING"))
-
-  override def nodeType: String = "pair"
 
   override val childNodeTypes: Set[String] = Set("value")
 

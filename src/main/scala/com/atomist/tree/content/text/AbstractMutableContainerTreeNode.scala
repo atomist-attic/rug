@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text
 
+import com.atomist.rug.spi.Typed
 import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{PaddingNode, SimpleTerminalTreeNode, TreeNode}
 
@@ -21,13 +22,13 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   private var _padded = false
 
-  def padded = _padded
+  def padded: Boolean = _padded
 
   final override def childNodes: Seq[TreeNode] = _fieldValues
 
-  override def nodeType: String = "mutable"
+  override def nodeType: String = Typed.typeClassToTypeName(getClass)
 
-  override def fieldValues = _fieldValues
+  override def fieldValues: Seq[TreeNode] = _fieldValues
 
   // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames

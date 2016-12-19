@@ -154,7 +154,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
     result.findFile(f2.path).get.content.equals(f2.content) should be(true)
 
-    // Should contain new content
+    // Should contain new contain
     result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
   }
 

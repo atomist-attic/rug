@@ -44,7 +44,7 @@ class AddClassAnnotationEditor(selector: TypeSelector,
 
   override protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit] = {
     val modifiedTypes: Traversable[ClassOrInterfaceDeclaration] = cu.getTypes.asScala. collect {
-      case coit: ClassOrInterfaceDeclaration if selector(coit) && JavaClassType.annotationAddedTo(coit, annotationName) =>
+      case coit: ClassOrInterfaceDeclaration if selector(coit) && JavaTypeType.annotationAddedTo(coit, annotationName) =>
         coit
     }
 

@@ -2,7 +2,7 @@ package com.atomist.rug.kind.pom
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -16,11 +16,11 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor PomEdit
         |
-        |with pom x when path = "pom.xml"
+        |with Pom x when path = "pom.xml"
         |do groupId
       """.stripMargin
 
-    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: NoModificationNeeded =>
     }
   }
@@ -30,11 +30,11 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor PomEdit
         |
-        |with pom p when path = "pom.xml"
+        |with Pom p when path = "pom.xml"
         |  do setGroupId "mygroup"
       """.stripMargin
 
-    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case success: SuccessfulModification => logger.debug("" + success.impacts)
     }
   }
@@ -44,11 +44,11 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor PomEdit
         |
-        |with pom p when path = "pom.xml"
+        |with Pom p when path = "pom.xml"
         |  do addOrReplaceDependency "mygroup" "myartifact"
       """.stripMargin
 
-    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case success: SuccessfulModification => logger.debug("" + success.impacts)
     }
   }

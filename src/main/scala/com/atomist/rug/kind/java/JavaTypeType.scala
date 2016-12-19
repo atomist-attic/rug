@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.kind.java.JavaClassType._
+import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -13,16 +13,16 @@ import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
 
 import scala.collection.JavaConverters._
 
-class JavaClassType(evaluator: Evaluator)
+class JavaTypeType(evaluator: Evaluator)
   extends Type(evaluator)
     with ContextlessViewFinder
     with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
 
-  override def name = JavaTypeAlias
-
-  override val resolvesFromNodeTypes: Set[String] = Set("project", "directory", "file")
+  override val resolvesFromNodeTypes: Set[String] =
+    //Set("Project", "Directory", "File")
+    Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType], classOf[JavaSourceType])
 
   override def description = "Java class"
 
@@ -51,7 +51,7 @@ class JavaClassType(evaluator: Evaluator)
 
 }
 
-object JavaClassType {
+object JavaTypeType {
 
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val newAnnotation = new MarkerAnnotationExpr(new NameExpr(annotationName))

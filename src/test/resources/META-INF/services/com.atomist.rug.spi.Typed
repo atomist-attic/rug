@@ -1,4 +1,4 @@
 
-com.atomist.rug.kind.test.StringReplacingTestType
+com.atomist.rug.kind.test.ReplacerType
 
-com.atomist.rug.kind.test.StringReplacingTestTypeForClojure
+com.atomist.rug.kind.test.ReplacerCljType

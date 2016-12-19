@@ -7,7 +7,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class PythonTypeUsageTest extends FlatSpec with Matchers {
+class PythonFileTypeUsageTest extends FlatSpec with Matchers {
 
   import Python3ParserTest._
 
@@ -29,7 +29,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
 
-  import PythonType._
+  import PythonFileType._
 
   def modifyPythonAndReparseSuccessfully(program: String, as: ArtifactSource, params: Map[String,String] = Map()): ArtifactSource = {
     val parser = new Python3Parser
@@ -48,7 +48,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor ImportBrowser
         |
-        |with python
+        |with PythonFile
         | with import imp
         |   do eval { 4 + 4 }
       """.stripMargin
@@ -66,7 +66,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor ImportUpdater
         |
-        |with python
+        |with PythonFile
         | with import
         |   do setName "newImport"
       """.stripMargin
@@ -89,7 +89,7 @@ class PythonTypeUsageTest extends FlatSpec with Matchers {
         |
         |param new_route: ^[\s\S]*$
         |
-        |with python when filename = "hello.py"
+        |with PythonFile when filename = "hello.py"
         | do append new_route
       """.stripMargin
     val r = modifyPythonAndReparseSuccessfully(prog, Flask1, Map(

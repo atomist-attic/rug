@@ -12,7 +12,7 @@ import com.github.javaparser.ast.expr.NameExpr
 import com.github.javaparser.ast.{CompilationUnit, PackageDeclaration}
 
 import scala.collection.JavaConverters._
-import JavaClassType._
+import JavaTypeType._
 
 import scala.util.Try
 

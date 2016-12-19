@@ -17,7 +17,6 @@ import org.scalatest.{FlatSpec, Matchers}
 class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
   it should "create an artifact source" in {
-
     val projectName = "Projectitron"
     val description = "Clever project of smartness"
     val org = "my-org"

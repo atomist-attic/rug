@@ -36,7 +36,6 @@ class JavaScriptInvokingProjectEditor(
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
         val res = invokeMemberWithParameters("edit",
-          //rpmv,
           wrapProject(pmv),
           poa)
 
@@ -51,7 +50,6 @@ class JavaScriptInvokingProjectEditor(
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)
       }
-
     }
     logger.debug(s"$name modifyInternal took ${tr._2}ms")
     tr._1

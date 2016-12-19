@@ -22,13 +22,13 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
       s"""
          |executor AddSomeCaspar
          |
-         |#let x = from services s with file f return name
+         |#let x = from services s with File f return name
          |
          |with services s
          | editWith Caspar
          |
          |editor Caspar
-         |with project p
+         |with Project p
          | do addFile "Caspar" "$content"
       """.stripMargin
     )
@@ -45,7 +45,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
          | onNoChange do raiseIssue "foobar"
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)
@@ -62,7 +62,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
          | onNoChange do eval { s.raiseIssue("foobar") }
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)
@@ -82,7 +82,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
          | end
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)

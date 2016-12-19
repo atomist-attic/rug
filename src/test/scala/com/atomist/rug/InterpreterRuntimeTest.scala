@@ -21,7 +21,7 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
          |param text: ^.*$$
          |param message: ^.*$$
          |
-         |with file
+         |with File
          | #when { file.name().endsWith(".java") }
          |  when { file.name().match(".java$$") }
          |do
@@ -50,7 +50,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |
         |let text = "// I'm talkin' about ethics"
         |
-        |with file f when f.name = "Dog.java"
+        |with File f when f.name = "Dog.java"
         |do
         | append text
       """.stripMargin
@@ -67,7 +67,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |
         |let text = "// I'm talkin' about ethics"
         |
-        |with file f when f.name.contains "Dog"
+        |with File f when f.name.contains "Dog"
         |do
         | append text
       """.stripMargin
@@ -105,7 +105,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when isJava
         |do
         | append undefined_identifier
@@ -121,7 +121,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
          |
          |let extension = ".java"
          |
-         |with file f
+         |with File f
          | when { f.name().endsWith(extension) }
          |do
          | append "$extraText"
@@ -138,7 +138,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
          |param text: ^.*$$
          |param message: ^.*$$
          |
-         |with file f
+         |with File f
          | when {
          |  var flag = true;
          |  if (1 > 2) {
@@ -161,7 +161,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when isJava
         |begin
         |  do setContent { "WWW" + f.content() + params['text'] }
@@ -180,7 +180,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when isJava
         |do
         |  setContent {
@@ -199,7 +199,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with project p
+        |with Project p
         |do
         |  replace "Dog" "Cat"
       """.stripMargin
@@ -224,7 +224,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |
         |param num: ^\d+$
         |
-        |with project p
+        |with Project p
         |do
         |  replace "Dog" num
       """.stripMargin
@@ -248,7 +248,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |
         |param num: ^\d+$
         |
-        |with project p
+        |with Project p
         |do
         |  replace "Dog" num
       """.stripMargin

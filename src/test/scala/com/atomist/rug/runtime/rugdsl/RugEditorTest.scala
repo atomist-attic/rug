@@ -14,7 +14,7 @@ object RugEditorTest {
   val SimpleEditorWithoutParameters =
     """editor SimpleEditor
       |
-      |with project
+      |with Project
       |   do addFile "src/from/typescript" "Anders Hjelsberg is God"
     """.stripMargin
 

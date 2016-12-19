@@ -4,7 +4,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
-import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.kind.python3.PythonFileType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -17,8 +17,6 @@ class RequirementsType(
     with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = RequirementsTypeAlias
 
   override def description = "Python requirements file"
 
@@ -49,14 +47,12 @@ class RequirementsType(
   *
   * @param evaluator used to evaluate expressions
   */
-class RequirementsTxtType(
+class PythonRequirementsTxtType(
                            evaluator: Evaluator
                          )
   extends RequirementsType(evaluator) {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = RequirementsTextTypeAlias
 
   override def description = "Python requirements text file"
 

@@ -12,7 +12,7 @@ class PredicateExecutionTest extends FlatSpec with Matchers {
     s"""
        |predicate UsesEJBs
        |
-       |with file f
+       |with File f
        | when isJava and contains "javax.ejb"
       """.stripMargin
 
@@ -21,14 +21,14 @@ class PredicateExecutionTest extends FlatSpec with Matchers {
        |@description "My name is No, my number is No"
        |predicate DrNo
        |
-       |with project p
+       |with Project p
        """.stripMargin
 
   val alwaysHappy =
     s"""
        |predicate AlwaysHappy
        |
-       |with project when false
+       |with Project when false
        """.stripMargin
 
   //  val combined =

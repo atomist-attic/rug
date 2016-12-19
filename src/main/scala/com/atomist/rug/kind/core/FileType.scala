@@ -16,8 +16,6 @@ class FileType(
 
   def this() = this(DefaultEvaluator)
 
-  override val name = "file"
-
   override def description =
     """
       |Type for a file within a project. Supports generic options such as find and replace.

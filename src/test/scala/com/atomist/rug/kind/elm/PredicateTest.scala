@@ -14,12 +14,12 @@ class PositivePredicateTest extends FlatSpec with Matchers {
       |
       |precondition Yes
       |
-      |with elm.module e
+      |with ElmModule e
       |  do updateImport from "Carrot" to "Kiwifruit"
       |
       |predicate Yes
       |
-      |with project p
+      |with Project p
       |  when fileExists "Banana.elm"
     """.stripMargin
 
@@ -74,12 +74,12 @@ class NegativePredicateTest extends FlatSpec with Matchers {
       |
       |precondition No
       |
-      |with elm.module e
+      |with ElmModule e
       |  do updateImport from "Carrot" to "Kiwifruit"
       |
       |predicate No
       |
-      |with project p
+      |with Project p
       |  when not fileExists "Banana.elm"
     """.stripMargin
 

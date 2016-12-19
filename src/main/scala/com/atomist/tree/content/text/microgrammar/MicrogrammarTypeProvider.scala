@@ -17,7 +17,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   extends TypeProvider(classOf[MutableContainerTreeNodeMutableView])
     with ChildResolver {
 
-  override def name: String = microgrammar.name
+  override val name: String = microgrammar.name
 
   override def description: String = s"Microgrammar type for [$name]"
 

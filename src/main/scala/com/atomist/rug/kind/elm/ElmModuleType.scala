@@ -19,8 +19,6 @@ class ElmModuleType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = ModuleType
-
   override val resolvesFromNodeTypes: Set[String] = Set("project", "file", "directory")
 
   override def description = "Elm module"
@@ -58,8 +56,6 @@ class ElmModuleType(
   * Contains names of Elm types for navigation within Rug scripts
   */
 object ElmModuleType {
-
-  val ModuleType = "elm.module"
 
   val ElmExtension = ".elm"
 

@@ -15,8 +15,6 @@ class PropertiesType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "properties"
-
   override def description = "Properties file"
 
   override def viewManifest: Manifest[PropertiesMutableView] = manifest[PropertiesMutableView]

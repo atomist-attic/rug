@@ -16,7 +16,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """
       |editor First
       |
-      |with file f do setPath ""
+      |with File f do setPath ""
     """.stripMargin
   )
 
@@ -24,7 +24,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """
       |reviewer Second
       |
-      |with file f do setPath ""
+      |with File f do setPath ""
     """.stripMargin
   )
 
@@ -44,7 +44,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       |uses atomist.common-editors.UpdateReadme
       |uses atomist.common-editors.PomParameterizer
       |
-      |with file f do setPath ""
+      |with File f do setPath ""
     """.stripMargin
   )
 

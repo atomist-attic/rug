@@ -2,8 +2,8 @@ package com.atomist.rug.lang.js
 
 import com.atomist.util.scalaparsing.JavaScriptBlock
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest._
-import com.atomist.rug.kind.java.{JavaClassTypeUsageTest, JavaProjectMutableView, SpringBootProjectMutableView, SpringProjectMutableView}
+import com.atomist.rug.kind.java.JavaTypeUsageTest._
+import com.atomist.rug.kind.java.{JavaTypeUsageTest, JavaProjectMutableView, SpringBootProjectMutableView, SpringProjectMutableView}
 import com.atomist.rug.parser.ScriptBlockAction
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
 import com.atomist.source.EmptyArtifactSource
@@ -12,7 +12,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class JavaScriptScriptBlockExecutorTest extends FlatSpec with Matchers {
 
   it should "traverse structure of the project" in {
-    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.JavaAndText)
+    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.JavaAndText)
 
     val script =
       """
@@ -27,7 +27,7 @@ class JavaScriptScriptBlockExecutorTest extends FlatSpec with Matchers {
   }
 
   it should "check that a file exists from javscript" in {
-    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.JavaAndText)
+    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.JavaAndText)
 
     val script = """return project.fileExists("pom.xml");""".stripMargin
 
@@ -67,7 +67,7 @@ class JavaScriptScriptBlockExecutorTest extends FlatSpec with Matchers {
   }
 
   it should "allow the javacript to return a string with curly brackets" in {
-    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.JavaAndText)
+    val project = new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.JavaAndText)
 
     val script =
       """ var print = function(s) {}

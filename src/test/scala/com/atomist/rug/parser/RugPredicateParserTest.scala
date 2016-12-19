@@ -12,7 +12,7 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
       s"""
          |predicate UsesEJB
          |
-         |with file when isJava
+         |with File when isJava
     """.stripMargin
     val pops = ri.parse(prog)
     pops.size should be(1)
@@ -26,8 +26,8 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
       s"""
          |predicate UsesEJB
          |
-         |with project when name contains "foo"
-         |   with file when name = "Foo"
+         |with Project when name contains "foo"
+         |   with File when name = "Foo"
     """.stripMargin
     val pops = ri.parse(prog)
     pops.size should be(1)

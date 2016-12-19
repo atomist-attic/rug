@@ -3,7 +3,8 @@ package com.atomist.rug.kind.yml
 import java.io.StringReader
 
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView}
+import com.atomist.rug.kind.elm.ElmModuleType
+import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView, Typed}
 import com.atomist.source.FileArtifact
 import com.atomist.util.Utils.StringImprovements
 import org.yaml.snakeyaml.Yaml
@@ -23,7 +24,7 @@ class YmlMutableView(
 
   private var model = new YmlModel(originalBackingObject.content)
 
-  override def nodeType: String = YmlType.TypeName
+  override def nodeType: String = Typed.typeClassToTypeName(classOf[YmlType])
 
   override protected def currentContent: String = model.yml
 

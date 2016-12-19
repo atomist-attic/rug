@@ -121,7 +121,7 @@ class K8Test extends FlatSpec with Matchers {
         |
         |let regexp = ":[a-f0-9]{7}"
         |
-        |with file f
+        |with File f
         | when { f.name().indexOf("80-" + service + "-deployment") >= 0 };
         |do
         |  regexpReplace regexp { ":" + new_sha };
@@ -140,7 +140,7 @@ class K8Test extends FlatSpec with Matchers {
         |
         |let regexp = ":[a-f0-9]{7}"
         |
-        |with file f
+        |with File f
         | when nameContains { ("80-" + service + "-deployment") }
         |do
         |  regexpReplace regexp { ":" + new_sha };
@@ -160,7 +160,7 @@ class K8Test extends FlatSpec with Matchers {
         |
         |let regexp = ":[a-f0-9]{7}"
         |
-        |with file f
+        |with File f
         | when name = { ("80-" + service + "-deployment.json") }
         |do
         |  regexpReplace regexp { ":" + new_sha };
@@ -177,7 +177,7 @@ class K8Test extends FlatSpec with Matchers {
         |param service: ^[\w.\-_]+$
         |param new_sha: ^[a-f0-9]{7}$
         |
-        |with file f
+        |with File f
         | when { f.name().indexOf("80-" + service + "-deployment") >= 0 }
         |do
         |  setContent {
@@ -198,7 +198,7 @@ class K8Test extends FlatSpec with Matchers {
         |param service: ^[\w.\-_]+$
         |param new_sha: ^[a-f0-9]{7}$
         |
-        |with project p;
+        |with Project p;
         |do
         |  regexpReplace { return service + ":[a-f0-9]{7}" } { service + ":" + new_sha };
       """.stripMargin
@@ -214,7 +214,7 @@ class K8Test extends FlatSpec with Matchers {
         |param service: ^[\w.\-_]+$
         |param new_sha: ^[a-f0-9]{7}$
         |
-        |with file f
+        |with File f
         | when { f.name().indexOf("80-" + service + "-deployment") >= 0 }
         |do
         |  setContent {

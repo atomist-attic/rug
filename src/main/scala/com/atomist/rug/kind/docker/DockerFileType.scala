@@ -10,7 +10,7 @@ import com.atomist.source.ArtifactSource
 
 import scala.collection.immutable.Map
 
-class DockerType(
+class DockerFileType(
                   evaluator: Evaluator
                 )
   extends Type(evaluator)
@@ -19,11 +19,9 @@ class DockerType(
 
   def this() = this(DefaultEvaluator)
 
-  import DockerType._
+  import DockerFileType._
 
   override val resolvesFromNodeTypes: Set[String] = Set("file")
-
-  def name: String = Name
 
   def description: String = "Docker file type"
 
@@ -44,9 +42,8 @@ class DockerType(
   }
 }
 
-object DockerType {
+object DockerFileType {
 
   val DockerFileName: String = "Dockerfile"
 
-  val Name: String = "dockerfile"
 }

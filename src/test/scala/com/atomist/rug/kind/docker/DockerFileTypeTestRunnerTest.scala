@@ -5,7 +5,7 @@ import com.atomist.rug.test.{RugTestParser, RugTestRunnerTestSupport}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport {
+class DockerFileTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport {
 
   it should "test the test that tests that the editor updates Dockerfile" in {
     val prog =
@@ -14,7 +14,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
         |
         |param servicePort: ^.*$
         |
-        |with dockerfile d when path = "src/main/docker/Dockerfile"
+        |with DockerFile d when path = "src/main/docker/Dockerfile"
         |  do addOrUpdateExpose servicePort
         |
       """.stripMargin

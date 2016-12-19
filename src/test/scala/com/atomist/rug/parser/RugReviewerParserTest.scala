@@ -16,7 +16,7 @@ class RugReviewerParserTest extends FlatSpec with Matchers {
          |@description $description
          |reviewer FindEJB
          |
-           |with file f
+           |with File f
          | when isJava and { f.contains("javax.ejb")};
          |
            |do

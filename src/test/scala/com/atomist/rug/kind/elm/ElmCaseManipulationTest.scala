@@ -9,11 +9,11 @@ import org.scalatest.{Matchers, FlatSpec}
 
 class ElmCaseManipulationTest extends FlatSpec with Matchers {
 
-  val bodyAppenderUnderUpdateFunction =
+  val bodyAppenderUnderUpdateFunction: String =
     """
       |editor AddClause
       |
-      |with elm.module when name = 'Main'
+      |with ElmModule when name = 'Main'
       |  with function f when name = 'update'
       |    with case cc
       |      begin
@@ -22,11 +22,11 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  val bodyAppenderMatchingOnCaseExpression =
+  val bodyAppenderMatchingOnCaseExpression: String =
     """
       |editor AddClause
       |
-      |with elm.module when name = 'Main'
+      |with ElmModule when name = 'Main'
       |    with case cc when matchAsString = 'msg'
       |      begin
       |         do replaceBody { cc.body() + " ! []" }
@@ -34,14 +34,14 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  val clauseAdderMatchingExpression =
+  val clauseAdderMatchingExpression: String =
     """
       |editor AddClause
       |
       |param expr: ^.*$
       |param rhs: ^.*$
       |
-      |with elm.module when name = 'Main'
+      |with ElmModule when name = 'Main'
       |    with case cc when matchAsString = 'msg'
       |      begin
       |         do addClause expr rhs

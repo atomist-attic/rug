@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.pom
 
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.EmptyArtifactSource
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
@@ -9,13 +9,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   import PomMutableViewTestSupport._
 
-  lazy val pom = JavaClassTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
+  lazy val pom = JavaTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
 
   var validPomUut: PomMutableView = _
 
-  lazy val pomNoParent = JavaClassTypeUsageTest.NewSpringBootProject.findFile("pomNoParent.xml").get
+  lazy val pomNoParent = JavaTypeUsageTest.NewSpringBootProject.findFile("pomNoParent.xml").get
 
-  lazy val pomWithDependencyManagement = JavaClassTypeUsageTest.NewSpringBootProject.findFile("pomWithDependencyManagement.xml").get
+  lazy val pomWithDependencyManagement = JavaTypeUsageTest.NewSpringBootProject.findFile("pomWithDependencyManagement.xml").get
 
   var validPomNoParent: PomMutableView = _
 
@@ -27,9 +27,9 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   override def beforeEach() {
-    validPomUut = new PomMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
-    validPomNoParent = new PomMutableView(pomNoParent, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
-    validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    validPomUut = new PomMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+    validPomNoParent = new PomMutableView(pomNoParent, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+    validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
   }
 
   "PomMutableView" should "get the project group id" in {
@@ -72,7 +72,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     testConditions(validPomNoParent, validPomNoParent.parentVersion, "")
   }
 
-  it should "respond with project property when present" in {
+  it should "respond with Project property when present" in {
     testConditions(validPomUut, validPomUut.property("project.build.sourceEncoding"), "UTF-8")
   }
 

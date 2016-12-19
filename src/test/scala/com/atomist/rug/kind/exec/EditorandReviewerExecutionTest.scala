@@ -4,7 +4,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.review.ReviewResult
 import com.atomist.project.{Executor, SimpleProjectOperationArguments}
 import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.kind.service._
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -16,7 +16,7 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
   val emptyProject = EmptyArtifactSource("a")
   val littleProject = new SimpleFileBasedArtifactSource("b", StringFileArtifact("a", "b"))
-  val bigProject = JavaClassTypeUsageTest.JavaAndText
+  val bigProject = JavaTypeUsageTest.JavaAndText
 
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
@@ -45,13 +45,13 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
       """
         |executor Foo
         |
-        |with services s
+        |with Services s
         |   editWith Bar
         |
         |
         |editor Bar
         |
-        |with project p
+        |with Project p
         |  do addFile "film.txt" "The Big Lebowski"
       """.stripMargin
 
@@ -74,12 +74,11 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
     val executor =
       """
         |executor Foo
-        |with services s when { s.name().length() > 0 }
+        |with Services s when { s.name().length() > 0 }
         |   editWith Bar
         |
-        |
         |editor Bar
-        |with project p
+        |with Project p
         |  do addFile "film.txt" "The Big Lebowski"
       """.stripMargin
 
@@ -103,12 +102,12 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
       """
         |executor Foo
         |
-        |with services s
+        |with Services s
         |   reviewWith Gripe
         |
         |reviewer Gripe
         |
-        |with project p
+        |with Project p
         |  do majorProblem "I don't like Mondays"
       """.stripMargin, "Foo.rug", "Foo")
 
@@ -116,20 +115,20 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
     executeReviewer(
       """
         |executor XMLChecker
-        |with services s
+        |with Services s
         |  editWith Caspar
         |
         |editor Caspar
-        |with project p
+        |with Project p
         |  do addFile "Caspar" "Put one in the brain"
         |
         |
         |executor GoCaspar
-        |with services s
+        |with Services s
         |    reviewWith CasparAdvice
         |
         |reviewer CasparAdvice
-        |with project p
+        |with Project p
         |  do majorProblem "What is this, the high hat?"
       """.stripMargin, "GoCaspar.rug", "GoCaspar")
 
@@ -153,12 +152,12 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
     val executor =
       """
         |executor Foo
-        |with services s when { s.name().length() > 0 }
+        |with Services s when { s.name().length() > 0 }
         |   editWith Bar
         |
         |editor Bar
         |param film: ^.*$
-        |with project p
+        |with Project p
         |  do addFile "film.txt" film
       """.stripMargin
 

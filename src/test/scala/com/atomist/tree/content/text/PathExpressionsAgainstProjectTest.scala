@@ -259,7 +259,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
       """.stripMargin
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/Main.elm", elmWithMain))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "src/->elm.module[.exposes('main')]"
+    val expr2 = "src/->ElmModule[.exposes('main')]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     rtn2.right.get.size should be (1)
     rtn2.right.get.head match {

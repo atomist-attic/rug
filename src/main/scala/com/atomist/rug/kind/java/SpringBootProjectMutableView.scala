@@ -25,8 +25,6 @@ class SpringBootProjectType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "spring.bootProject"
-
   override def description = "Spring Boot project"
 
   override def viewManifest: Manifest[SpringBootProjectMutableView] = manifest[SpringBootProjectMutableView]

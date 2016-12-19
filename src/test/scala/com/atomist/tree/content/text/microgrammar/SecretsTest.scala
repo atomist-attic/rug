@@ -49,7 +49,7 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
         |
         |#let secret = "\$\{secret\.([^\}]+)\}"
         |
-        |with file f when { f.name().endsWith('yml') }
+        |with File f when { f.name().endsWith('yml') }
         |	do eval {
         |     var secret = /\$\{secret\.([^\}]+)\}/g;
         |     var matches = f.content().match(secret);

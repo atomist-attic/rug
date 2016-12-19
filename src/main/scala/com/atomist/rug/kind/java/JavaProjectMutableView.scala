@@ -24,8 +24,6 @@ class JavaProjectType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "java.project"
-
   override def description = "Java project"
 
   override def viewManifest: Manifest[JavaProjectMutableView] = manifest[JavaProjectMutableView]
@@ -42,7 +40,7 @@ class JavaProjectType(
   }
 }
 
-import com.atomist.rug.kind.java.JavaClassType._
+import com.atomist.rug.kind.java.JavaTypeType._
 
 /**
   * Exposes Java project status, allowing refactoring, tests for

@@ -18,7 +18,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
     """editor UpgradeMainFunction
       |
       |# main
-      |with elm.module when name = 'Main'
+      |with ElmModule when name = 'Main'
       |  begin
       |    with function f when name = 'main'
       |      do replaceBody
@@ -34,7 +34,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
     val prog2 =
       """
         |editor UpgradeInit
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |  with function f when name = 'model'
         |  begin
         |    do changeType '( Model, Cmd Msg )'
@@ -48,7 +48,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
     // What I really want this to do is add this before `-- UPDATE`
     val prog3 =
     """editor AddSubscriptionsFunction
-      |with elm.module when name = 'Main' begin
+      |with ElmModule when name = 'Main' begin
       |  do addFunction { '\n-- SUBSCRIPTIONS\n\n\nsubscriptions model =\n    Sub.none\n\n' }
       |end
       | """.stripMargin
@@ -57,12 +57,12 @@ class ElmTextInputTest extends FlatSpec with Matchers {
 
     val prog4 =
       """editor UpgradeUpdate
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |  # use alias f to avoid issues with JavaScript reserved word
         |  with function f when name = 'update'
         |    do changeType 'Msg -> Model -> ( Model, Cmd Msg )'
         |
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |    with case cc when matchAsString = 'msg'
         |      begin
         |         do replaceBody { cc.body() + " ! []" }
@@ -126,7 +126,7 @@ object ElmTextInputTest {
       |  @description "The import to add, fully qualified"
       |  param fqn: ^.*$
       |
-      |  with elm.module when name = module
+      |  with ElmModule when name = module
       |    do addImportStatement {"import " + fqn}
       |
       |@description "add a whole declaration"
@@ -141,8 +141,8 @@ object ElmTextInputTest {
       |@validInput "An Elm declaration"
       |param code: ^.*$
       |
-      |with file
-      |  with elm.module when name = module
+      |with File
+      |  with ElmModule when name = module
       |    do addFunction code
       |""".stripMargin
 
@@ -165,8 +165,8 @@ object ElmTextInputTest {
       |  param field_name: ^[a-z][\w]*$
       |  param field_type: ^.*$
       |
-      |with file
-      |  with elm.module when name = module
+      |with File
+      |  with ElmModule when name = module
       |    with type.alias when name = type_name
       |      with recordType
       |        do add field_name field_type
@@ -179,8 +179,8 @@ object ElmTextInputTest {
       |  param field_name: ^[a-z][\w]*$
       |  param field_value: ^.*$
       |
-      |with file
-      |  with elm.module when name = module
+      |with File
+      |  with ElmModule when name = module
       |    with function when name = function_name
       |      with recordValue
       |        do add field_name field_value
@@ -225,8 +225,8 @@ object ElmTextInputTest {
       |  @displayName "Constructor"
       |  param constructor: ^[a-z][\w]*$
       |
-      |with file
-      |  with elm.module when name = module
+      |with File
+      |  with ElmModule when name = module
       |    with type when name = type_name
       |        do addConstructor constructor
       |
@@ -257,8 +257,8 @@ object ElmTextInputTest {
       |  param body: ^.*$
       |
       |# TODO implement the selection by match expression
-      |with file
-      |  with elm.module when name = module
+      |with File
+      |  with ElmModule when name = module
       |    with function when name = function_name
       |      with case when matchAsString = match
       |        do addClause new_pattern body

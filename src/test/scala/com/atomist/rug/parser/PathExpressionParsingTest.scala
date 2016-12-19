@@ -37,7 +37,7 @@ class PathExpressionParsingTest extends FlatSpec with Matchers {
         |
         |let f = $(src//*[name='application.properties']).name
         |
-        |with file f
+        |with File f
         |  do eval { print(f }
       """.stripMargin
     val f = StringFileArtifact(atomistConfig.editorsRoot + "/Redeploy.rug", prog)

@@ -6,8 +6,6 @@ import com.atomist.tree.{MutableTreeNode, TerminalTreeNode}
 class MutableTerminalTreeNodeTypeProvider
   extends TypeProvider(classOf[MutableTerminalTreeNode]) {
 
-  override def name: String = "mutable"
-
   override def description: String = "Updateable terminal node"
 }
 

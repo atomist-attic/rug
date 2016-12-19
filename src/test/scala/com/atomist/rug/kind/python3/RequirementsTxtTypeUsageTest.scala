@@ -39,7 +39,7 @@ class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor ParseRequirementsTxt
         |
-        |with python.requirements.txt
+        |with PythonRequirementsTxt
         | with requirement
         |   do setVersion "2.5"
       """.stripMargin
@@ -60,7 +60,7 @@ class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor ParseRequirementsTxt
         |
-        |with python.requirements when path = "other.txt"
+        |with PythonRequirements when path = "other.txt"
         | with requirement
         |   do setVersion "2.5"
       """.stripMargin
@@ -81,7 +81,7 @@ class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor ParseRequirementsTxt
         |
-        |with python.requirements when path = "other.txt"
+        |with PythonRequirements when path = "other.txt"
         | with requirement
         |   do setVersion "2.5"
       """.stripMargin

@@ -49,7 +49,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
                     @ExportFunctionParameterDescription(name = "annotation",
                       description = "The annotation to add")
                     annotation: String): Unit = {
-    JavaClassType.annotationAddedTo(currentBackingObject, annotation)
+    JavaTypeType.annotationAddedTo(currentBackingObject, annotation)
     addImport(s"$pkg.$annotation")
   }
 

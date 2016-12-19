@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.json
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, LazyFileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.json.JsonType._
 import com.atomist.rug.parser.Selected
@@ -22,11 +22,11 @@ class JsonType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = TypeName
-
   override def description = "package.json configuration file"
 
-  override val resolvesFromNodeTypes: Set[String] = Set("project", "directory", "file")
+  override val resolvesFromNodeTypes: Set[String] =
+    Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType])
+    //Set("project", "directory", "file")
 
   override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
 
@@ -134,8 +134,6 @@ class JsonMutableView(
 }
 
 class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
-
-  override def name: String = "pair"
 
   override def description: String = "JSON pair"
 }

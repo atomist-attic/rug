@@ -19,9 +19,7 @@ class LineType(
     with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = "line"
-
+  
   override def resolvesFromNodeTypes: Set[String] = Set("file")
 
   override def description = "Represents a line within a text file"

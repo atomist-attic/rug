@@ -16,8 +16,8 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val editor =
       """editor Whoever
         |
-        |with project
-        |  with elm.module m
+        |with Project
+        |  with ElmModule m
         |    with import i when module="Foo"
         |      do addExposure "fooFunction"
       """.stripMargin
@@ -41,8 +41,8 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val editor=
       """editor Whatever
         |
-        |with project
-        |  with elm.module m when m.exposes("main")
+        |with Project
+        |  with ElmModule m when m.exposes("main")
         |    do rename "Carrot"
       """.stripMargin
 
@@ -63,8 +63,8 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val editor=
       """editor Whatever
         |
-        |with project
-        |  with elm.module m when m.exposes("main")
+        |with Project
+        |  with ElmModule m when m.exposes("main")
         |    do rename "Carrot"
       """.stripMargin
 
@@ -86,8 +86,8 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val editor=
       """editor Whatever
         |
-        |with project
-        |  with elm.module m when m.exposes("armadillo")
+        |with Project
+        |  with ElmModule m when m.exposes("armadillo")
         |    do renameModule "Carrot"
       """.stripMargin
 
@@ -109,8 +109,8 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val editor=
       """editor Whatever
         |
-        |with project
-        |  with elm.module m when m.exposes("armadillo")
+        |with Project
+        |  with ElmModule m when m.exposes("armadillo")
         |    do renameModule "Carrot"
       """.stripMargin
 
@@ -129,7 +129,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     """editor UpgradeMainFunction
       |
       |# main
-      |with elm.module when name = 'Main'
+      |with ElmModule when name = 'Main'
       |  begin
       |    with function f when name = 'main'
       |      do replaceBody
@@ -145,7 +145,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     val prog2 =
       """
         |editor UpgradeInit
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |  with function f when name = 'model'
         |  begin
         |    do changeType '( Model, Cmd Msg )'
@@ -159,7 +159,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
     // What I really want this to do is add this before `-- UPDATE`
     val prog3 =
     """editor AddSubscriptionsFunction
-      |with elm.module when name = 'Main' begin
+      |with ElmModule when name = 'Main' begin
       |  do addFunction { '\n-- SUBSCRIPTIONS\n\n\nsubscriptions model =\n    Sub.none\n\n' }
       |end
       | """.stripMargin
@@ -168,12 +168,12 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
 
     val prog4 =
       """editor UpgradeUpdate
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |  # use alias f to avoid issues with JavaScript reserved word
         |  with function f when name = 'update'
         |    do changeType 'Msg -> Model -> ( Model, Cmd Msg )'
         |
-        |with elm.module when name = 'Main'
+        |with ElmModule when name = 'Main'
         |  with function f when name = 'update'
         |    with case cc # when match = 'msg'
         |      begin

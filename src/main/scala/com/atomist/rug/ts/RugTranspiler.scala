@@ -191,7 +191,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       descent + "\n" + helper.indented(blockBody, 1) + "\n})"
     }
     else {
-      // Special case where inner and outer block are the same type, like "with project" under a project
+      // Special case where inner and outer block are the same type, like "with Project" under a project
       (if (wb.alias.equals(wb.kind)) "" else s"let ${wb.alias} = ${wb.kind}\n") +
       helper.indented(blockBody, 1)
     }

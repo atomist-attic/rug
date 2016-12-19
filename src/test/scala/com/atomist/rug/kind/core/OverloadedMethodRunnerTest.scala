@@ -2,7 +2,7 @@ package com.atomist.rug.kind.core
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.test.RugTestRunnerTestSupport
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
@@ -16,7 +16,7 @@ class OverloadedMethodRunnerTest extends FlatSpec with Matchers with RugTestRunn
       """
         |editor Overloader
         |
-        |with replacer r
+        |with Replacer r
         |   do overloaded "p1" "p2"
       """.stripMargin)
 
@@ -25,12 +25,12 @@ class OverloadedMethodRunnerTest extends FlatSpec with Matchers with RugTestRunn
       """
         |editor Overloader
         |
-        |with replacer r
+        |with Replacer r
         |  do overloaded "p1"
       """.stripMargin)
 
   private def doIt(prog: String) {
-    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: SuccessfulModification => {
       }
     }
@@ -38,7 +38,6 @@ class OverloadedMethodRunnerTest extends FlatSpec with Matchers with RugTestRunn
 
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
-
     attemptModification(prog, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "foo" -> "bar"
     )))

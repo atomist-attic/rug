@@ -11,7 +11,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 /**
   * Contains aliases for navigation down simplified AST.
   */
-object PythonType {
+object PythonFileType {
 
   val PythonExtension = ".py"
 
@@ -26,25 +26,21 @@ object PythonType {
     */
   val RequirementsTextTypeAlias = "python.requirements.txt"
 
-  val RequirementsTypeAlias = "python.requirements"
-
   /** Path within archive of Python requirements.txt */
   val RequirementsTextPath = "requirements.txt"
 
   val RequirementAlias = "requirement"
 }
 
-import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.kind.python3.PythonFileType._
 
-class PythonType(
+class PythonFileType(
                   evaluator: Evaluator
                 )
   extends Type(evaluator)
     with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = PythonFileAlias
 
   override def description = "Python file"
 

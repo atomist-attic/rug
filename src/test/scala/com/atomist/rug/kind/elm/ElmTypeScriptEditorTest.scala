@@ -16,7 +16,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
     val projectName = "Elminess"
     val after = ElmTypeUsageTest.elmExecute(
       singleFileArtifactSource(projectName),
-      Editor,
+      ReleaseEditor,
       runtime = typeScriptPipeline)
 
     val maybeReadme = after.findFile("README.md")
@@ -44,13 +44,12 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
 
 object ElmTypeScriptEditorTestResources {
 
-  val Editor =
+  val ReleaseEditor: String =
     """
       |import {Status, Result} from "user-model/operations/RugOperation"
       |import {Project} from 'user-model/model/Core'
       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
       |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
-      |
       |
       |class Release implements ProjectEditor  {
       |
@@ -62,7 +61,7 @@ object ElmTypeScriptEditorTestResources {
       |    let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
       |    let pe = new PathExpression<Project,TreeNode>(
-      |     `/*:file[name='elm-package.json']->json/summary/[1]`)
+      |     `/*:File[name='elm-package.json']->Json/summary/[1]`)
       |    let description: TreeNode = eng.scalar(project, pe)
       |
       |     if (!project.fileExists("README.md")) {

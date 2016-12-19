@@ -12,7 +12,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import JavaVerifier._
 import com.atomist.rug.ts.RugTranspiler
 
-object JavaClassTypeUsageTest extends Matchers {
+object JavaTypeUsageTest extends Matchers {
 
   val NewSpringBootProject: ArtifactSource =
     ClassPathArtifactSource.toArtifactSource("./springboot1")
@@ -55,9 +55,9 @@ object JavaClassTypeUsageTest extends Matchers {
   }
 }
 
-class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
+class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
-  import JavaClassTypeUsageTest._
+  import JavaTypeUsageTest._
 
   private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
 
@@ -66,7 +66,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor PackageFinder
         |
-        |let spb = $(->spring.bootProject)
+        |let spb = $(->SpringBootProject)
         |
         |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
       """.stripMargin
@@ -84,7 +84,6 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |import {Project,SpringBootProject} from 'user-model/model/Core'
         |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
         |
-        |
         |declare var print
         |
         |class PackageFinder implements ProjectEditor {
@@ -92,7 +91,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    description: string = "Find a spring boot package"
         |    edit(project: Project): Result {
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,SpringBootProject>(`->spring.bootProject`)
+        |      let pe = new PathExpression<Project,SpringBootProject>(`->SpringBootProject`)
         |      let p = eng.scalar(project, pe)
         |      //if (p == null)
         |      return new Result(Status.Success, "OK");
@@ -115,8 +114,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 //        |editor ClassAnnotated
 //        |
 //        |with java.project p when { p.fileCount() > 1 }
-//        | with java.source j when typeCount = 1
-//        |   with java.class c when true
+//        | with JavaSource j when typeCount = 1
+//        |   with JavaType c when true
 //        |     do
 //        |      addAnnotation "com.foo" "FooBar"
 //      """.stripMargin
@@ -130,8 +129,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
-        |with java.source j when typeCount = 1
-        |with java.class c when true
+        |with JavaSource j when typeCount = 1
+        |with JavaType c when true
         |do
         |  eval {
         |   // print(c);
@@ -149,8 +148,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
-        |with java.source j when path.startsWith "src/main/java"
-        |with java.class c when true
+        |with JavaSource j when path.startsWith "src/main/java"
+        |with JavaType c when true
         |do
         |  eval {
         |   // print(c);
@@ -166,8 +165,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source
-        | with java.class
+        |with JavaSource
+        | with JavaType
         |   do
         |      addAnnotation "com.foo" "FooBar"
       """.stripMargin
@@ -181,8 +180,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |do
         |  addAnnotation "com.foo" "FooBar"
       """.stripMargin
@@ -196,8 +195,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source j when { j.lineCount() < 1000 }
-        |with java.class c when { c.lineCount() < 100 }
+        |with JavaSource j when { j.lineCount() < 1000 }
+        |with JavaType c when { c.lineCount() < 100 }
         |do
         |  addAnnotation { "com.foo" } "FooBar"
       """.stripMargin
@@ -211,7 +210,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.class c
+        |with JavaType c
         |do
         |  addAnnotation { "com.foo" } "FooBar"
       """.stripMargin
@@ -258,7 +257,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.class c
+        |with JavaType c
         |do
         |  movePackage to "com.atomist"
       """.stripMargin
@@ -280,7 +279,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.class c when name = "Dog"
+        |with JavaType c when name = "Dog"
         |do
         |  movePackage to "com.atomist"
       """.stripMargin
@@ -306,7 +305,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.class c
+        |with JavaType c
         |do
         |  rename to "Dingo"
       """.stripMargin
@@ -333,8 +332,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |do
         |  addImport "java.util.List"
       """.stripMargin
@@ -363,8 +362,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |do
         |  addAnnotation '$pkg' '$ann'
       """.stripMargin
@@ -393,7 +392,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
         |editor ClassExtended
         |
-        |with java.class when inheritsFrom 'NotRelevant'
+        |with JavaType when inheritsFrom 'NotRelevant'
         | do
         |   addAnnotation '$pkg' '$ann'
       """.stripMargin
@@ -424,7 +423,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
          |editor ClassExtended
          |
-         |with java.class when inheritsFrom 'NotRelevant'
+         |with JavaType when inheritsFrom 'NotRelevant'
          | do
          |   addAnnotation '$pkg' '$ann'
       """.stripMargin
@@ -455,7 +454,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
          |editor ClassAnnotated
          |
-         |with java.class c when { c.name().length() > 17 }
+         |with JavaType c when { c.name().length() > 17 }
          | do
          |   setHeaderComment '$newHeader'
       """.stripMargin
@@ -473,7 +472,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
          |editor ClassAnnotated
          |
-         |with java.class c when { c.name().length() > 17 }
+         |with JavaType c when { c.name().length() > 17 }
          | do
          |   setHeaderComment '$newHeader1'
       """.stripMargin
@@ -503,7 +502,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
          |editor ClassAnnotated
          |
-         |with java.class c when isInterface
+         |with JavaType c when isInterface
          | do
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
@@ -528,7 +527,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       s"""
          |editor AbstractClass
          |
-         |with java.class c when isAbstract
+         |with JavaType c when isAbstract
          | do
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
@@ -553,7 +552,7 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.class c
+        |with JavaType c
         |when {
         |return c.parent().parent().javaFileCount() < 100
         |}
@@ -575,8 +574,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |with constructor ctor when { ctor.parametersSize() == 1 }
         |do
         |  addAnnotation "com.someone" "Foobar"
@@ -596,8 +595,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |with method m when { m.name().contains("bark") }
         |do
         |  addAnnotation "com.someone" "Foobar"
@@ -617,8 +616,8 @@ class JavaClassTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with java.source j
-        |with java.class c
+        |with JavaSource j
+        |with JavaType c
         |with field f when { f.name().contains("Field") && f.parent().name().contains("Dog") }
         |do
         |  addAnnotation "com.someone" "Foobar"

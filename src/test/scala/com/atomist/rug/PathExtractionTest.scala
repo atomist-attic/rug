@@ -39,7 +39,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
          |
          |let m = $(/src/main/java/com/example/->java.class[name='DemoApplication']/[type='method']).name
          |
-         |with file when path = "src/main/resources/application.properties"
+         |with File when path = "src/main/resources/application.properties"
          |  do append m
       """.stripMargin
     val rp = new DefaultRugPipeline
@@ -61,7 +61,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
         |
         |let m = $(/src/main/java//*:java.class[name='DemoApplication']/[type='method']).name
         |
-        |with file when path = "src/main/resources/application.properties"
+        |with File when path = "src/main/resources/application.properties"
         |  do append m
       """.stripMargin
     val rp = new DefaultRugPipeline
@@ -232,7 +232,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
         |  editor : 'editor' name=JAVA_IDENTIFIER
         |>
         |
-        |with file f when { f.name().endsWith(".rug") }
+        |with File f when { f.name().endsWith(".rug") }
         | with editorDef e begin
         |   do eval {print(e)}
         |   do majorProblem name
@@ -245,7 +245,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
         """
           |editor Foo
           |
-          |with file f when name = "thisDoesNotExist"
+          |with File f when name = "thisDoesNotExist"
           | do append "this is utter bollocks"
         """.stripMargin))
 

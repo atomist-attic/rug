@@ -6,14 +6,14 @@ import com.atomist.rug.DefaultRugPipeline
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class DockerTypeTest extends FlatSpec with Matchers {
+class DockerFileTypeTest extends FlatSpec with Matchers {
 
   it should "try docker type" in {
     val prog =
       """
         |editor DockerUpgrade
         |
-        |with dockerfile d
+        |with DockerFile d
         |begin
         |	do addExpose "8081"
         | do addOrUpdateFrom "java:8-jre"
@@ -23,7 +23,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
 
     val target = new SimpleFileBasedArtifactSource("",
-      StringFileArtifact(DockerType.DockerFileName,
+      StringFileArtifact(DockerFileType.DockerFileName,
         """
           |FROM java:8
           |
@@ -38,7 +38,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     ed.modify(target,
       SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        val df = sm.result.findFile(DockerType.DockerFileName).get
+        val df = sm.result.findFile(DockerFileType.DockerFileName).get
         df.content.contains("EXPOSE 8081") should be (true)
         df.content.contains("EXPOSE 8080") should be (true)
         df.content.contains("FROM java:8-jre") should be (true)
@@ -50,7 +50,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
       """
         |editor DockerUpgrade
         |
-        |with dockerfile d
+        |with DockerFile d
         |begin
         |	do addOrUpdateExpose "8081"
         | do addOrUpdateFrom "java:8-jre"
@@ -60,7 +60,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
 
     val target = new SimpleFileBasedArtifactSource("",
-      StringFileArtifact(DockerType.DockerFileName,
+      StringFileArtifact(DockerFileType.DockerFileName,
         """
           |FROM java:8
           |
@@ -75,7 +75,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     ed.modify(target,
       SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        val df = sm.result.findFile(DockerType.DockerFileName).get
+        val df = sm.result.findFile(DockerFileType.DockerFileName).get
         df.content.contains("EXPOSE 8081") should be (true)
         df.content.contains("EXPOSE 8080") should be (false)
         df.content.contains("FROM java:8-jre") should be (true)
@@ -89,7 +89,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
         |
         |let exposePort = "8181"
         |
-        |with dockerfile d
+        |with DockerFile d
         |begin
         |	do addOrUpdateExpose exposePort
         | do addOrUpdateFrom "java:8-jre"
@@ -99,7 +99,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
 
     val target = new SimpleFileBasedArtifactSource("",
-      StringFileArtifact("src/main/docker/" + DockerType.DockerFileName,
+      StringFileArtifact("src/main/docker/" + DockerFileType.DockerFileName,
         """
           |FROM java:8
           |
@@ -114,7 +114,7 @@ class DockerTypeTest extends FlatSpec with Matchers {
     ed.modify(target,
       SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        val df = sm.result.findFile("src/main/docker/" + DockerType.DockerFileName).get
+        val df = sm.result.findFile("src/main/docker/" + DockerFileType.DockerFileName).get
         df.content.contains("EXPOSE 8181") should be (true)
         df.content.contains("EXPOSE 8080") should be (false)
         df.content.contains("FROM java:8-jre") should be (true)

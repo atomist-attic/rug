@@ -17,7 +17,7 @@ import com.atomist.source.ArtifactSource
   *
   * <code>
   *   predicate Foo
-  *   with file f when path = "ThisIsTheDroidYouAreLookingFor"
+  *   with File f when path = "ThisIsTheDroidYouAreLookingFor"
   * </code>
   */
 class RugDrivenProjectPredicate(

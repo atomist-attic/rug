@@ -5,6 +5,7 @@ import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
+import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{MutableTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
@@ -25,7 +26,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   it should "use simple microgrammar to match in single file" in
     useSimpleMicrogrammarAgainstSingleFile
 
-  it should "use simple microgrammar in a single file and modify content" in pendingUntilFixed {
+  it should "use simple microgrammar in a single file and modify content" in {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
     nodes.size should be (1)

@@ -51,6 +51,7 @@ class MutableContainerTreeNodeMutableView(
         logger.debug(s"Cannot update backing key '$key' in [$originalBackingObject]")
     }
     updateTo(currentBackingObject)
+    parent.commit()
   }
 
   @ExportFunction(readOnly = false, description = "Append")
@@ -58,6 +59,7 @@ class MutableContainerTreeNodeMutableView(
     originalBackingObject match {
       case msoo: SimpleMutableContainerTreeNode => msoo.appendField(SimpleTerminalTreeNode("appended", toAppend))
     }
+    parent.commit()
   }
 
   @ExportFunction(readOnly = false, description = "Update the whole value")
@@ -68,6 +70,7 @@ class MutableContainerTreeNodeMutableView(
         println(s"Updated to $msoo")
     }
     require(dirty)
+    parent.commit()
   }
 
   override protected def viewFrom(o: ContainerTreeNode): ContainerTreeNodeView[_] = o match {

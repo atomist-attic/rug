@@ -48,6 +48,18 @@ class PositivePredicateTest extends FlatSpec with Matchers {
     carrotContent.trim should equal(expected.trim)
   }
 
+  it should "not delete the trailing newline" in pendingUntilFixed {
+    val source = StringFileArtifact("Banana.elm", original)
+
+    val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
+
+    val result = elmExecute(elmProject, editor, Map[String, String](),
+      runtime = new DefaultRugPipeline())
+
+    val carrotContent = result.findFile(s"Banana.elm").get.content
+    // TODO: remove the trims! this finds the newline problem
+    carrotContent should equal(expected)
+  }
 
 }
 

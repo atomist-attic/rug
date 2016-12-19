@@ -172,7 +172,7 @@ class SafeCommittingProxy(typ: Typed, val node: TreeNode)
   extends AbstractJSObject {
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
-    case x if MagicJavaScriptMethods.MagicMethods.contains(name) =>
+    case _ if MagicJavaScriptMethods.MagicMethods.contains(name) =>
       super.getMember(name)
 
     case st: StaticTypeInformation =>

@@ -9,7 +9,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 object CommonRugParserTest {
 
-  val EqualsLiteralStringInPredicate =
+  val EqualsLiteralStringInPredicate: String =
     s"""
        |@description '100% JavaScript free'
        |editor Triplet
@@ -21,7 +21,7 @@ object CommonRugParserTest {
        | append "foobar"
       """.stripMargin
 
-  val EqualsLetStringInPredicate =
+  val EqualsLetStringInPredicate: String =
     s"""
        |@description '100% JavaScript free'
        |editor Triplet
@@ -35,7 +35,7 @@ object CommonRugParserTest {
        | append "foobar"
       """.stripMargin
 
-  val EqualsLiteralStringInPredicatesWithParam =
+  val EqualsLiteralStringInPredicatesWithParam: String =
     s"""
        |@description '100% JavaScript free'
        |editor Triplet
@@ -61,7 +61,7 @@ object CommonRugParserTest {
        |Foobar
       """.stripMargin
 
-  val InvokeOtherOperationWithSingleParameter =
+  val InvokeOtherOperationWithSingleParameter: String =
     s"""
        |editor Triplet
        |
@@ -72,7 +72,7 @@ object CommonRugParserTest {
        |Foobar
       """.stripMargin
 
-  val WellKnownRegexInParameter =
+  val WellKnownRegexInParameter: String =
     s"""
        |editor Triplet
        |
@@ -81,7 +81,7 @@ object CommonRugParserTest {
        |Foobar
       """.stripMargin
 
-  val EqualsJavaScriptBlockInPredicate =
+  val EqualsJavaScriptBlockInPredicate: String =
     s"""
        |@description '100% JavaScript free'
        |editor Triplet

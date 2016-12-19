@@ -252,7 +252,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
   case class PositionedString(s: String) extends Positional
 
-  protected def positionalString(underlying: Parser[String]): Parser[PositionedString] = underlying ^^ (s => PositionedString(s))
+  protected def positionedString(underlying: Parser[String]): Parser[PositionedString] = underlying ^^ (s => PositionedString(s))
 
   /**
     * Return a parser decorator creating a MutableTerminalTreeNode with the given name,
@@ -264,7 +264,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
     * @return new field if there is a match
     */
   protected def mutableTerminalNode(name: String, underlying: Parser[String]): Parser[MutableTerminalTreeNode] =
-    positioned(positionalString(underlying)) ^^ {
+    positioned(positionedString(underlying)) ^^ {
       ps =>
         val inputPosition: InputPosition = ps.pos match {
           case of: OffsetPosition => new OffsetPositionInputPosition(of)
@@ -292,7 +292,6 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
             val inputString = in.source.toString
             suc.result.startPosition = LineHoldingOffsetInputPosition(inputString, start)
             suc.result.endPosition = LineHoldingOffsetInputPosition(inputString, suc.next.offset)
-            suc.result.pad(inputString, topLevel)
           }
           suc
         case x => x

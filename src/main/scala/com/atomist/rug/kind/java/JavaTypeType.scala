@@ -62,13 +62,14 @@ object JavaTypeType {
       false
   }
 
-  val JavaTypeAlias = "java.class"
+  val ConstructorAlias: String = "constructor"
 
-  val ConstructorAlias = "constructor"
+  val FieldAlias: String = "field"
 
-  val FieldAlias = "field"
+  val MethodAlias: String = "method"
 
-  val MethodAlias = "method"
+  val JavaExtension: String = ".java"
 
-  val JavaExtension = ".java"
+  val JavaTypeAlias: String = Typed.typeClassToTypeName(classOf[JavaTypeType])
+
 }

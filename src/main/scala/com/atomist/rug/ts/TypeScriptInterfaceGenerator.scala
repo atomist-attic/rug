@@ -106,23 +106,8 @@ class TypeScriptInterfaceGenerator(
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
-    //    val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
-    //    val templates = new SimpleFileBasedArtifactSource("template", StringFileArtifact(DefaultTemplateName, template))
-    //    val mt = new VelocityMergeTool(templates)
-    //    println(s"Generating for ${
-    //      typeRegistry.kinds.size
-    //    } kinds")
-
     val alreadyGenerated = ListBuffer.empty[Typed]
 
-    //    val f = mt.mergeToFile(MergeContext(
-    //      Map(
-    //        "kinds" -> typeRegistry.kinds.asJava,
-    //        "h2" -> "##",
-    //        "h3" -> "###",
-    //        "h4" -> "####"
-    //      )
-    //    ), DefaultTemplateName)
     val output: StringBuilder = new StringBuilder(config.licenseHeader)
     output ++= config.separator
     output ++= config.imports

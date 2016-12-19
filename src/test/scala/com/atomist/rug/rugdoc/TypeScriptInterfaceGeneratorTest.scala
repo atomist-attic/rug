@@ -12,7 +12,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
 
   it should "generate compilable typescript file" in {
     val td = new TypeScriptInterfaceGenerator()
-    // Make it puts the generated files where our compiler will look for them
+    // Make it put the generated files where our compiler will look for them
     val output = td.generate(SimpleProjectOperationArguments("",
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
     output.allFiles.size should be(1)
@@ -20,6 +20,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     // We need to get rid of the imports as they'll fail when we try to compile the file on its own
     val withoutImport = output ✎ new FileEditor {
       override def canAffect(f: FileArtifact): Boolean = true
+
       override def edit(f: FileArtifact): FileArtifact =
         f.withContent(f.content.replace(InterfaceGenerationConfig().imports,
           """
@@ -28,9 +29,13 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
           """.stripMargin))
     }
 
-    val d = output.allFiles.head
     val compiled = tsc.compile(withoutImport)
-    val js = compiled.allFiles.find(_.name.endsWith(".js")).get
-    println(js.content)
+    val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
+    ts shouldBe defined
+    // println(ts.get.content)
+
+    val js = compiled.allFiles.find(_.name.endsWith(".js"))
+    js shouldBe defined
+    // println(js.get.content)
   }
 }

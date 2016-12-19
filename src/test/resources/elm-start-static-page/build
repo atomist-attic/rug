@@ -1,0 +1,13 @@
+
+echo "Cleaning..."
+mkdir -p target
+rm -r target/*
+
+echo "Gathering dependencies..."
+elm package install
+
+echo "Copying resources..."
+cp -r resources/* target
+
+echo "Compiling..."
+elm make --debug --output target/elm.js src/Main.elm

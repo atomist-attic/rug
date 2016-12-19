@@ -5,6 +5,7 @@ import com.atomist.rug.TestUtils._
 import com.atomist.rug.{BadRugSyntaxException, InvalidRugAnnotationValueException}
 import com.atomist.util.scalaparsing._
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.SaveAllDescendantsVisitor
 import org.scalatest.{FlatSpec, Matchers}
 
 object CommonRugParserTest {
@@ -195,6 +196,46 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     rp.actions.size should be(1)
     rp.actions.head match {
       case ScriptBlockAction(c: JavaScriptBlock) =>
+    }
+  }
+
+  it should "allow arguments to be specified in JavaScript" in {
+    val prog =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |param replacementText: ^.*$
+        |
+        |with file f
+        |  do regexpReplace { 'regex\s*with\s*"quotes"' } replacementText
+      """.stripMargin
+    val rp = ri.parse(prog).head
+    rp.actions.size should be(1)
+    val vis = new SaveAllDescendantsVisitor
+    rp.accept(vis, 0)
+    vis.descendants collect {
+      case b: JavaScriptBlock => b.content === """regex\s*with\s*"quotes""""
+    }
+  }
+
+  it should "parse a complicated regular expression" in {
+    val prog =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |param replacementText: ^.*$
+        |
+        |with file f
+        |  do regexpReplace "regex\\s*with\\s*\"quotes[^\"]+\"" { "\"" + replacementText + "\"" }
+      """.stripMargin
+    val rp = ri.parse(prog).head
+    rp.actions.size should be(1)
+    val vis = new SaveAllDescendantsVisitor
+    rp.accept(vis, 0)
+    vis.descendants collect {
+      case l: SimpleLiteral[String] => l.value === """regex\s*with\s*"quotes[^"]+""""
     }
   }
 

@@ -31,7 +31,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
   val CBlockCommentAndHashLineCommentWhitespace = ("""(\s|""" + HashLineComment + "|" + CComment + ")+").r
 
   // NB: This does not correctly preserve positions
-  def doubleQuotedString: Parser[String] = stringLiteral ^^ (s => s.substring(1).dropRight(1))
+  def doubleQuotedString: Parser[String] = stringLiteral ^^ (s => s.substring(1).dropRight(1).replace("""\\""", """\"""))
 
   // Taken from Scala superclass
   def doubleQuotedStringContent: Parser[String] = """([^"\p{Cntrl}\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*+""".r

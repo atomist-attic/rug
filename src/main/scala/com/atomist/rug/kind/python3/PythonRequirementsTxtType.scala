@@ -82,13 +82,17 @@ class RequirementsTxtMutableView(
 
   override def dirty = true
 
-  override protected def currentContent: String = currentParsed.value
+  override protected def currentContent: String = {
+    println(s"Returning\n${currentParsed.value}")
+    currentParsed.value
+  }
 
   override val childrenNames: Seq[String] = Seq(RequirementAlias)
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RequirementAlias =>
-      currentParsed.requirements.map(r => new RequirementMutableView(r, this))
+      val reqs = currentParsed.requirements
+      reqs.map(r => new RequirementMutableView(r, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
@@ -111,6 +115,8 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
 
   override def nodeName: String = RequirementAlias
 
+  override def nodeType: String = "requirement"
+
   @ExportFunction(readOnly = false, description = "Set version")
   def setVersion(
                   @ExportFunctionParameterDescription(name = "newVersion",
@@ -118,7 +124,5 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
                   newVersion: String): Unit = {
     requirement.update(newVersion)
   }
-
-  override def nodeType: String = RequirementAlias
 
 }

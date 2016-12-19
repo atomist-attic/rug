@@ -17,7 +17,7 @@ class TestLoader(val atomistConfig: AtomistConfig = DefaultAtomistConfig) {
   def loadTestScenarios(archive: ArtifactSource): Seq[TestScenario] = {
     archive.allFiles
       .filter(atomistConfig.isRugTest)
-      .flatMap(f => ParserCombinatorTestScriptParser.parse(f))
+      .flatMap(f => RugTestParser.parse(f))
   }
 
 }

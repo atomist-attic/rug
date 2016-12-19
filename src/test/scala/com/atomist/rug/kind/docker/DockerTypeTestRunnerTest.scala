@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.docker
 
 import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.test.{ParserCombinatorTestScriptParser, RugTestRunnerTestSupport}
+import com.atomist.rug.test.{RugTestParser, RugTestRunnerTestSupport}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -50,7 +50,7 @@ class DockerTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRunner
         |
       """.stripMargin)
 
-    val test = ParserCombinatorTestScriptParser.parse(StringFileArtifact("x.ts", scenario))
+    val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", dockerfile), eds)
     executedTests.tests.size should be(1)
     executedTests.tests.head match {

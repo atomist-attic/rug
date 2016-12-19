@@ -3,13 +3,8 @@ package com.atomist.rug.test
 import com.atomist.rug.parser.CommonRugTokens
 import com.atomist.source.FileArtifact
 
-trait TestScriptParser {
 
-  @throws[IllegalArgumentException]
-  def parse(f: FileArtifact): Seq[TestScenario]
-}
-
-object TestScriptParser extends CommonRugTokens {
+object RugTestTokens extends CommonRugTokens {
 
   val ScenarioToken = "scenario"
 

@@ -14,7 +14,7 @@ object RugEditorTest {
   val SimpleEditorWithoutParameters =
     """editor SimpleEditor
       |
-      |with project
+      |with Project
       |   do addFile "src/from/typescript" "Anders Hjelsberg is God"
     """.stripMargin
 
@@ -23,10 +23,10 @@ object RugEditorTest {
       |
       |let dsf = "DoubleSecretFile"
       |
-      |with project p
+      |with Project p
       |  begin
       |    do addFile dsf "Probation"
-      |    with file f when { !p.fileExists("README") }
+      |    with File f when { !p.fileExists("README") }
       |      do p.addFile "README" "A Pledge Pin!"
       |  end
     """.stripMargin

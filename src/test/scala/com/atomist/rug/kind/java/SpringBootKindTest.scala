@@ -6,7 +6,7 @@ import JavaVerifier._
 
 class SpringBootKindTest extends FlatSpec with Matchers {
 
-  import JavaClassTypeUsageTest._
+  import JavaTypeUsageTest._
 
   it should "annotate field" in {
     val program =
@@ -14,7 +14,7 @@ class SpringBootKindTest extends FlatSpec with Matchers {
         |@description "I add Foobar annotations"
         |editor ClassAnnotated
         |
-        |with spring.bootProject p
+        |with SpringBootProject p
         |do
         |  annotateBootApplication "com.someone" "Foobar"
       """.stripMargin

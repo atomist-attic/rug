@@ -4,7 +4,7 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
+import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{MutableTreeNode, TreeNode}
@@ -31,7 +31,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
     nodes.size should be (1)
     nodes.head match {
-      case mtn: MutableContainerTreeNodeMutableView =>
+      case mtn: MutableContainerMutableView =>
         mtn.update(highlyImprobableValue)
         val newContent = pmv.findFile("pom.xml").content
         //println(s"New content=\n$newContent")
@@ -44,7 +44,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     // TODO should we insist on a starting axis specifier for consistency?
-    val findFile = "/*:file[name='pom.xml']"
+    val findFile = "/*:File[name='pom.xml']"
     val mg: Microgrammar = new MatcherMicrogrammar("modelVersion",
       mgp.parse("<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
 

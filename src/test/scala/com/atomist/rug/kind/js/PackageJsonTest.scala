@@ -94,7 +94,7 @@ class PackageJsonTest extends FlatSpec with Matchers {
         |
         |param new_name: ^[\w.\-_]+$
         |
-        |with packageJSON f
+        |with PackageJson f
         |do
         |  setContent {
         |    //print(f.content());

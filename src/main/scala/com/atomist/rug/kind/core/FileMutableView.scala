@@ -8,7 +8,7 @@ import scala.collection.JavaConverters._
 /**
   * Mutable view for working directly with files.
   */
-class FileArtifactMutableView(
+class FileMutableView(
                                originalBackingObject: FileArtifact,
                                override val parent: ProjectMutableView)
   extends FileArtifactBackedMutableView(originalBackingObject, parent)
@@ -16,14 +16,14 @@ class FileArtifactMutableView(
 
   @ExportFunction(readOnly = false, description = "If the file already contains the specified text, does nothing. Otherwise appends it to the file")
   def mustContain(@ExportFunctionParameterDescription(name = "content", description = "The content that the file will contain")
-                  newString: String) = {
+                  newString: String): Unit = {
     if (!contains(newString)) {
       append(newString)
     }
   }
 
   @ExportFunction(readOnly = true, description = "Name of the file, excluding path")
-  def name = filename
+  def name: String = filename
 
   @ExportFunction(readOnly = true, description = "Is this a Java file?")
   def isJava: Boolean = currentBackingObject.name.endsWith(".java")

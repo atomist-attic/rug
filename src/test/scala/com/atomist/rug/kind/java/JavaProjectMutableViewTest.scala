@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 class JavaProjectMutableViewTest extends FlatSpec with Matchers {
 
-  import JavaClassTypeUsageTest.NewSpringBootProject
+  import JavaTypeUsageTest.NewSpringBootProject
 
   it should "handle javaFileCount" in {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), NewSpringBootProject, DefaultAtomistConfig)

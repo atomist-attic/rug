@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text
 
-import com.atomist.tree.PaddingNode
+import com.atomist.tree.PaddingTreeNode
 import com.atomist.tree.utils.TreeNodeFinders
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -16,9 +16,9 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("f1", "The", OffsetInputPosition(0))
     val f2 = new MutableTerminalTreeNode("f2", "quick", OffsetInputPosition(4))
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, f2), input)
-    mc.childNodes.exists(cn => cn.isInstanceOf[PaddingNode]) should be (true)
+    mc.childNodes.exists(cn => cn.isInstanceOf[PaddingTreeNode]) should be (true)
     val transformed = RemovePadding(mc)
-    transformed.childNodes.exists(cn => cn.isInstanceOf[PaddingNode]) should be (false)
+    transformed.childNodes.exists(cn => cn.isInstanceOf[PaddingTreeNode]) should be (false)
   }
 
   it should "remove empty container nodes" in {

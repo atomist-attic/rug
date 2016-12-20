@@ -16,9 +16,7 @@ class ProjectType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "project"
-
-  override def description =
+  override def description: String =
     """
       |Type for a project. Supports global operations.
       |Consider using file and other lower types by preference as project

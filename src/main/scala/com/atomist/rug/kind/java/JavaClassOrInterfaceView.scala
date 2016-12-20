@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.kind.java.JavaClassType._
+import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body._
 

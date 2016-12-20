@@ -17,7 +17,7 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
          |le t
          |  Bar = "bad identifier name"
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -45,7 +45,7 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
          |le t
          |  Bar = "bad identifier name"
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -74,7 +74,7 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
          |
          |param dog: @does_not_exist
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do

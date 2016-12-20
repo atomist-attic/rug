@@ -81,7 +81,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor Rename
         |
-        |let subdomainNode = $(/[name='package.json']->json/subdomain)
+        |let subdomainNode = $(/[name='package.json']->Json/subdomain)
         |
         |with subdomainNode
         | do setValue "absquatulate"
@@ -95,8 +95,8 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor Rename
         |
-        |with file when path = "package.json"
-        | with json
+        |with File when path = "package.json"
+        | with Json
         |   with subdomain
         |     do setValue "absquatulate"
       """.stripMargin
@@ -109,7 +109,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor Rename
         |
-        |let dependencies = $(/[name='package.json']->json/dependencies)
+        |let dependencies = $(/[name='package.json']->Json/dependencies)
         |
         |with dependencies
         | do addKeyValue "foo" "bar"
@@ -132,7 +132,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |    edit(project: Project): Result {
         |
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,Pair>(`/[name='package.json']->json/dependencies`)
+        |      let pe = new PathExpression<Project,Pair>(`/[name='package.json']->Json/dependencies`)
         |      let p = eng.scalar(project, pe)
         |      //if (p == null)
         |      p.addKeyValue("foo", "bar")

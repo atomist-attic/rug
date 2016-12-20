@@ -20,10 +20,6 @@ class JavaSourceType(evaluator: Evaluator)
 
   def this() = this(DefaultEvaluator)
 
-  import JavaSourceType._
-
-  override def name = JavaSourceAlias
-
   override def description = "Java source file"
 
   override def viewManifest: Manifest[JavaSourceMutableView] = manifest[JavaSourceMutableView]

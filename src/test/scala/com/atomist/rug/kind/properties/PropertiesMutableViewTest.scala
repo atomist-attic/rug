@@ -1,16 +1,16 @@
 package com.atomist.rug.kind.properties
 
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.EmptyArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
 class PropertiesMutableViewTest extends FlatSpec with Matchers {
 
-  lazy val propertiesFile = JavaClassTypeUsageTest.NewSpringBootProject.findFile("src/main/resources/application.properties").get
+  lazy val propertiesFile = JavaTypeUsageTest.NewSpringBootProject.findFile("src/main/resources/application.properties").get
 
   "PropertiesMutableView" should "get an existing valid property" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
     propertiesView.getValue("server.port") should be ("8080")
 
@@ -18,7 +18,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "fail to get a property that doesn't exist" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
     propertiesView.getValue("server.portlet") should be ("")
 
@@ -26,7 +26,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "set a property that exists" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
     val preExistingPropertyKey = "server.port"
     val newValueToBeSet = "8181"
@@ -36,7 +36,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "add a property that does not exist" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
     val newPropertyKey = "server.portlet"
     val newValueToBeSet = "8181"
@@ -46,7 +46,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "find and report that it contains a specific key" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     val keyToSearchFor = "server.port"
 
     propertiesView.containsKey(keyToSearchFor) should be (true)
@@ -54,7 +54,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "find and report that it contains a specific value" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     val valueToSearchFor = "8080"
 
     propertiesView.containsValue(valueToSearchFor) should be (true)
@@ -62,7 +62,7 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "provide access to a list of keys" in {
-    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaClassTypeUsageTest.NewSpringBootProject))
+    val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
     val keys = propertiesView.keys
     keys.size should be (4)

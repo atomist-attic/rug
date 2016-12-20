@@ -36,7 +36,7 @@ trait ContextlessViewFinder extends ViewFinder with ChildResolver {
 }
 
 /**
-  * Find views in a context, with project knowledge. Used to drive `with` block execution.
+  * Find views in a context, with Project knowledge. Used to drive `with` block execution.
   */
 trait ViewFinder {
 

@@ -28,14 +28,14 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
 
   protected def kids(fieldName: String, parent: ProjectMutableView): Seq[MutableView[_]] = fieldName match {
     case FileAlias =>
-      currentBackingObject.allFiles.view.map(f => new FileArtifactMutableView(f, parent))
+      currentBackingObject.allFiles.view.map(f => new FileMutableView(f, parent))
     case DirectoryAlias =>
       currentBackingObject.allDirectories.view.map(d => new DirectoryArtifactMutableView(d, parent))
     case maybeContainedArtifactName =>
       val arts = currentBackingObject.artifacts.filter(_.name.equals(maybeContainedArtifactName))
       arts.map {
         case d : DirectoryArtifact => new DirectoryArtifactMutableView(d, parent)
-        case f : FileArtifact => new FileArtifactMutableView(f, parent)
+        case f : FileArtifact => new FileMutableView(f, parent)
       }
   }
 
@@ -45,14 +45,14 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   @ExportFunction(readOnly = true, description = "Find file with the given path. Return null if not found.")
   def findFile(@ExportFunctionParameterDescription(name = "path",
     description = "Path of the file we want")
-                 path: String): FileArtifactMutableView = {
+                 path: String): FileMutableView = {
     val parent: ProjectMutableView = this match {
       case pmv: ProjectMutableView => pmv
       case dmv: DirectoryArtifactMutableView => dmv.parent
     }
     currentBackingObject.findFile(path) match {
       case None => null
-      case Some(f) => new FileArtifactMutableView(f, parent)
+      case Some(f) => new FileMutableView(f, parent)
     }
   }
 

@@ -25,7 +25,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description $description
          |editor RemoveEJB
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -40,7 +40,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'JavaScript lives here'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when { f.name.endsWith(".java") };
         |
         |do
@@ -61,7 +61,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |
         |precondition Foo
         |
-        |with file f
+        |with File f
         | when { f.name.endsWith(".java") };
         |
         |do
@@ -82,7 +82,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |precondition Foo
         |postcondition Bar
         |
-        |with file f
+        |with File f
         | when { f.name.endsWith(".java") };
         |
         |do
@@ -104,7 +104,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -127,7 +127,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor TripleDouble
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -155,7 +155,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor TripleNewline
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -172,7 +172,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
   it should "parse single line script" in {
     val prog =
-      """editor AddFileAndContent param filename: "^.*$" param content: "^.*$" with project p do addFile filename content """.stripMargin
+      """editor AddFileAndContent param filename: "^.*$" param content: "^.*$" with Project p do addFile filename content """.stripMargin
     ri.parse(prog)
   }
 
@@ -184,7 +184,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |
         |param name: ^...$
         |
-        |with file f
+        |with File f
         | when isJava;
         |
         |do
@@ -217,7 +217,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@hide
          |param name: ^.*$$
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -245,7 +245,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |
         |param name: ^.*$
         |
-        |with file f
+        |with File f
         | when isJava;
         |
         |do
@@ -303,7 +303,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |
          |@optional param name: ^.*$$
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -354,7 +354,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |
          |let ${infers.mkString("\n")}
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -373,7 +373,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate AND'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         |do
         | append "\na"
       """.stripMargin
@@ -388,7 +388,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate AND'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava and isLong
         |
         |do
@@ -405,7 +405,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate OR'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava or isLong;
         |
         |do
@@ -423,7 +423,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate OR'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava or isLong;
         |
         |begin
@@ -443,12 +443,12 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate OR'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava or isLong
         |do
         | append "A";
         |
-        |with file f
+        |with File f
         | when isPom
         |do
         |  append "A"
@@ -495,7 +495,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate OR'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava or isLong
         |
         |with line l
@@ -516,7 +516,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'demonstrate OR'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         | when isJava or isLong;
         |
         |with line l
@@ -541,7 +541,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description '$desc'
          |editor RemoveEJB
          |
-         |with file f
+         |with File f
          | when isJava or isLong;
          |
          |do
@@ -558,7 +558,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description '$desc'
          |editor RemoveEJB
          |
-         | with file f
+         | with File f
          |   when isJava or isLong;
          |do
          | append "A";
@@ -572,7 +572,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     val actions = ri.parse(prog).head
     actions.withs.size should be(2)
     actions.withs.head.alias should be("f")
-    actions.withs.head.kind should be("file")
+    actions.withs.head.kind should be("File")
     actions.withs(1).alias should be("t")
     actions.withs(1).kind should be("thing")
   }
@@ -585,7 +585,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |editor RemoveEJB
         |
         |# another comment
-        |with file f
+        |with File f
         |do
         |    # We like comments!
         |    append "x"
@@ -600,13 +600,13 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'JavaScript lives here'
         |editor RemoveEJB
         |
-        |with file f
+        |with File f
         |do
         | append "a" "26";
         |
         |editor Caspar
         |
-        |with project p
+        |with Project p
         |do
         |fail "Shut up, Donny"
       """.stripMargin
@@ -623,7 +623,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'JavaScript lives here'
         |editor RemoveEJB
         |
-        |with file f;
+        |with File f;
         |do
         | append "a" "26";
         |
@@ -641,7 +641,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          |@description 'JavaScript lives here'
          |editor $invalidEditorName
          |
-         |with file f
+         |with File f
          |do
          | append "a" "26"
          |
@@ -664,7 +664,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |@description 'JavaScript lives here'
         |editor Foobar
         |
-        |with file f
+        |with File f
         |do
         | append "a" "26"
         |

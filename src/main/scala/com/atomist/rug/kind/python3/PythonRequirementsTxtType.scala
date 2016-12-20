@@ -3,8 +3,8 @@ package com.atomist.rug.kind.python3
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
-import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.kind.dynamic.MutableContainerMutableView
+import com.atomist.rug.kind.python3.PythonFileType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -18,11 +18,9 @@ class RequirementsType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = RequirementsTypeAlias
-
   override def description = "Python requirements file"
 
-  override def viewManifest: Manifest[MutableContainerTreeNodeMutableView] = manifest[MutableContainerTreeNodeMutableView]
+  override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
   override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
                                    poa: ProjectOperationArguments,
@@ -49,14 +47,12 @@ class RequirementsType(
   *
   * @param evaluator used to evaluate expressions
   */
-class RequirementsTxtType(
+class PythonRequirementsTxtType(
                            evaluator: Evaluator
                          )
   extends RequirementsType(evaluator) {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = RequirementsTextTypeAlias
 
   override def description = "Python requirements text file"
 
@@ -92,7 +88,8 @@ class RequirementsTxtMutableView(
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RequirementAlias =>
-      currentParsed.requirements.map(r => new RequirementMutableView(r, this))
+      val reqs = currentParsed.requirements
+      reqs.map(r => new RequirementMutableView(r, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
@@ -122,7 +119,5 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
                   newVersion: String): Unit = {
     requirement.update(newVersion)
   }
-
-  override def nodeType: String = RequirementAlias
 
 }

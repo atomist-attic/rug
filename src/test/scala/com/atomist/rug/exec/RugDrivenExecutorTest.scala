@@ -22,13 +22,11 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
       s"""
          |executor AddSomeCaspar
          |
-         |#let x = from services s with file f return name
-         |
-         |with services s
+         |with Services s
          | editWith Caspar
          |
          |editor Caspar
-         |with project p
+         |with Project p
          | do addFile "Caspar" "$content"
       """.stripMargin
     )
@@ -40,12 +38,12 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
       s"""
          |executor AddSomeCaspar
          |
-         |with services
+         |with Services
          | editWith Caspar
          | onNoChange do raiseIssue "foobar"
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)
@@ -57,12 +55,12 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
       s"""
          |executor AddSomeCaspar
          |
-         |with services s
+         |with Services s
          | editWith Caspar
          | onNoChange do eval { s.raiseIssue("foobar") }
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)
@@ -82,7 +80,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
          | end
          |
          |editor Caspar
-         |with project p when { !p.name().equals("caspared") }
+         |with Project p when { !p.name().equals("caspared") }
          | do addFile "Caspar" "$content"
       """.stripMargin
     updateAllProjectsButRaiseIssueForOnesThatDontChange(content, rug)
@@ -116,7 +114,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
       s"""
          |executor AddSomeCaspar
          |
-         |with services s
+         |with Services s
          | editWith Caspar
          |
          |editor Caspar

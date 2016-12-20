@@ -24,7 +24,7 @@ class ArchiveTest extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") }
         |do
         |  replace ".*" "foo"
@@ -42,7 +42,7 @@ class ArchiveTest extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") }
         |do
         |  replace ".*" "foo"
@@ -62,7 +62,7 @@ class ArchiveTest extends FlatSpec with Matchers {
          | editWith Caspar
          |
          |editor Caspar
-         |with project
+         |with Project
          | do addFile "Caspar" 'What is this, the high hat?'
       """.stripMargin
     val f = StringFileArtifact(atomistConfig.editorsRoot + "/AddSomeCaspar.rug", ex)
@@ -78,7 +78,7 @@ class ArchiveTest extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") }
         |do
         |  replace ".*" "foo"
@@ -94,7 +94,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     s"""
        |editor Dude
        |
-       |with project p
+       |with Project p
        |do
        |  merge "template.vm" "dude.txt"
       """.stripMargin)
@@ -103,7 +103,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     """
       |editor Donny
       |
-      |with project p
+      |with Project p
       |do
       |  merge "template.vm" "dude.txt";
     """.stripMargin

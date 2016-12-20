@@ -4,7 +4,7 @@ import com.atomist.tree.utils.TreeNodeFinders._
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.kind.python3.PythonFileType._
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.{MutableTreeNode, TreeNode}

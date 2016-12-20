@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.properties
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{FileArtifactMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
@@ -15,8 +15,6 @@ class PropertiesType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "properties"
-
   override def description = "Properties file"
 
   override def viewManifest: Manifest[PropertiesMutableView] = manifest[PropertiesMutableView]
@@ -26,7 +24,7 @@ class PropertiesType(
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
-      case fmv: FileArtifactMutableView =>
+      case fmv: FileMutableView =>
         Some(Seq(fmv.originalBackingObject)
           .filter(f => f.name.endsWith(".properties"))
           .map(f => new PropertiesMutableView(f, fmv.parent)))

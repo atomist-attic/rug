@@ -26,7 +26,7 @@ class ElmModuleMutableView(
     em.currentSource.toSystem
   }
 
-  override def nodeType: String = ElmModuleType.ModuleType
+  override def nodeType: String = Typed.typeClassToTypeName(classOf[ElmModuleType])
 
   override def nodeName: String = name
 

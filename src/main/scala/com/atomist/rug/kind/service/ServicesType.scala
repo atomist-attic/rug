@@ -16,9 +16,7 @@ class ServicesType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "services"
-
-  override def description =
+  override def description: String =
     """
       |Type for services. Used in executors.
     """.stripMargin
@@ -35,8 +33,6 @@ class ServicesType(
 }
 
 class ServiceTypeProvider extends TypeProvider(classOf[Service]) {
-
-  override def name: String = "service"
 
   override def description: String = "Service"
 }

@@ -37,13 +37,12 @@ SetRepository
 SetSummary
 
 
-
 @description "Change the description in elm-package.json"
 editor SetSummary
 
 param description: ^.*$
 
-let descriptionField = $(/[name='elm-package.json']->json/summary)
+let descriptionField = $(/[name='elm-package.json']->Json/summary)
 
 with descriptionField
   do setValue description
@@ -56,7 +55,7 @@ editor SetRepository
 param org: @group_id
 param project_name: @project_name
 
-let repositoryField = $(/[name='elm-package.json']->json/repository)
+let repositoryField = $(/[name='elm-package.json']->Json/repository)
 
 with repositoryField
   do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
@@ -69,7 +68,7 @@ editor SwitchProjectName
 	@displayName "Name"
 	param project_name: @project_name
 
-  with file when path = "resources/index.html"
+  with File when path = "resources/index.html"
 	  begin
   	  do regexpReplace "<title>.*</title>" { "<title>" + project_name + "</title>"}
 		end

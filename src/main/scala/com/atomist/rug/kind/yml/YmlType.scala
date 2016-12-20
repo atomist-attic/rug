@@ -7,11 +7,6 @@ import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.ArtifactSource
 
-object YmlType {
-
-  val TypeName = "yml"
-}
-
 class YmlType(
                evaluator: Evaluator
              )
@@ -20,8 +15,6 @@ class YmlType(
     with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
-
-  override def name = YmlType.TypeName
 
   override def description = "YML file"
 

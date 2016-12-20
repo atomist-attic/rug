@@ -16,20 +16,18 @@ class FileType(
 
   def this() = this(DefaultEvaluator)
 
-  override val name = "file"
-
   override def description =
     """
       |Type for a file within a project. Supports generic options such as find and replace.
     """.stripMargin
 
-  override def viewManifest: Manifest[FileArtifactMutableView] = manifest[FileArtifactMutableView]
+  override def viewManifest: Manifest[FileMutableView] = manifest[FileMutableView]
 
   override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
                                    poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     (selected.kind, context) match {
       case (`name`, pmv: ProjectMutableView) =>
-        Some(pmv.currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, pmv)))
+        Some(pmv.currentBackingObject.allFiles.map(f => new FileMutableView(f, pmv)))
       case _ => None
     }
   }
@@ -40,7 +38,7 @@ class FileType(
 
   override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
     case pmv: ProjectMutableView =>
-      Some(pmv.currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, pmv)))
+      Some(pmv.currentBackingObject.allFiles.map(f => new FileMutableView(f, pmv)))
     case x => None
   }
 }

@@ -13,7 +13,7 @@ class ExecutorParsingTest extends FlatSpec with Matchers {
       """
         |executor First
         |
-        |with project f
+        |with Project f
         | when { f.name().contains("k8") }
         |   editWith Foobar
       """.stripMargin

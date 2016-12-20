@@ -188,7 +188,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val edProg =
       """
         |editor Rename
-        |with java.class c when name = "Dog"
+        |with JavaType c when name = "Dog"
         |do rename "Cat"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg, namespace)
@@ -204,7 +204,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val edProg =
       """
         |editor Rename
-        |with java.class c when name = "Dogxxxx"
+        |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg, Some("testnamespace"))
@@ -241,7 +241,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val edProg =
       """
         |editor Rename
-        |with java.class c when name = "Dogxxxx"
+        |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg)
@@ -273,7 +273,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val edProg =
       """
         |editor Rename
-        |with java.class c when name = "Dogxxxx"
+        |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg)
@@ -305,7 +305,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val edProg =
       """
         |editor Rename
-        |with java.class c when name = "Dog"
+        |with JavaType c when name = "Dog"
         |do fail "This is bad"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg)
@@ -339,7 +339,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """
         |editor Rename
         |param old_class: @java_class
-        |with java.class c when name = old_class
+        |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg)
@@ -372,7 +372,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """
         |editor Rename
         |param old_class: @java_class
-        |with java.class c when name = old_class
+        |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
     val eds = new DefaultRugPipeline().createFromString(edProg)
@@ -416,7 +416,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |@default 'Boy Wizard'
         |param description: @any
         |
-        |with file f when { f.name().contains(".md") } begin
+        |with File f when { f.name().contains(".md") } begin
         |	do replace "{{name}}" name
         |	do replace "{{description}}" description
         |end
@@ -458,7 +458,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """
         |editor AddDocumentation
         |
-        |with project begin
+        |with Project begin
         |
         |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
         |
@@ -496,14 +496,14 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |
         |precondition IsMaven
         |
-        |with project begin
+        |with Project begin
         |
         |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
         |
         |end
         |
         |predicate IsMaven
-        |  with pom
+        |  with Pom
         |
       """.stripMargin
     val scenario =
@@ -538,17 +538,17 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |precondition IsOk
         |precondition IsMaven
         |
-        |with project begin
+        |with Project begin
         |
         |  do copyEditorBackingFileOrFail "test.txt" "test.txt"
         |
         |end
         |
         |predicate IsMaven
-        |  with pom
+        |  with Pom
         |
         |predicate IsOk
-        |   with project
+        |   with Project
         |
       """.stripMargin
     val scenario =

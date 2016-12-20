@@ -15,8 +15,6 @@ class PackageJsonType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "packageJSON"
-
   override def description = "package.json configuration file"
 
   override def viewManifest: Manifest[PackageJsonMutableView] = manifest[PackageJsonMutableView]

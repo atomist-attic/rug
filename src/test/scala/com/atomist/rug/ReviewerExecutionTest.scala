@@ -15,7 +15,7 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
        |@description "Find all EJBs"
        |reviewer SpotEJBs
        |
-       |with file f
+       |with File f
        | when isJava and contains "javax.ejb"
        |do
        |  majorProblem "$comment";
@@ -26,7 +26,7 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
        |@description "Find all EJBs"
        |reviewer AlwaysGripe
        |
-       |with project p
+       |with Project p
        |do
        |minorProblem "$comment";
        """.stripMargin

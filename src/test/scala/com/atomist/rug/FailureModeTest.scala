@@ -14,7 +14,7 @@ class FailureModeTest extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") };
         |do
         |  replace ".*" "foo";
@@ -30,7 +30,7 @@ class FailureModeTest extends FlatSpec with Matchers {
       s"""
         |editor Redeploy
         |
-        |with file f;
+        |with File f;
         |do
         |  fail "$msg";
       """.stripMargin

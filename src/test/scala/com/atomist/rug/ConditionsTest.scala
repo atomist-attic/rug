@@ -18,7 +18,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     validPreconditionInSameFile(
       """
         |reviewer AlwaysGripe
-        |with project p
+        |with Project p
         |do
         |minorProblem "I'm a PITA"
       """.stripMargin)
@@ -28,7 +28,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       """
         |# Note that this doesn't ever gripe, but we are using the same name
         |predicate AlwaysGripe
-        |with project when false
+        |with Project when false
       """.stripMargin)
 
   private def validPreconditionInSameFile(alwaysGripePrecondition: String) {
@@ -38,14 +38,14 @@ class ConditionsTest extends FlatSpec with Matchers {
          |
          |${if (guard) "precondition AlwaysGripe" else ""}
          |
-         |with file f
+         |with File f
          |do
          |  replace "some" "foo"
          |
          |Foo
          |
          |editor Foo
-         |with file
+         |with File
          |do replace "content" "bar"
          |
          |$alwaysGripePrecondition
@@ -72,45 +72,45 @@ class ConditionsTest extends FlatSpec with Matchers {
          |precondition Maybe
          |precondition AlwaysTrue
          |
-         |with file f
+         |with File f
          |do
          |  replace "some" "foo"
          |
          |predicate AlwaysTrue
-         |with project
+         |with Project
       """.stripMargin
 
     val truePred1 =
       """
         |predicate Maybe
-        |with file when name = "filename"
+        |with File when name = "filename"
       """.stripMargin
 
     val truePred2 =
       """
         |predicate Maybe
-        |with project
-        | with file when name = "filename"
+        |with Project
+        | with File when name = "filename"
       """.stripMargin
 
     val falsePred1 =
       """
         |predicate Maybe
-        |with file when name = "certainlyNotThis"
+        |with File when name = "certainlyNotThis"
       """.stripMargin
 
     val falsePred2 =
       """
         |predicate Maybe
         |# This won't match as it's not a Spring boot project
-        |with spring.bootProject
+        |with SpringBootProject
       """.stripMargin
 
     val falsePred3 =
       """
         |predicate Maybe
         |# This won't match as it's not a Spring boot project
-        |with java.project
+        |with JavaProject
       """.stripMargin
 
     val shouldDoIts = Seq(truePred1, truePred2).map(pred => prog + "\n\n" + pred)
@@ -142,7 +142,7 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |precondition NeverGripe
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -150,12 +150,12 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
         |
         |
         |reviewer NeverGripe
-        |with file f
+        |with File f
         |when "a" = "b"
         |do
         |minorProblem "I'm a PITA"
@@ -172,14 +172,14 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |precondition NeverGripe
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
       """.stripMargin
     an[UndefinedRugUsesException] should be thrownBy create(prog)
@@ -192,14 +192,14 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |precondition NeverGripe
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
         |
         |
@@ -207,7 +207,7 @@ class ConditionsTest extends FlatSpec with Matchers {
         |
         |param whatever: ^.*$
         |
-        |with file f
+        |with File f
         |when "a" = "b"
         |do
         |minorProblem "I'm a PITA"
@@ -222,7 +222,7 @@ class ConditionsTest extends FlatSpec with Matchers {
        |
        |$postcondition
        |
-       |with file f
+       |with File f
        |do
        |  replace "some" "foo"
        |
@@ -230,22 +230,22 @@ class ConditionsTest extends FlatSpec with Matchers {
        |
        |editor Foo
        |
-       |with file f
+       |with File f
        |do replace "content" "bar"
        |
        |reviewer AlwaysGripe
        |
-       |with project p
+       |with Project p
        |do
        |minorProblem "I'm a PITA"
        |
        |reviewer NeverGripes
-       |with file f when "a" = "b"
+       |with File f when "a" = "b"
        |do minorProblem "I never get invoked"
        |
        |reviewer DidIt
        |
-       |with file f
+       |with File f
        |when { !f.content().contains("bar") }
        |do majorProblem "didn't run"
       """.stripMargin

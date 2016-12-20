@@ -54,8 +54,6 @@ class ProjectMutableView(
   private lazy val mergeTool =
     new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)
 
-  override def nodeType: String = "project"
-
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "project" =>
       // Special case. We don't want a "project" directory to confuse us
@@ -381,7 +379,7 @@ class ProjectMutableView(
     description = "Files in this archive")
   def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
-    val files = currentBackingObject.allFiles.map(f => new FileArtifactMutableView(f, this)).asJava
+    val files = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
     files.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
   }
 

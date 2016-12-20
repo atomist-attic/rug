@@ -5,7 +5,7 @@ import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.FileArtifactMutableView
+import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, LambdaPredicate, RugDrivenProjectEditor}
 import com.atomist.source._
@@ -60,12 +60,11 @@ class RugCompilerTest extends FlatSpec with Matchers {
   it should "demand functions exist on kind" in {
     val fr = FixedRugFunctionRegistry()
     val absquatulate = "absquatulate"
-
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val successBlock = SuccessBlock("did it!")
     val doStep = FunctionDoStep(absquatulate)
     val program = RugEditor("foobar", None, Nil, "foo bar thingie", Nil, Nil, None, Nil, Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
     try {
       compiler.compile(program)
       fail(s"Should have rejected unknown function '$absquatulate' on file f")
@@ -73,7 +72,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     catch {
       case ut: UndefinedRugFunctionsException =>
         ut.getMessage.contains(absquatulate) should be(true)
-        ut.getMessage.contains("file") should be(true)
+        ut.getMessage.contains("File") should be(true)
     }
   }
 
@@ -92,7 +91,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
   it should "insist on identifiers being declared" in {
     val fr = FixedRugFunctionRegistry(
       Map(
-        "absquatulate" -> new LambdaPredicate[FileArtifactMutableView]("absquatulate", f => true)
+        "absquatulate" -> new LambdaPredicate[FileMutableView]("absquatulate", f => true)
       )
     )
     //val interpreter = new DefaultRugCompiler(compiler, DefaultTypeRegistry)
@@ -112,10 +111,9 @@ class RugCompilerTest extends FlatSpec with Matchers {
   it should "recognize identifiers used have been declared" in {
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val doStep = FunctionDoStep("name", None, Seq(IdentifierFunctionArg("p1")))
-
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor("foobar", None, Nil, "Thingie", Nil, Nil, None, Seq(new Parameter("p1")), Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
     val pe = compiler compile program
   }
 
@@ -124,8 +122,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val doStep = FunctionDoStep("name")
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor("foobar", None, Nil, "something goes here", Nil, Nil, None, Nil, Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
-
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
     val pe = compiler.compile(program)
     pe.name should equal(program.name)
   }
@@ -136,7 +133,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val doStep = FunctionDoStep("path")
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor("foobar", None, Nil, "Something goes here", Nil, Nil, None, Seq(p1), Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
 
     val pe = compiler compile program
     pe.parameters.size should be(1)
@@ -160,7 +157,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val doStep = FunctionDoStep("name")
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor(name, None, Nil, name, Nil, Nil, None, Nil, Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
     compiler.compile(program).asInstanceOf[ProjectEditor]
   }
 
@@ -168,10 +165,9 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val extraText = "\nI'm talkin' about ethics"
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val doStep = FunctionDoStep("append", None, Seq(WrappedFunctionArg(SimpleLiteral(extraText))))
-
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor("foobar", None, Nil, "description goes here", Nil, Nil, None, Nil, Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
 
     val pe = compiler.compile(program).asInstanceOf[ProjectEditor]
 
@@ -192,7 +188,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val tags = Seq("spring", "java")
 
     val program = RugEditor("foobar", None, tags, "description goes here", Nil, Nil, None, Nil, Nil,
-      Seq(With("file", "f", None, fileExpression, Seq(doStep))), None)
+      Seq(With("File", "f", None, fileExpression, Seq(doStep))), None)
 
     val pe = compiler.compile(program).asInstanceOf[RugDrivenProjectEditor]
     pe.tags.map(t => t.name) should equal(tags)

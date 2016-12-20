@@ -2,7 +2,7 @@ package com.atomist.rug.kind.core
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -46,7 +46,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     )).withPathAbove(atomistConfig.templatesRoot)
 
   it should "handle a simple regexpReplace of contents in a README file" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val regexToReplace = "To run locally"
     val replacementText = "To run somewhere else..."
@@ -58,7 +58,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "correctly handle a regexReplace that has been accidentally specified with an @regex lookup" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val regexToReplace = "@project_name"
     val replacementText = "To run somewhere else on @ symbol..."
@@ -72,7 +72,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "merge" is pending
 
   it should "return default children" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val kids = pmv.defaultChildViews
     kids.nonEmpty should be(true)
@@ -80,7 +80,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle path and content replace" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val oldPackage = "com.atomist.test1"
     val newPackage = "com.foo.bar"
@@ -197,7 +197,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle deleting of a directory" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val gitDirectoryPath = s"dirToDelete"
@@ -209,7 +209,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle deleting of a file" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val fileToDelete = "src/main/resources/application.properties"
@@ -221,7 +221,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle copying a file" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val src = "pom.xml"
@@ -232,7 +232,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle creating a directory" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val directoryToCreate = "static"
@@ -246,7 +246,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "create directory and intermediate directories if not present" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
     val directoryAndIntermdiateDirectoriesToCreate = "src/main/resources/parent/static/stuff"
@@ -258,7 +258,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "handle empty directory name and path" in {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val directoryAndIntermdiateDirectoriesToCreate = ""
     pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(false)
@@ -287,7 +287,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   private def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
-    val project = JavaClassTypeUsageTest.NewSpringBootProject
+    val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val fmv = pmv.files.asScala.head
     val oldPath = fmv.path

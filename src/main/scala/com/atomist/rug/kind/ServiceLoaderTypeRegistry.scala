@@ -10,7 +10,7 @@ import scala.collection.JavaConverters._
 
 /**
   * Use JDK ServiceLocator to load Type classes. Each
-  * JAR files needs a META-INF/services/com.atomist.rug.spi.Typed class containing
+  * JAR files needs a META-INF/services/com.atomist.rug.spi.Typed file containing
   * the FQNs of the types it defines.
   *
   * @see Type

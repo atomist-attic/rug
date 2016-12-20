@@ -8,7 +8,7 @@ import JavaVerifier._
 
 class SpringBootProjectMutableViewTest extends FlatSpec {
 
-  import JavaClassTypeUsageTest._
+  import JavaTypeUsageTest._
 
   it should "confirm is Spring Boot project" in {
     val sbp = new SpringBootProjectMutableView(new SpringProjectMutableView(

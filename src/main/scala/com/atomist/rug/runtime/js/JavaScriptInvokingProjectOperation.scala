@@ -1,8 +1,6 @@
 package com.atomist.rug.runtime.js
 
-import javax.script.ScriptContext
-
-import com.atomist.param.{Parameter, ParameterValue, Tag}
+import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.rug.InvalidRugParameterPatternException
@@ -37,8 +35,8 @@ abstract class JavaScriptInvokingProjectOperation(
 
   private val typeRegistry: TypeRegistry = DefaultTypeRegistry
 
-  private val projectType = typeRegistry.findByName("project")
-    .getOrElse(throw new TypeNotPresentException("project", null))
+  private val projectType = typeRegistry.findByName("Project")
+    .getOrElse(throw new TypeNotPresentException("Project", null))
 
   readTagsFromMetadata.foreach(t => addTag(t))
 
@@ -74,9 +72,7 @@ abstract class JavaScriptInvokingProjectOperation(
         case x => acc :+ x
       }
     )
-
     jsVar.callMember(member,processedArgs: _* )
-
   }
 
   protected def readTagsFromMetadata: Seq[Tag] = {

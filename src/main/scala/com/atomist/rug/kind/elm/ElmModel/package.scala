@@ -2,6 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.tree.content.text._
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels._
+import com.atomist.rug.spi.Typed
 import com.atomist.tree.{SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 
 package object ElmModel {
@@ -56,7 +57,7 @@ package object ElmModel {
 
     private var _exposing = initialExposing
 
-    override def nodeType: String = ElmModuleType.ModuleType
+    override def nodeType: String = Typed.typeClassToTypeName(classOf[ElmModuleType])
 
     def exposing = _exposing
 

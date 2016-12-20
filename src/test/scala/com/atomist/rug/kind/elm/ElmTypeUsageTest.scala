@@ -28,18 +28,16 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |@description "New name for the module"
       |param new_name: ^[A-Z][\w]+$
       |
-      |with elm.module when name = old_name
+      |with ElmModule when name = old_name
       | do rename new_name
       |
-      |with elm.module e when imports old_name
+      |with ElmModule e when imports old_name
       |do updateImport from old_name to new_name
     """.stripMargin
   )
 
 
   private def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
-
-
     val p1 = """{name: "old_name", description: "Name of module we're renaming", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
     val p2 = """{name: "new_name", description: "New name for the module", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
 
@@ -68,14 +66,14 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |
         |        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |        let allModules: Array<ElmModule> =
-        |             eng.children<ElmModule>(project, "elm.module")
+        |             eng.children<ElmModule>(project, "ElmModule")
         |
         |         for (let em of allModules) if (em.name() == old_name) {
         |            ${if (prints) "print(`Modifying $${em} to have name $${new_name}`)" else ""}
         |            em.rename(new_name)
         |         }
         |
-        |         //print(`found $${allModules.length} elm modules in $${project}`)
+        |         //print(`found $${allModules.length} ElmModules in $${project}`)
         |         for (let em of allModules) {
         |            ${if (prints) "print(`Module $${em}`)" else ""}
         |           if (em.imports(old_name)) {
@@ -117,12 +115,12 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |param new_name: ^[A-Z][\w]+$
       |
       | # TODO note hard coding here
-      |let em = $(/->elm.module[name='Todo'])
+      |let em = $(/->ElmModule[name='Todo'])
       |
       |with em
       | do rename new_name
       |
-      |with elm.module when imports old_name
+      |with ElmModule when imports old_name
       |do updateImport from old_name to new_name
     """.stripMargin
   )
@@ -138,11 +136,11 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |@description "New name for the module"
       |param new_name: ^[A-Z][\w]+$
       |
-      |with file
-      | with elm.module when name = old_name
+      |with File
+      | with ElmModule when name = old_name
       |   do rename new_name
       |
-      |with elm.module e when imports old_name
+      |with ElmModule e when imports old_name
       |do updateImport from old_name to new_name
     """.stripMargin
   )
@@ -158,12 +156,12 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |@description "New name for the module"
       |param new_name: ^[A-Z][\w]+$
       |
-      |with elm.module e
+      |with ElmModule e
       |when { e.name() == old_name}
       |do
       |  rename new_name
       |
-      |with elm.module e
+      |with ElmModule e
       |when { e.imports(old_name) }
       |do
       |updateImport old_name new_name
@@ -207,8 +205,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |RenameModuleToMain
         |
         |editor RenameModuleToMain
-        |with project
-        |   with elm.module m
+        |with Project
+        |   with ElmModule m
         |     do rename newName="Foobar"
       """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
@@ -226,7 +224,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddImport
-         |with elm.module
+         |with ElmModule
          |do addImportStatement "$newImportStatement"
       """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
@@ -246,7 +244,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddImport
-         |with elm.module
+         |with ElmModule
          |do addImportStatement "$newImportStatement"
       """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
@@ -268,7 +266,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddImport
-         |with elm.module
+         |with ElmModule
          |do addImportStatement "$newImportStatement"
       """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
@@ -288,7 +286,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddImport
-         |with elm.module
+         |with ElmModule
          |do addImportStatement "$newImportStatement"
       """.stripMargin
     val todoSource = StringFileArtifact("Todo.elm",
@@ -307,7 +305,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddImport
-         |with elm.module
+         |with ElmModule
          |do addImportStatement "$newImportStatement"
       """.stripMargin
     val todoSource = StringFileArtifact("Main.elm",
@@ -325,8 +323,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       s"""
          |editor AddFunction
          |
-         |with file
-         |  with elm.module when name = module
+         |with File
+         |  with ElmModule when name = module
          |    do addFunction code
       """.stripMargin
     val todoSource = StringFileArtifact("Main.elm",
@@ -365,7 +363,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       """editor RenameAFunction
         |
-        |with elm.module
+        |with ElmModule
         |  with function when name = 'foo'
         |    do rename 'bar'
       """.stripMargin
@@ -392,7 +390,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       """editor RenameAFunction
         |
-        |with elm.module
+        |with ElmModule
         |  with function when name = 'foo'
         |    do rename 'bar'
       """.stripMargin
@@ -428,7 +426,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
           |     return initial_value;
           |  }
           |}
-          |with elm.module
+          |with ElmModule
           |  with function when name = '$identifier'
           |    with recordValue
           |      do add '$newField' initial_value_careful
@@ -460,7 +458,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
          |
          |let pattern='$pattern'
          |
-         |with elm.module
+         |with ElmModule
          |  with function f
          |    with case c
          |      do addClause pattern '$expression'
@@ -478,7 +476,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddCaseClause
-         |with elm.module
+         |with ElmModule
          |  with function f when name = '$oldFunctionName'
          |    do rename '$newFunctionName'
       """.stripMargin
@@ -497,7 +495,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor RenameTypeAlias
-         |with elm.module
+         |with ElmModule
          |  with type.alias when name = '$oldTypeAliasName'
          |    do rename '$newTypeAliasName'
       """.stripMargin
@@ -517,8 +515,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddToRecord
-         |with file when name = 'Main.elm'
-         | with elm.module when name = 'Main'
+         |with File when name = 'Main.elm'
+         | with ElmModule when name = 'Main'
          |  with type.alias when name = '$oldTypeAliasName'
          |    with recordType
          |      do add '$newIdentifier' '$newType'
@@ -538,8 +536,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddToRecord
-         |with file
-         | with elm.module when name = 'Main'
+         |with File
+         | with ElmModule when name = 'Main'
          |  with type.alias when name = '$oldTypeAliasName'
          |    with recordType
          |      do add '$newIdentifier' '$newType'
@@ -563,7 +561,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddToRecordValue
-         |with elm.module
+         |with ElmModule
          |  with function when name = '$identifier'
          |    with recordValue
          |      do add '$newField' '$initialValue'
@@ -587,7 +585,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddToRecordValue
-         |with elm.module
+         |with ElmModule
          |  with function when name = '$identifier'
          |    with recordValue
          |      do add '$newField' '$initialValue'
@@ -610,7 +608,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddToUnionType
-         |with elm.module
+         |with ElmModule
          |  with type when name = '$unionTypeName'
          |      do addConstructor '$newConstructor'
       """.stripMargin
@@ -626,7 +624,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""
          |editor AddFunction
-         |with elm.module
+         |with ElmModule
          |  do addFunction "thisIsAFunction = foo"
       """.stripMargin
     val todoSource = StringFileArtifact("Main.elm",
@@ -641,8 +639,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       """editor UpgradeMainFunction
         |  param module: ^.*$
         |
-        |  with file f begin
-        |    with elm.module when name = module
+        |  with File f begin
+        |    with ElmModule when name = module
         |      begin
         |        with function f when name = 'main'
         |          do replaceBody{ return (
@@ -669,7 +667,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val prog =
       s"""editor Foo
           |
-        |with elm.module
+        |with ElmModule
           |  # use alias f to avoid issues with JavaScript reserved word
           |  with function f when name = 'update'
           |    with case c when matchAsString = "msg"
@@ -691,8 +689,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |param new_pattern: ^.*$
         |param body: ^.*$
         |
-        |with file
-        |  with elm.module when name = "Main"
+        |with File
+        |  with ElmModule when name = "Main"
         |    with function upd when name = "update"
         |      with case oops when matchAsString = "msg"
         |        do addClause new_pattern {
@@ -753,8 +751,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |let field_value_careful="10000000"
         |let field_name="chuck"
         |
-        |with file
-        |    with elm.module when name = "Foo"
+        |with File
+        |    with ElmModule when name = "Foo"
         |      with function f when { f.name() == "init" || f.name() == "model"}
         |        with recordValue begin
         |          #do fail { print(recordValue.toString()) }

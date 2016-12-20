@@ -18,11 +18,11 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |let new_file_name={ new_module_name + ".elm" }
         |
         |# copy the Main file and make into the new module
-        |with project p
+        |with Project p
         |  do copyFile "Main.elm" new_file_name
         |
-        |with file when name = new_file_name
-        |  with elm.module begin
+        |with File when name = new_file_name
+        |  with ElmModule begin
         |    do rename new_module_name
         |    do replaceExposing "Model, init, Msg, update, view, subscriptions"
         |  end
@@ -33,7 +33,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |  param module: ^.*$
         |  param function: ^.*$
         |
-        |  with elm.module when name = module
+        |  with ElmModule when name = module
         |    do removeFunction function
         |""".stripMargin
 
@@ -71,7 +71,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |param function: ^.*$
         |param new_body: ^[\s\S]*$
         |# gut all the functions in Main and make them call the new module
-        |  with elm.module when name = "Main"
+        |  with ElmModule when name = "Main"
         |    with function when name = function
         |      do replaceBody new_body
         |""".stripMargin
@@ -100,7 +100,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |          /_UPPER_/g, new_module_name);
         |}
         |
-        |  with elm.module when name = "Main"
+        |  with ElmModule when name = "Main"
         |    with type.alias when name = "Model"
         |      do replaceBody new_body
         |""".stripMargin
@@ -129,7 +129,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |          /_UPPER_/g, new_module_name);
         |}
         |
-        |  with elm.module when name = "Main"
+        |  with ElmModule when name = "Main"
         |    with type.alias when name = "Model"
         |      do replaceBody new_body
         |""".stripMargin
@@ -148,7 +148,7 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |          /_UPPER_/g, new_module_name);
         |}
         |
-        |  with elm.module when name = "Main"
+        |  with ElmModule when name = "Main"
         |    with type when name = "Msg"
         |      do replaceBody new_body
         |""".stripMargin

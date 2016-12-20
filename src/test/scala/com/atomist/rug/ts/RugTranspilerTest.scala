@@ -27,7 +27,7 @@ class RugTranspilerTest extends FlatSpec with Matchers {
     verify(prog, ts)
   }
 
-  it should "emit TS for with file with == string predicate and param" in {
+  it should "emit TS for with File with == string predicate and param" in {
     val progs = rugParser.parse(EqualsLiteralStringInPredicatesWithParam)
     val prog = progs.head
     val ts = transpiler.emit(progs)

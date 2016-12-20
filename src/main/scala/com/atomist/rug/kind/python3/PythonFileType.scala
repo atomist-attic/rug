@@ -2,7 +2,7 @@ package com.atomist.rug.kind.python3
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerTreeNodeMutableView
+import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -11,7 +11,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 /**
   * Contains aliases for navigation down simplified AST.
   */
-object PythonType {
+object PythonFileType {
 
   val PythonExtension = ".py"
 
@@ -26,17 +26,15 @@ object PythonType {
     */
   val RequirementsTextTypeAlias = "python.requirements.txt"
 
-  val RequirementsTypeAlias = "python.requirements"
-
   /** Path within archive of Python requirements.txt */
   val RequirementsTextPath = "requirements.txt"
 
   val RequirementAlias = "requirement"
 }
 
-import com.atomist.rug.kind.python3.PythonType._
+import com.atomist.rug.kind.python3.PythonFileType._
 
-class PythonType(
+class PythonFileType(
                   evaluator: Evaluator
                 )
   extends Type(evaluator)
@@ -44,11 +42,9 @@ class PythonType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = PythonFileAlias
-
   override def description = "Python file"
 
-  override def viewManifest: Manifest[MutableContainerTreeNodeMutableView] = manifest[MutableContainerTreeNodeMutableView]
+  override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
   override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
                                    poa: ProjectOperationArguments,

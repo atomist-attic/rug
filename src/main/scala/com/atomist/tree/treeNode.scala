@@ -1,5 +1,6 @@
 package com.atomist.tree
 
+import com.atomist.rug.spi.Typed
 import com.atomist.util.{Visitable, Visitor}
 
 /**
@@ -8,19 +9,23 @@ import com.atomist.util.{Visitable, Visitor}
 trait TreeNode extends Visitable {
 
   /**
+    * Can this node be obtained from a top level type such as File
+    */
+  val searchable: Boolean = true
+
+  /**
     * Name of the node. This may vary with individual nodes: For example,
     * with files. However, node names do not always need to be unique.
     * @return name of the individual node
     */
-  // TODO maybe names could be unique now
   def nodeName: String
 
   /**
-    * Type of the node, such as "file" or "java". There may be multiple
+    * Type of the node, such as "File" or "JavaType". There may be multiple
     * nodes in a tree with the same type.
     * @return the type of the node.
     */
-  def nodeType: String
+  def nodeType: String = Typed.typeToTypeName(getClass)
 
   /**
     * All nodes have values: Either a terminal value or the
@@ -89,7 +94,7 @@ trait TerminalTreeNode extends TreeNode {
   * @param nodeName name of the field (usually unimportant)
   * @param value field content.
   */
-case class SimpleTerminalTreeNode(nodeName: String, value: String, nodeType: String = "literal")
+case class SimpleTerminalTreeNode(nodeName: String, value: String)
   extends TerminalTreeNode
 
 /**
@@ -97,9 +102,9 @@ case class SimpleTerminalTreeNode(nodeName: String, value: String, nodeType: Str
   * @param description description of what's being padded
   * @param value padding content
   */
-case class PaddingNode(description: String, value: String) extends TerminalTreeNode {
+case class PaddingTreeNode(description: String, value: String)
+  extends TerminalTreeNode {
 
   override def nodeName = s"padding:$description"
 
-  override def nodeType = "padding"
 }

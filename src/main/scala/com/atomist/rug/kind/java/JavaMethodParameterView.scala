@@ -9,7 +9,7 @@ class JavaMethodParameterView(originalBackingObject: Parameter, parent: JavaMeth
   
   override def nodeName: String = name
 
-  override def nodeType: String = JavaClassType.MethodAlias
+  override def nodeType: String = JavaTypeType.MethodAlias
 
   @ExportFunction(readOnly = true, description = "Return the name of the parameter")
   def name: String = currentBackingObject.getId.getName

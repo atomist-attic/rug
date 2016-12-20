@@ -17,7 +17,6 @@ import org.scalatest.{FlatSpec, Matchers}
 class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
   it should "create an artifact source" in {
-
     val projectName = "Projectitron"
     val description = "Clever project of smartness"
     val org = "my-org"
@@ -39,7 +38,6 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
       val repositoryLine = s""""repository": "https://github.com/${org}/${projectName.toLowerCase()}.git","""
       elmPackageDotJson.content.contains(repositoryLine) should be(true)
     }
-
   }
 
   def invokeGenerator(rugArchiveDirectoryOnTheClasspath: String,
@@ -70,9 +68,7 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
         SimpleProjectOperationArguments(
           "wut",
           parameters))
-
     freshArtifactSource
-
   }
 
   def archiveFromDirectoryOnClasspath(resourceName: String): ArtifactSource = {

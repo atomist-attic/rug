@@ -15,7 +15,7 @@ object CommonRugParserTest {
        |@description '100% JavaScript free'
        |editor Triplet
        |
-       |with file f
+       |with File f
        | when name = "thing"
        |
        |do
@@ -29,7 +29,7 @@ object CommonRugParserTest {
        |
        |let checkFor = "thing"
        |
-       |with file f
+       |with File f
        | when name = checkFor
        |
        |do
@@ -43,7 +43,7 @@ object CommonRugParserTest {
        |
        |param what: ^.*$$
        |
-       |with file f
+       |with File f
        | when name = "thing"
        |
        |do
@@ -87,7 +87,7 @@ object CommonRugParserTest {
        |@description '100% JavaScript free'
        |editor Triplet
        |
-       |with file f
+       |with File f
        | when isJava = { "thing" }
        |
        |do
@@ -123,7 +123,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |
         |param num: ^\d+$
         |
-        |with file f when name = "foooo" do setPath "doesn't matter"
+        |with File f when name = "foooo" do setPath "doesn't matter"
       """.stripMargin
     ri.parse(prog)
   }
@@ -143,7 +143,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |
         |param num: ^\d+$
         |
-        |with project p
+        |with Project p
         |do
         |  replace "Dog" num
       """.stripMargin
@@ -157,13 +157,13 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """
         |editor Caspar
         |
-        |with project
+        |with Project
         |do
         |  replace "Dog" "Cat"
       """.stripMargin
     val rp = ri.parse(prog).head
     rp.withs.size should be(1)
-    rp.withs.head.alias should be("project")
+    rp.withs.head.alias should be("Project")
   }
 
   it should "allow alias to dotted type to be omitted and default correctly" in {
@@ -258,7 +258,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  text in it
         |*/
         |
-        |with file f
+        |with File f
         | when isJava = "thing"
         |
         |do
@@ -283,7 +283,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  look ***** // like all *kinds of \\ &&^&^%&$%$%& things
         |*/
         |
-        |with file f
+        |with File f
         | when isJava = "thing"
         |
         |do
@@ -305,7 +305,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description '100% JavaScript free'
         |editor Triplet
         |
-        |with file f
+        |with File f
         | when isJava = "thing" and someFunction
         |
         |do
@@ -325,7 +325,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description '100% JavaScript free'
         |editor Triplet
         |
-        |with project p
+        |with Project p
         | when
         | fileCount = 1
         |  and fileHasContent "src/main/java/Cat.java" "class Cat {}"
@@ -351,7 +351,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description '100% JavaScript free'
         |editor Triplet
         |
-        |with project p
+        |with Project p
         | when
         | fileCount = 1
         |  and fileHasContent "src/main/java/Cat.java" ("class Cat {}")
@@ -377,7 +377,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |@description '100% JavaScript free'
         |editor Triplet
         |
-        |with project p
+        |with Project p
         | when
         | fileCount = 1
         |begin
@@ -404,7 +404,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """
         |editor Triplet
         |
-        |with project p
+        |with Project p
         | when
         | contains = false
         |
@@ -521,7 +521,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava = otherFunction
          |
          |do
@@ -541,7 +541,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when "other" = otherFunction
          |
          |do
@@ -561,7 +561,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava
          |do
          | append "foobar"
@@ -583,7 +583,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when IsJava
          |
          |do
@@ -598,7 +598,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -615,7 +615,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |
          |param Bar: ^.*$$
          |
-         |with file f
+         |with File f
          | when isJava;
          |
          |do
@@ -633,7 +633,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |compute
          |  Bar = "bad identifier name"
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -649,7 +649,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava = "thing"
          |
          |do
@@ -668,7 +668,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@description '100% JavaScript free'
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava = "thing"
          |
          |do
@@ -689,7 +689,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@tag "Bar"
          |editor Triplet
          |
-         |with file f
+         |with File f
          | when isJava = "thing"
          |
          |do
@@ -710,7 +710,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |@generator
          |param foo: ^.*$$
          |
-         |with file f
+         |with File f
          | when isJava
          |
          |do
@@ -724,7 +724,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """
         |editor Triplet
         |
-        |with file f
+        |with File f
         | when isJava = "thing" and someFunction
         |
         |do
@@ -745,7 +745,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """
         |editor Triplet
         |
-        |with file f when f.name.length = 32
+        |with File f when f.name.length = 32
         |  do f.append "foobar"
       """.stripMargin
 
@@ -769,7 +769,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |
         |let foo = "elm-stuff\ntarget"
         |
-        |with project
+        |with Project
         |  do addFile name=".gitignore" content="elm-stuff\ntarget"
       """.stripMargin
     val p = ri.parse(prog).head
@@ -787,7 +787,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |
         |let foo = "elm-stuff\ntarget"
         |
-        |with project
+        |with Project
         |  do addFile name=".gitignore" content="elm-stuff\ntarget"
       """.stripMargin
     updateWith(prog)
@@ -799,7 +799,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |# my comment
         |editor PythonCommentsAreNice
         |
-        |with file f
+        |with File f
         | when name = "thing" # oh look another comment
         |
         |do

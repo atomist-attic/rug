@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util
+
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -36,7 +38,8 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
   */
 class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine) {
 
-  val typeRegistry: TypeRegistry = DefaultTypeRegistry
+  // TypeRegistry shared among all users
+  private val sharedTypeRegistry: TypeRegistry = DefaultTypeRegistry
 
   /**
     * Evaluate the given path expression.
@@ -48,21 +51,21 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: Object, pe: Object): Match = {
+  def evaluate(root: Object, pe: Object /*, microgrammars: Object*/): Match = {
     pe match {
       case som: ScriptObjectMirror =>
         // Examine a JavaScript object passed to us. It's probably a
         // TypeScript class with an "expression" property
         val expr: String = som.get("expression").asInstanceOf[String]
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, DefaultTypeRegistry) match {
+        ee.evaluate(toTreeNode(root), parsed, sharedTypeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
         }
       case expr: String =>
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, DefaultTypeRegistry) match {
+        ee.evaluate(toTreeNode(root), parsed, sharedTypeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
@@ -124,9 +127,9 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     * @param parent parent node we want to look under
     * @param name name of the children we want to look for
     */
-  def children(parent: Object, name: String) = {
+  def children(parent: Object, name: String): util.List[Object] = {
     val rootTn = toTreeNode(parent)
-    val typ = typeRegistry.findByName(name).getOrElse(???)
+    val typ = sharedTypeRegistry.findByName(name).getOrElse(???)
     (typ, rootTn) match {
       case (cvf: ContextlessViewFinder, mv: MutableView[_]) =>
         val kids = cvf.findAllIn(mv).getOrElse(Nil)
@@ -144,7 +147,7 @@ class PathExpressionExposer(val ee: ExpressionEngine = new PathExpressionEngine)
     */
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
     new TypeScriptArray(nodes.map(k => new SafeCommittingProxy({
-      typeRegistry.findByName(k.nodeType).getOrElse(
+      sharedTypeRegistry.findByName(k.nodeType).getOrElse(
         throw new UnsupportedOperationException(s"Cannot find type for node type [${k.nodeType}]")
       )
     },

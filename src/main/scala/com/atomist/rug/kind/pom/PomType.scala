@@ -20,8 +20,6 @@ class PomType(
 
   def this() = this(DefaultEvaluator)
 
-  override def name = "pom"
-
   override def description = "POM XML file"
 
   override def viewManifest: Manifest[PomMutableView] = manifest[PomMutableView]

@@ -2,7 +2,7 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
-import com.atomist.rug.kind.core.FileArtifactMutableView
+import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.source.file.SimpleFileSystemArtifactSourceIdentifier
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -22,7 +22,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       s"""
          |editor AddHeader
          |
-         |with file
+         |with File
          | do prepend "$license"
          |
       """.stripMargin
@@ -41,7 +41,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: @any
         |param message: @any
         |
-        |with file f
+        |with File f
         | when name = "Dog.java"
         |do
         | append text
@@ -58,7 +58,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: @any
         |param message: @any
         |
-        |with file f
+        |with File f
         | when true
         |do
         | append text
@@ -75,7 +75,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when true
         |do
         | append { text + "" }
@@ -94,7 +94,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when true
         |do
         | append { text + "" }
@@ -114,7 +114,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         |do
         |  setContent { f.content() + text }
       """.stripMargin
@@ -130,7 +130,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when true
         |begin
         |  do setContent { "WWW" + f.content() + text }
@@ -150,7 +150,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |
         |let text = "// I'm talkin' about ethics"
         |
-        |with file f
+        |with File f
         | when true
         |do
         | append text
@@ -169,7 +169,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |let text = { "// I'm talkin' about ethics" }
         |let random = { "" + message }
         |
-        |with file f
+        |with File f
         | when true
         |do
         | append text
@@ -183,7 +183,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with file f when isJava = true
+        |with File f when isJava = true
         |do
         |  replace "Dog" "Cat";
       """.stripMargin
@@ -204,7 +204,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with project p;
+        |with Project p;
         |do
         |  merge "simple.vm" "src/main/java/Dog.java";
       """.stripMargin
@@ -219,12 +219,12 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with file f when isJava = true
+        |with File f when isJava = true
         |do
         |  replace "Dog" "Cat"
         |
         |# better not fire
-        |with file f when isJava = false
+        |with File f when isJava = false
         |do
         |  replace "Cat" "Squirrel"
       """.stripMargin
@@ -243,7 +243,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with project p;
+        |with Project p;
         |do
         |  moveUnder "src/main/java";
       """.stripMargin
@@ -262,7 +262,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |param text: ^.*$$
          |param message: ^.*$$
          |
-         |with file f
+         |with File f
          | when { /.*\\.java$$/.test(f.name())}
          |do
          | append "$extraText"
@@ -276,7 +276,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |@description "Documentation is good. Did I mention that I like documentation?"
         |editor LineCommenter
         |
-        |with file fx
+        |with File fx
         | when isJava
         |with line l1
         | when {
@@ -288,7 +288,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
     val fr = FixedRugFunctionRegistry(
       Map(
-        "isJava" -> new LambdaPredicate[FileArtifactMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
+        "isJava" -> new LambdaPredicate[FileMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
       )
     )
     val eds = pipeline.createFromString(program)
@@ -315,12 +315,12 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |param text: ^.*$
         |param message: ^.*$
         |
-        |with file f
+        |with File f
         | when isJava
         |do
         |  setContent { "WWW" + f.content() + text } ;
         |
-        |with file f
+        |with File f
         | when isJava
         |do
         |  setContent { f.content().substring(3) };

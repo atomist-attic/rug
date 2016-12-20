@@ -2,7 +2,7 @@ package com.atomist.rug.kind.core
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.test.RugTestRunnerTestSupport
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
@@ -21,7 +21,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
     doIt("""
            |editor Replacer
            |
-           |with replacer r
+           |with Replacer r
            |   do replaceIt "org.springframework" "nonsense"
          """.stripMargin)
 
@@ -29,15 +29,15 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
     doIt("""
            |editor Replacer
            |
-           |with project
+           |with Project
            |  do replace "org.springframework" "nonsense"
            |
-           |with replacer
+           |with Replacer
            |   do replaceItNoGlobal "org.springframework" "nonsense"
          """.stripMargin)
 
   private def doIt(prog: String) {
-    updateWith(prog, JavaClassTypeUsageTest.NewSpringBootProject) match {
+    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: SuccessfulModification => {
         nmn.result.findFile("newroot/src/main/java/com/atomist/test1/PingController.java").get.content.contains("nonsense") should be(true)
         nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Application.java").get.content.contains("nonsense") should be(true)
@@ -59,7 +59,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
       """
         |editor Replacer
         |
-        |with replacerclj r
+        |with ReplacerClj r
         |   do replaceIt "com.atomist.sample" "com.atomist.wassom"
       """.stripMargin
 

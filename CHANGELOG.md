@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.7.1...HEAD
 
+### Changed
+
+-   **BREAKING** Naming convention for Rug types now UpperCamelCase,
+    basically the same as the Scala class/type without the trailing
+    Type, MutableView, or TreeNode
+
 ### Fixed
 
 -   @any parameter validation regex now works in both Java and

@@ -28,7 +28,7 @@ object ElmDeclarationModels {
                            typeSpec: ElmTypeSpecification)
     extends ParsedMutableContainerTreeNode("port")
       with ElmDeclaration {
-    def declaredIdentifier = name.value
+    def declaredIdentifier: String = name.value
   }
 
   class ElmTypeAlias(

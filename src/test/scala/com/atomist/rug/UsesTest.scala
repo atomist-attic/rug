@@ -4,7 +4,7 @@ import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit._
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.java.JavaClassTypeUsageTest
+import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.parser.{RunOtherOperation, WrappedFunctionArg}
 import com.atomist.rug.runtime.rugdsl.RugDrivenProjectEditor
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -24,7 +24,7 @@ class UsesTest extends FlatSpec with Matchers {
         |@description "Update Kube spec to redeploy a service"
         |editor Redeploy
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") };
         |do
         |  replace ".*" "foo";
@@ -45,7 +45,7 @@ class UsesTest extends FlatSpec with Matchers {
         |# The problem is that we DON'T actually use this editor
         |uses DoesExist
         |
-        |with file f
+        |with File f
         | when { f.name().contains("80-deployment") };
         |do
         |  replace ".*" "foo";
@@ -54,7 +54,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor DoesExist
         |
-        |with file f do append "foobar"
+        |with File f do append "foobar"
       """.stripMargin
     an[UnusedUsesException] should be thrownBy {
       create(prog)
@@ -66,7 +66,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -74,7 +74,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
       """.stripMargin
     val pe = create(prog).find(_.name.equals("Redeploy")).get
@@ -92,7 +92,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -100,7 +100,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
       """.stripMargin
     val namespace = "com.foobar"
@@ -119,7 +119,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -128,12 +128,12 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
         |
         |editor Foo2
         |
-        |with file
+        |with File
         |do replace "bar" "baz"
       """.stripMargin
     val pe = create(prog).find(_.name.equals("Redeploy")).get
@@ -153,7 +153,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |uses foo.Foo
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -163,7 +163,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "content" "bar"
       """.stripMargin
     val namespace = "com.foobar"
@@ -183,13 +183,13 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
         |editor Foo
         |
-        |with file f
+        |with File f
         |do replace "some" "bar"
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get
@@ -201,7 +201,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |
@@ -211,7 +211,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |param foo: ^.*$
         |
-        |with file f
+        |with File f
         |do replace "some" "bar"
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get
@@ -234,7 +234,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |param foo: ^.*$
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
@@ -244,7 +244,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, namespace).find(_.name.equals(namespace.map(ns => ns + ".").getOrElse("") + "Redeploy")).get
@@ -259,7 +259,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |param foo: ^.*$
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
@@ -270,7 +270,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
         |
         |editor Bar
@@ -278,7 +278,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, None).find(_.name.equals("Redeploy")).get
@@ -291,7 +291,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
@@ -302,14 +302,14 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
         |
         |editor Bar
         |
         |param baz: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, None).find(_.name.equals("Redeploy")).get
@@ -318,7 +318,7 @@ class UsesTest extends FlatSpec with Matchers {
       """
         |editor Redeploy
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Bar
@@ -329,14 +329,14 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
         |
         |editor Bar
         |
         |param baz: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
       """.stripMargin
     val ed2 = create(prog2, None).find(_.name.equals("Redeploy")).get
@@ -357,7 +357,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param old_package: @java_package
         |param new_package: @java_package
         |
-        |with java.source j when pkg = old_package
+        |with JavaSource j when pkg = old_package
         |	do movePackage to new_package
         |
         |editor ParameterizePackage
@@ -395,7 +395,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param old_package: @java_package
         |param new_package: @java_package
         |
-        |with java.source j when pkg = old_package
+        |with JavaSource j when pkg = old_package
         |	do movePackage to new_package
         |
         |editor ParameterizePackage
@@ -410,7 +410,7 @@ class UsesTest extends FlatSpec with Matchers {
       WrappedFunctionArg(SimpleLiteral("com.foo.bar"), parameterName = Some("new_package"))
     ), None, None, None)))
     red.program.withs.size should be(0)
-    ed.modify(JavaClassTypeUsageTest.NewSpringBootProject, SimpleProjectOperationArguments("", Map[String, String]())) match {
+    ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleProjectOperationArguments("", Map[String, String]())) match {
       case sm: SuccessfulModification =>
     }
   }
@@ -424,7 +424,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param old_package: @java_package
         |param new_package: @java_package
         |
-        |with java.source j when pkg = old_package
+        |with JavaSource j when pkg = old_package
         |	do movePackage to new_package
         |
         |editor ParameterizePackage
@@ -452,7 +452,7 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |let bar = "abc"
         |
-        |with file f
+        |with File f
         |do
         |  replace "some" "foo"
         |Foo
@@ -462,7 +462,7 @@ class UsesTest extends FlatSpec with Matchers {
         |param foo: ^.*$
         |param bar: ^.*$
         |
-        |with file f
+        |with File f
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get

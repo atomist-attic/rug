@@ -33,11 +33,13 @@ trait ReflectivelyTypedType extends Typed {
 }
 
 /**
-  * Extended by classes that can describing existing types that aren't exposed to
+  * Extended by classes that can describe existing types that aren't exposed to
   * top level navigation
   * @param c class to expose
   */
 abstract class TypeProvider(c: Class[_]) extends Typed {
+
+  override val name: String = Typed.typeToTypeName(c)
 
   override def underlyingType: Class[_] = c
 

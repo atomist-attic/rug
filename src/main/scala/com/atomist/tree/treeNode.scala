@@ -1,5 +1,6 @@
 package com.atomist.tree
 
+import com.atomist.rug.spi.Typed
 import com.atomist.util.{Visitable, Visitor}
 
 /**
@@ -20,7 +21,7 @@ trait TreeNode extends Visitable {
     * nodes in a tree with the same type.
     * @return the type of the node.
     */
-  def nodeType: String
+  def nodeType: String = Typed.typeToTypeName(getClass)
 
   /**
     * All nodes have values: Either a terminal value or the
@@ -89,7 +90,7 @@ trait TerminalTreeNode extends TreeNode {
   * @param nodeName name of the field (usually unimportant)
   * @param value field content.
   */
-case class SimpleTerminalTreeNode(nodeName: String, value: String, nodeType: String = "literal")
+case class SimpleTerminalTreeNode(nodeName: String, value: String, override val nodeType: String = "literal")
   extends TerminalTreeNode
 
 /**

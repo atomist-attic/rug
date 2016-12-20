@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.tree.content.text.grammar.antlr.EmptyContainerTreeNode
-import com.atomist.tree.{ContainerTreeNode, PaddingNode, TerminalTreeNode, TreeNode}
+import com.atomist.tree.{ContainerTreeNode, PaddingTreeNode, TerminalTreeNode, TreeNode}
 import org.springframework.util.ReflectionUtils
 
 import scala.collection.mutable.ListBuffer
@@ -102,7 +102,7 @@ object TreeNodeOperations {
     * TreeOperation that removes padding nodes
     */
   val RemovePadding: TreeOperation = treeOperation {
-    case pn: PaddingNode =>
+    case pn: PaddingTreeNode =>
       None
     case x =>
       Some(x)

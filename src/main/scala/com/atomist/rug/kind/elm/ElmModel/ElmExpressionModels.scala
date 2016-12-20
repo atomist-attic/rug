@@ -3,7 +3,7 @@ package com.atomist.rug.kind.elm.ElmModel
 import com.atomist.tree.content.text._
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels.ElmDeclaration
 import com.atomist.rug.kind.elm.{ElmModuleType, ElmParser, ElmParserCombinator}
-import com.atomist.tree.{PaddingNode, SimpleTerminalTreeNode, TreeNode}
+import com.atomist.tree.{PaddingTreeNode, SimpleTerminalTreeNode, TreeNode}
 
 object ElmExpressionModels {
 
@@ -146,7 +146,7 @@ object ElmExpressionModels {
       val ecc = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.caseClause, newBody)
       _left = ecc.left
       _right = ecc.right
-      replaceFields(Seq(PaddingNode("updated-body", newBody)))
+      replaceFields(Seq(PaddingTreeNode("updated-body", newBody)))
     }
   }
 

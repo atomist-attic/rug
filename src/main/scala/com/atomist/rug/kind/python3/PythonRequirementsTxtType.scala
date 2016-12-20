@@ -112,8 +112,6 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
 
   override def nodeName: String = RequirementAlias
 
-  override def nodeType: String = "requirement"
-
   @ExportFunction(readOnly = false, description = "Set version")
   def setVersion(
                   @ExportFunctionParameterDescription(name = "newVersion",

@@ -1,8 +1,7 @@
 package com.atomist.tree.content.text
 
-import com.atomist.rug.spi.Typed
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{PaddingNode, SimpleTerminalTreeNode, TreeNode}
+import com.atomist.tree.{PaddingTreeNode, SimpleTerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -25,8 +24,6 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
   def padded: Boolean = _padded
 
   final override def childNodes: Seq[TreeNode] = _fieldValues
-
-  override def nodeType: String = Typed.typeClassToTypeName(getClass)
 
   override def fieldValues: Seq[TreeNode] = _fieldValues
 
@@ -64,7 +61,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
         val pcontent = TreeNodeUtils.inlineReturns(content)
         if (pcontent.length > show) s"${pcontent.take(show)}..." else pcontent
       }]"
-      val pad = PaddingNode(name, content)
+      val pad = PaddingTreeNode(name, content)
       pad
     }
 
@@ -116,7 +113,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     if (topLevel) {
       val content = initialSource.substring(endPosition.offset)
       if (content.nonEmpty) {
-        val pn = PaddingNode("End", content)
+        val pn = PaddingTreeNode("End", content)
         fieldResults.append(pn)
         // assertPaddingInvariants(initialSource)
       }

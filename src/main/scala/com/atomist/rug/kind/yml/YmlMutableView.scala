@@ -23,8 +23,6 @@ class YmlMutableView(
 
   private var model = new YmlModel(originalBackingObject.content)
 
-  override def nodeType: String = Typed.typeClassToTypeName(classOf[YmlType])
-
   override protected def currentContent: String = model.yml
 
   @ExportFunction(readOnly = true, description = "Return the value of the given key")

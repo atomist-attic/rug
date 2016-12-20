@@ -1,8 +1,9 @@
 package com.atomist.rug.spi
 
+import com.atomist.util.lang.JavaHelpers
+
 object Typed {
 
-  // TODO can we make this more strongly typed
   def typeClassToTypeName(tc: Class[_]): String = tc.getSimpleName match {
     case n if n.endsWith("Type") => n.dropRight(4)
     case n => n
@@ -11,10 +12,15 @@ object Typed {
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =
     tcs.map(tc => typeClassToTypeName(tc)).toSet
 
-  def typeToTypeName(tc: Class[_]): String = tc.getSimpleName match {
-    case n if n.endsWith("TreeNode") => n.dropRight("TreeNode".size)
-    case n if n.endsWith("MutableView") => n.dropRight("MutableView".size)
-    case n => n
+  def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
+    val raw = tc.getSimpleName match {
+      case n if n.endsWith("TreeNode") => n.dropRight("TreeNode".length)
+      case n if n.endsWith("MutableView") => n.dropRight("MutableView".length)
+      case n => n
+    }
+    if (!searchable)
+      JavaHelpers.lowerize(raw)
+    else raw
   }
 }
 

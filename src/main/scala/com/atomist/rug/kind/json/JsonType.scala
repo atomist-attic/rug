@@ -26,7 +26,6 @@ class JsonType(
 
   override val resolvesFromNodeTypes: Set[String] =
     Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType])
-    //Set("project", "directory", "file")
 
   override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
 

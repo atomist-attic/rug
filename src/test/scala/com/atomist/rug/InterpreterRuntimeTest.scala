@@ -269,9 +269,8 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
         |@description "I can get you a toe!"
         |editor Caspar
         |
-        |with thing t;
-        |do
-        |  merge "simple.vm" "src/main/java/Dog.java";
+        |with NotThing t
+        |  do merge "simple.vm" "src/main/java/Dog.java";
       """.stripMargin
     // TODO idea allow words like "to"   merge "simple.vm" to "src/main/java";
     val expected = "class Dog {}"
@@ -281,7 +280,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     }
     catch {
       case micturation: BadRugException =>
-        micturation.getMessage.contains("thing") should be(true)
+        micturation.getMessage.contains("NotThing") should be(true)
     }
   }
 
@@ -289,7 +288,7 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     val complexRegexEditor =
       """editor ComplexRegexpReplace
         |
-        |with project p
+        |with Project p
         |  do regexpReplace "^\\s*class\\s+Dog\\s*\\{\\s*\\}" "ssalc Dog {}"
       """.stripMargin
     val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get

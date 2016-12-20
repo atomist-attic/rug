@@ -23,10 +23,10 @@ object RugEditorTest {
       |
       |let dsf = "DoubleSecretFile"
       |
-      |with project p
+      |with Project p
       |  begin
       |    do addFile dsf "Probation"
-      |    with file f when { !p.fileExists("README") }
+      |    with File f when { !p.fileExists("README") }
       |      do p.addFile "README" "A Pledge Pin!"
       |  end
     """.stripMargin

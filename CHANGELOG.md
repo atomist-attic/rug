@@ -7,29 +7,54 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.7.1...HEAD
 
-## [0.7.0] - 2016-12-16
+### Fixed
+
+-   @any parameter validation regex now works in both Java and
+    Javascript
+
+-   Double-quoted strings in Rug DSL are now interpreted similarly to
+    Java double-quoted strings
+
+## [0.7.1] - 2016-12-19
+
+[0.7.1]: https://github.com/atomist/rug/compare/0.7.0...0.7.1
 
 ### Added
 
-- Assertions can use 'not'
+-   Assertions can use 'not'
+
+-   Improve javadoc
+
+### Changed
+
+-   Various microgrammar improvements
+
+-   Update to latest rug-typescript-compiler
+
+## [0.7.0] - 2016-12-16
 
 [0.7.0]: https://github.com/atomist/rug/compare/0.6.0...0.7.0
 
 ### Changed
 
-- Breaking change to the Typescript Rug programming model. Decorators are no longer used, the interface signatures have changed, and the mechanism for retrieving the PathExpressionEngine has changed. See atomist/rug#24 for details.
+-   Breaking change to the Typescript Rug programming
+    model. Decorators are no longer used, the interface signatures
+    have changed, and the mechanism for retrieving the
+    PathExpressionEngine has changed. See atomist/rug#24 for details.
 
-- Breaking change to the Message trait. Now required to implement withActionNamed
+-   Breaking change to the Message trait. Now required to implement
+    withActionNamed
 
-- Breaking change to message.Rug interface, type is now part of Rug not calledback
+-   Breaking change to message.Rug interface, type is now part of Rug
+    not calledback
 
 ### Added
 
-- Event handlers definitions moved into Rug open source project
+-   Event handlers definitions moved into Rug open source project
 
-- Added new node levels in microgrammar returns
+-   Added new node levels in microgrammar returns
 
 ## [0.6.0] - 2016-12-14
 
@@ -37,17 +62,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Improved microgrammer tests
+-   Improved microgrammer tests
 
-- Fixed error in MatcherMicrogrammar.strictMatch with extra node level
+-   Fixed error in MatcherMicrogrammar.strictMatch with extra node
+    level
 
-- Update dependencies to latest
+-   Update dependencies to latest
 
-- Only load javascript from .atomist directory
+-   Only load javascript from .atomist directory
 
 ### Added
 
-- Added Rename for microgrammers
+-   Added Rename for microgrammers
 
 ## [0.5.4] - 2016-12-12
 

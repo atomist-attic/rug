@@ -82,10 +82,7 @@ class RequirementsTxtMutableView(
 
   override def dirty = true
 
-  override protected def currentContent: String = {
-    println(s"Returning\n${currentParsed.value}")
-    currentParsed.value
-  }
+  override protected def currentContent: String = currentParsed.value
 
   override val childrenNames: Seq[String] = Seq(RequirementAlias)
 

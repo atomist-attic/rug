@@ -3,7 +3,6 @@ package com.atomist.rug.kind.yml
 import java.io.StringReader
 
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.elm.ElmModuleType
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView, Typed}
 import com.atomist.source.FileArtifact
 import com.atomist.util.Utils.StringImprovements

@@ -200,7 +200,6 @@ class SafeCommittingProxy(typ: Typed, val node: TreeNode,
               commandRegistry.findByNodeAndName(node, name) match {
                 case Some(c) =>
                   c.invokeOn(node)
-                  null
                 case _ =>
                   throw new RugRuntimeException(null,
                     s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")

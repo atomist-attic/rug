@@ -46,6 +46,6 @@ object ProjectType {
   /**
     * File containing provenance information in root of edited projects
     */
-  val ProvenanceFilePath = "provenance.txt"
+  val ProvenanceFilePath = ".atomist.yml"
 
 }

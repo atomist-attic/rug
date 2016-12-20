@@ -285,6 +285,18 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     }
   }
 
+  it should "run editor with complicated regular expression" in {
+    val complexRegexEditor =
+      """editor ComplexRegexpReplace
+        |
+        |with project p
+        |  do regexpReplace "^\\s*class\\s+Dog\\s*\\{\\s*\\}" "ssalc Dog {}"
+      """.stripMargin
+    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
+    val expected = originalFile.content.replace("class", "ssalc")
+    simpleAppenderProgramExpectingParameters(complexRegexEditor, Some(expected))
+  }
+
   // PUT in a deliberate type error and expect to see a good message
   it should "handle type error in predicate and give good error message" is pending
 

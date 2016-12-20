@@ -1,9 +1,10 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.spi.{MutableView, StaticTypeInformation, TypeRegistry, Typed}
+import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
@@ -168,7 +169,8 @@ private object MagicJavaScriptMethods {
   * @param typ  Rug type we are fronting
   * @param node node we are fronting
   */
-class SafeCommittingProxy(typ: Typed, val node: TreeNode)
+class SafeCommittingProxy(typ: Typed, val node: TreeNode,
+                          commandRegistry: CommandRegistry = DefaultCommandRegistry)
   extends AbstractJSObject {
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
@@ -178,9 +180,12 @@ class SafeCommittingProxy(typ: Typed, val node: TreeNode)
     case st: StaticTypeInformation =>
       val possibleOps = st.operations.filter(
         op => name.equals(op.name))
-      if (possibleOps.isEmpty)
-        throw new RugRuntimeException(null,
-          s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name")
+
+      if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
+            throw new RugRuntimeException(null,
+              s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name")
+      }
+
 
       new AbstractJSObject() {
 
@@ -189,8 +194,14 @@ class SafeCommittingProxy(typ: Typed, val node: TreeNode)
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           possibleOps.find(op => op.parameters.size == args.size) match {
             case None =>
-              throw new RugRuntimeException(null,
-                s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+              commandRegistry.findByNodeAndName(node, name) match {
+                case Some(c) =>
+                  c.invokeOn(node)
+                  null
+                case _ =>
+                  throw new RugRuntimeException(null,
+                    s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+              }
             case Some(op) =>
               val returned = op.invoke(node, args.toSeq)
               node match {

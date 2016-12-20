@@ -3,21 +3,23 @@ package com.atomist.rug.spi
 import com.atomist.util.lang.JavaHelpers
 
 object Typed {
-
-  def typeClassToTypeName(tc: Class[_]): String = tc.getSimpleName match {
-    case n if n.endsWith("Type") => n.dropRight(4)
+  private[spi] def trimSuffix(suffix: String, orig: String): String = orig match {
+    case n if n.endsWith(suffix) => n.dropRight(suffix.size)
     case n => n
   }
+
+  private val typeSuffix = "Type"
+  private val treeNodeSuffix = "TreeNode"
+  private val mutableViewSuffix = "MutableView"
+
+  // TODO can we make this more strongly typed
+  def typeClassToTypeName(tc: Class[_]): String = trimSuffix(typeSuffix, tc.getSimpleName)
 
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =
     tcs.map(tc => typeClassToTypeName(tc)).toSet
 
   def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
-    val raw = tc.getSimpleName match {
-      case n if n.endsWith("TreeNode") => n.dropRight("TreeNode".length)
-      case n if n.endsWith("MutableView") => n.dropRight("MutableView".length)
-      case n => n
-    }
+    val raw = trimSuffix(treeNodeSuffix, trimSuffix(mutableViewSuffix, tc.getSimpleName))
     if (!searchable)
       JavaHelpers.lowerize(raw)
     else raw

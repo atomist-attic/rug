@@ -26,8 +26,6 @@ class MutableTerminalTreeNode(
     this(other.nodeName, other.initialValue, other.startPosition)
   }
 
-  override def nodeType: String = "MutableTerminal"
-
   private var currentValue = initialValue
 
   @ExportFunction(readOnly = false, description = "Update the node value")

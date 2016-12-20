@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.rug.kind.core.FileArtifactBackedMutableView
-import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerTreeNodeMutableView, MutableTreeNodeUpdater}
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileType}
+import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.spi.{MutableView, TypeProvider, TypeRegistry, Typed}
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
@@ -14,14 +14,14 @@ import com.atomist.tree.content.text.grammar.MatchListener
   * @param microgrammar microgrammar to evaluate
   */
 class MicrogrammarTypeProvider(microgrammar: Microgrammar)
-  extends TypeProvider(classOf[MutableContainerTreeNodeMutableView])
+  extends TypeProvider(classOf[MutableContainerMutableView])
     with ChildResolver {
 
   override val name: String = microgrammar.name
 
   override def description: String = s"Microgrammar type for [$name]"
 
-  override def resolvesFromNodeTypes: Set[String] = Set("File")
+  override def resolvesFromNodeTypes: Set[String] = Set(Typed.typeClassToTypeName(classOf[FileType]))
 
   override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
     case f: FileArtifactBackedMutableView =>
@@ -29,7 +29,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
       val container = microgrammar.matchesInContainer(f.content, l)
       val views = container.childNodes collect {
         case moo: MutableContainerTreeNode =>
-          new MutableContainerTreeNodeMutableView(moo, f)
+          new MutableContainerMutableView(moo, f)
       }
       f.registerUpdater(new MutableTreeNodeUpdater(container))
       Some(views)

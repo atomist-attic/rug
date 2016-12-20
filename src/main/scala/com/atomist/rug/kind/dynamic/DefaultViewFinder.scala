@@ -31,7 +31,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           val container = mg.matchesInContainer(f.content, l)
           val views = container.childNodes collect {
             case moo: MutableContainerTreeNode =>
-              new MutableContainerTreeNodeMutableView(moo, f)
+              new MutableContainerMutableView(moo, f)
           }
           f.registerUpdater(new MutableTreeNodeUpdater(container))
           Some(views)
@@ -47,7 +47,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
                 case mv: MutableView[_] => mv
               })
           }
-        case (suovmv: Seq[MutableContainerTreeNodeMutableView @unchecked], _) =>
+        case (suovmv: Seq[MutableContainerMutableView @unchecked], _) =>
           Some(suovmv)
         case (childType, parent) =>
           // This is fine

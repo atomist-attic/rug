@@ -24,7 +24,7 @@ class MutableTreeNodeUpdater(soo: MutableContainerTreeNode)
   * @param originalBackingObject
   * @param parent
   */
-class MutableContainerTreeNodeMutableView(
+class MutableContainerMutableView(
                                             originalBackingObject: MutableContainerTreeNode,
                                             parent: MutableView[_])
   extends ContainerTreeNodeView[MutableContainerTreeNode](originalBackingObject, parent)
@@ -74,7 +74,7 @@ class MutableContainerTreeNodeMutableView(
   }
 
   override protected def viewFrom(o: ContainerTreeNode): ContainerTreeNodeView[_] = o match {
-    case suov: MutableContainerTreeNode => new MutableContainerTreeNodeMutableView(suov, this)
+    case suov: MutableContainerTreeNode => new MutableContainerMutableView(suov, this)
     case _ => super.viewFrom(o)
   }
 }

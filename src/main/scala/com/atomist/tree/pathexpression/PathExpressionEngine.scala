@@ -72,8 +72,4 @@ case class LocationStep(axis: AxisSpecifier, test: NodeTest, predicate: Option[P
 
 case class PathExpression(
                            elements: Seq[LocationStep]
-                         ) {
-
-  require(elements.nonEmpty, s"Must have path some elements in PathExpression")
-
-}
+                         )

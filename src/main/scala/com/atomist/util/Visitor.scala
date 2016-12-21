@@ -58,7 +58,7 @@ class SaveAllDescendantsVisitor extends CycleAvoidingVisitor {
 
 object ConsoleVisitor extends Visitor {
 
-  override def visit(v: Visitable, depth: Int) = {
+  override def visit(v: Visitable, depth: Int): Boolean = {
     v match {
       case _ =>
         println(List.fill(depth)("\t").mkString("") + Objects.toString(v))

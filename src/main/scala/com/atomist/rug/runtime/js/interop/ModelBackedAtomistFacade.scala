@@ -20,9 +20,9 @@ class ModelBackedAtomistFacade(teamId: String,
 
   private val _handlers = ListBuffer.empty[SystemEventHandler]
 
-  private val pexe = new PathExpressionExposer(new PathExpressionEngine)
+  private val pexe = new jsPathExpressionEngine(new PathExpressionEngine)
 
-  // TODO also can take path expression
+  // TODO also can take path expression object
   def on(s: String, handler: Any): Unit = {
     handler match {
       case som: ScriptObjectMirror =>

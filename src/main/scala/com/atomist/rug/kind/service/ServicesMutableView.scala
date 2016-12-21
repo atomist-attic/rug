@@ -8,6 +8,12 @@ import com.atomist.source.ArtifactSource
 
 import scala.collection.JavaConverters._
 
+/**
+  * Tree node for services in a given context
+  * @param rugAs current backing rug archive
+  * @param serviceSource context
+  * @param atomistConfig atomist configuration in effect
+  */
 class ServicesMutableView(rugAs: ArtifactSource,
                           val serviceSource: ServiceSource,
                           val atomistConfig: AtomistConfig = DefaultAtomistConfig)

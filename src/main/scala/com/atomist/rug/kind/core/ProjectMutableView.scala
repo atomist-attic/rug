@@ -7,7 +7,7 @@ import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, DefaultAtomistFacade, PathExpressionExposer, UserModelContext}
+import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, DefaultAtomistFacade, jsPathExpressionEngine, UserModelContext}
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.rug.ts.NashornUtils
@@ -457,7 +457,7 @@ class ProjectMutableView(
 }
 class ProjectContext(ctx: UserModelContext) {
 
-  def pathExpressionEngine() : PathExpressionExposer = {
-    ctx.registry("PathExpressionEngine").asInstanceOf[PathExpressionExposer]
+  def pathExpressionEngine() : jsPathExpressionEngine = {
+    ctx.registry("PathExpressionEngine").asInstanceOf[jsPathExpressionEngine]
   }
 }

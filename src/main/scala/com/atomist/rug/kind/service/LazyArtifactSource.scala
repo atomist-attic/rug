@@ -27,10 +27,10 @@ class LazyArtifactSource(
     case x => delegate().id
   }
 
-  override def allDirectories = delegate().allDirectories
+  override def allDirectories: Seq[DirectoryArtifact] = delegate().allDirectories
 
-  override def allFiles = delegate().allFiles
+  override def allFiles: Seq[FileArtifact] = delegate().allFiles
 
-  override def artifacts = delegate().artifacts
+  override def artifacts: Seq[Artifact] = delegate().artifacts
 
 }

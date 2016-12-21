@@ -5,7 +5,7 @@ import java.util.Collections
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, PathExpressionExposer}
+import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, jsPathExpressionEngine}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -62,7 +62,7 @@ object TestAtomistFacade extends AtomistFacade {
   }
 
   override val registry = Map(
-    "PathExpressionEngine" -> new PathExpressionExposer
+    "PathExpressionEngine" -> new jsPathExpressionEngine
   )
 
   override def messageBuilder = new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)

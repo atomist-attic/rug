@@ -32,7 +32,7 @@ object DefaultAtomistFacade extends AtomistFacade {
   }
 
   override val registry = Map(
-    "PathExpressionEngine" -> new PathExpressionExposer
+    "PathExpressionEngine" -> new jsPathExpressionEngine
   )
 
   override def messageBuilder: MessageBuilder =

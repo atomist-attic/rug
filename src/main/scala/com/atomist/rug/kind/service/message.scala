@@ -3,9 +3,8 @@ package com.atomist.rug.kind.service
 import com.atomist.param.ParameterValue
 import com.atomist.tree.TreeNode
 
-
 /**
-  * Interface for sending messages on behalf of a teah
+  * Interface for sending messages on behalf of a team
   */
 trait MessageBuilder {
 

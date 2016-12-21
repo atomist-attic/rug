@@ -6,7 +6,7 @@ import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
-import com.atomist.rug.runtime.js.interop.{ContextMatch, PathExpressionExposer}
+import com.atomist.rug.runtime.js.interop.{ContextMatch, jsPathExpressionEngine}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpressionParser}
@@ -17,7 +17,7 @@ class JavaScriptEventHandler(
                               handlerFunction: ScriptObjectMirror,
                               rugAs: ArtifactSource,
                               materializer: TreeMaterializer,
-                              pexe: PathExpressionExposer
+                              pexe: jsPathExpressionEngine
                                  )
   extends SystemEventHandler {
 

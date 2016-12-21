@@ -3,6 +3,7 @@ package com.atomist.rug.spi
 import com.atomist.util.lang.JavaHelpers
 
 object Typed {
+
   private[spi] def trimSuffix(suffix: String, orig: String): String = orig match {
     case n if n.endsWith(suffix) => n.dropRight(suffix.size)
     case n => n
@@ -12,7 +13,6 @@ object Typed {
   private val treeNodeSuffix = "TreeNode"
   private val mutableViewSuffix = "MutableView"
 
-  // TODO can we make this more strongly typed
   def typeClassToTypeName(tc: Class[_]): String = trimSuffix(typeSuffix, tc.getSimpleName)
 
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =

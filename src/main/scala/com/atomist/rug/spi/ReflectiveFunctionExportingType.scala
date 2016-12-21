@@ -25,17 +25,18 @@ object ReflectiveFunctionExport {
     functions
   }
 
-  // TODO: Can't simulate annotation inheritance by walking up tree:
-  // may be something to do with Scala traits
-  // Although trying a Java annotation and Spring AnnotationUtils.findAnnotation didn't fix it
   def exportedOperations(c: Class[_]): Seq[TypeOperation] = {
     ReflectionUtils.getAllDeclaredMethods(c)
       .filter(m => m.getAnnotations.exists(a => a.isInstanceOf[ExportFunction]))
       .map(m => {
         val a = m.getAnnotation(classOf[ExportFunction])
         val params = extractExportedParametersAndDocumentation(m)
-        TypeOperation(m.getName, a.description(), a.readOnly(), params,
-          m.getGenericReturnType.toString, a.example() match {
+        TypeOperation(m.getName, a.description(),
+          a.readOnly(),
+          params,
+          m.getGenericReturnType.toString,
+          m.getDeclaringClass,
+          a.example() match {
           case "" => None
           case ex => Some(ex)
         })

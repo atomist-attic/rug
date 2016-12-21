@@ -54,7 +54,7 @@ class TypeDoc(
     val mt = new VelocityMergeTool(templates)
     val f = mt.mergeToFile(MergeContext(
       Map(
-        "kinds" -> typeRegistry.kinds,
+        "kinds" -> typeRegistry.types,
         "h2" -> "##",
         "h3" -> "###",
         "h4" -> "####"

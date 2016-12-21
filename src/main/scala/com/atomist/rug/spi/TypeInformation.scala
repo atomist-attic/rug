@@ -54,6 +54,7 @@ case class TypeParameter(
   * @param name        name of the type
   * @param description description of the type. May be used in generated code
   * @param example     optional example of usage of the operation
+  * @param definedOn  type we are defined on. May be an abstract superclass.
   * @see ExportFunction
   */
 case class TypeOperation(
@@ -62,6 +63,7 @@ case class TypeOperation(
                           readOnly: Boolean,
                           parameters: Seq[TypeParameter],
                           returnType: String,
+                          definedOn: Class[_],
                           example: Option[String]) {
 
   def hasExample: Boolean = example.isDefined

@@ -36,8 +36,8 @@ class ServiceLoaderTypeRegistry
   override def findByName(kind: String): Option[Typed] =
     typesMap.get(kind)
 
-  override def kindNames: Traversable[String] = typesMap.keys
+  override def typeNames: Traversable[String] = typesMap.keys
 
-  override def kinds: Seq[Typed] = typesMap.values.toSeq
+  override def types: Seq[Typed] = typesMap.values.toSeq
 
 }

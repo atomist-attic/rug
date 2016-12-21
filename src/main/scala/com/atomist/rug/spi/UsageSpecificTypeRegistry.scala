@@ -14,9 +14,9 @@ class UsageSpecificTypeRegistry(delegate: TypeRegistry,
   override def findByName(kind: String): Option[Typed] =
     newTypes.find(t => kind.equals(t.name)).orElse(delegate.findByName(kind))
 
-  override def kindNames: Traversable[String] =
-    newTypes.map(_.name) ++ delegate.kindNames
+  override def typeNames: Traversable[String] =
+    newTypes.map(_.name) ++ delegate.typeNames
 
-  override def kinds: Seq[Typed] =
-    newTypes ++ kinds
+  override def types: Seq[Typed] =
+    newTypes ++ types
 }

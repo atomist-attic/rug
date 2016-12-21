@@ -8,7 +8,7 @@ trait TypeRegistry {
 
   def findByName(kind: String): Option[Typed]
 
-  def kindNames: Traversable[String]
+  def typeNames: Traversable[String]
 
-  def kinds: Seq[Typed]
+  def types: Seq[Typed]
 }

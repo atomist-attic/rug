@@ -11,18 +11,19 @@ import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArg
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.Utils
 import com.atomist.util.lang.TypeScriptGenerationHelper
 
 import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
 
-  val target = if (args.length < 1 ) "target/classes/user-model/model/Core.ts" else args.head
+  val target = if (args.length < 1) "target/classes/user-model/model/Core.ts" else args.head
   val generator = new TypeScriptInterfaceGenerator
 
   val output = generator.generate(SimpleProjectOperationArguments("",
     Map(generator.OutputPathParam -> "Core.ts")))
-  Some(new PrintWriter(target)).foreach{p => p.write(output.allFiles.head.content); p.close()}
+  Utils.withCloseable(new PrintWriter(target))(_.write(output.allFiles.head.content))
   println(s"Written to $target")
 }
 
@@ -53,6 +54,7 @@ class TypeScriptInterfaceGenerator(
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = emitInterfaces(poa)
+    println(s"The content of ${createdFile.path} is\n${createdFile.content}")
     new SimpleFileBasedArtifactSource("Rug user model", createdFile)
   }
 
@@ -80,6 +82,7 @@ class TypeScriptInterfaceGenerator(
     s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
   }
 
+  // Generate a string for the output for this type
   private def generateTyped(t: Typed): String = {
     val output = new StringBuilder("")
     output ++= emitDocComment(t)
@@ -117,34 +120,39 @@ class TypeScriptInterfaceGenerator(
       alreadyGenerated.append(t)
     }
 
+    val allTypes = typeRegistry.types.sortWith(typeSort)
+    val unpublishedTypes = findUnpublishedTypes(allTypes)
+
     for {
-      t <- typeRegistry.kinds.sortWith(typeSort)
+      t <- allTypes
       if !alreadyGenerated.contains(t)
     } {
 
       println(s"Going to generate interface for type $t")
-
-      var clazzAncestry: Seq[Typed] =
-        Seq(t)
-
-      // TODO DON'T IMPLEMENT SUBCLASS METHOD TWICE and put in inheritance
-      val parentTyped: Option[Typed] =
-      Option(t.underlyingType.getSuperclass)
-        .flatMap(sup => typeRegistry.kinds.find(_.underlyingType.equals(sup)))
-
-      clazzAncestry = clazzAncestry ++ parentTyped
-
-      clazzAncestry.reverse.foreach(t => generate(t))
+      generate(t)
     }
 
     output ++= "\n"
-    for {t <- typeRegistry.kinds.sortWith(typeSort)} {
+    for {t <- typeRegistry.types.sortWith(typeSort)} {
       output ++= s"export { ${t.name} }\n"
     }
 
     StringFileArtifact(
       poa.stringParamValue(OutputPathParam),
       output.toString())
+  }
+
+  // Find all the types that aren't published types but define methods
+  private def findUnpublishedTypes(publishedTypes: Seq[Typed]): Seq[String] = {
+//    val allOperations: Seq[TypeOperation] = publishedTypes.map(t => t.typeInformation).flatMap {
+//      case st: StaticTypeInformation => st.operations
+//    }
+//    val publishedTypeNames = publishedTypes.map(_.name).toSet
+//    val unpublishedTypes = allOperations.map(_.definedOn).toSet -- publishedTypeNames
+//    val sortedUnpublishedTypes = unpublishedTypes.toSeq.sorted
+//    println(s"UnpublishedTypes=${sortedUnpublishedTypes.mkString(",")}")
+//    sortedUnpublishedTypes
+    Nil
   }
 
   private val indent = "    "
@@ -166,9 +174,9 @@ class TypeScriptInterfaceGenerator(
 }
 
 case class InterfaceGenerationConfig(
-                                indent: String = "    ",
-                                separator: String = "\n\n"
-                              )
+                                      indent: String = "    ",
+                                      separator: String = "\n\n"
+                                    )
   extends TypeScriptGenerationConfig {
 
   val imports: String =

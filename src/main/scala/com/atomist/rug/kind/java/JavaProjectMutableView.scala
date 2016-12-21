@@ -33,7 +33,7 @@ class JavaProjectType(
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
-      case pv: ProjectMutableView if IsJavaProject(pv.currentBackingObject) =>
+      case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
         Some(Seq(new JavaProjectMutableView(pv)))
       case _ => Some(Nil)
     }
@@ -55,13 +55,13 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
   def javaFileCount: Int = currentBackingObject.allFiles.count(f => f.name.endsWith(".java"))
 
   @ExportFunction(readOnly = true, description = "Is this a Maven project?")
-  def isMaven: Boolean = IsMavenProject(currentBackingObject)
+  def isMaven: Boolean = JavaAssertions.isMaven(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "Is this a Spring project?")
-  def isSpring: Boolean = IsSpringProject(currentBackingObject)
+  def isSpring: Boolean = JavaAssertions.isSpring(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "Is this a Spring Boot project?")
-  def isSpringBoot: Boolean = IsSpringBootProject(currentBackingObject)
+  def isSpringBoot: Boolean = JavaAssertions.isSpringBoot(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "List the packages in this project")
   def packages: JList[PackageInfo] = {

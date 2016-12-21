@@ -4,7 +4,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
-import com.atomist.rug.kind.java.support.IsJavaProject
+import com.atomist.rug.kind.java.support.JavaAssertions
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -42,7 +42,7 @@ class SpringBootProjectType(
         if (sproj.isValid)
           Some(Seq(sproj))
         else Some(Nil)
-      case pv: ProjectMutableView if IsJavaProject(pv.currentBackingObject) =>
+      case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
         val sproj = new SpringBootProjectMutableView(new JavaProjectMutableView(pv))
         if (sproj.isValid)
           Some(Seq(sproj))

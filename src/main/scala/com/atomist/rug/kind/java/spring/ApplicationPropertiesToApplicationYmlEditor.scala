@@ -6,7 +6,7 @@ import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.edit._
 import com.atomist.rug.kind.java.ExtractApplicationProperties
-import com.atomist.rug.kind.java.support.IsSpringProject
+import com.atomist.rug.kind.java.support.JavaAssertions
 import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
 import com.atomist.tree.content.project.{ConfigValue, Configuration}
 import com.atomist.util.yml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
@@ -17,7 +17,7 @@ import com.typesafe.scalalogging.LazyLogging
   */
 object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with LazyLogging {
 
-  import HasApplicationProperties.ApplicationPropertiesFilePath
+  import ApplicationPropertiesAssertions.ApplicationPropertiesFilePath
 
   val ApplicationYmlPath = "src/main/resources/application.yml"
 
@@ -35,7 +35,7 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
   }
 
   override def applicability(as: ArtifactSource): Applicability =
-    Applicability(IsSpringProject(as) && HasApplicationProperties(as), "Checked Spring and application.properties")
+    Applicability(JavaAssertions.isSpring(as) && ApplicationPropertiesAssertions.hasApplicationProperties(as), "Checked Spring and application.properties")
 
   override def description: String = "Atomist Core Editor: Convert application.properties to application.yml (application.properties->application.yml)"
 

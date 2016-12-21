@@ -1,35 +1,22 @@
 package com.atomist.rug.kind.java.support
 
-import com.atomist.project.{FunctionProjectAssertion, ProjectAssertion}
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.{JavaHelpers, MavenConstants}
 
-object IsJavaProject extends FunctionProjectAssertion(project =>
-  project.allFiles.exists(JavaHelpers.isJavaSourceArtifact(_))
-)
+object JavaAssertions {
 
-object IsMavenProject extends FunctionProjectAssertion(project =>
-  project.findFile(MavenConstants.PomPath).isDefined
-)
+  val isJava: ArtifactSource => Boolean = project =>
+    project.allFiles.exists(JavaHelpers.isJavaSourceArtifact(_))
 
-/**
-  * Is this a Spring Project?
-  * TODO currently supports only Spring Maven projects
-  */
-object IsSpringProject extends ProjectAssertion {
+  val isMaven: ArtifactSource => Boolean =
+    project => project.findFile(MavenConstants.PomPath).isDefined
 
-  override def apply(project: ArtifactSource): Boolean =
+  val isSpring: ArtifactSource => Boolean = project =>
     GetMavenPom(project).exists(f => f.content.contains("org.springframework"))
-}
 
-/**
-  * Is this a Spring Boot Project
-  */
-object IsSpringBootProject extends ProjectAssertion {
+  val SpringBootStarterParent: String = "spring-boot-starter-parent"
 
-  val SpringBootStarterParent = "spring-boot-starter-parent"
-
-  override def apply(project: ArtifactSource) =
-    IsSpringProject(project) &&
+  val isSpringBoot: ArtifactSource => Boolean = project =>
+    isSpring(project) &&
       GetMavenPom(project).exists(f => f.content.contains(SpringBootStarterParent))
 }

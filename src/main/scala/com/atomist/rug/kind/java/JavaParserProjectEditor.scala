@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.JavaTag
 import com.atomist.project.edit.{ProjectEditorSupport, _}
-import com.atomist.rug.kind.java.support.{IsJavaProject, JavaFilesExtractor}
+import com.atomist.rug.kind.java.support.{JavaAssertions, JavaFilesExtractor}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
 import com.atomist.util.lang.JavaConstants
 import com.github.javaparser.ast.CompilationUnit
@@ -27,7 +27,7 @@ abstract class JavaParserProjectEditor(val name: String,
   override def impacts: Set[Impact] = Set(CodeImpact)
 
   final override def applicability(as: ArtifactSource): Applicability = {
-    Applicability(IsJavaProject(as), "IsJava")
+    Applicability(JavaAssertions.isJava(as), "IsJava")
   }
 
   protected final override def modifyInternal(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {

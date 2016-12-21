@@ -121,7 +121,9 @@ class TypeScriptInterfaceGenerator(
     }
 
     val allTypes = typeRegistry.types.sortWith(typeSort)
+    println(s"allTypes=${allTypes.size}: ${allTypes.mkString(",")}")
     val unpublishedTypes = findUnpublishedTypes(allTypes)
+    println(s"unpublishedTypes=${unpublishedTypes.size}: ${unpublishedTypes.mkString(",")}")
 
     for {
       t <- allTypes
@@ -144,20 +146,12 @@ class TypeScriptInterfaceGenerator(
 
   // Find all the types that aren't published types but define methods
   private def findUnpublishedTypes(publishedTypes: Seq[Typed]): Seq[String] = {
-    val allOperations: Seq[TypeOperation] = publishedTypes.map(_.typeInformation).flatMap {
+    val allOperations = publishedTypes.map(_.typeInformation).collect {
       case st: StaticTypeInformation => st.operations
-    }
-    val types = allOperations.map(_.definedOn.getSimpleName).toSet
-    println(s"types=${types.size}: ${types.mkString(",")}")
-
+    }.flatten
+    val types = allOperations.map(op => Typed.typeToTypeName(op.definedOn)).toSet
     val publishedTypeNames = publishedTypes.map(_.name).toSet
-    println(s"publishedTypeNames=${publishedTypeNames.size}: ${publishedTypeNames.mkString(",")}")
-
-    val unpublishedTypes = types -- publishedTypeNames
-    val sortedUnpublishedTypes = unpublishedTypes.toSeq.sorted
-    println(s"unpublishedTypes=${sortedUnpublishedTypes.size}: ${sortedUnpublishedTypes.mkString(",")}")
-    sortedUnpublishedTypes
-  //  Nil
+    (types -- publishedTypeNames).toSeq.sorted
   }
 
   private val indent = "    "

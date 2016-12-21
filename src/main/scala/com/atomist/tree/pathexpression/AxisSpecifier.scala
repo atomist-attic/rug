@@ -56,4 +56,4 @@ object Descendant extends AxisSpecifier {
   }
 }
 
-object DescendantOrSelf extends AxisSpecifier
+object Attribute extends AxisSpecifier

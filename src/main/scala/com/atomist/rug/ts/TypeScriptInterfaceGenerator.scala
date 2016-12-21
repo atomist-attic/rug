@@ -21,8 +21,7 @@ object TypeScriptInterfaceGenerator extends App {
   val target = if (args.length < 1) "target/classes/user-model/model/Core.ts" else args.head
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate(SimpleProjectOperationArguments("",
-    Map(generator.OutputPathParam -> "Core.ts")))
+  val output = generator.generate(SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "Core.ts")))
   Utils.withCloseable(new PrintWriter(target))(_.write(output.allFiles.head.content))
   println(s"Written to $target")
 }
@@ -59,9 +58,7 @@ class TypeScriptInterfaceGenerator(
   }
 
   private def shouldEmit(top: TypeOperation) =
-    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) ||
-      "eval".equals(top.name)
-      )
+    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
 
   private def emitDocComment(t: Typed): String = {
     s"""
@@ -79,6 +76,7 @@ class TypeScriptInterfaceGenerator(
   private def emitParameter(t: Typed, top: TypeOperation, p: TypeParameter): String = {
     if (p.name.startsWith("arg"))
       System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${top.name} has no name annotation")
+
     s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
   }
 
@@ -97,6 +95,7 @@ class TypeScriptInterfaceGenerator(
           val params =
             for (p <- op.parameters)
               yield emitParameter(t, op, p)
+
           output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}"
           output ++= config.separator
         }
@@ -116,7 +115,8 @@ class TypeScriptInterfaceGenerator(
     output ++= config.separator
 
     def generate(t: Typed): Unit = {
-      output ++= s"${generateTyped(t)}\n\n"
+      output ++= generateTyped(t)
+      output ++= config.separator
       alreadyGenerated.append(t)
     }
 
@@ -144,15 +144,20 @@ class TypeScriptInterfaceGenerator(
 
   // Find all the types that aren't published types but define methods
   private def findUnpublishedTypes(publishedTypes: Seq[Typed]): Seq[String] = {
-//    val allOperations: Seq[TypeOperation] = publishedTypes.map(t => t.typeInformation).flatMap {
-//      case st: StaticTypeInformation => st.operations
-//    }
-//    val publishedTypeNames = publishedTypes.map(_.name).toSet
-//    val unpublishedTypes = allOperations.map(_.definedOn).toSet -- publishedTypeNames
-//    val sortedUnpublishedTypes = unpublishedTypes.toSeq.sorted
-//    println(s"UnpublishedTypes=${sortedUnpublishedTypes.mkString(",")}")
-//    sortedUnpublishedTypes
-    Nil
+    val allOperations: Seq[TypeOperation] = publishedTypes.map(_.typeInformation).flatMap {
+      case st: StaticTypeInformation => st.operations
+    }
+    val types = allOperations.map(_.definedOn.getSimpleName).toSet
+    println(s"types=${types.size}: ${types.mkString(",")}")
+
+    val publishedTypeNames = publishedTypes.map(_.name).toSet
+    println(s"publishedTypeNames=${publishedTypeNames.size}: ${publishedTypeNames.mkString(",")}")
+
+    val unpublishedTypes = types -- publishedTypeNames
+    val sortedUnpublishedTypes = unpublishedTypes.toSeq.sorted
+    println(s"unpublishedTypes=${sortedUnpublishedTypes.size}: ${sortedUnpublishedTypes.mkString(",")}")
+    sortedUnpublishedTypes
+  //  Nil
   }
 
   private val indent = "    "

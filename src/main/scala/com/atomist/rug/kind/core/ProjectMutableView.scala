@@ -7,10 +7,9 @@ import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.js.interop.{BidirectionalParametersProxy, DefaultAtomistFacade, jsPathExpressionEngine, UserModelContext}
+import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
-import com.atomist.rug.ts.NashornUtils
 import com.atomist.source._
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror

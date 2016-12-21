@@ -1,4 +1,6 @@
-package com.atomist.rug.ts
+package com.atomist.rug.runtime.js.interop
+
+import java.util.Objects
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.ConsString
@@ -13,8 +15,18 @@ object NashornUtils {
   def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
     som.entrySet().asScala.map(me => me.getKey -> me.getValue).toMap
 
-  def toJavaType(nashornReturn: Object) = nashornReturn match {
+  def toJavaType(nashornReturn: Object): Object = nashornReturn match {
     case s: ConsString => s.toString
     case x => x
+  }
+
+  /**
+    * Return the given property of the JavaScript object or null if not found
+    */
+  def stringProperty(som: ScriptObjectMirror, name: String): String = {
+    som.get(name) match {
+      case null => null
+      case x => Objects.toString(x)
+    }
   }
 }

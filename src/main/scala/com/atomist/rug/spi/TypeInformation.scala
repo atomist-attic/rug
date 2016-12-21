@@ -1,9 +1,7 @@
 package com.atomist.rug.spi
 
-import java.util.{List => JList}
-
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.ts.NashornUtils
+import com.atomist.rug.runtime.js.interop.NashornUtils
 
 /**
   * Type information about a language element such as a Type.

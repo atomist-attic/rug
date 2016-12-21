@@ -4,14 +4,13 @@ import java.util
 import java.util.Collections
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
-import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
@@ -56,7 +55,7 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
       case som: ScriptObjectMirror =>
         // Examine a JavaScript object passed to us. It's probably a
         // TypeScript class with an "expression" property
-        val expr: String = som.get("expression").asInstanceOf[String]
+        val expr = NashornUtils.stringProperty(som, "expression")
         val parsed = PathExpressionParser.parsePathExpression(expr)
         ee.evaluate(toTreeNode(root), parsed, sharedTypeRegistry) match {
           case Right(nodes) =>

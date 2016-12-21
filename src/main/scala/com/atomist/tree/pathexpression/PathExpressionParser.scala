@@ -49,7 +49,7 @@ trait PathExpressionParser extends CommonTypesParser {
           }
         case _ => throw new IllegalArgumentException(s"Cannot access property [$prop] with @=$at")
       }
-      Predicate(s"$prop=$literal", (tn, _) => f(tn))
+      SimplePredicate(s"$prop=$literal", (tn, _) => f(tn))
   }
 
   private def nullLiteral: Parser[Object] = "null" ^^ (_ => null)
@@ -60,7 +60,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
     case methodName ~ args ~ op ~ literal =>
-      Predicate(s".$methodName", (n, among) => {
+      SimplePredicate(s".$methodName", (n, among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
         Objects.equals(literal, invoked)
       })
@@ -72,7 +72,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def booleanMethodInvocation: Parser[Predicate] = "." ~> nodeName ~ args ^^ {
     case methodName ~ args =>
-      Predicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+      SimplePredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
   }
 
   private def index: Parser[Predicate] = integer ^^ {

@@ -13,7 +13,7 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
 
   private lazy val commandsMap: Map[KeyedCommand, Command[TreeNode]] = {
     ServiceLoader.load(classOf[Command[_]]).asScala.map {
-      case c: Command[TreeNode] =>
+      case c: Command[TreeNode @unchecked] =>
         logger.info(s"Registered command '${c.name}'")
         KeyedCommand(c.`type`, c.name) -> c
       case wtf =>

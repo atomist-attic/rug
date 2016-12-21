@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
 import java.util
+import java.util.Collections
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
@@ -61,6 +62,8 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
+          case Left(_) =>
+            Match(root, Collections.emptyList())
         }
       case expr: String =>
         val parsed = PathExpressionParser.parsePathExpression(expr)

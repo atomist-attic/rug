@@ -46,6 +46,8 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
               Some(nodes map {
                 case mv: MutableView[_] => mv
               })
+            case Left(_) =>
+              Some(Nil)
           }
         case (suovmv: Seq[MutableContainerMutableView @unchecked], _) =>
           Some(suovmv)

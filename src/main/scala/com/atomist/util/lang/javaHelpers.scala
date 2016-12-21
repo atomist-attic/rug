@@ -16,7 +16,7 @@ object JavaHelpers {
     * @param name property named to convert, which may include hyphen or.
     * @return Java class name
     */
-  def toJavaClassName(name: String) = {
+  def toJavaClassName(name: String): String = {
     require(name != null && name.nonEmpty, s"Java class name must not be empty or null: [$name] was invalid")
     val tokes = name.split("[-\\._]")
     capitalizeTokens(tokes)
@@ -34,7 +34,7 @@ object JavaHelpers {
     * @param name name, which may include hyphens or underscore. Useful in JSON binding
     * @return Java variable/field/method name
     */
-  def toJavaVariableName(name: String) = {
+  def toJavaVariableName(name: String): String = {
     require(name != null && name.nonEmpty, "Property name must not be empty or null")
     val cleanName = name.toList.map(c => toJavaIdentifierPart(c)).mkString
     val varName = toCamelizedPropertyName(cleanName)
@@ -49,7 +49,7 @@ object JavaHelpers {
     * @param name name, which may include hyphens or underscore. Useful in JSON binding
     * @return Java property name
     */
-  def toCamelizedPropertyName(name: String) = {
+  def toCamelizedPropertyName(name: String): String = {
     require(name != null && name.nonEmpty, "Property name must not be empty or null")
     val tokes = name.split("[-\\._/]")
     require(tokes.nonEmpty, "Property name must not be empty or null")
@@ -74,49 +74,49 @@ object JavaHelpers {
     tokens.map(toke => upperize(toke)).mkString
   }
 
-  def getterNameToPropertyName(name: String) = {
+  def getterNameToPropertyName(name: String): String = {
     if (name.startsWith("get")) lowerize(name.substring(3))
     else if (name.startsWith("is")) lowerize(name.substring(2))
     else name
   }
 
-  def propertyNameToGetterName(name: String) = {
+  def propertyNameToGetterName(name: String): String = {
     if (!name.startsWith("get")) "get" + upperize(name)
     else name
   }
 
-  def propertyNameToSetterName(name: String) = {
+  def propertyNameToSetterName(name: String): String = {
     if (!name.startsWith("get")) "set" + upperize(name)
     else name
   }
 
-  def stripSuffixIfPresent(name: String, suffix: String) = {
+  def stripSuffixIfPresent(name: String, suffix: String): String = {
     if (name.endsWith(suffix)) name.dropRight(suffix.length) else name
   }
 
-  def upperize(s: String) = s.length match {
+  def upperize(s: String): String = s.length match {
     case 0 | 1 => s.take(1).toUpperCase
     case _ => s(0).toUpper + s.substring(1)
   }
 
-  def lowerize(s: String) = s.length match {
+  def lowerize(s: String): String = s.length match {
     case 0 | 1 => s.take(1).toLowerCase
     case _ => s(0).toLower + s.substring(1)
   }
 
-  def pathToPackageName(path: String) = path.replace(".", "/")
+  def pathToPackageName(path: String): String = path.replace(".", "/")
 
-  def packageNameToPath(pkg: String) = pkg.replace("/", ".")
+  def packageNameToPath(pkg: String): String = pkg.replace("/", ".")
 
   def packageFor(classFqn: String): String = {
     classFqn.split("\\.").dropRight(1).mkString(".")
   }
 
-  def isValidPackageName(fqn: String) = {
+  def isValidPackageName(fqn: String): Boolean = {
     fqn matches ParameterValidationPatterns.JavaPackage
   }
 
-  def isValidJavaIdentifier(n: String) = {
+  def isValidJavaIdentifier(n: String): Boolean = {
     n matches ParameterValidationPatterns.JavaIdentifier
   }
 }

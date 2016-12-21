@@ -17,7 +17,7 @@ class PathExpressionParsingTest extends FlatSpec with Matchers {
       """
         |editor First
         |
-        |let f = $(src//*[name='application.properties'])
+        |let f = $(/src//*[name='application.properties'])
         |
         |with f
         |  do eval { print(f.name() }
@@ -35,7 +35,7 @@ class PathExpressionParsingTest extends FlatSpec with Matchers {
       """
         |editor First
         |
-        |let f = $(src//*[name='application.properties']).name
+        |let f = $(/src//*[name='application.properties']).name
         |
         |with File f
         |  do eval { print(f }

@@ -23,7 +23,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
 
   it should "support path find" in {
     val ee = new PathExpressionEngine
-    val expr = "glossary/GlossDiv/title"
+    val expr = "/glossary/GlossDiv/title"
     val f = StringFileArtifact("glossary.json", simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
@@ -35,7 +35,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
 
   it should "update path find" in {
     val ee = new PathExpressionEngine
-    val expr = "glossary/GlossDiv/GlossList/GlossEntry/GlossSee"
+    val expr = "/glossary/GlossDiv/GlossList/GlossEntry/GlossSee"
     val f = StringFileArtifact("glossary.json", simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)

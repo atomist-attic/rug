@@ -16,7 +16,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       """
          |editor First
          |
-         |let f = $(src//[name='application.properties'])
+         |let f = $(/src//[name='application.properties'])
          |
          |with f
          |  do append "foo=bar"

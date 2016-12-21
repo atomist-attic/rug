@@ -56,7 +56,7 @@ trait PathExpressionParser extends CommonTypesParser {
           }
         case _ => throw new IllegalArgumentException(s"Cannot access property [$prop] with @=$at")
       }
-      Predicate(s"$prop=$literal", (tn,_) => f(tn) )
+      Predicate(s"$prop=$literal", (tn, _) => f(tn))
   }
 
   private def nullLiteral: Parser[Object] = "null" ^^ (_ => null)
@@ -67,7 +67,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
     case methodName ~ args ~ op ~ literal =>
-      Predicate(s".$methodName", (n,among) => {
+      Predicate(s".$methodName", (n, among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
         Objects.equals(literal, invoked)
       })
@@ -122,7 +122,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def combine(preds: Seq[Predicate]): Option[Predicate] = preds match {
     case Nil => None
-    case pred::Nil => Some(pred)
+    case pred :: Nil => Some(pred)
     case preds => Some(preds.head and combine(preds.tail).get)
   }
 
@@ -131,12 +131,9 @@ trait PathExpressionParser extends CommonTypesParser {
     case a ~ None ~ preds => LocationStep(a, All, combine(preds))
   }
 
-  def pathExpression: Parser[PathExpression] = opt(nodeTest) ~ rep(locationStep) ^^ {
-    case None ~ steps => PathExpression(steps)
-    case Some(nt) ~ steps =>
-      val firstStep = LocationStep(Child, nt, None)
-      PathExpression(firstStep +: steps)
-  }
+  def pathExpression: Parser[PathExpression] = rep1(locationStep) ^^ (steps =>
+    PathExpression(steps)
+    )
 
   def parsePathExpression(expr: String): PathExpression = {
     try {

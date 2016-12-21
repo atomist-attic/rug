@@ -1,8 +1,8 @@
-package com.atomist.tree.content.text
+package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.tree.SimpleTerminalTreeNode
-import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
+import com.atomist.tree.content.text.ParsedMutableContainerTreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 class PathExpressionEngineTest extends FlatSpec with Matchers {
@@ -17,7 +17,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(fooNode)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "foo"
+    val expr = "/foo"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode))
   }
@@ -29,8 +29,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     prop1.appendField(fooNode)
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-
-    val expr = "nested/foo"
+    val expr = "/nested/foo"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode))
   }
@@ -49,7 +48,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "nested//*[name='foo']"
+    val expr = "/nested//*[name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -60,15 +59,12 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val prop11 = new ParsedMutableContainerTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
-
     prop1.appendField(prop11)
     prop11.appendField(fooNode1)
     prop11.appendField(fooNode2)
-
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-
-    val expr = "nested/level2/*[name='foo']"
+    val expr = "/nested/level2/*[name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -79,15 +75,12 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val prop11 = new ParsedMutableContainerTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
-
     prop1.appendField(prop11)
     prop11.appendField(fooNode1)
     prop11.appendField(fooNode2)
-
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-
-    val expr = "nested/level2/*[name='foo']"
+    val expr = "/nested/level2/*[name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -106,11 +99,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "nested/level2/[1]"
+    val expr = "/nested/level2/[1]"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1))
 
-    val expr2 = "nested/level2/[2]"
+    val expr2 = "/nested/level2/[2]"
     val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Seq(fooNode2))
   }

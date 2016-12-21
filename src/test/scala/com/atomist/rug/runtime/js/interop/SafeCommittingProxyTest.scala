@@ -36,8 +36,9 @@ class SafeCommittingProxyTest extends FlatSpec with Matchers {
     val fc = new FakeCommand
     val sc = new SafeCommittingProxy(typed, fmv, new FakeCommandRegistry(fc))
     val ajs: AbstractJSObject = sc.getMember("execute").asInstanceOf[AbstractJSObject]
-    ajs.call(fmv, null)
+    val afc = ajs.call(fmv, null)
     fc.fmv should be(fmv)
+    afc.asInstanceOf[AnotherFakeCommand].really("This is really working")
   }
 
   it should "fail for unregistered command function" in {
@@ -69,9 +70,19 @@ class FakeCommand extends Command[FileMutableView] {
 
   var fmv: FileMutableView = _
 
-  override def invokeOn(treeNode: FileMutableView): Unit = {
+  override def invokeOn(treeNode: FileMutableView): AnyRef = {
     fmv = treeNode
+    new AnotherFakeCommand
   }
+
+}
+
+class AnotherFakeCommand {
+
+  def really(s: String): Unit = {
+    println(s)
+  }
+
 }
 
 

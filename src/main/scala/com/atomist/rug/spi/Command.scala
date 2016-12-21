@@ -20,5 +20,5 @@ trait Command[T <: TreeNode] {
   /**
     * Invoke the command on the given TreeNode
     */
-  def invokeOn(treeNode: T): Unit
+  def invokeOn(treeNode: T): Object
 }

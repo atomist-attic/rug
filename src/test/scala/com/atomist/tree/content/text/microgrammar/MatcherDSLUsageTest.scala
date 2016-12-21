@@ -47,4 +47,35 @@ class MatcherDSLUsageTest extends FlatSpec with Matchers {
     matches.size should be(1)
   }
 
+  it should "parse Slack emoji html" in pendingUntilFixed {
+    val html =
+      """<tr class="emoji_row">
+        |													<td class="align_middle"><span data-original="https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg" class="lazy emoji-wrapper"></span></td>
+        |												<td class="align_middle" style="white-space: normal; word-break: break-all; word-wrap: break-word; height: 100%; vertical-align:middle;">:666:
+        |												</td>
+        |													<td class="align_middle">Image</td>
+        |												<td class="author_cell hide_on_mobile" style="white-space: normal;">
+        |															<a href="/team/asf" class="display_flex align_items_center break_word bold">
+        |									<span class="small_right_margin"><span class="member_image thumb_24" style="background-image: url('https://secure.gravatar.com/avatar/ea56481d511928f89ecbfba1578b675b.jpg?s=48&amp;d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0025-48.png')" data-thumb-size="24" data-member-id="U024F4XCH"></span></span>
+        |									asf
+        |								</a>
+        |													</td>
+        |						<td class="align_middle align_right bold">
+        |							<ts-icon class="ts_icon_times_circle subtle_silver cursor_pointer candy_red_on_hover" data-emoji-type="emoji" data-emoji-name="666" data-action="emoji.remove"></ts-icon>
+        |						</td>
+        |					</tr>""".stripMargin
+
+    val mg = new MatcherMicrogrammar("emoji", mgp.parse("""<tr class="emoji_row">.*<span data-original="$emojiUrl:§https://.*§".*:$name:§[a-z0-9_-]*§:.*</tr"""))
+
+    val matches = mg.findMatches(html)
+    matches.size should be(1)
+
+    for (elem <- matches;
+         field <- elem.fieldValues
+    ) {
+      println(field.nodeName + " = " + field.value)
+    }
+
+  }
+
 }

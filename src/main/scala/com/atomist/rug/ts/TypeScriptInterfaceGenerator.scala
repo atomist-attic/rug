@@ -82,9 +82,8 @@ class TypeScriptInterfaceGenerator(
 
   private def generateTyped(t: Typed): String = {
     val output = new StringBuilder("")
-    val tsName = helper.typeScriptClassNameForTypeName(t.name)
     output ++= emitDocComment(t)
-    output ++= s"\ninterface $tsName extends TreeNode {${config.separator}"
+    output ++= s"\ninterface ${t.name} extends TreeNode {${config.separator}"
     t.typeInformation match {
       case s: StaticTypeInformation =>
         for {
@@ -99,7 +98,7 @@ class TypeScriptInterfaceGenerator(
           output ++= config.separator
         }
     }
-    output ++= s"}${indent.dropRight(1)} // interface $tsName"
+    output ++= s"}${indent.dropRight(1)} // interface ${t.name}"
     output.toString
   }
 
@@ -122,6 +121,9 @@ class TypeScriptInterfaceGenerator(
       t <- typeRegistry.kinds.sortWith(typeSort)
       if !alreadyGenerated.contains(t)
     } {
+
+      println(s"Going to generate interface for type $t")
+
       var clazzAncestry: Seq[Typed] =
         Seq(t)
 
@@ -137,8 +139,7 @@ class TypeScriptInterfaceGenerator(
 
     output ++= "\n"
     for {t <- typeRegistry.kinds.sortWith(typeSort)} {
-      val tsName = helper.typeScriptClassNameForTypeName(t.name)
-      output ++= s"export { $tsName }\n"
+      output ++= s"export { ${t.name} }\n"
     }
 
     StringFileArtifact(
@@ -170,12 +171,12 @@ case class InterfaceGenerationConfig(
                               )
   extends TypeScriptGenerationConfig {
 
-  val imports =
+  val imports: String =
     """
       |import {TreeNode} from '../tree/PathExpression'
       |import {ProjectContext} from '../operations/ProjectEditor' """.stripMargin
 
-  val licenseHeader =
+  val licenseHeader: String =
     """
       |/*
       | * Copyright 2015-2016 Atomist Inc.

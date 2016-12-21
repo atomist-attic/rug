@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to annotate methods in View classes that should be callable
- * from Rug and JavaScript.
+ * Used to annotate methods in Rug type implementation classes that are callable
+ * from Rug DSL and JavaScript.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

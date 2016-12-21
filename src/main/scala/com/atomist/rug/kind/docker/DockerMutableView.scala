@@ -6,15 +6,20 @@ import com.atomist.source.FileArtifact
 
 import scala.collection.JavaConverters._
 
-class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableView)
-  extends LazyFileArtifactBackedMutableView(originalBackingObject, pv) {
+/**
+  * Rug type for a Docker file
+  * @param originalBackingObject original FileArtifact
+  * @param pmv owning project
+  */
+class DockerMutableView(originalBackingObject: FileArtifact, pmv: ProjectMutableView)
+  extends LazyFileArtifactBackedMutableView(originalBackingObject, pmv) {
 
   var _content: Dockerfile = DockerfileParser.parse(originalBackingObject.content)
 
   def currentContent: String = _content.toString
 
-  @ExportFunction( readOnly = true, description = "")
-  def getExposedPorts(): java.util.List[Int] = {
+  @ExportFunction(readOnly = true, description = "")
+  def getExposedPorts: java.util.List[Int] = {
     val exposePorts: Set[Int] = _content.getExposePorts()
     /*
     We have to export collections as Java collections, as these get passed into
@@ -45,8 +50,9 @@ class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableV
 
   @ExportFunction(readOnly = false, description = "Add or update MAINTAINER directive")
   def addOrUpdateMaintainer(@ExportFunctionParameterDescription(name = "maintainerName",
-    description = "The name of the MAINTAINER directive") maintainerName: String, @ExportFunctionParameterDescription(name = "maintainerEmail",
-    description = "The email of the MAINTAINER directive") maintainerEmail: String) {
+    description = "The name of the MAINTAINER directive") maintainerName: String,
+                            @ExportFunctionParameterDescription(name = "maintainerEmail",
+                              description = "The email of the MAINTAINER directive") maintainerEmail: String) {
     maintainerEmail match {
       case s: String => _content.addMaintainer(s"$maintainerName <$s>")
       case _ => _content.addMaintainer(maintainerName)
@@ -55,8 +61,9 @@ class DockerMutableView(originalBackingObject: FileArtifact, pv: ProjectMutableV
 
   @ExportFunction(readOnly = false, description = "Add MAINTAINER directive")
   def addMaintainer(@ExportFunctionParameterDescription(name = "maintainerName",
-    description = "The name of the MAINTAINER directive") maintainerName: String, @ExportFunctionParameterDescription(name = "maintainerEmail",
-    description = "The email of the MAINTAINER directive") maintainerEmail: String) {
+    description = "The name of the MAINTAINER directive") maintainerName: String,
+                    @ExportFunctionParameterDescription(name = "maintainerEmail",
+                      description = "The email of the MAINTAINER directive") maintainerEmail: String) {
     maintainerEmail match {
       case s: String => _content.addMaintainer(s"$maintainerName <$s>")
       case _ => _content.addMaintainer(maintainerName)

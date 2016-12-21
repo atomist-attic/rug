@@ -5,8 +5,6 @@ import java.util.{List => JList}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.ts.NashornUtils
 
-import scala.collection.JavaConverters._
-
 /**
   * Type information about a language element such as a Type.
   * Useful for tooling and document generation as well as
@@ -24,25 +22,23 @@ trait DynamicTypeInformation extends TypeInformation
   * Trait that types should extend when all operations on the type are known.
   * ReflectiveStaticTypeInformation subinterface computes this automatically
   * using reflection.
+  *
   * @see ReflectiveStaticTypeInformation
   */
 trait StaticTypeInformation extends TypeInformation {
 
   def operations: Seq[TypeOperation]
 
-  /**
-    * Exposes for callers who may need Java
-    * @return
-    */
-  def operationsAsJava: JList[TypeOperation] = operations.asJava
-
 }
 
+/**
+  * Parameter to a Rug type.
+  */
 case class TypeParameter(
-                   name: String,
-                   parameterType: String,
-                   description: Option[String]
-                   ) {
+                          name: String,
+                          parameterType: String,
+                          description: Option[String]
+                        ) {
 
   def getDescription: String = description.getOrElse("")
 
@@ -51,6 +47,15 @@ case class TypeParameter(
   }
 }
 
+/**
+  * Operation on an exported Rug type. Typically annotated with an
+  * [[ExportFunction]] annotation
+  *
+  * @param name        name of the type
+  * @param description description of the type. May be used in generated code
+  * @param example     optional example of usage of the operation
+  * @see ExportFunction
+  */
 case class TypeOperation(
                           name: String,
                           description: String,
@@ -59,12 +64,12 @@ case class TypeOperation(
                           returnType: String,
                           example: Option[String]) {
 
-  def parametersAsJava: JList[TypeParameter] = parameters.asJava
-
   def hasExample: Boolean = example.isDefined
 
-  def exampleAsJava: String = example.getOrElse("")
-
+  /**
+    * Convenient way of invoking the method using arguments
+    * passed directly from Javascript.
+    */
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
     val args = rawArgs.map(a => NashornUtils.toJavaType(a))
     val methods = target.getClass.getMethods.toSeq.filter(m =>
@@ -75,10 +80,10 @@ case class TypeOperation(
     if (methods.size != 1)
       throw new IllegalArgumentException(
         s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1: " +
-        methods.mkString(","))
+          methods.mkString(","))
     //println(s"About to invoke ${methods.head} with args=$args")
     try {
-      methods.head.invoke(target, args:_*)
+      methods.head.invoke(target, args: _*)
     }
     catch {
       case t: Throwable =>

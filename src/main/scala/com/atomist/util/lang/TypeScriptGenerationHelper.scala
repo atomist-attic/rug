@@ -43,7 +43,4 @@ class TypeScriptGenerationHelper(indent: String = "    ")
     }
   }
 
-  def typeScriptClassNameForTypeName(name: String) = {
-    name//JavaHelpers.toJavaClassName(name)
-  }
 }

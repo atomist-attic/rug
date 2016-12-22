@@ -22,21 +22,16 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   override def extension = "rug"
 
-  val RugExtension = ".rug"
-
   override def compile(source: ArtifactSource): ArtifactSource = {
     val typeScripts =
       source.allFiles
-        .filter(f => f.name.endsWith(RugExtension))
+        .filter(f => f.name.endsWith(".rug"))
         .map(f => {
           val ts = transpile(f.content)
-          StringFileArtifact(rugPathToTsPath(f.path), ts)
+          StringFileArtifact(f.path.dropRight(4) + ".ts", ts)
         })
     source + typeScripts
   }
-
-  def rugPathToTsPath(rugPath: String) = rugPath.dropRight(RugExtension.length) + ".ts"
-
 
   override def supports(source: ArtifactSource): Boolean = true
 

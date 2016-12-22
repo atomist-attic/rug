@@ -18,6 +18,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   val helper = new TypeScriptGenerationHelper()
 
+  override def name = "Rug Transpiler"
+
+  override def extension = "rug"
+
   override def compile(source: ArtifactSource): ArtifactSource = {
     val typeScripts =
       source.allFiles

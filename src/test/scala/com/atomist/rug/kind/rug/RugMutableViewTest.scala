@@ -16,9 +16,11 @@ class RugMutableViewTest extends FlatSpec
       |# TODO: what is the format ... and can I add to these in a kind like RugType
       |param rug_name: ^.*$
       |
-      |with RugArchiveProject p
+      |with RugArchiveProject p begin
+      |  do eval { print("The rug name is " + rug_name) }
       |  with Rug r when r.name = rug_name
       |    do p.convertToTypescript(r)
+      |end
     """.stripMargin
 
   val StartingRug =
@@ -42,7 +44,8 @@ class RugMutableViewTest extends FlatSpec
   it should "convert a rug to TS" in {
     val resultOfRugEditor = executeRug(StartingRug, InputProject)
 
-    val result: ArtifactSource = executeRug(ConvertRugToTsEditor, StartingProject)
+    val result: ArtifactSource = executeRug(ConvertRugToTsEditor,
+      StartingProject, Map("rug_name" -> "BananaToCarrot"))
 
     val tsEditorFile = result.findFile(".atomist/editors/BananaToCarrot.ts")
     tsEditorFile.isDefined should be(true)

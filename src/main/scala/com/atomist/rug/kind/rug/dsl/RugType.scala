@@ -9,6 +9,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 
 class RugType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
+
   override def viewManifest: Manifest[_] = manifest[RugMutableView]
 
   private def isRugFile(f: FileArtifact): Boolean = f.name.endsWith(RugType.RugExtension)
@@ -29,7 +30,7 @@ class RugType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTyp
   /**
     * Description of this type
     */
-  override def description: String = ???
+  override def description: String = "Rug file"
 
 }
 

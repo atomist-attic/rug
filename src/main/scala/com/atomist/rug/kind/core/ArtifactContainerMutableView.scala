@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
+import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
 
 object ArtifactContainerMutableView {
@@ -10,8 +10,6 @@ object ArtifactContainerMutableView {
   val DirectoryAlias = "directory"
 
 }
-
-import com.atomist.rug.kind.core.ArtifactContainerMutableView._
 
 abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
                                                                      originalBackingObject: T,

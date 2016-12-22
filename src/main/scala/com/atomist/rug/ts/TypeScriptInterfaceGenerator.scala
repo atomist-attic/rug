@@ -47,19 +47,19 @@ class TypeScriptInterfaceGenerator(
 
   private val indent = "    "
 
-  case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo]) {
+  private case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo], parent: String = "TreeNode") {
 
     override def toString = {
       val output = new StringBuilder("")
       output ++= emitDocComment(description)
-      output ++= s"\ninterface $name extends TreeNode {${config.separator}"
+      output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${config.separator}}${indent.dropRight(1)} // interface $name"
       output.toString
     }
   }
 
-  case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String) {
+  private case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String) {
 
     private val comment =
       if (params.isEmpty)
@@ -72,7 +72,7 @@ class TypeScriptInterfaceGenerator(
     override def toString = s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
-  case class MethodParam(name: String, paramType: String) {
+  private case class MethodParam(name: String, paramType: String) {
 
     override def toString = s"$name: $paramType"
   }

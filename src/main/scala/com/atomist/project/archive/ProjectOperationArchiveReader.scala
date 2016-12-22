@@ -60,7 +60,7 @@ class ProjectOperationArchiveReader(
         val project: ArtifactSource = removeAtomistTemplateContent(startingProject)
         // TODO remove blanks in the generator names; we need to have a proper solution for this
         val name = red.program.publishedName.get
-        logger.info(s"Creating new generator with name $name")
+        logger.debug(s"Creating new generator with name $name")
         new EditorInvokingProjectGenerator(name, red, project)
     }
 

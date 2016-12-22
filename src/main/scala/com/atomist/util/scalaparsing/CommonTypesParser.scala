@@ -328,7 +328,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
   }
 
   protected def parseTo[T](f: FileArtifact, parser: Parser[T]): T = {
-    logger.info(s"Rug input is\n------\n${f.path}\n${f.content}\n------\n")
+    logger.debug(s"Rug input is\n------\n${f.path}\n${f.content}\n------\n")
     // We need a source that gives us positions
     val source = new CharSequenceReader(f.content)
     val parsed = parse(parser, source) match {
@@ -338,7 +338,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
       case Error(msg, rest) =>
         throw new BadRugSyntaxException(ErrorInfo(s"Error: $msg", badInput = f.content, line = rest.pos.line, col = rest.pos.column, filePath = f.path))
     }
-    logger.info(s"Parse result=$parsed")
+    logger.debug(s"Parse result=$parsed")
     parsed
   }
 }

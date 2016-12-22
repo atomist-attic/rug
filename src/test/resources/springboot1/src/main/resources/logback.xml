@@ -9,16 +9,16 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework" level="INFO" additivity="false">
+    <logger name="org.springframework" level="ERROR" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <logger name="com.sforzando" level="DEBUG" additivity="false">
+    <logger name="com.sforzando" level="ERROR" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 
     <!-- By default, the level of the root level is set to DEBUG -->
-    <root level="WARN">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

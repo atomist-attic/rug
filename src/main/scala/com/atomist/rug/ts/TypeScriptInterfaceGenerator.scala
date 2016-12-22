@@ -85,7 +85,7 @@ class TypeScriptInterfaceGenerator(
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = emitInterfaces(poa)
-    println(s"The content of ${createdFile.path} is\n${createdFile.content}")
+    //println(s"The content of ${createdFile.path} is\n${createdFile.content}")
     new SimpleFileBasedArtifactSource("Rug user model", createdFile)
   }
 

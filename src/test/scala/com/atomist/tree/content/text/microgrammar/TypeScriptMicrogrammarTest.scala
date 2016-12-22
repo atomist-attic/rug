@@ -34,7 +34,7 @@ abstract class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      var t: string = `filecount=${project.fileCount()}`
       |
-      |      eng.with<TreeNode>(project, "/*:File[name='pom.xml']->modelVersion", n => {
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
       |        t += `Matched file=${n.value()}`;
       |        //n.append("randomness")
       |      })

@@ -129,7 +129,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
   it should "jump into Java type and select class using 2 filters" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src/main/java/com/example/JavaType()[@name='DemoApplication' and type='JavaType']"
+    val expr2 = "/src/main/java/com/example/JavaType()[@name='DemoApplication' and @type='JavaType']"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     rtn2.right.get.size should be (1)
     rtn2.right.get.foreach {

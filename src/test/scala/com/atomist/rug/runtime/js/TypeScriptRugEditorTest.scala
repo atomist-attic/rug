@@ -199,7 +199,7 @@ object TypeScriptRugEditorTest {
       |      project.files().filter(t => false)
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      eng.with<File>(project, "/File()[@name='pom.xml']", n => {
+      |      eng.with<File>(project, "/*[@name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })

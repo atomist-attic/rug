@@ -10,7 +10,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a bare root node" in {
     val pe = "/"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.isEmpty should be(true)
+    parsed.locationSteps.isEmpty should be(true)
   }
 
   it should "failed to parse an unanchored path expression" in {
@@ -23,8 +23,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a child axis" in {
     val pe = "/child::src"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
     ls.axis should be (Child)
     ls.predicate should be (None)
     ls.test match {
@@ -36,8 +36,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse an abbreviated child axis with node name" in {
     val pe = "/src"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicate should be(None)
     ls.test match {
@@ -51,10 +51,10 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val parsed = pep.parsePathExpression(pe)
     val pe1 = "/src"
     val parsed1 = pep.parsePathExpression(pe1)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
-    parsed1.elements.size should be(1)
-    val ls1 = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
+    parsed1.locationSteps.size should be(1)
+    val ls1 = parsed.locationSteps.head
     ls1.axis should be(ls.axis)
     ls1.predicate should be(ls.predicate)
     ls1.test should be(ls.test)
@@ -63,8 +63,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a descendant axis" in {
     val pe = "/descendant::src"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
     ls.axis should be (Descendant)
     ls.predicate should be (None)
     ls.test match {
@@ -76,8 +76,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse an abbreviated descendant axis with node name" in {
     val pe = "//src"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
     ls.axis should be(Descendant)
     ls.predicate should be(None)
     ls.test match {
@@ -91,10 +91,10 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val parsed = pep.parsePathExpression(pe)
     val pe1 = "//src"
     val parsed1 = pep.parsePathExpression(pe1)
-    parsed.elements.size should be(1)
-    val ls = parsed.elements.head
-    parsed1.elements.size should be(1)
-    val ls1 = parsed.elements.head
+    parsed.locationSteps.size should be(1)
+    val ls = parsed.locationSteps.head
+    parsed1.locationSteps.size should be(1)
+    val ls1 = parsed.locationSteps.head
     ls1.axis should be(ls.axis)
     ls1.predicate should be(ls.predicate)
     ls1.test should be(ls.test)
@@ -103,8 +103,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a node object type" in {
     val pe = "/Issue()"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be (1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be (1)
+    val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicate should be(None)
     ls.test should be(ObjectType("Issue"))
@@ -113,8 +113,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse an index predicate" in {
     val pe = "/dude[4]"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be (1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be (1)
+    val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicate match {
       case Some(p@IndexPredicate("[4]", 4)) =>
@@ -129,8 +129,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a simple predicate" in {
     val pe = "/dude[@size='large']"
     val parsed = pep.parsePathExpression(pe)
-    parsed.elements.size should be (1)
-    val ls = parsed.elements.head
+    parsed.locationSteps.size should be (1)
+    val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicate match {
       case Some(p@SimplePredicate("size=large", _)) =>

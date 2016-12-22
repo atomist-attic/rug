@@ -31,25 +31,28 @@ class PathExpressionEngine extends ExpressionEngine {
   override def evaluate(node: TreeNode, parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
-    var r: ExecutionResult = ExecutionResult(List(node))
-    for (e <- parsed.elements) {
-      r = r match {
+    var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
+    for (locationStep <- parsed.locationSteps) {
+      val nextNodes = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
-          val next: ExecutionResult = e.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
+          val next: ExecutionResult = locationStep.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
           next
         case Right(Nil) =>
           ExecutionResult(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
-              e.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
+              locationStep.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
           ExecutionResult(kids)
         case failure@Left(msg) => failure
       }
+      println(s"After evaluating $locationStep on $nodesToApplyNextStepTo we have $nextNodes")
+      nodesToApplyNextStepTo = nextNodes
     }
-    r
+    println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
+    nodesToApplyNextStepTo
   }
 
 }
@@ -71,5 +74,5 @@ case class LocationStep(axis: AxisSpecifier, test: NodeTest, predicate: Option[P
 }
 
 case class PathExpression(
-                           elements: Seq[LocationStep]
+                           locationSteps: Seq[LocationStep]
                          )

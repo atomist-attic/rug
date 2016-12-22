@@ -41,9 +41,9 @@ case class ObjectType(typeName: String) extends NodeTest {
                   throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
               }
           }
-          //println(s"Returning ${kids.size} $kids for type $typeName under $tn")
+          println(s"Returning ${kids.size} ${kids.mkString("\n")} for type $typeName under $tn")
           ExecutionResult(kids.toList)
-        case x => ExecutionResult.empty
+        case _ => ExecutionResult.empty
       }
       case Descendant =>
         val kids = Descendant.allDescendants(tn).toList

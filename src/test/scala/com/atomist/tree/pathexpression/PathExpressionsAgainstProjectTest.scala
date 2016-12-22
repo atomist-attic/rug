@@ -93,13 +93,35 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "find Java type under direct path" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/src/main/java/com/example/File()[@name='DemoApplication.java']/JavaType()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    rtn.right.get.size should be(1)
+    rtn.right.get.foreach {
+      case j: JavaClassOrInterfaceView =>
+    }
+  }
+
   it should "double descend into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src//File()/JavaType()"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be(2)
-    rtn2.right.get.foreach {
+    val expr = "/src//JavaType()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    rtn.right.get.size should be(2)
+    rtn.right.get.foreach {
+      case j: JavaClassOrInterfaceView =>
+    }
+  }
+
+  it should "double descend into Java type with superfluous but valid File() type" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/src//File()/JavaType()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    rtn.right.get.size should be(2)
+    rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
     }
   }

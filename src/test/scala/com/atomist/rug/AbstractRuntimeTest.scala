@@ -78,8 +78,10 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |
         |with File f
         | when true
-        |do
-        | append { text + "" }
+        |begin
+        | do eval { console.log("About to append") }
+        | do append { text + "" }
+        |end
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, extraParams = Map(
       "team-id" -> "T117KLCSK"
@@ -209,7 +211,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |do
         |  merge "simple.vm" "src/main/java/Dog.java";
       """.stripMargin
-    // TODO idea allow words like "to"   merge "simple.vm" to "src/main/java";
     val expected = "class Dog {}"
     simpleAppenderProgramExpectingParameters(goBowling, Some(expected), JavaAndTemplate, rugAs, pipeline = pipeline)
   }

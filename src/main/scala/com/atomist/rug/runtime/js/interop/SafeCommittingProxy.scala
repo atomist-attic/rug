@@ -36,7 +36,6 @@ class SafeCommittingProxy(typ: Typed,
               s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name")
       }
 
-
       new AbstractJSObject() {
 
         override def isFunction: Boolean = true

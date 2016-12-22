@@ -18,8 +18,10 @@ class RugMutableViewTest extends FlatSpec
       |
       |with RugArchiveProject p begin
       |  do eval { print("The rug name is " + rug_name) }
-      |  with Rug r when r.name = rug_name
-      |    do p.convertToTypescript(r)
+      |  with Rug r when r.name = rug_name begin
+      |    do eval { print("Changing rug " + r.name() ) }
+      |    do eval { p.convertToTypeScript(r) }
+      |  end
       |end
     """.stripMargin
 

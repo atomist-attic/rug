@@ -52,7 +52,7 @@ object Descendant extends AxisSpecifier {
         true
     }
 
-    def nodes: Seq[TreeNode] = _nodes
+    def nodes: Seq[TreeNode] = _nodes.distinct
   }
 }
 

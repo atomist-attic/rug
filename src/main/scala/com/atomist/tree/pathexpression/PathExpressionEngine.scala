@@ -35,17 +35,17 @@ class PathExpressionEngine extends ExpressionEngine {
     for (e <- parsed.elements) {
       r = r match {
         case Right(n :: Nil) =>
-          val next = e.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
+          val next: ExecutionResult = e.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
           next
         case Right(Nil) =>
-          Right(Nil)
+          ExecutionResult(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
               e.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
-          Right(kids.distinct)
+          ExecutionResult(kids)
         case failure@Left(msg) => failure
       }
     }

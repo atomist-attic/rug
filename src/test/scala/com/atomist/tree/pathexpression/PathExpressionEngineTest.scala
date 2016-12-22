@@ -109,11 +109,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "/nested/level2/[1]"
+    val expr = "/nested/level2/*[1]"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1))
 
-    val expr2 = "/nested/level2/[2]"
+    val expr2 = "/nested/level2/*[2]"
     val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Seq(fooNode2))
   }

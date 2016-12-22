@@ -26,7 +26,7 @@ case class ObjectType(typeName: String) extends NodeTest {
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {
-      case Self => Right(List(tn))
+      case Self => ExecutionResult(List(tn))
       case Child => tn match {
         case ctn: ContainerTreeNode =>
           val kids = {
@@ -41,13 +41,13 @@ case class ObjectType(typeName: String) extends NodeTest {
                   throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
               }
           }
-          //println(s"Returning $kids for type $typeName under $tn")
-          Right(kids.toList.distinct)
+          //println(s"Returning ${kids.size} $kids for type $typeName under $tn")
+          ExecutionResult(kids.toList)
         case x => ExecutionResult.empty
       }
       case Descendant =>
         val kids = Descendant.allDescendants(tn).toList
-        Right(kids)
+        ExecutionResult(kids)
     }
   }
 }

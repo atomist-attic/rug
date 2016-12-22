@@ -30,7 +30,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
     case Right(nodes) =>
-      Right(nodes.filter(tn => predicate(tn, nodes)))
+      ExecutionResult(nodes.filter(tn => predicate(tn, nodes)))
     case failure => failure
   }
 
@@ -39,16 +39,16 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     * This one works but can be expensive.
     */
   protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
-    case Self => Right(List(tn))
+    case Self => ExecutionResult(List(tn))
     case Child => tn match {
       case ctn: ContainerTreeNode =>
         val kids = ctn.childNodes.toList
-        Right(kids)
+        ExecutionResult(kids)
       case x => ExecutionResult.empty
     }
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
-      Right(kids)
+      ExecutionResult(kids)
   }
 }
 

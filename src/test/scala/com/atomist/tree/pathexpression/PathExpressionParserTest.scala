@@ -142,6 +142,11 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "parse a json jump" in {
+    val pe = "/*[@name='elm-package.json']/Json()/summary"
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (3)
+  }
 //  it should "parse expression with type jump" in {
 //    val pe = "/issue/test1:repo/project/src/main/java//*:file->java.class"
 //    val parsed = pep.parsePathExpression(pe)

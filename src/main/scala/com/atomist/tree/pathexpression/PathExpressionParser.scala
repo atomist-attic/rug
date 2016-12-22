@@ -125,9 +125,8 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private val slashSeparator = "/"
-  def pathExpression: Parser[PathExpression] = slashSeparator ~> repsep(locationStep, slashSeparator) ^^ (steps =>
-    PathExpression(steps)
-    )
+  def pathExpression: Parser[PathExpression] = slashSeparator ~> repsep(locationStep, slashSeparator) ^^
+    (steps => PathExpression(steps))
 
   def parsePathExpression(expr: String): PathExpression = {
     try {

@@ -15,13 +15,13 @@ abstract class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   //    mgp.parse("<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
 
   val ModifiesWithSimpleMicrogrammar: String =
-    """import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {PathExpression,TreeNode} from 'user-model/tree/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-      |import {Match} from 'user-model/tree/PathExpression'
-      |import {File} from 'user-model/model/Core'
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {File} from '@atomist/rug/model/Core'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class ConstructedEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -54,7 +54,7 @@ abstract class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     val target = ParsingTargets.NewStartSpringIoProject
     jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))) match {
       case sm: SuccessfulModification =>

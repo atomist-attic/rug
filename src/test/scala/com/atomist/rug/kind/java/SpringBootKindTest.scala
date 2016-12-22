@@ -18,7 +18,7 @@ class SpringBootKindTest extends FlatSpec with Matchers {
         |do
         |  annotateBootApplication "com.someone" "Foobar"
       """.stripMargin
-    val r = executeJava(program, NewSpringBootProject)
+    val r = executeJava(program, "editors/ClassAnnotated.rug",NewSpringBootProject)
     val appClass = r.findFile("src/main/java/com/atomist/test1/Test1Application.java").get
     appClass.content.contains("@Foobar") should be(true)
     appClass.content.contains("import com.someone.Foobar") should be(true)

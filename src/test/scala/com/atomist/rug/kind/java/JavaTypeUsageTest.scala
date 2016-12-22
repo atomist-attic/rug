@@ -8,8 +8,9 @@ import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source._
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
-
 import JavaVerifier._
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.ts.RugTranspiler
 
 object JavaTypeUsageTest extends Matchers {
@@ -38,8 +39,8 @@ object JavaTypeUsageTest extends Matchers {
     )
   )
 
-  def executeJava(program: String, as: ArtifactSource = JavaAndText): ArtifactSource = {
-    val r = attemptToModify(program, as, Map[String, String]())
+  def executeJava(program: String, rugPath: String, as: ArtifactSource = JavaAndText): ArtifactSource = {
+    val r = attemptToModify(program, rugPath, as, Map[String, String]())
     r match {
       case sm: SuccessfulModification =>
         verifyJavaIsWellFormed(sm.result)
@@ -47,9 +48,16 @@ object JavaTypeUsageTest extends Matchers {
     }
   }
 
-  def attemptToModify(program: String, as: ArtifactSource, poa: Map[String,String],
+  def attemptToModify(program: String,
+                      rugPath: String,
+                      as: ArtifactSource, poa: Map[String,String],
                       runtime : RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
-    val eds = runtime.createFromString(program)
+
+
+    val progAs = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, program)).withPathAbove(".atomist") + TestUtils.user_model;
+
+    val eds = runtime.create(progAs,None)
+
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleProjectOperationArguments("", poa))
   }
@@ -59,7 +67,9 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaTypeUsageTest._
 
-  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
+  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler(CompilerFactory.create())))
+
+  private val tsPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create())))
 
   it should "find boot package using let and rug" in {
     val program =
@@ -71,7 +81,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
       """.stripMargin
 
-    attemptToModify(program, NewSpringBootProject, Map()) match {
+    attemptToModify(program, "editors/PackageFinder.rug", NewSpringBootProject, Map()) match {
       case nmn: NoModificationNeeded => // Ok
     }
   }
@@ -79,12 +89,10 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "find boot package using let and typescript" in {
     val program =
       """
-        |import {ProjectEditor} from "user-model/operations/ProjectEditor"
-        |import {Status, Result} from "user-model/operations/RugOperation"
-        |import {Project,SpringBootProject} from 'user-model/model/Core'
-        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
-        |
-        |declare var print
+        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+        |import {Status, Result} from "@atomist/rug/operations/RugOperation"
+        |import {Project,SpringBootProject} from '@atomist/rug/model/Core'
+        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
         |
         |class PackageFinder implements ProjectEditor {
         |    name: string = "package.finder"
@@ -93,7 +101,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let pe = new PathExpression<Project,SpringBootProject>(`->SpringBootProject`)
         |      let p = eng.scalar(project, pe)
-        |      //if (p == null)
         |      return new Result(Status.Success, "OK");
         |    }
         |}
@@ -101,7 +108,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |var finder = new PackageFinder()
       """.stripMargin
 
-    attemptToModify(program, NewSpringBootProject, Map(), runtime = ccPipeline) match {
+    attemptToModify(program, "editors/PackageFinder.ts", NewSpringBootProject, Map(), runtime = tsPipeline) match {
       case nmn: NoModificationNeeded => // Ok
     }
   }
@@ -263,7 +270,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin
 
     val as = new SimpleFileBasedArtifactSource("", dog)
-    val result = executeJava(program, as)
+    val result = executeJava(program, "editors/ClassAnnotated.rug", as)
     result.allFiles.foreach(f => {
       logger.debug(f.path + "\n" + f.content + "\n")
     })
@@ -286,7 +293,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val as = new SimpleFileBasedArtifactSource("", Seq(dog, cat, squirrel))
 
-    val result = executeJava(program, as)
+    val result = executeJava(program,"editors/ClassAnnotated.rug",  as)
     result.allFiles.foreach(f => {
       logger.debug(f.path + "\n" + f.content + "\n")
     })
@@ -310,7 +317,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  rename to "Dingo"
       """.stripMargin
     val as = new SimpleFileBasedArtifactSource("", dog)
-    val result = executeJava(program, as)
+    val result = executeJava(program, "editors/ClassAnnotated.rug", as)
 
     val f = result.findFile("src/main/java/com/foo/bar/Dingo.java").get
     result.findFile(dog.path).isDefined should be(false)
@@ -320,7 +327,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "verify users of renamed class are updated" is pending
 
   private def annotateClass(program: String): Unit = {
-    val result = executeJava(program)
+    val result = executeJava(program,"editors/ClassAnnotated.rug")
     val f = result.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)
@@ -338,7 +345,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addImport "java.util.List"
       """.stripMargin
 
-    val r = executeJava(program)
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)
@@ -368,7 +375,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addAnnotation '$pkg' '$ann'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program, "editors/ClassAnnotated.rug", as)
     val f = r.findFile(impl.path).get
     f.content.lines.size should be > (0)
     f.content shouldNot include(s"import $pkg.$ann")
@@ -397,7 +404,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |   addAnnotation '$pkg' '$ann'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program, "editors/ClassExtended.rug", as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
     unupdatedParentFile shouldEqual(parentFile)
@@ -428,7 +435,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          |   addAnnotation '$pkg' '$ann'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program, "editors/ClassExtended.rug", as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
     unupdatedParentFile shouldEqual(parentFile)
@@ -459,7 +466,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          |   setHeaderComment '$newHeader'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program, "editors/ClassAnnotated.rug", as)
 
     val unupdatedNotRelevantFile = r.findFile(notRelevantFile.path).get
     unupdatedNotRelevantFile shouldEqual(notRelevantFile)
@@ -477,7 +484,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          |   setHeaderComment '$newHeader1'
       """.stripMargin
 
-    val r1 = executeJava(program1, as)
+    val r1 = executeJava(program1,"editors/ClassAnnotated.rug", as)
 
     val unupdatedNotRelevantFile1 = r1.findFile(notRelevantFile.path).get
     unupdatedNotRelevantFile1 shouldEqual(notRelevantFile)
@@ -507,7 +514,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program,"editors/ClassAnnotated.rug", as)
 
     val unchangedImpl = r.findFile(impl.path).get
     unchangedImpl.content contentEquals (impl.content) should be(true)
@@ -532,7 +539,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
          |   addAnnotation 'com.foo.bar' 'Baz'
       """.stripMargin
 
-    val r = executeJava(program, as)
+    val r = executeJava(program, "editors/AbstractClass.rug", as)
 
     val updatedInterface = r.findFile(interfaceFile.path).get
     updatedInterface.content should include(s"import com.foo.bar.Baz;")
@@ -560,7 +567,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
 
-    val r = executeJava(program)
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)
@@ -581,7 +588,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
 
-    val r = executeJava(program)
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)
@@ -602,7 +609,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
 
-    val r = executeJava(program)
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)
@@ -623,7 +630,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |  addAnnotation "com.someone" "Foobar"
       """.stripMargin
 
-    val r = executeJava(program)
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > (0)

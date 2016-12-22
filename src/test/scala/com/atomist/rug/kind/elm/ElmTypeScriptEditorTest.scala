@@ -1,5 +1,7 @@
 package com.atomist.rug.kind.elm
 
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.rug.{CompilerChainPipeline, RugPipeline}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -10,7 +12,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
   import ElmTypeScriptEditorTestResources._
 
   val typeScriptPipeline: RugPipeline =
-    new CompilerChainPipeline(Seq(new RugTranspiler()))
+    new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler(CompilerFactory.create())))
 
   it should "produce a README with a link" in {
     val projectName = "Elminess"
@@ -46,10 +48,10 @@ object ElmTypeScriptEditorTestResources {
 
   val ReleaseEditor: String =
     """
-      |import {Status, Result} from "user-model/operations/RugOperation"
-      |import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+      |import {Status, Result} from "@atomist/rug/operations/RugOperation"
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
       |
       |class Release implements ProjectEditor  {
       |

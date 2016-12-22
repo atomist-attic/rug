@@ -2,8 +2,10 @@ package com.atomist.rug.kind.xml
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class XmlUsageTest extends FlatSpec with Matchers {
@@ -60,7 +62,9 @@ class XmlUsageTest extends FlatSpec with Matchers {
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
 
     val newName = "Foo"
-    attemptModification(prog, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "new_name" -> newName
     )))
   }

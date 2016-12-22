@@ -4,19 +4,20 @@ import java.util
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.NoModificationNeeded
+import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeScriptArrayTest extends FlatSpec with Matchers {
 
   val EditorWithFancyListArray =
-    """import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {File} from 'user-model/model/Core'
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {File} from '@atomist/rug/model/Core'
       |
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |
       |declare var Java
@@ -38,7 +39,7 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |
       |       this.lyst[0].toString()
       |
-      |       //ensure we return another TypeArray
+      |       //ensure we return another TypeScriptArray
       |       project.files().sort().sort()
       |
       |       this.lyst.filter(t => true)
@@ -234,9 +235,9 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
-    val as = SimpleFileBasedArtifactSource(tsf)
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as, TemporaryRegistry).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as, context = new JavaScriptContext(as,Set("java.util.ArrayList","com.atomist.util.lang.TypeScriptArray"))).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))

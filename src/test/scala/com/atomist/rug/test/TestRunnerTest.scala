@@ -6,6 +6,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class TestRunnerTest extends FlatSpec with Matchers {
 
+  import com.atomist.rug.InterpreterRugPipeline._
+
   val testRunner = new TestRunner
 
   it should "fail when not finding editor" in {
@@ -191,7 +193,16 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dog"
         |do rename "Cat"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg, namespace)
+
+
+//    val as =
+//      new SimpleFileBasedArtifactSource(DefaultRugArchive,
+//        StringFileArtifact(defaultFilenameFor(input), input))
+
+    val rp =new DefaultRugPipeline()
+
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
+    val eds = rp.create(as, namespace)
     val testProg = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(testProg, rugAs, eds)
     executedTests.tests.size should be(1)
@@ -207,7 +218,8 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg, Some("testnamespace"))
+    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", edProg))
+    val eds = new DefaultRugPipeline().create(as,  Some("testnamespace"))
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -244,7 +256,8 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg)
+    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", edProg))
+    val eds = new DefaultRugPipeline().create(as,  None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -276,7 +289,10 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dogxxxx"
         |do rename "Cat"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
+    val eds = rp.create(as,  None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -308,7 +324,12 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dog"
         |do fail "This is bad"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg)
+
+
+
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
+    val eds = rp.create(as,  None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -342,7 +363,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg)
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
+    val eds = rp.create(as,  None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -375,7 +398,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(edProg)
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
+    val eds = rp.create(as,  None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -437,7 +462,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |	 and fileContains "README.md" "Harry Potter"
          |	 and fileContains "README.md" "Boy Wizard"
       """.stripMargin
-    val eds = new DefaultRugPipeline().createFromString(prog)
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+    val eds = rp.create(as,  None)
     val readme = StringFileArtifact("README.md",
       """
         |# {{name}}

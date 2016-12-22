@@ -2,6 +2,7 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.review.{ProjectReviewer, ReviewResult, Severity}
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -86,7 +87,6 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
   private def review(as: ArtifactSource, prog: String): ReviewResult = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
-    //eds.size should be (1)
     val pe = eds.head.asInstanceOf[ProjectReviewer]
     pe.review(as, SimpleProjectOperationArguments.Empty)
   }

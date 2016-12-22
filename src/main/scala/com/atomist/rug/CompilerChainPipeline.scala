@@ -21,8 +21,7 @@ class CompilerChainPipeline(compilers: Seq[Compiler],
   override def create(rugArchive: ArtifactSource,
                       namespace: Option[String],
                       knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
-    val withTypeScripts = comps.reduce(_ compose _)(rugArchive)
-    JavaScriptOperationFinder.fromTypeScriptArchive(withTypeScripts)
+    JavaScriptOperationFinder.fromJavaScriptArchive(comps.reduce(_ compose _)(rugArchive))
   }
 
   @throws[BadRugPackagingException]

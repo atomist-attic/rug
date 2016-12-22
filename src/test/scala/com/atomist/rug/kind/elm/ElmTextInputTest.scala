@@ -273,7 +273,8 @@ object ElmTextInputTest {
       new StringFileArtifact("AddToMessage.rug", "AddToMessage.rug", AddToModel)
     )
     val as = new SimpleFileBasedArtifactSource("whatever", files)
-    val eds = runtime.createFromString(program)
+    val rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", program))
+    val eds = runtime.create(rugAs,None)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
     val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))

@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.rug.InvalidRugParameterPatternException
+import com.atomist.rug.{InvalidRugParameterPatternException, TestUtils}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -14,10 +14,10 @@ object JavaScriptInvokingProjectOperationTest {
 
     val SimpleEditorWithBrokenParameterPattern =
         s"""
-           |import {Project} from 'user-model/model/Core'
-           |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-           |import {File} from 'user-model/model/Core'
-           |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
+           |import {Project} from '@atomist/rug/model/Core'
+           |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+           |import {File} from '@atomist/rug/model/Core'
+           |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
            |
            |class SimpleEditor implements ProjectEditor {
            |    name: string = "Simple"
@@ -36,10 +36,10 @@ object JavaScriptInvokingProjectOperationTest {
 
     val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
         s"""
-           |import {Project} from 'user-model/model/Core'
-           |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-           |import {File} from 'user-model/model/Core'
-           |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
+           |import {Project} from '@atomist/rug/model/Core'
+           |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+           |import {File} from '@atomist/rug/model/Core'
+           |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
            |
            |class SimpleEditor implements ProjectEditor {
            |    name: string = "Simple"
@@ -70,13 +70,10 @@ class JavaScriptInvokingProjectOperationTest  extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
-        val as = SimpleFileBasedArtifactSource(tsf)
-        val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+        val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+        val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
         jsed.name should be("Simple")
-
-
         val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
-
         jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "http://blah.com"))) match {
             case _ =>
         }

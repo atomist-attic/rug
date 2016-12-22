@@ -2,10 +2,11 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
 import com.atomist.rug.ts.RugTranspiler
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline, TestUtils}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -46,11 +47,11 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
        params = s"""[$p1, $p2]"""
     }
     s"""
-        |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-        |import {Project,ElmModule} from 'user-model/model/Core'
-        |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+        |import {Project,ElmModule} from '@atomist/rug/model/Core'
+        |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |
-        |import {Result,Status,Parameter} from 'user-model/operations/RugOperation'
+        |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
         |
         |let params: Parameter[] = $params
         |
@@ -779,7 +780,8 @@ object ElmTypeUsageTest extends LazyLogging {
                  runtime: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
                 ): ArtifactSource = {
 
-    val eds = runtime.createFromString(program)
+    val as = TestUtils.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program)))
+    val eds = runtime.create(as,  None)
     if (eds.isEmpty) {
       print(program); throw new Exception("No editor was parsed")
     }

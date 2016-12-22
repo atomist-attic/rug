@@ -10,7 +10,7 @@ object NashornConstructorTest {
   val SimpleJavascriptEditor: String =
     """
       |"use strict";
-      |var RugOperation_1 = require('user-model/operations/RugOperation');
+      |var RugOperation_1 = require('@atomist/rug/operations/RugOperation');
       |var SimpleEditor = (function () {
       |    function SimpleEditor() {
       |        this.name = "Simple";

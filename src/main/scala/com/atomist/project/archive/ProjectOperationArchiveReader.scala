@@ -32,6 +32,7 @@ class ProjectOperationArchiveReader(
   }
 
   // We skip any file with declare var atomist as we can't satisfy it here
+  //TODO - remove this!
   private val hasDeclareVarAtomist: FileArtifact => Boolean = f =>
     f.name.endsWith(".ts") && "declare[\\s]+var[\\s]+atomist".r.findAllMatchIn(f.content).nonEmpty
 
@@ -39,7 +40,7 @@ class ProjectOperationArchiveReader(
                      namespace: Option[String],
                      otherOperations: Seq[ProjectOperation],
                      shouldSuppress: FileArtifact => Boolean = hasDeclareVarAtomist): Operations = {
-    val fromTs = JavaScriptOperationFinder.fromTypeScriptArchive(startingProject)
+    val fromTs = JavaScriptOperationFinder.fromJavaScriptArchive(startingProject)
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations ++ fromTs)
 
     val operations = fromOldPipeline ++ fromTs

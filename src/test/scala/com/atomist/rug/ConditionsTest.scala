@@ -2,6 +2,7 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit._
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -289,8 +290,12 @@ class ConditionsTest extends FlatSpec with Matchers {
 
   private def create(prog: String): ProjectEditor = {
     val filename = "whatever.txt"
+
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.createFromString(prog)
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(prog), prog))
+    val eds = runtime.create(as,  None)
+
+
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe
   }

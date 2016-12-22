@@ -1,12 +1,15 @@
 package com.atomist.rug.exec
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.archive.ProjectOperationArchiveReader
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import java.io.File
+
+import com.atomist.project.{Executor, SimpleProjectOperationArguments}
+import com.atomist.rug.compiler.typescript.{TypeScriptCompiler}
 import com.atomist.rug.kind.service._
 import com.atomist.rug.runtime.rugdsl.RugDrivenExecutor
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
+import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline, TestUtils}
 import com.atomist.source._
+import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -14,7 +17,7 @@ import scala.collection.mutable.ListBuffer
 
 class RugDrivenExecutorTest extends FlatSpec with Matchers {
 
-  val ccPipeline: RugPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler()))
+  val ccPipeline: RugPipeline = new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler()))
 
   it should "update all projects" in {
     val content = "What is this, the high hat?"
@@ -129,9 +132,9 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
     val content = "What is this, the high hat?"
     updateAllProjects(content,
       s"""
-         |import {Executor} from "user-model/operations/Executor"
-         |import {Services} from "user-model/model/Core"
-         |import {Result,Status} from "user-model/operations/RugOperation"
+         |import {Executor} from "@atomist/rug/operations/Executor"
+         |import {Services} from "@atomist/rug/model/Core"
+         |import {Result,Status} from "@atomist/rug/operations/RugOperation"
          |
          |class AddSomeCaspar implements Executor {
          |    description: string = "An angry executor"
@@ -174,14 +177,11 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
   private def updateAllProjects(content: String, rug: String,
                                 rugPath: String = "executors/AddSomeCaspar.rug",
                                 pipeline: RugPipeline = new DefaultRugPipeline()) {
-    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, rug))
-//    val CasparRangesFree = pipeline.create(
-//      as,
-//      None
-//    ).head.asInstanceOf[RugDrivenExecutor]
+    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, rug)) + TestUtils.user_model;
 
-    val ops = new ProjectOperationArchiveReader().findOperations(as, None, Nil)
-    val CasparRangesFree = ops.executors.head
+    //val files = as.allFiles
+    val ops = pipeline.create(as,None)
+    val CasparRangesFree = ops.head.asInstanceOf[Executor]
 
     val donny = EmptyArtifactSource("")
     val dude = new SimpleFileBasedArtifactSource("dude", StringFileArtifact("question", "Mind if i light up a J?"))

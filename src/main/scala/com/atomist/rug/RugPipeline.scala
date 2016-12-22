@@ -39,7 +39,6 @@ trait RugPipeline {
         StringFileArtifact(defaultFilenameFor(input), input))
     create(as, namespace, otherOperations)
   }
-
   /**
     * Determine if this program is Rug or TypeScript and name the file
     * we create accordingly

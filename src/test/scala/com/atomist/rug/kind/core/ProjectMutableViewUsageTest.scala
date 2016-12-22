@@ -2,7 +2,9 @@ package com.atomist.rug.kind.core
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.ModificationAttempt
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProjectMutableViewUsageTest extends FlatSpec with Matchers {
@@ -29,7 +31,9 @@ class ProjectMutableViewUsageTest extends FlatSpec with Matchers {
     val filename = "thing.yml"
 
     val newName = "Foo"
-    attemptModification(prog, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "new_name" -> newName
     )))
   }

@@ -3,6 +3,8 @@ package com.atomist.rug
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -22,7 +24,11 @@ class PathExtractionTest extends FlatSpec with Matchers {
          |  do append "foo=bar"
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head
+
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+    val ed = rp.create(as,None).head
+
+
     // Check it works OK with these parameters
     ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
@@ -43,7 +49,12 @@ class PathExtractionTest extends FlatSpec with Matchers {
          |  do append m
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head
+
+
+    val rugAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+
+    val ed = rp.create(rugAs,None).head
+
     // Check it works OK with these parameters
     ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty)
     match {
@@ -65,7 +76,11 @@ class PathExtractionTest extends FlatSpec with Matchers {
         |  do append m
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head
+
+    val rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", prog))
+
+    val ed = rp.create(rugAs,None).head
+
     // Check it works OK with these parameters
     ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty)
     match {

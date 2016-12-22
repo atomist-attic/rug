@@ -1,7 +1,7 @@
 package com.atomist.project.archive
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.rug.Import
+import com.atomist.rug.{Import, TestUtils}
 import com.atomist.rug.exec.FakeServiceSource
 import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
@@ -98,10 +98,9 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "find typescript editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val as = SimpleFileBasedArtifactSource(
-      StringFileArtifact(".atomist/editors/SimpleEditor.ts",
-        TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
-    )
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/SimpleEditor.ts", TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
+    ))
     val ops = apc.findOperations(as, None, Nil)
     ops.editors.size should be(1)
     ops.editors.head.parameters.size should be(2)
@@ -109,9 +108,9 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   val SimpleExecutor =
     """
-      |import {Executor} from 'user-model/operations/Executor'
-      |import {Parameter, Result, Status} from 'user-model/operations/RugOperation'
-      |import {Services} from 'user-model/model/Core'
+      |import {Executor} from '@atomist/rug/operations/Executor'
+      |import {Parameter, Result, Status} from '@atomist/rug/operations/RugOperation'
+      |import {Services} from '@atomist/rug/model/Core'
       |
       |class SimpleExecutor implements Executor{
       |    name: string = "SimpleExecutor"
@@ -125,10 +124,9 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """.stripMargin
   it should "find typescript executor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val as = SimpleFileBasedArtifactSource(
-      StringFileArtifact(".atomist/executors/SimpleExecutor.ts",
-        SimpleExecutor)
-    )
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/executors/SimpleExecutor.ts", SimpleExecutor)
+    ))
     val ops = apc.findOperations(as, None, Nil)
     ops.executors.size should be(1)
     ops.executors.head.parameters.size should be(0)
@@ -140,12 +138,12 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
-    val rugAs = SimpleFileBasedArtifactSource(
+    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
       f1,
       f2
-    )
+    ))
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.generators.size should be(1)
     ops.generators.head.parameters.size should be(0)
@@ -169,7 +167,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
         NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
-    )
+    ) + TestUtils.user_model
+
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.editors.size should be(1)
     ops.editors.head.parameters.size should be(1)
@@ -183,8 +182,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     // We don't know the Atomist declared variable. So ignore it.
     val handler =
       s"""
-         |import {Atomist} from "user-model/operations/Handler"
-         |import {Project,File} from "user-model/model/Core"
+         |import {Atomist} from "@atomist/rug/operations/Handler"
+         |import {Project,File} from "@atomist/rug/model/Core"
          |
          |declare var atomist: Atomist  // <= this is for the compiler only
          |
@@ -196,13 +195,13 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
          |})
          |
       """.stripMargin
-    val rugAs = SimpleFileBasedArtifactSource(
+    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
       f1,
       f2,
       StringFileArtifact(".atomist/handlers/sub.ts", handler)
-    )
+    ))
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.generators.size should be(1)
     ops.generators.head.parameters.size should be(0)

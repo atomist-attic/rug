@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.elm
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{DirectoryArtifactMutableView, FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{DirectoryMutableView, FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
@@ -41,7 +41,7 @@ class ElmModuleType(
           Some(Seq(new ElmModuleMutableView(f.currentBackingObject, elmp)))
         else
           Some(Nil)
-      case d: DirectoryArtifactMutableView =>
+      case d: DirectoryMutableView =>
         val elmp = new ElmProjectMutableView(d.parent)
         Some(elmp.currentBackingObject
           .allFiles

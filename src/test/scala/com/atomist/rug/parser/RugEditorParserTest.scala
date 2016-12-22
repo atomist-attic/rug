@@ -672,4 +672,47 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
     an[BadRugSyntaxException] should be thrownBy ri.parse(prog)
   }
+
+  // TODO this can cause the parser to hang. Should investigate
+
+//  it should "handle problematic path expression" in {
+//    val prog =
+//      """
+//        |editor NewStaticPage
+//        |
+//        |SwitchProjectName
+//        |SetRepository
+//        |SetSummary
+//        |
+//        |editor SetSummary
+//        |
+//        |let descriptionField = $(/*[@name='elm-package.json']/Json()/summary)
+//        |
+//        |with descriptionField
+//        |  do setValue description
+//        |
+//        |
+//        |editor SetRepository
+//        |
+//        |param org: @group_id
+//        |param project_name: @project_name
+//        |
+//        |let repositoryField = 'x'
+//        |
+//        |with repositoryField
+//        |  do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
+//        |
+//        |editor SwitchProjectName
+//        |
+//        |	@description "Name of the new project"
+//        |	@displayName "Name"
+//        |	param project_name: @project_name
+//        |
+//        |  with File do append 'x'
+//        |
+//      """.stripMargin
+//    ri.parse(prog)
+//  }
+
+
 }

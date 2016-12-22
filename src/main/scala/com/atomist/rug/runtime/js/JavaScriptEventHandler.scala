@@ -29,7 +29,7 @@ class JavaScriptEventHandler(
 
   val pathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
-  override val rootNodeName: String = pathExpression.elements.head.test match {
+  override val rootNodeName: String = pathExpression.locationSteps.head.test match {
     case nnt: NamedNodeTest => nnt.name
     case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }

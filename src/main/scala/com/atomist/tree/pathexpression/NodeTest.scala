@@ -30,7 +30,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
     case Right(nodes) =>
-      Right(nodes.filter(tn => predicate(tn, nodes)))
+      ExecutionResult(nodes.filter(tn => predicate(tn, nodes)))
     case failure => failure
   }
 
@@ -39,23 +39,16 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     * This one works but can be expensive.
     */
   protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
-    case Self => Right(List(tn))
+    case Self => ExecutionResult(List(tn))
     case Child => tn match {
       case ctn: ContainerTreeNode =>
         val kids = ctn.childNodes.toList
-        Right(kids)
+        ExecutionResult(kids)
       case x => ExecutionResult.empty
     }
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
-      Right(kids)
-    case DescendantOrSelf =>
-      sourceNodes(tn, Descendant, typeRegistry) match {
-        case Right(nodes) => Right(tn +: nodes)
-        case failure => failure
-      }
-    case ctj: ChildTypeJump =>
-      ExecutionResult(ctj.follow(tn, typeRegistry))
+      ExecutionResult(kids)
   }
 }
 
@@ -95,19 +88,3 @@ case class NamedNodeTest(name: String)
   }
 
 }
-
-/**
-  * Return all nodes of the given type
-  * @param typeName
-  * @param nameWildcard * or a node name
-  */
-case class OfType(typeName: String, nameWildcard: String)
-  extends PredicatedNodeTest(s"type=[$typeName]",
-    Predicate(
-      s"type=[$typeName],name=[$nameWildcard]",
-      (tn, _) => tn.nodeType.equals(typeName) && (nameWildcard match {
-        case "*" => true
-        case name => tn.nodeName.equals(name)
-      })
-    )
-  )

@@ -156,7 +156,7 @@ object TypeScriptRugEditorTest {
       |    edit(project: Project, {packageName } : {packageName: string}) {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-      |      let pe = new PathExpression<Project,File>(`/*:File[name='pom.xml']`)
+      |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
       |      //console.log(pe.expression);
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
@@ -199,7 +199,7 @@ object TypeScriptRugEditorTest {
       |      project.files().filter(t => false)
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      eng.with<File>(project, "/*:File[name='pom.xml']", n => {
+      |      eng.with<File>(project, "/*[@name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
@@ -238,7 +238,7 @@ object TypeScriptRugEditorTest {
       |
       |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
       |
-      |      eng.with<File>(project, "->File", n => {
+      |      eng.with<File>(project, "/File()", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })

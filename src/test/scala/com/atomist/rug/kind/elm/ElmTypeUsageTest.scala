@@ -116,7 +116,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       |param new_name: ^[A-Z][\w]+$
       |
       | # TODO note hard coding here
-      |let em = $(/->ElmModule[name='Todo'])
+      |let em = $(/ElmModule()[@name='Todo'])
       |
       |with em
       | do rename new_name

@@ -63,7 +63,7 @@ object ElmTypeScriptEditorTestResources {
       |    let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
       |    let pe = new PathExpression<Project,TreeNode>(
-      |     `/*:File[name='elm-package.json']->Json/summary/[1]`)
+      |     `/File()[@name='elm-package.json']/Json()/summary/[1]`)
       |    let description: TreeNode = eng.scalar(project, pe)
       |
       |     if (!project.fileExists("README.md")) {

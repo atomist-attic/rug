@@ -76,7 +76,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """
         |editor PackageFinder
         |
-        |let spb = $(->SpringBootProject)
+        |let spb = $(/SpringBootProject())
         |
         |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
       """.stripMargin
@@ -99,7 +99,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    description: string = "Find a spring boot package"
         |    edit(project: Project): Result {
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,SpringBootProject>(`->SpringBootProject`)
+        |      let pe = new PathExpression<Project,SpringBootProject>(`/SpringBootProject()`)
         |      let p = eng.scalar(project, pe)
         |      return new Result(Status.Success, "OK");
         |    }

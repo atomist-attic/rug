@@ -20,22 +20,20 @@ trait PathExpressionParser extends CommonTypesParser {
   private def child: Parser[AxisSpecifier] = opt("child::") ^^
     (s => Child)
 
-  private def nodeTypeTest: Parser[ObjectType] = objectType ~ "()" ^^ {
-    case p ~ _ => ObjectType(p)
-  }
+  private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
 
   private def test(extracted: Any, value: Any, n: TreeNode): Boolean = {
     value.equals(extracted)
   }
 
-  private def propertyTest: Parser[Predicate] = opt("@") ~ nodeName ~ EqualsToken ~ singleQuotedString ^^ {
-    case at ~ prop ~ op ~ literal =>
-      val f: TreeNode => Boolean = (at, prop) match {
-        case (None, "name") =>
+  private def propertyTest: Parser[Predicate] = "@" ~> nodeName ~ EqualsToken ~ singleQuotedString ^^ {
+    case prop ~ op ~ literal =>
+      val f: TreeNode => Boolean = prop match {
+        case "name" =>
           n => test(n.nodeName, literal, n)
-        case (None, "type") =>
+        case "type" =>
           n => test(n.nodeType, literal, n)
-        case (Some(at), propName) =>
+        case propName =>
           n => {
             n match {
               case ctn: ContainerTreeNode =>
@@ -47,7 +45,7 @@ trait PathExpressionParser extends CommonTypesParser {
               case _ => false
             }
           }
-        case _ => throw new IllegalArgumentException(s"Cannot access property [$prop] with @=$at")
+        case _ => throw new IllegalArgumentException(s"Cannot access property [$prop]")
       }
       SimplePredicate(s"$prop=$literal", (tn, _) => f(tn))
   }
@@ -76,7 +74,7 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private def index: Parser[Predicate] = integer ^^ {
-    case n => new IndexPredicate(s"[$index]", n)
+    case n => new IndexPredicate(s"[$n]", n)
   }
 
   private def truePredicate: Parser[Predicate] = "true" ^^ (_ => TruePredicate)

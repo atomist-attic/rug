@@ -29,7 +29,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     ls.predicate should be (None)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
-      case _ => fail("node test is not a NamedNodeTest")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
     }
   }
 
@@ -42,7 +42,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     ls.predicate should be(None)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
-      case _ => fail("node test is not a NamedNodeTest")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
     }
   }
 
@@ -69,7 +69,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     ls.predicate should be (None)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
-      case _ => fail("node test is not a NamedNodeTest")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
     }
   }
 
@@ -82,7 +82,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     ls.predicate should be(None)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
-      case _ => fail("node test is not a NamedNodeTest")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
     }
   }
 
@@ -109,6 +109,39 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     ls.predicate should be(None)
     ls.test should be(ObjectType("Issue"))
   }
+
+  it should "parse an index predicate" in {
+    val pe = "/dude[4]"
+    val parsed = pep.parsePathExpression(pe)
+    parsed.elements.size should be (1)
+    val ls = parsed.elements.head
+    ls.axis should be(Child)
+    ls.predicate match {
+      case Some(p@IndexPredicate("[4]", 4)) =>
+      case x => fail(s"predicate did not match expected type: $x")
+    }
+    ls.test match {
+      case nnt: NamedNodeTest => nnt.name should be ("dude")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
+    }
+  }
+
+  it should "parse a simple predicate" in {
+    val pe = "/dude[@size='large']"
+    val parsed = pep.parsePathExpression(pe)
+    parsed.elements.size should be (1)
+    val ls = parsed.elements.head
+    ls.axis should be(Child)
+    ls.predicate match {
+      case Some(p@SimplePredicate("size=large", _)) =>
+      case x => fail(s"predicate did not match expected type: $x")
+    }
+    ls.test match {
+      case nnt: NamedNodeTest => nnt.name should be ("dude")
+      case x => fail(s"node test is not a NamedNodeTest: $x")
+    }
+  }
+
 //  it should "parse expression with type jump" in {
 //    val pe = "/issue/test1:repo/project/src/main/java//*:file->java.class"
 //    val parsed = pep.parsePathExpression(pe)

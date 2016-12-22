@@ -186,7 +186,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
           doStepCode(prog, d, wb.alias)
         }).mkString("\n")
 
-    val pathExpr = s"'->${wb.kind}'"
+    val pathExpr = s"'/${wb.kind}()'"
     val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${wb.alias} => {"
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
 

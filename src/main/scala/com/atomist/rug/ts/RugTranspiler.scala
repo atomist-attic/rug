@@ -190,12 +190,14 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${wb.alias} => {"
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
 
-    if (!wb.kind.equals(outerAlias)) {
+    val referencingAccessibleThing = Set("Project", "Services").contains(wb.kind)
+      //!wb.kind.equals(outerAlias)
+    if (!referencingAccessibleThing) {
       descent + "\n" + helper.indented(blockBody, 1) + "\n})"
     }
     else {
       // Special case where inner and outer block are the same type, like "with Project" under a project
-      (if (wb.alias.equals(wb.kind)) "" else s"let ${wb.alias} = ${wb.kind}\n") +
+      (if (wb.alias.equals(wb.kind)) "" else s"let ${wb.alias} = ${JavaHelpers.lowerize(wb.kind)}\n") +
       helper.indented(blockBody, 1)
     }
   }

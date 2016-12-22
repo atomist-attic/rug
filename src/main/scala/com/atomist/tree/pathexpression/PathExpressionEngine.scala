@@ -18,7 +18,6 @@ object PathExpressionEngine {
 
   val PredicateClose = "]"
 
-  val PathProperty = "[a-zA-Z][\\w]*".r
 }
 
 /**
@@ -48,10 +47,10 @@ class PathExpressionEngine extends ExpressionEngine {
           ExecutionResult(kids)
         case failure@Left(msg) => failure
       }
-      println(s"After evaluating $locationStep on $nodesToApplyNextStepTo we have $nextNodes")
+      //println(s"After evaluating $locationStep on $nodesToApplyNextStepTo we have $nextNodes")
       nodesToApplyNextStepTo = nextNodes
     }
-    println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
+    //println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
     nodesToApplyNextStepTo
   }
 

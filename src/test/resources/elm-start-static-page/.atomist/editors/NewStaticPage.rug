@@ -36,6 +36,20 @@ SwitchProjectName
 SetRepository
 SetSummary
 
+# TODO see what happens if this is the last editor! Hangs parser
+@description "Populate project name"
+editor SwitchProjectName
+
+	@description "Name of the new project"
+	@displayName "Name"
+	param project_name: @project_name
+
+  with File when path = "resources/index.html"
+	  begin
+  	  do regexpReplace "<title>.*</title>" { "<title>" + project_name + "</title>"}
+		end
+
+
 
 @description "Change the description in elm-package.json"
 editor SetSummary
@@ -59,16 +73,3 @@ let repositoryField = $(/*[@name='elm-package.json']/Json()/repository)
 
 with repositoryField
   do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
-
-
-@description "Populate project name"
-editor SwitchProjectName
-
-	@description "Name of the new project"
-	@displayName "Name"
-	param project_name: @project_name
-
-  with File when path = "resources/index.html"
-	  begin
-  	  do regexpReplace "<title>.*</title>" { "<title>" + project_name + "</title>"}
-		end

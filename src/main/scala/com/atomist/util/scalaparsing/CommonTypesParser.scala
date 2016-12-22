@@ -44,7 +44,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
   def singleQuote = "'"
 
-  def singleQuotedString: Parser[String] = singleQuote ~> """([^\']+)""".r <~ singleQuote
+  def singleQuotedString: Parser[String] = singleQuote ~> """[^']*""".r <~ singleQuote
 
   def tripleQuote: Parser[String] = "\"{3}".r
 

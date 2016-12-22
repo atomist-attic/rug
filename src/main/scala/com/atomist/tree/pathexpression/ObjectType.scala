@@ -51,9 +51,7 @@ case class ObjectType(typeName: String) extends NodeTest {
         ExecutionResult(findMeUnder(tn, typeRegistry))
       case Descendant =>
         val allDescendants = Descendant.allDescendants(tn)
-        println(s"All Descendants: $allDescendants")
         val found = allDescendants.filter(eligibleNode) ++ allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
-        println(s"Found Descendants: $found")
 
         // We may have duplicates in the found collection because, for example,
         // we might find the Java() node SomeClass.java under the directory "/src"

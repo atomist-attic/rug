@@ -13,7 +13,7 @@ import com.atomist.util.scalaparsing.CommonTypesParser
   */
 trait PathExpressionParser extends CommonTypesParser {
 
-  private def nodeName: Parser[String] = identifierRefString(Set(), PathProperty)
+  private def nodeName: Parser[String] = identifierRefString(Set(), ident)
 
   private def objectType: Parser[String] = identifierRefString(Set(), ident)
 
@@ -33,7 +33,7 @@ trait PathExpressionParser extends CommonTypesParser {
           n => test(n.nodeName, literal, n)
         case "type" =>
           n => test(n.nodeType, literal, n)
-        case propName =>
+        case propName: String =>
           n => {
             n match {
               case ctn: ContainerTreeNode =>
@@ -45,7 +45,6 @@ trait PathExpressionParser extends CommonTypesParser {
               case _ => false
             }
           }
-        case _ => throw new IllegalArgumentException(s"Cannot access property [$prop]")
       }
       SimplePredicate(s"$prop=$literal", (tn, _) => f(tn))
   }
@@ -86,7 +85,7 @@ trait PathExpressionParser extends CommonTypesParser {
     index
 
   private def negatedPredicate: Parser[Predicate] = "not" ~> "(" ~> predicateExpression <~ ")" ^^ {
-    case pred => new NegationOf(pred)
+    case pred => NegationOf(pred)
   }
 
   private def logicalOp: Parser[String] = "and" | "or"
@@ -125,6 +124,7 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private val slashSeparator = "/"
+
   def pathExpression: Parser[PathExpression] = slashSeparator ~> repsep(locationStep, slashSeparator) ^^
     (steps => PathExpression(steps))
 

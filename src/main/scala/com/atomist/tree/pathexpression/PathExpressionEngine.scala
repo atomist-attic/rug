@@ -18,7 +18,6 @@ object PathExpressionEngine {
 
   val PredicateClose = "]"
 
-  val PathProperty = "[a-zA-Z][\\w]*".r
 }
 
 /**
@@ -31,25 +30,28 @@ class PathExpressionEngine extends ExpressionEngine {
   override def evaluate(node: TreeNode, parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
-    var r: ExecutionResult = ExecutionResult(List(node))
-    for (e <- parsed.elements) {
-      r = r match {
+    var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
+    for (locationStep <- parsed.locationSteps) {
+      val nextNodes = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
-          val next = e.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
+          val next: ExecutionResult = locationStep.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
           next
         case Right(Nil) =>
-          Right(Nil)
+          ExecutionResult(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
-              e.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
+              locationStep.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
-          Right(kids.distinct)
+          ExecutionResult(kids)
         case failure@Left(msg) => failure
       }
+      //println(s"After evaluating $locationStep on $nodesToApplyNextStepTo we have $nextNodes")
+      nodesToApplyNextStepTo = nextNodes
     }
-    r
+    //println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
+    nodesToApplyNextStepTo
   }
 
 }
@@ -71,9 +73,5 @@ case class LocationStep(axis: AxisSpecifier, test: NodeTest, predicate: Option[P
 }
 
 case class PathExpression(
-                           elements: Seq[LocationStep]
-                         ) {
-
-  require(elements.nonEmpty, s"Must have path some elements in PathExpression")
-
-}
+                           locationSteps: Seq[LocationStep]
+                         )

@@ -13,36 +13,27 @@ import com.atomist.util.scalaparsing.CommonTypesParser
   */
 trait PathExpressionParser extends CommonTypesParser {
 
-  private def nodeName: Parser[String] = identifierRefString(Set(), PathProperty)
+  private def nodeName: Parser[String] = identifierRefString(Set(), ident)
 
-  private def nodeType: Parser[String] = identifierRefString(Set(), javaPackage)
+  private def objectType: Parser[String] = identifierRefString(Set(), ident)
 
-  private def child: Parser[AxisSpecifier] = "/" ^^
+  private def child: Parser[AxisSpecifier] = opt("child::") ^^
     (s => Child)
 
-  private def descendantOrSelf: Parser[AxisSpecifier] = "//" ^^
-    (s => DescendantOrSelf)
-
-  private def childTypeJump: Parser[ChildTypeJump] = "->" ~> nodeType ^^ {
-    case p => ChildTypeJump(p)
-  }
-
-  private def nodeTypeTest: Parser[OfType] = ("*" | nodeName) ~ ":" ~ nodeType ^^ {
-    case wildcard ~ _ ~ p => OfType(p, wildcard)
-  }
+  private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
 
   private def test(extracted: Any, value: Any, n: TreeNode): Boolean = {
     value.equals(extracted)
   }
 
-  private def propertyTest: Parser[Predicate] = opt("@") ~ nodeName ~ EqualsToken ~ singleQuotedString ^^ {
-    case at ~ prop ~ op ~ literal =>
-      val f: TreeNode => Boolean = (at, prop) match {
-        case (None, "name") =>
+  private def propertyTest: Parser[Predicate] = "@" ~> nodeName ~ EqualsToken ~ singleQuotedString ^^ {
+    case prop ~ op ~ literal =>
+      val f: TreeNode => Boolean = prop match {
+        case "name" =>
           n => test(n.nodeName, literal, n)
-        case (None, "type") =>
+        case "type" =>
           n => test(n.nodeType, literal, n)
-        case (Some(at), propName) =>
+        case propName: String =>
           n => {
             n match {
               case ctn: ContainerTreeNode =>
@@ -54,9 +45,8 @@ trait PathExpressionParser extends CommonTypesParser {
               case _ => false
             }
           }
-        case _ => throw new IllegalArgumentException(s"Cannot access property [$prop] with @=$at")
       }
-      Predicate(s"$prop=$literal", (tn, _) => f(tn))
+      SimplePredicate(s"$prop=$literal", (tn, _) => f(tn))
   }
 
   private def nullLiteral: Parser[Object] = "null" ^^ (_ => null)
@@ -67,7 +57,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
     case methodName ~ args ~ op ~ literal =>
-      Predicate(s".$methodName", (n, among) => {
+      SimplePredicate(s".$methodName", (n, among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
         Objects.equals(literal, invoked)
       })
@@ -79,11 +69,11 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def booleanMethodInvocation: Parser[Predicate] = "." ~> nodeName ~ args ^^ {
     case methodName ~ args =>
-      Predicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+      SimplePredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
   }
 
   private def index: Parser[Predicate] = integer ^^ {
-    case n => new IndexPredicate(s"[$index]", n)
+    case n => new IndexPredicate(s"[$n]", n)
   }
 
   private def truePredicate: Parser[Predicate] = "true" ^^ (_ => TruePredicate)
@@ -95,7 +85,7 @@ trait PathExpressionParser extends CommonTypesParser {
     index
 
   private def negatedPredicate: Parser[Predicate] = "not" ~> "(" ~> predicateExpression <~ ")" ^^ {
-    case pred => new NegationOf(pred)
+    case pred => NegationOf(pred)
   }
 
   private def logicalOp: Parser[String] = "and" | "or"
@@ -116,9 +106,12 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeTest: Parser[NodeTest] = nodeTypeTest | nodeNameTest | allNodes
 
-  private def self: Parser[AxisSpecifier] = "." ^^ (_ => Self)
+  private def attribute: Parser[AxisSpecifier] = ("attribute::" | "@") ^^ (s => Attribute)
 
-  private def axis: Parser[AxisSpecifier] = self | descendantOrSelf | child | childTypeJump
+  private def descendant: Parser[AxisSpecifier] = ("descendant::" | "/") ^^
+    (s => Descendant)
+
+  private def axis: Parser[AxisSpecifier] = attribute | descendant | child
 
   private def combine(preds: Seq[Predicate]): Option[Predicate] = preds match {
     case Nil => None
@@ -126,14 +119,14 @@ trait PathExpressionParser extends CommonTypesParser {
     case preds => Some(preds.head and combine(preds.tail).get)
   }
 
-  private def locationStep: Parser[LocationStep] = axis ~ opt(nodeTest) ~ rep(predicate) ^^ {
-    case a ~ Some(t) ~ preds => LocationStep(a, t, combine(preds))
-    case a ~ None ~ preds => LocationStep(a, All, combine(preds))
+  private def locationStep: Parser[LocationStep] = axis ~ nodeTest ~ rep(predicate) ^^ {
+    case a ~ t ~ preds => LocationStep(a, t, combine(preds))
   }
 
-  def pathExpression: Parser[PathExpression] = rep1(locationStep) ^^ (steps =>
-    PathExpression(steps)
-    )
+  private val slashSeparator = "/"
+
+  def pathExpression: Parser[PathExpression] = slashSeparator ~> repsep(locationStep, slashSeparator) ^^
+    (steps => PathExpression(steps))
 
   def parsePathExpression(expr: String): PathExpression = {
     try {

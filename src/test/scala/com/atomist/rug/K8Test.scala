@@ -201,7 +201,7 @@ class K8Test extends FlatSpec with Matchers {
         |param service: ^[\w.\-_]+$
         |param new_sha: ^[a-f0-9]{7}$
         |
-        |with Project p;
+        |with Project p
         |do
         |  regexpReplace { return service + ":[a-f0-9]{7}" } { service + ":" + new_sha };
       """.stripMargin

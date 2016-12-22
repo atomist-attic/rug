@@ -11,6 +11,16 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+  it should "return root node with / expression" in {
+    val tn = new ParsedMutableContainerTreeNode("name")
+    val fooNode = SimpleTerminalTreeNode("foo", "foo")
+    tn.appendField(fooNode)
+    tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
+    val expr = "/"
+    val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(tn))
+  }
+
   it should "find property in container tree node" in {
     val tn = new ParsedMutableContainerTreeNode("name")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")
@@ -48,7 +58,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "/nested//*[name='foo']"
+    val expr = "/nested//*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -64,7 +74,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     prop11.appendField(fooNode2)
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-    val expr = "/nested/level2/*[name='foo']"
+    val expr = "/nested/level2/*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -80,7 +90,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     prop11.appendField(fooNode2)
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-    val expr = "/nested/level2/*[name='foo']"
+    val expr = "/nested/level2/*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
@@ -99,11 +109,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
 
-    val expr = "/nested/level2/[1]"
+    val expr = "/nested/level2/*[1]"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1))
 
-    val expr2 = "/nested/level2/[2]"
+    val expr2 = "/nested/level2/*[2]"
     val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Seq(fooNode2))
   }
@@ -114,10 +124,12 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
       var touched: Boolean = false
     }
 
+    val rn = new ParsedMutableContainerTreeNode("root")
     val tn = new TouchableTreeNode
+    rn.appendField(tn)
 
-    val expr = ".[.foo()=null]"
-    val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry, Some{
+    val expr = "/*[.foo()=null]"
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry, Some{
       case ttn: TouchableTreeNode =>
         ttn.touched = true
         ttn
@@ -129,30 +141,34 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "compare value to null" in {
+    val rn = new ParsedMutableContainerTreeNode("root")
     val tn = new ParsedMutableContainerTreeNode("name") {
       def foo: String = null
     }
+    rn.appendField(tn)
 
-    val expr = ".[.foo()=null]"
-    val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
+    val expr = "/*[.foo()=null]"
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(tn))
 
-    val expr2 = ".[not(.foo()=null)]"
-    val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
+    val expr2 = "/*[not(.foo()=null)]"
+    val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Nil)
   }
 
   it should "compare method value to int" in {
+    val rn = new ParsedMutableContainerTreeNode("root")
     val tn = new ParsedMutableContainerTreeNode("name") {
       def age = 25
     }
+    rn.appendField(tn)
 
-    val expr = ".[.age()=25]"
-    val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
+    val expr = "/*[.age()=25]"
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(tn))
 
-    val expr2 = ".[.age()=26]"
-    val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
+    val expr2 = "/*[.age()=26]"
+    val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Nil)
   }
 

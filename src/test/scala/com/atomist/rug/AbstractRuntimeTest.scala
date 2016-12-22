@@ -2,7 +2,7 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
-import com.atomist.rug.kind.core.FileMutableView
+import com.atomist.rug.kind.core.FileArtifactMutableView
 import com.atomist.source.file.SimpleFileSystemArtifactSourceIdentifier
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -288,7 +288,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
     val fr = FixedRugFunctionRegistry(
       Map(
-        "isJava" -> new LambdaPredicate[FileMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
+        "isJava" -> new LambdaPredicate[FileArtifactMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
       )
     )
     val eds = pipeline.createFromString(program)

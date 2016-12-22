@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.js
 
-import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{FileArtifactMutableView, ProjectMutableView}
 import com.atomist.rug.runtime.lang.js.NashornExpressionEngine
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
@@ -15,7 +15,7 @@ import com.atomist.source.FileArtifact
 class PackageJsonMutableView(
                               originalBackingObject: FileArtifact,
                               parent: ProjectMutableView)
-  extends FileMutableView(originalBackingObject, parent) {
+  extends FileArtifactMutableView(originalBackingObject, parent) {
 
   // TODO we could probably make this more efficient by not using JavaScript
 

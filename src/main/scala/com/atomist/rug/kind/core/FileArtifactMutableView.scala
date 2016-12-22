@@ -8,11 +8,13 @@ import scala.collection.JavaConverters._
 /**
   * Mutable view for working directly with files.
   */
-class FileMutableView(
+class FileArtifactMutableView(
                                originalBackingObject: FileArtifact,
                                override val parent: ProjectMutableView)
   extends FileArtifactBackedMutableView(originalBackingObject, parent)
     with TerminalView[FileArtifact] {
+
+  override def nodeType: String = "File"
 
   @ExportFunction(readOnly = false, description = "If the file already contains the specified text, does nothing. Otherwise appends it to the file")
   def mustContain(@ExportFunctionParameterDescription(name = "content", description = "The content that the file will contain")

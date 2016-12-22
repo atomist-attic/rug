@@ -5,7 +5,7 @@ import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.FileMutableView
+import com.atomist.rug.kind.core.FileArtifactMutableView
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, LambdaPredicate, RugDrivenProjectEditor}
 import com.atomist.source._
@@ -91,7 +91,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
   it should "insist on identifiers being declared" in {
     val fr = FixedRugFunctionRegistry(
       Map(
-        "absquatulate" -> new LambdaPredicate[FileMutableView]("absquatulate", f => true)
+        "absquatulate" -> new LambdaPredicate[FileArtifactMutableView]("absquatulate", f => true)
       )
     )
     //val interpreter = new DefaultRugCompiler(compiler, DefaultTypeRegistry)

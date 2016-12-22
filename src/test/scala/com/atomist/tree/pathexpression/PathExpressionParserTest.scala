@@ -107,7 +107,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val ls = parsed.elements.head
     ls.axis should be(Child)
     ls.predicate should be(None)
-    ls.test should be()
+    ls.test should be(ObjectType("Issue"))
   }
 //  it should "parse expression with type jump" in {
 //    val pe = "/issue/test1:repo/project/src/main/java//*:file->java.class"

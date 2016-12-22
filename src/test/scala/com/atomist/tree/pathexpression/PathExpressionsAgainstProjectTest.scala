@@ -2,6 +2,7 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
+import com.atomist.rug.RugCompilerTest
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.elm.ElmModuleMutableView
@@ -113,6 +114,15 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
     }
+  }
+
+  it should "find all files under project" in {
+    val pexp = "//File()"
+    val proj = RugCompilerTest.JavaAndText
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    rtn.right.get.size should be(3)
+    //rtn.right.get.map(_.)
   }
 
   it should "double descend into Java type with superfluous but valid File() type" in {

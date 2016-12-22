@@ -116,6 +116,22 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "find everything under project" in {
+    val pexp = "//*"
+    val proj = RugCompilerTest.JavaAndText
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    rtn.right.get.size should be(6)
+  }
+
+  it should "find every file under project" in {
+    val pexp = "//*/File()"
+    val proj = RugCompilerTest.JavaAndText
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    rtn.right.get.size should be(1)
+  }
+
   it should "find all files under project" in {
     val pexp = "//File()"
     val proj = RugCompilerTest.JavaAndText

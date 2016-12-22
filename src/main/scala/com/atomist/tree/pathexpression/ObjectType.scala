@@ -24,10 +24,12 @@ case class ObjectType(typeName: String) extends NodeTest {
     throw new IllegalArgumentException(s"Type [$typeName] does not support contextless resolution")
   )
 
+  private val eligibleNode: TreeNode => Boolean = n => typeName.equals(n.nodeType)
+
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {
     tn match {
       case ctn: ContainerTreeNode =>
-        val directKids = ctn.childNodes.filter(n => typeName.equals(n.nodeType))
+        val directKids = ctn.childNodes.filter(eligibleNode)
         if (directKids.nonEmpty)
           directKids
         else
@@ -48,8 +50,10 @@ case class ObjectType(typeName: String) extends NodeTest {
       case Child =>
         ExecutionResult(findMeUnder(tn, typeRegistry))
       case Descendant =>
-        val allDescendants = Descendant.allDescendants(tn).distinct
-        val found = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+        val allDescendants = Descendant.allDescendants(tn)
+        println(s"All Descendants: $allDescendants")
+        val found = allDescendants.filter(eligibleNode) ++ allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+        println(s"Found Descendants: $found")
 
         // We may have duplicates in the found collection because, for example,
         // we might find the Java() node SomeClass.java under the directory "/src"

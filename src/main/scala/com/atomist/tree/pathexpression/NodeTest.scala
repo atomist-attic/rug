@@ -88,15 +88,3 @@ case class NamedNodeTest(name: String)
   }
 
 }
-
-/**
-  * Return all nodes of the given type
-  * @param typeName
-  */
-case class ObjectType(typeName: String)
-  extends PredicatedNodeTest(s"type=[$typeName]",
-    SimplePredicate(
-      s"type=[$typeName]",
-      (tn, _) => tn.nodeType.equals(typeName)
-    )
-  )

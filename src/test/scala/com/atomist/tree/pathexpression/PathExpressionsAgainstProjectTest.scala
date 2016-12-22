@@ -84,7 +84,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
   it should "jump into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/src/main/java/com/example/->JavaType"
+    val expr = "/src/main/java/com/example/JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     // We have left out test classes
     rtn.right.get.size should be(1)
@@ -96,7 +96,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
   it should "double descend into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src//*:File->JavaType"
+    val expr2 = "/src//File()/JavaType()"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     rtn2.right.get.size should be(2)
     rtn2.right.get.foreach {
@@ -107,10 +107,10 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
   it should "double descend into Java type under directory" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src/main/java//File()/JavaType()"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be(1)
-    rtn2.right.get.foreach {
+    val expr = "/src/main/java//File()/JavaType()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    rtn.right.get.size should be(1)
+    rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
     }
   }
@@ -141,7 +141,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     // Second filter is really a no op
-    val expr2 = "/src//->JavaType/[type='JavaType' and .isAbstract()]"
+    val expr2 = "/src//JavaType()/*[type='JavaType' and .isAbstract()]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     rtn2.right.get.size should be (0)
   }
@@ -173,19 +173,20 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     // Second filter is really a no op
-    val expr = "/src/main/java/com/example/->JavaType[type='JavaType' and .pkg()='com.example']"
+    val expr = "/src/main/java/com/example/JavaType()[type='JavaType' and .pkg()='com.example']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     rtn.right.get.size should be (1)
   }
 
-  it should "not jump when * is used" in {
-    val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    // Second filter is really a no op
-    val expr = "/src/main/java/com/example/*:java.class[type='java.class' and .pkg()='com.example']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (0)
-  }
+  // We know longer support this behavior, of refusing to do a type jump
+//  it should "not jump when * is used" in {
+//    val proj = ParsingTargets.NewStartSpringIoProject
+//    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+//    // Second filter is really a no op
+//    val expr = "/src/main/java/com/example/*:java.class[type='java.class' and .pkg()='com.example']"
+//    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+//    rtn.right.get.size should be (0)
+//  }
 
   it should "match existing types when * is used" in {
     val proj = ParsingTargets.NewStartSpringIoProject
@@ -243,7 +244,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
       """.stripMargin
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/Main.elm", elmWithMain))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src/->ElmModule[.exposes('main')]"
+    val expr2 = "/src/ElmModule()[.exposes('main')]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     rtn2.right.get.size should be (1)
     rtn2.right.get.head match {

@@ -3,6 +3,7 @@ package com.atomist.rug
 import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit._
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.parser.{RunOtherOperation, WrappedFunctionArg}
@@ -474,6 +475,7 @@ class UsesTest extends FlatSpec with Matchers {
 
   private def create(prog: String, namespace: Option[String] = None, globals: Seq[ProjectEditor] = Nil): Seq[ProjectEditor] = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    runtime.createFromString(prog, namespace, globals).asInstanceOf[Seq[ProjectEditor]]
+    val rugAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(prog), prog))
+    runtime.create(rugAs,namespace,globals).asInstanceOf[Seq[ProjectEditor]]
   }
 }

@@ -18,6 +18,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   val helper = new TypeScriptGenerationHelper()
 
+  override def name = "Rug Transpiler"
+
+  override def extension = "rug"
+
   override def compile(source: ArtifactSource): ArtifactSource = {
     val typeScripts =
       source.allFiles
@@ -58,7 +62,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val set = importSet(rugs)
     val ordered = set.toList.sorted
     val importLines = ordered
-      .map(imp => s"import {${JavaHelpers.toJavaClassName(imp)}} from 'user-model/model/Core'")
+      .map(imp => s"import {${JavaHelpers.toJavaClassName(imp)}} from '@atomist/rug/model/Core'")
     val specImports = importLines.mkString("\n")
     specImports
   }
@@ -325,11 +329,11 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   val standardImports =
     """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Project} from 'user-model/model/Core'
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |
     """.stripMargin
 

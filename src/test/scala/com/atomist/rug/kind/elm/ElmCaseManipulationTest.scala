@@ -1,11 +1,12 @@
 package com.atomist.rug.kind.elm
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{SuccessfulModification, ProjectEditor}
+import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class ElmCaseManipulationTest extends FlatSpec with Matchers {
 
@@ -85,7 +86,8 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
                          params: Map[String, String] = Map()): ArtifactSource = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
 
-    val eds = runtime.createFromString(program)
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program))
+    val eds = runtime.create(as,None)
     eds.size should be(1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 

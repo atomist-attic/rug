@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -59,7 +60,8 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
         | }
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head.asInstanceOf[ProjectReviewer]
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+    val ed = rp.create(as,  None).head.asInstanceOf[ProjectReviewer]
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("application.yml", inYml))

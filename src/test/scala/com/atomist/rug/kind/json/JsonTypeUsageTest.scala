@@ -1,10 +1,13 @@
 package com.atomist.rug.kind.json
 
 import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.ts.RugTranspiler
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
-import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.rug._
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 object JsonTypeUsageTest {
@@ -86,7 +89,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |with subdomainNode
         | do setValue "absquatulate"
       """.stripMargin
-    val edited = updateWith(prog)
+    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)))
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
@@ -100,7 +103,8 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |   with subdomain
         |     do setValue "absquatulate"
       """.stripMargin
-    val edited = updateWith(prog)
+    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+    )
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
@@ -114,17 +118,18 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |with dependencies
         | do addKeyValue "foo" "bar"
       """.stripMargin
-    val edited = updateWith(prog)
+    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+    )
     // edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
   it should "add dependency using TypeScript" in {
     val program =
       """
-        |import {ProjectEditor} from "user-model/operations/ProjectEditor"
-        |import {Status, Result} from "user-model/operations/RugOperation"
-        |import {Project,Pair} from 'user-model/model/Core'
-        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from 'user-model/tree/PathExpression'
+        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+        |import {Status, Result} from "@atomist/rug/operations/RugOperation"
+        |import {Project,Pair} from '@atomist/rug/model/Core'
+        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
         |
         |class PackageFinder implements ProjectEditor {
         |    name: string = "node.deps"
@@ -142,11 +147,12 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |
         |var finder = new PackageFinder();
       """.stripMargin
-    val edited = updateWith(program, ccPipeline)
+    val pas = TestUtils.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(program), program)))
+    val edited = updateWith(pas, new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create()))))
   }
 
   // Return new content
-  private def updateWith(prog: String,
+  private def updateWith(prog: ArtifactSource,
                          pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): String = {
     val filepath = "package.json"
     val as = new SimpleFileBasedArtifactSource("as",
@@ -155,7 +161,9 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
       )
     )
     val newName = "Foo"
-    val r = doModification(prog, as, EmptyArtifactSource(""),
+
+
+    val r = doModification(prog, as, EmptyArtifactSource(InterpreterRugPipeline.DefaultRugArchive),
       SimpleProjectOperationArguments("", Map(
       "new_name" -> newName
     )), pipeline = pipeline)

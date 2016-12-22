@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.docker
 
 import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.test.{RugTestParser, RugTestRunnerTestSupport}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -35,7 +36,9 @@ class DockerFileTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRu
         |	 and fileContains "src/main/docker/Dockerfile" "EXPOSE 8181"
       """.stripMargin
 
-    val eds = new DefaultRugPipeline().createFromString(prog)
+    val rp =new DefaultRugPipeline()
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+    val eds = rp.create(as,  None)
     val dockerfile = StringFileArtifact("src/main/docker/Dockerfile",
       """
         |FROM java:8-jre

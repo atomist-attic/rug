@@ -1,7 +1,6 @@
 
 # Created by https://www.gitignore.io/api/maven,scala,java,intellij,eclipse,macos
 
-node_modules/
 ### Maven ###
 target/
 pom.xml.tag

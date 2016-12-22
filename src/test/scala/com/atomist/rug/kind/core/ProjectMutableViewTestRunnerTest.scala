@@ -2,10 +2,12 @@ package com.atomist.rug.kind.core
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
+import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.test.RugTestRunnerTestSupport
 import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport{
@@ -80,7 +82,8 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
 
-    attemptModification(prog, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "foo" -> "bar"
     )))
   }

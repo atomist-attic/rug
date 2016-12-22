@@ -3,6 +3,7 @@ package com.atomist.rug.kind.docker
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -20,7 +21,11 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         |end
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
+
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+
+    val ed = rp.create(as,None).head.asInstanceOf[ProjectEditor]
+
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact(DockerFileType.DockerFileName,
@@ -57,7 +62,8 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         |end
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+    val ed = rp.create(as,None).head.asInstanceOf[ProjectEditor]
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact(DockerFileType.DockerFileName,
@@ -96,7 +102,9 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         |end
       """.stripMargin
     val rp = new DefaultRugPipeline
-    val ed = rp.createFromString(prog).head.asInstanceOf[ProjectEditor]
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
+
+    val ed = rp.create(as,None).head.asInstanceOf[ProjectEditor]
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("src/main/docker/" + DockerFileType.DockerFileName,

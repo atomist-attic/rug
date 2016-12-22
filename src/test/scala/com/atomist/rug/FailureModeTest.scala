@@ -51,10 +51,6 @@ class FailureModeTest extends FlatSpec with Matchers {
     val eds = runtime.createFromString(prog)
     eds.size should be (1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
-
-    //show(as)
-
     pe.modify(as, SimpleProjectOperationArguments.Empty)
   }
-
 }

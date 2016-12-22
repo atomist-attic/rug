@@ -1,6 +1,9 @@
 package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -238,10 +241,12 @@ class K8Test extends FlatSpec with Matchers {
     )
     val service = "project-operation"
     val newSha = "666aabb"
-    val r = doModification(prog, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val pipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create()), new RugTranspiler()))
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(prog), prog)) + TestUtils.user_model
+    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "service" -> service,
       "new_sha" -> newSha
-    )), pipeline = new CompilerChainPipeline(Seq(new RugTranspiler())))
+    )), pipeline)
 
     val f = r.findFile(filename).get
     f.content.contains(s"/$service:$newSha") should be(true)

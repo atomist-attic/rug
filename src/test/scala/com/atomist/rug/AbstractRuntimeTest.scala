@@ -2,8 +2,8 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.core.FileMutableView
-import com.atomist.source.file.SimpleFileSystemArtifactSourceIdentifier
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.rug.RugCompilerTest._
@@ -27,7 +27,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |
       """.stripMargin
 
-    val r = doModification(program, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
+    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
     r.allFiles.size should be > (0)
     r.allFiles.foreach(f => f.content.contains(license) should be(true))
   }
@@ -291,7 +292,12 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         "isJava" -> new LambdaPredicate[FileMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
       )
     )
-    val eds = pipeline.createFromString(program)
+
+    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))
+
+    val eds = pipeline.create(as,None)
+
+
     eds.size should be(1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
@@ -338,7 +344,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     val poa = SimpleProjectOperationArguments("", Map(
       "text" -> extraText,
       "message" -> "say this") ++ extraParams)
-    val r = doModification(program, as, rugAs, poa, pipeline)
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    val r = doModification(pas, as, rugAs, poa, pipeline)
     val path = "src/main/java/Dog.java"
     val fO = r.findFile(path)
     if (fO.isEmpty)

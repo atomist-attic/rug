@@ -3,6 +3,8 @@ package com.atomist.rug.runtime.js
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
+import com.atomist.rug.TestUtils
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -10,11 +12,13 @@ object TypeScriptRugEditorTest {
 
   val ContentPattern = "^Anders .*$"
 
+  val compiler = new TypeScriptCompiler()
+
   val SimpleEditorWithoutParameters =
     """
-      |import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Result,Status} from 'user-model/operations/RugOperation'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
@@ -30,9 +34,9 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditor =
     """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Project} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/RugOperation'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
@@ -49,9 +53,9 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorInvokingOtherEditor =
     """
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {Project} from 'user-model/model/Core'
-      |import {Result,Status} from 'user-model/operations/RugOperation'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
@@ -68,10 +72,10 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
     s"""
-       |import {Project} from 'user-model/model/Core'
-       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-       |import {File} from 'user-model/model/Core'
-       |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
        |
        |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
@@ -91,9 +95,9 @@ object TypeScriptRugEditorTest {
 
   val SimpleGenerator =
     """
-      |import {ProjectGenerator} from 'user-model/operations/ProjectGenerator'
-      |import {Project} from 'user-model/model/Core'
-      |import {Status,Result} from 'user-model/operations/RugOperation'
+      |import {ProjectGenerator} from '@atomist/rug/operations/ProjectGenerator'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Status,Result} from '@atomist/rug/operations/RugOperation'
       |
       |
       |class SimpleGenerator implements ProjectGenerator{
@@ -110,10 +114,10 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorTaggedAndMeta =
     s"""
-       |import {Project} from 'user-model/model/Core'
-       |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-       |import {Parameter, Result, Status} from 'user-model/operations/RugOperation'
-       |import {File} from 'user-model/model/Core'
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Parameter, Result, Status} from '@atomist/rug/operations/RugOperation'
+       |import {File} from '@atomist/rug/model/Core'
        |
        |class SimpleEditor implements ProjectEditor {
        |
@@ -135,13 +139,13 @@ object TypeScriptRugEditorTest {
     """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
-    """import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {PathExpression} from 'user-model/tree/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-      |import {Match} from 'user-model/tree/PathExpression'
-      |import {File} from 'user-model/model/Core'
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {File} from '@atomist/rug/model/Core'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class ConstructedEditor implements ProjectEditor {
       |
@@ -175,13 +179,13 @@ object TypeScriptRugEditorTest {
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWith: String =
-    """import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {PathExpression} from 'user-model/tree/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-      |import {Match} from 'user-model/tree/PathExpression'
-      |import {File} from 'user-model/model/Core'
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {File} from '@atomist/rug/model/Core'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class ConstructedEditor implements ProjectEditor {
       |
@@ -214,13 +218,13 @@ object TypeScriptRugEditorTest {
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
-    """import {Project} from 'user-model/model/Core'
-      |import {ProjectEditor} from 'user-model/operations/ProjectEditor'
-      |import {PathExpression} from 'user-model/tree/PathExpression'
-      |import {PathExpressionEngine} from 'user-model/tree/PathExpression'
-      |import {Match} from 'user-model/tree/PathExpression'
-      |import {File} from 'user-model/model/Core'
-      |import {Result,Status, Parameter} from 'user-model/operations/RugOperation'
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {File} from '@atomist/rug/model/Core'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class ConstructedEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -334,7 +338,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "send editor bad input and get appropriate response" in {
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TestUtils.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -358,7 +362,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TestUtils.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
@@ -370,8 +374,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
-    val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
     jsed.setContext(others)
 
@@ -387,7 +392,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromTypeScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TestUtils.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
     jsed.setContext(others)
 

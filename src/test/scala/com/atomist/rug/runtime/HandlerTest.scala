@@ -2,7 +2,7 @@ package com.atomist.rug.runtime
 
 import java.util.Collections
 
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, jsPathExpressionEngine}
@@ -15,14 +15,10 @@ class HandlerTest extends FlatSpec with Matchers {
 
   it should "allow Atomist invocations" in {
 
-    val jsc = new JavaScriptContext
-
-    val tsc = new TypeScriptCompiler
-
     val subscription =
       s"""
-        |import {Atomist} from "user-model/operations/Handler"
-        |import {Project,File} from "user-model/model/Core"
+        |import {Atomist} from "@atomist/rug/operations/Handler"
+        |import {Project,File} from "@atomist/rug/model/Core"
         |
         |declare var atomist: Atomist  // <= this is for the compiler only
         |
@@ -35,17 +31,19 @@ class HandlerTest extends FlatSpec with Matchers {
         |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
         |})
       """.stripMargin
-    val r = tsc.compile(SimpleFileBasedArtifactSource(
+    val r = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
+
+    val jsc = new JavaScriptContext(r)
 
     jsc.engine.put("atomist", TestAtomistFacade)
 
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
-      jsc.eval(ts)
+      //TODO - call compiler
+      //jsc.eval(ts)
     }
 
-    jsc.shutdown()
   }
 }
 

@@ -45,6 +45,38 @@ class TypeScriptInterfaceGenerator(
 
   val helper = new TypeScriptGenerationHelper()
 
+  private val indent = "    "
+
+  case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo]) {
+
+    override def toString = {
+      val output = new StringBuilder("")
+      output ++= emitDocComment(description)
+      output ++= s"\ninterface $name extends TreeNode {${config.separator}"
+      output ++= methods.map(_.toString).mkString(config.separator)
+      output ++= s"${config.separator}}${indent.dropRight(1)} // interface $name"
+      output.toString
+    }
+  }
+
+  case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String) {
+
+    private val comment =
+      if (params.isEmpty)
+        ""
+      else
+        (for (p <- params)
+          yield s"$indent//$p")
+          .mkString("\n") + "\n"
+
+    override def toString = s"$comment$indent$name(${params.mkString(", ")}): $returnType"
+  }
+
+  case class MethodParam(name: String, paramType: String) {
+
+    override def toString = s"$name: $paramType"
+  }
+
   addParameter(Parameter(OutputPathParam, ".*").
     setRequired(false).
     setDisplayName("Path for created doc").
@@ -60,88 +92,71 @@ class TypeScriptInterfaceGenerator(
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
 
-  private def emitDocComment(t: Typed): String = {
+  private def emitDocComment(description: String): String = {
     s"""
        |/*
-       | * ${t.description}
+       | * $description
        | */""".stripMargin
-  }
-
-  private def emitDocComment(top: TypeOperation): String = {
-    (for (p <- top.parameters)
-      yield s"$indent//${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}")
-      .mkString("\n")
-  }
-
-  private def emitParameter(t: Typed, top: TypeOperation, p: TypeParameter): String = {
-    if (p.name.startsWith("arg"))
-      System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${top.name} has no name annotation")
-
-    s"${p.name}: ${helper.javaTypeToTypeScriptType(p.parameterType)}"
-  }
-
-  // Generate a string for the output for this type
-  private def generateTyped(t: Typed): String = {
-    val output = new StringBuilder("")
-    output ++= emitDocComment(t)
-    output ++= s"\ninterface ${t.name} extends TreeNode {${config.separator}"
-    t.typeInformation match {
-      case s: StaticTypeInformation =>
-        for {
-          op <- s.operations
-          if shouldEmit(op)
-        } {
-          val comment = emitDocComment(op)
-          val params =
-            for (p <- op.parameters)
-              yield emitParameter(t, op, p)
-
-          output ++= s"$comment\n$indent${op.name}(${params.mkString(", ")}): ${helper.javaTypeToTypeScriptType(op.returnType)}"
-          output ++= config.separator
-        }
-    }
-    output ++= s"}${indent.dropRight(1)} // interface ${t.name}"
-    output.toString
   }
 
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
+  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
+    allTypes.map(t => InterfaceType(t.name, t.description, getMethodInfo(t)))
+
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
-    val alreadyGenerated = ListBuffer.empty[Typed]
+    val alreadyGenerated = ListBuffer.empty[InterfaceType]
 
     val output: StringBuilder = new StringBuilder(config.licenseHeader)
     output ++= config.separator
     output ++= config.imports
     output ++= config.separator
 
-    def generate(t: Typed): Unit = {
-      output ++= generateTyped(t)
+    val allTypes = typeRegistry.types.sortWith(typeSort)
+    // TODO process unpublishedTypes
+    val unpublishedTypes = findUnpublishedTypes(allTypes)
+    val interfaceTypes = allInterfaceTypes(allTypes)
+    for {
+      t <- interfaceTypes
+      if !alreadyGenerated.contains(t)
+    } {
+      output ++= t.toString
       output ++= config.separator
       alreadyGenerated.append(t)
     }
 
-    val allTypes = typeRegistry.types.sortWith(typeSort)
-    println(s"allTypes=${allTypes.size}: ${allTypes.mkString(",")}")
-    val unpublishedTypes = findUnpublishedTypes(allTypes)
-    println(s"unpublishedTypes=${unpublishedTypes.size}: ${unpublishedTypes.mkString(",")}")
-
-    for {
-      t <- allTypes
-      if !alreadyGenerated.contains(t)
-    } {
-
-      println(s"Going to generate interface for type $t")
-      generate(t)
-    }
-
     output ++= "\n"
-    for {t <- typeRegistry.types.sortWith(typeSort)} {
+    for {t <- interfaceTypes} {
       output ++= s"export { ${t.name} }\n"
     }
 
     StringFileArtifact(
       poa.stringParamValue(OutputPathParam),
       output.toString())
+  }
+
+  private def getMethodInfo(t: Typed): Seq[MethodInfo] = {
+    val methods = new ListBuffer[MethodInfo]
+    t.typeInformation match {
+      case s: StaticTypeInformation =>
+        for {
+          op <- s.operations
+          if shouldEmit(op)
+        } {
+          val params =
+            for (p <- op.parameters)
+              yield {
+                if (p.name.startsWith("arg"))
+                  System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${op.name} has no name annotation")
+
+                MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType))
+              }
+
+          methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType))
+        }
+      case _ =>
+    }
+    methods.toList
   }
 
   // Find all the types that aren't published types but define methods
@@ -153,8 +168,6 @@ class TypeScriptInterfaceGenerator(
     val publishedTypeNames = publishedTypes.map(_.name).toSet
     (types -- publishedTypeNames).toSeq.sorted
   }
-
-  private val indent = "    "
 
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val createdFile = emitInterfaces(poa)
@@ -169,7 +182,6 @@ class TypeScriptInterfaceGenerator(
   override def description: String = "Generate core Rug type info"
 
   override def name: String = "TypedDoc"
-
 }
 
 case class InterfaceGenerationConfig(

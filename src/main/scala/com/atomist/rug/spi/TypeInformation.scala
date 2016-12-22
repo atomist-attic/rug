@@ -40,9 +40,8 @@ case class TypeParameter(
 
   def getDescription: String = description.getOrElse("")
 
-  override def toString: String = {
-    name + " : " + parameterType + " : " + description.getOrElse("No Description")
-  }
+  override def toString: String =
+    s"$name : $parameterType : ${description.getOrElse("No Description")}"
 }
 
 /**
@@ -81,7 +80,7 @@ case class TypeOperation(
       throw new IllegalArgumentException(
         s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1: " +
           methods.mkString(","))
-    //println(s"About to invoke ${methods.head} with args=$args")
+    // println(s"About to invoke ${methods.head} with args=$args")
     try {
       methods.head.invoke(target, args: _*)
     }

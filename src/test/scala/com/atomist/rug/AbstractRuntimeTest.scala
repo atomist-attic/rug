@@ -78,10 +78,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |
         |with File f
         | when true
-        |begin
-        | do eval { console.log("About to append") }
-        | do append { text + "" }
-        |end
+        |   do append { text + "" }
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, extraParams = Map(
       "team-id" -> "T117KLCSK"

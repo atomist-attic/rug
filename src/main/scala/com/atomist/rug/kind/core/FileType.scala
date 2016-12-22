@@ -16,10 +16,7 @@ class FileType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description =
-    """
-      |Type for a file within a project. Supports generic options such as find and replace.
-    """.stripMargin
+  override def description = "Type for a file within a project. Supports generic options such as find and replace"
 
   override def viewManifest: Manifest[FileMutableView] = manifest[FileMutableView]
 

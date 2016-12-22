@@ -21,7 +21,6 @@ class JavaTypeType(evaluator: Evaluator)
   def this() = this(DefaultEvaluator)
 
   override val resolvesFromNodeTypes: Set[String] =
-    //Set("Project", "Directory", "File")
     Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType], classOf[JavaSourceType])
 
   override def description = "Java class"

@@ -16,12 +16,9 @@ class ProjectType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description: String =
-    """
-      |Type for a project. Supports global operations.
-      |Consider using file and other lower types by preference as project
-      |operations can be inefficient.
-    """.stripMargin
+  override def description: String = "Type for a project. Supports global operations. " +
+    "Consider using file and other lower types by preference as project" +
+    "operations can be inefficient."
 
   override def viewManifest: Manifest[ProjectMutableView] = manifest[ProjectMutableView]
 
@@ -45,5 +42,4 @@ object ProjectType {
     * File containing provenance information in root of edited projects
     */
   val ProvenanceFilePath = ".atomist.yml"
-
 }

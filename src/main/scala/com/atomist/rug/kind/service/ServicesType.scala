@@ -16,10 +16,7 @@ class ServicesType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description: String =
-    """
-      |Type for services. Used in executors.
-    """.stripMargin
+  override def description: String = "Type for services. Used in executors"
 
   override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
 

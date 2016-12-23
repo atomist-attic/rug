@@ -60,7 +60,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
     })
 
     val childOfCurrentContext: Option[Seq[MutableView[_]]] =
-      if (context.childNodeNames.contains(selected.kind))
+      if (context.childNodeTypes.contains(selected.kind))
         Some(context.childrenNamed(selected.kind).collect {
           case mv: MutableView[_] => mv
         })

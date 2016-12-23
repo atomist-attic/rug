@@ -118,31 +118,25 @@ class TypeScriptInterfaceGenerator(
 
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
-  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
-    allTypes.foreach(t => {
-      val methods = allMethods(t)
-      methods.foreach(m => {
-        if (m.name == "addChildNode")
-          println(s"${t.name}: ${m.name}")
-      })
-    })
-    val methods = allTypes.map(t => t.name -> allMethods(t)).toMap
-    val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {
-      case (_, lst) => lst.size > 1
-    }).keys.toSeq.sortWith(_.name <= _.name)
+//  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
+//    val methods = allTypes.map(t => t.name -> allMethods(t)).toMap
+//    val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {
+//      case (_, lst) => lst.size > 1
+//    }).keys.toSeq.sortWith(_.name <= _.name)
+//
+//    val parent = if (duplicateMethods.isEmpty) None else Some(
+//      InterfaceType(ParentInterface, "TypeScript superinterface", duplicateMethods))
+//
+//    parent.toList ::: allTypes.map(t => {
+//      val allMethods = methods.getOrElse(t.name, Nil)
+//      val uniqueMethods = allMethods diff duplicateMethods
+//      if (allMethods.size == uniqueMethods.size) InterfaceType(t.name, t.description, allMethods)
+//      else InterfaceType(t.name, t.description, uniqueMethods, ParentInterface)
+//    }).toList
+//  }
 
-   // duplicateMethods.foreach(println)
-
-    val parent = if (duplicateMethods.isEmpty) None else Some(
-      InterfaceType(ParentInterface, "TypeScript superinterface", duplicateMethods))
-
-    parent.toList ::: allTypes.map(t => {
-      val allMethods = methods.getOrElse(t.name, Nil)
-      val uniqueMethods = allMethods diff duplicateMethods
-      if (allMethods.size == uniqueMethods.size) InterfaceType(t.name, t.description, allMethods)
-      else InterfaceType(t.name, t.description, uniqueMethods, ParentInterface)
-    }).toList
-  }
+  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
+    allTypes.map(t => InterfaceType(t.name, t.description, allMethods(t)))
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
     val alreadyGenerated = ListBuffer.empty[InterfaceType]

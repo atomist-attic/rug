@@ -13,8 +13,10 @@ class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOr
 
   override def nodeType: String = JavaSourceType.FieldAlias
 
+  override def childNodeNames: Set[String] = Set()
+
   @ExportFunction(readOnly = true, description = "Return the name of the field")
-  def name = {
+  def name: String = {
     if (currentBackingObject.getVariables.size != 1)
       throw new UnsupportedOperationException(s"Can only handle 1 variable declaration: $currentBackingObject")
     currentBackingObject.getVariables.asScala.head.getId.getName

@@ -4,8 +4,6 @@ import scala.collection.Seq
 
 trait TerminalView[T] extends MutableView[T] {
 
-  def childrenNames: Seq[String] = Nil
-
   override def childNodeTypes: Set[String] = Set()
 
   def children(fieldName: String): Seq[MutableView[_]] =

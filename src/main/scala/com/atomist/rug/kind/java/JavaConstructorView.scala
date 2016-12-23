@@ -13,7 +13,7 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
 
   override def nodeType: String = "constructor"
 
-  override def childrenNames: Seq[String] = Seq("java.parameter")
+  override def childNodeNames: Set[String] = Set("java.parameter")
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "java.parameter" =>

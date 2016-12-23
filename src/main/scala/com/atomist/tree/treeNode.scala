@@ -52,10 +52,7 @@ trait ContainerTreeNode extends TreeNode {
     * @return the names of children. There may be multiple children
     *         with a given name
     */
-  def childNodeNames: Set[String] =
-    if (childNodes != null)
-      childNodes.map(_.nodeName).toSet
-    else Set()
+  def childNodeNames: Set[String]
 
   def childNodeTypes: Set[String]
 

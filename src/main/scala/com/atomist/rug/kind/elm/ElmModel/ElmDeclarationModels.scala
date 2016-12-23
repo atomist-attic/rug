@@ -29,6 +29,9 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("port")
       with ElmDeclaration {
     def declaredIdentifier: String = name.value
+
+    override def childNodeNames: Set[String] = Set()
+
   }
 
   class ElmTypeAlias(
@@ -37,6 +40,8 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("type-alias") with ElmDeclaration {
 
     override def declaredIdentifier: String = nameField.value
+
+    override def childNodeNames: Set[String] = Set()
 
     override def nodeType: String = ElmModuleType.TypeAliasAlias
 
@@ -62,6 +67,8 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("union-type") with ElmDeclaration {
 
     override def declaredIdentifier: String = typeName
+
+    override def childNodeNames: Set[String] = Set()
 
     private var _values = initialValues
 
@@ -98,6 +105,8 @@ object ElmDeclarationModels {
       with ElmDeclaration
       with CanBeThoughtOfAsAFunction
       with IHaveAMutableBody {
+
+    override def childNodeNames: Set[String] = Set()
 
     override def declaredIdentifier: String = functionName
 
@@ -146,6 +155,8 @@ object ElmDeclarationModels {
       with CanBeThoughtOfAsAFunction
       with IHaveAMutableBody {
 
+    override def childNodeNames: Set[String] = Set()
+
     override def declaredIdentifier: String = nameField.value
 
     private var _elmType: Option[ElmTypeSpecification] = initialElmType.map(_._2)
@@ -159,7 +170,7 @@ object ElmDeclarationModels {
     insertFieldCheckingPosition(nameField)
     initBody(initialBody)
 
-    def functionName = nameField.value
+    def functionName: String = nameField.value
 
     def setFunctionName(name: String): Unit = {
       nameField.update(name)

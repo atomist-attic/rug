@@ -39,6 +39,8 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
 
   override def childNodes: Seq[TreeNode] = filtered
 
+  override def childNodeNames: Set[String] = of.childNodeNames
+
   override def fieldValues: Seq[TreeNode] = filtered
 
   override def childNodeTypes: Set[String] = filtered.map(fv => fv.nodeType).toSet

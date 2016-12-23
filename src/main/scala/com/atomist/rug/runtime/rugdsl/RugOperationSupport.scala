@@ -164,7 +164,7 @@ trait RugOperationSupport extends LazyLogging {
       context.currentBackingObject match {
         case fmv: TreeNode =>
           println(TreeNodeUtils.toShortString(fmv))
-        case x =>
+        case _ =>
       }
       throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $viewFinder")
     }

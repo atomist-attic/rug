@@ -52,6 +52,8 @@ class LineMutableView(
 
   override def nodeName: String = "line"
 
+  override def childNodeNames: Set[String] = Set()
+
   @ExportFunction(readOnly = false, description = "Update this line's content")
   def update(@ExportFunctionParameterDescription(name = "s2",
     description = "The content to update this line to")

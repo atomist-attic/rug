@@ -84,7 +84,7 @@ class RequirementsTxtMutableView(
 
   override protected def currentContent: String = currentParsed.value
 
-  override val childrenNames: Seq[String] = Seq(RequirementAlias)
+  override val childNodeNames: Set[String] = Set(RequirementAlias)
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RequirementAlias =>
@@ -104,7 +104,7 @@ class RequirementsTxtMutableView(
 class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMutableView)
   extends ViewSupport[Requirement](requirement, parent) {
 
-  override def childrenNames: Seq[String] = Nil
+  override def childNodeNames: Set[String] = Set()
 
   override def children(fieldName: String): Seq[MutableView[_]] = Nil
 

@@ -31,7 +31,7 @@ class JavaTypeType(evaluator: Evaluator)
                                    poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] =
     context match {
       case pv: ProjectMutableView =>
-        Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.defaultChildViews))
+        Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.children(JavaTypeAlias)))
       case fmv: FileArtifactBackedMutableView =>
         Some(
           Seq(new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView(fmv.parent))).flatMap(s => s.children(JavaTypeAlias))

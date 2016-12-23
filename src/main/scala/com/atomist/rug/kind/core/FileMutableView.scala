@@ -9,8 +9,8 @@ import scala.collection.JavaConverters._
   * Mutable view for working directly with files.
   */
 class FileMutableView(
-                               originalBackingObject: FileArtifact,
-                               override val parent: ProjectMutableView)
+                       originalBackingObject: FileArtifact,
+                       override val parent: ProjectMutableView)
   extends FileArtifactBackedMutableView(originalBackingObject, parent)
     with TerminalView[FileArtifact] {
 

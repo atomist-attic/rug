@@ -62,20 +62,6 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     )
   )
 
-  it should "have no default children" in {
-    val simpleYml =
-      """
-    name:
-      test1
-
-    description:
-      A template of profound illustrative power.
-      """
-    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
-      new ProjectMutableView(EmptyArtifactSource(""), as))
-    yv.defaultChildViews.isEmpty should be(true)
-  }
-
   it should "find key in simple yml" in {
     val simpleYml =
       """

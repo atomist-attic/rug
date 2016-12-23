@@ -27,6 +27,8 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   override def fieldValues: Seq[TreeNode] = _fieldValues
 
+  override def childNodeNames: Set[String] = _fieldValues.map(f => f.nodeName).toSet
+
   // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
 

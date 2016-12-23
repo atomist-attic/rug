@@ -115,7 +115,7 @@ class ElmModuleMutableView(
 
   import ElmModuleType._
 
-  override val childrenNames: Seq[String] = Seq(FunctionAlias, TypeAliasAlias, TypeAlias, CaseAlias, ImportAlias)
+  override def childNodeNames: Set[String] = Set(FunctionAlias, TypeAliasAlias, TypeAlias, CaseAlias, ImportAlias)
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case FunctionAlias => em.functions.map(f => new ElmFunctionMutableView(f, this))

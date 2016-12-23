@@ -19,26 +19,13 @@ trait View[T] extends ContainerTreeNode {
   def originalBackingObject: T
 
   override def childNodes: Seq[TreeNode] =
-    childrenNames.flatMap(name => children(name))
+    childNodeNames.toSeq.flatMap(name => children(name))
 
   override def value: String = ???
-
-  /**
-    * Values that can be passed to children method.
-    * Ordering is significant. If there is more than one child name,
-    * the first returned will be the default.
-    */
-  def childrenNames: Seq[String]
 
   // TODO not very nice that we need to express children in terms of MutableView, not View, but it's OK for now
   def children(fieldName: String): Seq[MutableView[_]]
 
-  /**
-    * Return the default child views: corresponding to the 0th element in the collection of childrenNames.
-    * If there are no child views this method will returns an empty sequence.
-    */
-  def defaultChildViews: Seq[MutableView[_]] =
-    childrenNames.headOption.map(name => children(name)).getOrElse(Nil)
 }
 
 /**

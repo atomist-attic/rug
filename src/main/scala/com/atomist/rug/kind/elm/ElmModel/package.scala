@@ -55,6 +55,8 @@ package object ElmModel {
                    val declarations: Seq[ElmDeclaration] = Nil)
     extends ParsedMutableContainerTreeNode(nameField.value) {
 
+    override def childNodeNames: Set[String] = Set()
+
     private var _exposing = initialExposing
 
     override def nodeType: String = Typed.typeClassToTypeName(classOf[ElmModuleType])

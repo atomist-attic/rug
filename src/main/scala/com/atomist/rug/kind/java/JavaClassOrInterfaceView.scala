@@ -14,7 +14,7 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
 
   override def nodeType: String = JavaTypeAlias
 
-  override def childrenNames: Seq[String] = Seq(ConstructorAlias, MethodAlias, FieldAlias)
+  override def childNodeNames: Set[String] = Set(ConstructorAlias, MethodAlias, FieldAlias)
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case ConstructorAlias =>

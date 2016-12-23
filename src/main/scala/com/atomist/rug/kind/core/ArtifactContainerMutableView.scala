@@ -20,7 +20,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
 
   override def childNodeTypes: Set[String] = Set(FileAlias, DirectoryAlias)
 
-  override def childrenNames: Seq[String] = currentBackingObject.artifacts.map(_.name)
+  override def childNodeNames: Set[String] = currentBackingObject.artifacts.map(_.name).toSet
 
   override def nodeName: String = name
 

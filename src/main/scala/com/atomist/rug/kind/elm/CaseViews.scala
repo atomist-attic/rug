@@ -12,7 +12,7 @@ class ElmCaseMutableView(
 
   override def nodeType: String = ElmModuleType.CaseAlias
 
-  override def childrenNames: Seq[String] = Seq(CaseClauseAlias)
+  override def childNodeNames: Set[String] = Set(CaseClauseAlias)
 
   override def childNodeTypes: Set[String] = childNodeNames
 
@@ -64,7 +64,7 @@ class ElmCaseClauseMutableView(
     ecc.replaceBody(newBody)
   }
 
-  override def childrenNames: Seq[String] = Nil
+  override def childNodeNames: Set[String] = Set()
 
   override def children(fieldName: String): Seq[MutableView[_]] = Nil
 

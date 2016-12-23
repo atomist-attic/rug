@@ -14,7 +14,7 @@ class PythonFileMutableView(
                              parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  val originalParsed = pythonParser.parse(originalBackingObject.content)
+  val originalParsed: MutableContainerTreeNode = pythonParser.parse(originalBackingObject.content)
 
   private var currentParsed = originalParsed
 
@@ -22,7 +22,7 @@ class PythonFileMutableView(
 
   override protected def currentContent: String = currentParsed.value
 
-  override def childrenNames: Seq[String] = Seq(ImportAlias)
+  override def childNodeNames: Set[String] = Set(ImportAlias)
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case ImportAlias =>
@@ -54,7 +54,7 @@ class ImportMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override def childrenNames: Seq[String] = Nil
+  override def childNodeNames: Set[String] = Set()
 
   override def children(fieldName: String): Seq[MutableView[_]] = Nil
 

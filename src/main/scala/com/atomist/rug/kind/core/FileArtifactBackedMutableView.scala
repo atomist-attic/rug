@@ -18,6 +18,8 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
 
   override def nodeName: String = currentBackingObject.name
 
+  override def childNodeNames: Set[String] = Set()
+
   override protected def toReviewComment(msg: String, severity: Severity): ReviewComment =
     ReviewComment(msg, severity, Some(currentBackingObject.path))
 

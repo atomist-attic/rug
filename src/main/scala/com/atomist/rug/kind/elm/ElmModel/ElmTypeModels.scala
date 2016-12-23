@@ -77,6 +77,8 @@ object ElmTypeModels {
     insertFieldCheckingPosition(recordFieldTypeNameField)
     insertFieldCheckingPosition(typeSpec)
 
+    override def childNodeNames: Set[String] = Set()
+
     def recordFieldTypeName = recordFieldTypeNameField.value
   }
 

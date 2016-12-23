@@ -37,10 +37,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
     //.getOrElse("")
   }
 
-  override def childrenNames: Seq[String] = {
-    val names = currentBackingObject.childNodeNames.toSeq
-    names
-  }
+  override def childNodeNames: Set[String] = currentBackingObject.childNodeNames
 
   override def childNodeTypes: Set[String] = currentBackingObject.childNodeTypes
 
@@ -88,7 +85,7 @@ class ScalarValueView(
                newValue: String): Unit =
     originalBackingObject.update(newValue)
 
-  override val childrenNames: Seq[String] = Seq(originalBackingObject.nodeName)
+  override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)
 
   override def childNodeTypes: Set[String] = Set()
 

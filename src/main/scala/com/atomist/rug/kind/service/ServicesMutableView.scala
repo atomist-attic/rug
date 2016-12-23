@@ -25,10 +25,7 @@ class ServicesMutableView(rugAs: ArtifactSource,
 
   override def nodeType: String = "services"
 
-  /**
-    * Values that can be passed to children method.
-    */
-  override val childrenNames: Seq[String] = Seq("service")
+  override val childNodeNames: Set[String] = Set("service")
 
   override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "service" =>

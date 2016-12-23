@@ -71,14 +71,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
   it should "merge" is pending
 
-  it should "return default children" in {
-    val project = JavaTypeUsageTest.NewSpringBootProject
-    val pmv = new ProjectMutableView(backingTemplates, project)
-    val kids = pmv.defaultChildViews
-    kids.nonEmpty should be(true)
-    kids.forall(_.isInstanceOf[ArtifactContainerMutableView[_]]) should be(true)
-  }
-
   it should "handle path and content replace" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)

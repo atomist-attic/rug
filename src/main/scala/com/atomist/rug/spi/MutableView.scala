@@ -18,7 +18,7 @@ trait View[T] extends ContainerTreeNode {
 
   def originalBackingObject: T
 
-  override def value: String = ???
+  override def value: String = toString
 
 }
 

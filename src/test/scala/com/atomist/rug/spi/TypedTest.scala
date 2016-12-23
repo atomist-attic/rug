@@ -4,14 +4,15 @@ import com.atomist.tree.content.text.MutableContainerTreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypedTest extends FlatSpec with Matchers {
+
+  import com.atomist.rug.kind.core.{ProjectMutableView, ProjectType}
   import com.atomist.rug.spi.Typed._
+
   it should "trim suffixes" in {
     trimSuffix("RemoveMe", "FirstPartRemoveMe") should be("FirstPart")
     trimSuffix("RemoveMe", "FirstPartRemoveMeNot") should be("FirstPartRemoveMeNot")
   }
 
-  import com.atomist.rug.kind.core.ProjectType
-  import com.atomist.rug.kind.core.ProjectMutableView
   it should "map the Scala class to the Rug type name" in {
     typeClassToTypeName(classOf[ProjectType]) should be("Project")
     typeClassToTypeName(classOf[ProjectMutableView]) should be("ProjectMutableView")

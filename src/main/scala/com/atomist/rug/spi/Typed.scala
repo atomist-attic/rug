@@ -16,7 +16,7 @@ object Typed {
   def typeClassToTypeName(tc: Class[_]): String = trimSuffix(typeSuffix, tc.getSimpleName)
 
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =
-    tcs.map(tc => typeClassToTypeName(tc)).toSet
+    tcs.map(typeClassToTypeName).toSet
 
   def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
     val raw = trimSuffix(treeNodeSuffix, trimSuffix(mutableViewSuffix, tc.getSimpleName))

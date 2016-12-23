@@ -118,6 +118,7 @@ class TypeScriptInterfaceGenerator(
 
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
+//  DO NOT DELETE
 //  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
 //    val methods = allTypes.map(t => t.name -> allMethods(t)).toMap
 //    val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {

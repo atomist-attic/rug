@@ -15,13 +15,13 @@ trait TypeScriptEditorTestHelper extends Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler(CompilerFactory.create())))
 
-  def executeTypescript(editorFilename: String, program: String,
+  def executeTypescript(editorName: String, program: String,
                                       target: ArtifactSource,
                                       params: Map[String, String] = Map(),
                                       others: Seq[ProjectOperation] = Nil)
   : ArtifactSource = {
 
-    val as = SimpleFileBasedArtifactSource(new StringFileArtifact(editorFilename, ".atomist/editors/" + editorName + ".ts", program))
+    val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
     val cas = TestUtils.compileWithModel(as)
 
     val eds = JavaScriptOperationFinder.fromJavaScriptArchive(as)

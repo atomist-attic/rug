@@ -1,11 +1,10 @@
 package com.atomist.rug.kind.java.spring
 
-import com.atomist.project.MaybeFileExtractor
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
-object GetApplicationPropertiesFile extends MaybeFileExtractor {
+object GetApplicationPropertiesFile {
 
-  override def apply(as: ArtifactSource): Option[FileArtifact] =
+  def apply(as: ArtifactSource): Option[FileArtifact] =
     as.findFile(ApplicationPropertiesAssertions.ApplicationPropertiesFilePath)
 }
 

@@ -1,13 +1,6 @@
 package com.atomist.parse.java.spring
 
-import com.atomist.project.MaybeFileExtractor
-import com.atomist.source.{ArtifactSource, FileArtifact}
-
-object GetApplicationYmlFile extends MaybeFileExtractor {
-
-  override def apply(as: ArtifactSource): Option[FileArtifact] =
-    as.findFile(ApplicationYmlAssertions.ApplicationYmlFilePath)
-}
+import com.atomist.source.ArtifactSource
 
 object ApplicationYmlAssertions {
 

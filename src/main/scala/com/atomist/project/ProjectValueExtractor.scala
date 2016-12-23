@@ -34,20 +34,3 @@ object ExtractorOps {
     override def apply(t: T): R = extractor(t)
   }
 }
-
-/**
-  * Extended by classes that can extract data from projects, such as a base class path or configuration value
-  */
-trait ProjectValueExtractor[R] extends Extractor[ArtifactSource, R] {
-}
-
-trait FileExtractor extends ProjectValueExtractor[FileArtifact]
-
-trait MaybeFileExtractor extends ProjectValueExtractor[Option[FileArtifact]]
-
-trait FilesExtractor extends ProjectValueExtractor[JList[FileArtifact]]
-
-/**
-  * Produces a subset of an ArtifactSource
-  */
-trait ArtifactSourceFilter extends ProjectValueExtractor[ArtifactSource]

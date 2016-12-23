@@ -16,6 +16,11 @@ object JavaAssertions {
 
   val SpringBootStarterParent: String = "spring-boot-starter-parent"
 
+  val ApplicationPropertiesFilePath = "src/main/resources/application.properties"
+
+  def hasApplicationProperties(as: ArtifactSource): Boolean =
+    as.findFile(ApplicationPropertiesFilePath).isDefined
+
   val isSpringBoot: ArtifactSource => Boolean = project =>
     isSpring(project) &&
       GetMavenPom(project).exists(f => f.content.contains(SpringBootStarterParent))

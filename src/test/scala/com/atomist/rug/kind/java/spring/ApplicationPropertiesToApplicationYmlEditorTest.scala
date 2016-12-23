@@ -5,15 +5,16 @@ import com.atomist.tree.content.project.Configuration
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.java.ExtractApplicationProperties
+import com.atomist.rug.kind.java.support.JavaAssertions
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, EmptyArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
 class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matchers with LazyLogging {
 
-  val eap = new ExtractApplicationProperties(ApplicationPropertiesAssertions.ApplicationPropertiesFilePath)
+  val eap = new ExtractApplicationProperties(JavaAssertions.ApplicationPropertiesFilePath)
 
-  val SpringDocsSampleFile = StringFileArtifact(ApplicationPropertiesAssertions.ApplicationPropertiesFilePath,
+  val SpringDocsSampleFile = StringFileArtifact(JavaAssertions.ApplicationPropertiesFilePath,
     """
       |spring.application.name=cruncher
       |spring.datasource.driverClassName=com.mysql.jdbc.Driver
@@ -44,7 +45,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
 
   it should "delete application.properties" in {
     val result = testAgainst(SpringDocsSampleArtifactSource)
-    result.findFile(ApplicationPropertiesAssertions.ApplicationPropertiesFilePath) should not be defined
+    result.findFile(JavaAssertions.ApplicationPropertiesFilePath) should not be defined
   }
 
   it should "construct an application.yml" in {
@@ -61,7 +62,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
   private def testAgainst(as: ArtifactSource): ArtifactSource = {
     // Read config first for comparison
     // Wouldn't normally call get without checking, but if it fails the test that's fine
-    val config = eap(as.findFile(ApplicationPropertiesAssertions.ApplicationPropertiesFilePath).get)
+    val config = eap(as.findFile(JavaAssertions.ApplicationPropertiesFilePath).get)
 
     val mr = ApplicationPropertiesToApplicationYmlEditor.modify(as, SimpleProjectOperationArguments.Empty)
     mr match {

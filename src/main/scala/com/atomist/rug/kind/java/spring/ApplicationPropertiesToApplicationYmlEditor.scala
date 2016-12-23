@@ -17,7 +17,7 @@ import com.typesafe.scalalogging.LazyLogging
   */
 object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with LazyLogging {
 
-  import ApplicationPropertiesAssertions.ApplicationPropertiesFilePath
+  import JavaAssertions.ApplicationPropertiesFilePath
 
   val ApplicationYmlPath = "src/main/resources/application.yml"
 
@@ -35,7 +35,7 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
   }
 
   override def applicability(as: ArtifactSource): Applicability =
-    Applicability(JavaAssertions.isSpring(as) && ApplicationPropertiesAssertions.hasApplicationProperties(as), "Checked Spring and application.properties")
+    Applicability(JavaAssertions.isSpring(as) && JavaAssertions.hasApplicationProperties(as), "Checked Spring and application.properties")
 
   override def description: String = "Atomist Core Editor: Convert application.properties to application.yml (application.properties->application.yml)"
 

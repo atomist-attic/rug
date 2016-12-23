@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     basically the same as the Scala class/type without the trailing
     Type, MutableView, or TreeNode
 
+-   **BREAKING** Rug tree expression syntax has been changed to more
+    closely resemble XPath where possible
+
 ### Fixed
 
 -   @any parameter validation regex now works in both Java and

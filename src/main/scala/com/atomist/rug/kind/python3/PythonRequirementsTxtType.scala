@@ -86,7 +86,7 @@ class RequirementsTxtMutableView(
 
   override val childNodeNames: Set[String] = Set(RequirementAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RequirementAlias =>
       val reqs = currentParsed.requirements
       reqs.map(r => new RequirementMutableView(r, this))
@@ -106,7 +106,7 @@ class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMu
 
   override def childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   override def childNodeTypes: Set[String] = Set()
 

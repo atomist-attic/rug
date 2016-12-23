@@ -18,7 +18,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv)
     j.nodeType should be ("Json")
-    j.children("glossary").size should be(1)
+    j.childrenNamed("glossary").size should be(1)
   }
 
   it should "support path find" in {

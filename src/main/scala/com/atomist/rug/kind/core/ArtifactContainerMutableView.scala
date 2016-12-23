@@ -77,5 +77,5 @@ class DirectoryMutableView(
   @ExportFunction(readOnly = true, description = "Return the name of the directory")
   override def name: String = currentBackingObject.name
 
-  override def children(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
 }

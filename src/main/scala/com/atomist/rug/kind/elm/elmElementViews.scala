@@ -21,7 +21,7 @@ class ElmFunctionMutableView(
 
   override val childNodeNames: Set[String] = Set(CaseAlias, RecordValueAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case CaseAlias =>
       ef.body match {
         case c: ElmCase => Seq(new ElmCaseMutableView(c, this))
@@ -96,10 +96,10 @@ class ElmTypeMutableView(
 
   override val childNodeNames: Set[String] = Set(CaseAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = true, description = "Name of the function")
-  def name = eut.typeName
+  def name: String = eut.typeName
 
   @ExportFunction(readOnly = false, description = "Add")
   def addConstructor(@ExportFunctionParameterDescription(name = "constructor",
@@ -127,7 +127,7 @@ class ElmImportMutableView(
 
   override val childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = true, description = "Name of the imported module")
   def module = imp.moduleName
@@ -149,7 +149,7 @@ class ElmTypeAliasMutableView(
 
   override val childNodeNames: Set[String] = Set(RecordTypeAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RecordTypeAlias => ta.alias match {
       case rt: ElmRecordType => Seq(new ElmRecordTypeMutableView(rt, this))
       case _ => Nil
@@ -186,7 +186,7 @@ class ElmRecordTypeMutableView(
 
   override def childNodeNames: Set[String] = rec.fields.map(_.recordFieldTypeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = false, description = "Add a field to the record type")
   def add(@ExportFunctionParameterDescription(name = "name", description = "Record identifier")
@@ -208,7 +208,7 @@ class ElmRecordValueMutableView(
 
   override def childNodeNames: Set[String] = rec.fields.map(e => e.elmRecordFieldName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = false, description = "Add a field to the record")
   def add(@ExportFunctionParameterDescription(name = "name", description = "Name of the field")

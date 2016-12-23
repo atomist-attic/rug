@@ -18,13 +18,7 @@ trait View[T] extends ContainerTreeNode {
 
   def originalBackingObject: T
 
-  override def childNodes: Seq[TreeNode] =
-    childNodeNames.toSeq.flatMap(name => children(name))
-
   override def value: String = ???
-
-  // TODO not very nice that we need to express children in terms of MutableView, not View, but it's OK for now
-  def children(fieldName: String): Seq[MutableView[_]]
 
 }
 

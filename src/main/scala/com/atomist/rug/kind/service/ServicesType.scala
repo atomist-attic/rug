@@ -24,7 +24,7 @@ class ServicesType(
                                    context: MutableView[_], poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
-      case s: ServicesMutableView => Some(s.children("service"))
+      case s: ServicesMutableView => Some(s.childrenNamed("service"))
     }
   }
 }

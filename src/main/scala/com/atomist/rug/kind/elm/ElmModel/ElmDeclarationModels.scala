@@ -32,6 +32,7 @@ object ElmDeclarationModels {
 
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
   }
 
   class ElmTypeAlias(
@@ -45,6 +46,8 @@ object ElmDeclarationModels {
 
     override def nodeType: String = ElmModuleType.TypeAliasAlias
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Seq(alias)
+
     private var _alias = initialAlias
 
     insertFieldCheckingPosition(nameField)
@@ -52,7 +55,7 @@ object ElmDeclarationModels {
 
     def alias: ElmTypeSpecification = _alias
 
-    def typeAliasName = nameField.value
+    def typeAliasName: String = nameField.value
 
     def setTypeAliasName(newName: String): Unit = nameField.update(newName)
 
@@ -69,6 +72,8 @@ object ElmDeclarationModels {
     override def declaredIdentifier: String = typeName
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     private var _values = initialValues
 
@@ -107,6 +112,8 @@ object ElmDeclarationModels {
       with IHaveAMutableBody {
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     override def declaredIdentifier: String = functionName
 
@@ -147,6 +154,9 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("patterned constant")
       with ElmDeclaration {
     override def declaredIdentifier: String = ???
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   class ElmSimpleConstantDeclaration(nameField: MutableTerminalTreeNode, initialBody: ElmExpression, initialElmType: Option[(MutableTerminalTreeNode, ElmTypeSpecification)] = None)
@@ -156,6 +166,8 @@ object ElmDeclarationModels {
       with IHaveAMutableBody {
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     override def declaredIdentifier: String = nameField.value
 

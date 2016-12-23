@@ -120,7 +120,7 @@ class JsonMutableView(
   override def childNodeNames: Set[String] =
     findPairsInValueNode(this, soleKid).map(_.nodeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = {
     findPairsInValueNode(this, soleKid)
       .filter(n => fieldName.equals(n.nodeName))
   }
@@ -172,7 +172,7 @@ private class PairMutableView(
 
   override def childNodeNames: Set[String] = kids.map(k => k.nodeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] =
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
     kids.filter(k => k.nodeName.equals(fieldName))
 
   @ExportFunction(readOnly = false, description = "setValue")
@@ -230,7 +230,7 @@ private class JsonStringView(
 
   override def childNodeTypes: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   override def toString = s"${getClass.getSimpleName} wrapping $currentBackingObject"
 }

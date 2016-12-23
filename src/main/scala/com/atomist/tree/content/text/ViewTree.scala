@@ -37,6 +37,8 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
 
   def delegate: ContainerTreeNode = of
 
+  override def childrenNamed(key: String): Seq[TreeNode] = filtered.filter(n => n.nodeName.equals(key))
+
   override def childNodes: Seq[TreeNode] = filtered
 
   override def childNodeNames: Set[String] = of.childNodeNames

@@ -164,6 +164,8 @@ case class EmptyContainerTreeNode(nodeName: String, override val childNodeNames:
 
   override def childNodes: Seq[TreeNode] = Nil
 
+  override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   override def nodeType: String = "empty"
 
   override def childNodeTypes: Set[String] = Set()

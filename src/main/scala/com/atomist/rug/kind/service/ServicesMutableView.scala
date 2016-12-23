@@ -27,7 +27,7 @@ class ServicesMutableView(rugAs: ArtifactSource,
 
   override val childNodeNames: Set[String] = Set("service")
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case "service" =>
       serviceSource.services.map(s =>
         new ServiceMutableView(this, rugAs, s, atomistConfig)

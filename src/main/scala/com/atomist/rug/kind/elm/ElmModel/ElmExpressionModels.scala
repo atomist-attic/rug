@@ -10,7 +10,11 @@ object ElmExpressionModels {
   sealed trait ElmExpression extends TreeNode
 
   class ElmAnonymousFunction(params: Seq[ElmPattern], body: ElmExpression)
-    extends ParsedMutableContainerTreeNode("anonymous-function") with ElmExpression
+    extends ParsedMutableContainerTreeNode("anonymous-function") with ElmExpression {
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
+  }
 
   class ElmRecordField(name: MutableTerminalTreeNode, expr: ElmExpression)
     extends ParsedMutableContainerTreeNode("record-field-value-assignment") {
@@ -18,6 +22,8 @@ object ElmExpressionModels {
     def elmRecordFieldName: String = name.value
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
 
     appendField(name)
@@ -32,6 +38,8 @@ object ElmExpressionModels {
     appendFields(initialFields)
 
     def fields: Seq[ElmRecordField] = _fields
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fields.filter(n => n.nodeName.equals(key))
 
     def add(name: String, typ: String): Unit = {
       val oldValue = value
@@ -62,6 +70,8 @@ object ElmExpressionModels {
 
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   trait ElmIdentifierRef extends ElmExpression {
@@ -74,6 +84,8 @@ object ElmExpressionModels {
 
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   case class ElmLetExpression(definitions: Seq[ElmDeclaration], body: ElmExpression)
@@ -81,6 +93,8 @@ object ElmExpressionModels {
       with ElmExpression {
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     // TODO will eventually need to have this in the AST but it seems to corrupt files right now
     // appendFields(definitions)
@@ -91,11 +105,16 @@ object ElmExpressionModels {
     extends ParsedMutableContainerTreeNode(s"if-$initialCondition")
       with ElmExpression {
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   class ElmCondition(left: ElmExpression, op: String, right: ElmExpression)
     extends ParsedMutableContainerTreeNode(s"elm-condition")
       with ElmExpression {
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   class ElmCase(initialMatchOn: ElmExpression, initialClauses: Seq[ElmCaseClause])
@@ -107,6 +126,7 @@ object ElmExpressionModels {
 
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     insertFieldCheckingPosition(_matchOn)
     for (c <- initialClauses) insertFieldCheckingPosition(c)
@@ -150,6 +170,8 @@ object ElmExpressionModels {
 
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
     override def nodeType: String = ElmModuleType.CaseClauseAlias
 
     private var _left = initialLeft
@@ -186,6 +208,9 @@ object ElmExpressionModels {
 
     insertFieldCheckingPosition(functionName)
     parameters.foreach(insertFieldCheckingPosition(_))
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
   }
 
   trait ElmInfixOperator extends TreeNode {
@@ -200,6 +225,9 @@ object ElmExpressionModels {
     insertFieldCheckingPosition(op)
     insertFieldCheckingPosition(right)
     //def functionName: String
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
   }
 
   class ElmRecordFieldAccess(record: ElmExpression, fields: Seq[MutableTerminalTreeNode])
@@ -207,6 +235,9 @@ object ElmExpressionModels {
       with ElmExpression {
     insertFieldCheckingPosition(record)
     fields.foreach( field => insertFieldCheckingPosition(field))
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
   }
 
   trait StringConstant
@@ -225,6 +256,8 @@ object ElmExpressionModels {
       with ElmExpression {
     override def childNodeNames: Set[String] = Set()
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   case class ElmTuple(elements: Seq[ElmExpression])
@@ -232,6 +265,8 @@ object ElmExpressionModels {
       with ElmExpression {
 
     override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     appendFields(elements)
   }

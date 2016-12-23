@@ -24,7 +24,7 @@ class PythonFileMutableView(
 
   override def childNodeNames: Set[String] = Set(ImportAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case ImportAlias =>
       val imports = findByName("import_name", currentParsed)
       imports collect {
@@ -56,7 +56,7 @@ class ImportMutableView(
 
   override def childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   @ExportFunction(readOnly = true, description = "Import name")
   def name: String = {

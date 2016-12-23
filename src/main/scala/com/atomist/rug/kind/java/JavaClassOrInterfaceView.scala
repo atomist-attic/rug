@@ -16,7 +16,7 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
 
   override def childNodeNames: Set[String] = Set(ConstructorAlias, MethodAlias, FieldAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case ConstructorAlias =>
       currentBackingObject.getMembers.asScala
         .collect {

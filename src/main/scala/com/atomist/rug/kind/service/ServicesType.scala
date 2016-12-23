@@ -20,8 +20,10 @@ class ServicesType(
 
   override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
-                                   context: MutableView[_], poa: ProjectOperationArguments,
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
+                                   poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
       case s: ServicesMutableView => Some(s.childrenNamed("service"))

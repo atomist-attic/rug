@@ -15,8 +15,7 @@ object Typed {
 
   def typeClassToTypeName(tc: Class[_]): String = trimSuffix(typeSuffix, tc.getSimpleName)
 
-  def typeClassesToTypeNames(tcs: Class[_]*): Set[String] =
-    tcs.map(typeClassToTypeName).toSet
+  def typeClassesToTypeNames(tcs: Class[_]*): Set[String] = tcs.map(typeClassToTypeName).toSet
 
   def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
     val raw = trimSuffix(treeNodeSuffix, trimSuffix(mutableViewSuffix, tc.getSimpleName))
@@ -40,20 +39,22 @@ trait Typed {
   val name: String = Typed.typeClassToTypeName(getClass)
 
   /**
-    * Description of this type
+    * Description of this type.
     */
   def description: String
 
   /**
-    * FQN of the type
-    * @return
+    * FQN of the type.
+    *
+    * @return the underlying class
     */
   def underlyingType: Class[_]
 
   /**
     * Expose type information. Return an instance of StaticTypeInformation if
     * operations are known to help with compile time validation and tooling.
-    * @return type information.
+    *
+    * @return type information
     */
   def typeInformation: TypeInformation
 }

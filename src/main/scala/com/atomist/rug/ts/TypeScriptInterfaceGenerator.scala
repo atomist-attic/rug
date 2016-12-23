@@ -119,10 +119,19 @@ class TypeScriptInterfaceGenerator(
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
-    val methods = allTypes.map(t => t.name -> getMethodInfo(t)).toMap
+    allTypes.foreach(t => {
+      val methods = allMethods(t)
+      methods.foreach(m => {
+        if (m.name == "addChildNode")
+          println(s"${t.name}: ${m.name}")
+      })
+    })
+    val methods = allTypes.map(t => t.name -> allMethods(t)).toMap
     val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {
       case (_, lst) => lst.size > 1
-    }).keys.toSeq.sortWith(_.name < _.name)
+    }).keys.toSeq.sortWith(_.name <= _.name)
+
+   // duplicateMethods.foreach(println)
 
     val parent = if (duplicateMethods.isEmpty) None else Some(
       InterfaceType(ParentInterface, "TypeScript superinterface", duplicateMethods))
@@ -144,6 +153,7 @@ class TypeScriptInterfaceGenerator(
     output ++= config.separator
 
     val allTypes = typeRegistry.types.sortWith(typeSort)
+    val tys = allTypes.toList
     // TODO process unpublishedTypes
     val unpublishedTypes = findUnpublishedTypes(allTypes)
     val interfaceTypes = allInterfaceTypes(allTypes)
@@ -166,12 +176,12 @@ class TypeScriptInterfaceGenerator(
       output.toString())
   }
 
-  private def getMethodInfo(t: Typed): Seq[MethodInfo] = {
+  private def allMethods(t: Typed): Seq[MethodInfo] = {
     val methods = new ListBuffer[MethodInfo]
     t.typeInformation match {
-      case s: StaticTypeInformation =>
+      case st: StaticTypeInformation =>
         for {
-          op <- s.operations
+          op <- st.operations
           if shouldEmit(op)
         } {
           val params =
@@ -199,6 +209,15 @@ class TypeScriptInterfaceGenerator(
     val publishedTypeNames = publishedTypes.map(_.name).toSet
     (types -- publishedTypeNames).toSeq.sorted
   }
+
+//  private def findUnpublishedTypes1(publishedTypes: Seq[Typed]): Seq[Typed] = {
+//    val allOperations = publishedTypes.map(_.typeInformation).collect {
+//      case st: StaticTypeInformation => st.operations
+//    }.flatten
+//    val types = allOperations.map(op => op.definedOn).toSet
+//    val publishedTypeNames = publishedTypes.map(_.name).toSet
+//    (types -- publishedTypes).toSeq.sorted
+//  }
 
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val createdFile = emitInterfaces(poa)

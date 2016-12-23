@@ -27,7 +27,11 @@ class YmlType(
   //      .map(f => new YmlMutableView(f, new ProjectMutableView(rugAs, projectSource)))
   //      .toSeq
   //  }
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_], poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = ???
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
+                                   poa: ProjectOperationArguments,
+                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = ???
 
   /**
     * The set of node types this can resolve from

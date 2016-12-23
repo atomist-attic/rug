@@ -27,7 +27,9 @@ class DockerFileType(
 
   override def viewManifest: Manifest[DockerMutableView] = manifest[DockerMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {

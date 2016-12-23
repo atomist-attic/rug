@@ -29,7 +29,9 @@ class JsonType(
 
   override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {

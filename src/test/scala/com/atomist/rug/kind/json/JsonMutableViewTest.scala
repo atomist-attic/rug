@@ -30,7 +30,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val j = new JsonMutableView(f, pmv)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
-    rtn.right.get.head.asInstanceOf[ContainerTreeNode]("STRING").head.value should be ("S")
+    rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.value should be ("S")
   }
 
   it should "update path find" in {
@@ -42,7 +42,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val j = new JsonMutableView(f, pmv)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
-    val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode]("STRING").head.asInstanceOf[MutableTreeNode]
+    val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.asInstanceOf[MutableTreeNode]
     target.value should be ("markup")
     target.update("XSLT")
     j.value should equal(simple.replace("\"markup", "\"XSLT"))

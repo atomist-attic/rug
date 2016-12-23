@@ -16,7 +16,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val input = "This is a test"
     val m = g.strictMatch(input)
     m.count should be >= (1)
-    m("thing").head match {
+    m.childrenNamed("thing").head match {
       case sm: MutableTerminalTreeNode =>
         sm.nodeName should equal("thing")
         sm.value should equal(input)
@@ -33,11 +33,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
   it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
     matches.count should be >= (2)
-    matches("name").head match {
+    matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
     }
-    matches("age").head match {
+    matches.childrenNamed("age").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("19")
     }
@@ -50,12 +50,12 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     matches.value should equal(input)
     matches.count should be >= (2)
     matches.dirty should be(false)
-    matches("name").head match {
+    matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
         sm.update("Dave")
     }
-    matches("age").head match {
+    matches.childrenNamed("age").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("19")
         sm.update("40")
@@ -71,11 +71,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = g.findMatches(input)
     m.size should be(1)
     m.head.count should be >= (2)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
     }
-    m.head("age").head match {
+    m.head.childrenNamed("age").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("12")
     }
@@ -86,11 +86,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = g.findMatches("Henry was aged 24. Blah blah")
     m.size should be(1)
     m.head.count should be >= (2)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
     }
-    m.head("age").head match {
+    m.head.childrenNamed("age").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("24")
     }
@@ -114,12 +114,12 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     m.size should be(2)
     m.head.count should be >= (2)
     val t = m(1)
-    t("name").head match {
+    t.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Alice")
         sm.startPosition != null should be(true)
     }
-    t("age").head match {
+    t.childrenNamed("age").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("16")
     }
@@ -137,11 +137,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = g.findMatches(input)
     m.size should be(1)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("foo")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Int")
     }
@@ -160,25 +160,25 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     if (ml.isDefined) ml.get.matches should equal(1)
     m.size should be(1)
     println(TreeNodeUtils.toShortString(m.head))
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("bar")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Unit")
     }
-    val params = m.head("params")
-    val paramDef1 = params.head.asInstanceOf[ContainerTreeNode]("param_def")
+    val params = m.head.childrenNamed("params")
+    val paramDef1 = params.head.asInstanceOf[ContainerTreeNode].childrenNamed("param_def")
     paramDef1.size should be(1)
     paramDef1.head match {
       case ov: ContainerTreeNode =>
-        ov("name").toList match {
+        ov.childrenNamed("name").toList match {
           case (fv: TerminalTreeNode) :: Nil =>
             fv.nodeName should equal("name")
             fv.value should equal("barParamName")
         }
-        ov("type").toList match {
+        ov.childrenNamed("type").toList match {
           case (fv: TerminalTreeNode) :: Nil =>
             fv.nodeName should equal("type")
             fv.value should equal("String")
@@ -197,13 +197,13 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = matchScalaMethodHeaderRepsep.findMatches(input)
     m.size should be(1)
     val last: MutableContainerTreeNode = m.head
-    val params = last("params").head.asInstanceOf[ContainerTreeNode]("param_def")
+    val params = last.childrenNamed("params").head.asInstanceOf[ContainerTreeNode].childrenNamed("param_def")
     params.size should be >= (2)
     params foreach {
       case pad: SimpleTerminalTreeNode => pad.nodeName.contains("pad") should be(true)
       case soo: MutableContainerTreeNode =>
-        soo("type").head.asInstanceOf[TerminalTreeNode].value should be("Int")
-        val value = soo("name").head.asInstanceOf[TerminalTreeNode].value
+        soo.childrenNamed("type").head.asInstanceOf[TerminalTreeNode].value should be("Int")
+        val value = soo.childrenNamed("name").head.asInstanceOf[TerminalTreeNode].value
         Set("a", "b").contains(value) should be(true)
     }
   }
@@ -232,22 +232,22 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = matchScalaMethodHeaderRepsep.findMatches(input)
     m.size should be(3)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("bar")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Unit")
     }
     val last: MutableContainerTreeNode = m(2)
-    val params = last("params").head.asInstanceOf[ContainerTreeNode]("param_def")
+    val params = last.childrenNamed("params").head.asInstanceOf[ContainerTreeNode].childrenNamed("param_def")
     params.size should be >= (2)
     params foreach {
       case pad: SimpleTerminalTreeNode => pad.nodeName.contains("pad") should be(true)
       case soo: MutableContainerTreeNode =>
-        soo("type").head.asInstanceOf[TerminalTreeNode].value should be("Int")
-        val value = soo("name").head.asInstanceOf[TerminalTreeNode].value
+        soo.childrenNamed("type").head.asInstanceOf[TerminalTreeNode].value should be("Int")
+        val value = soo.childrenNamed("name").head.asInstanceOf[TerminalTreeNode].value
         Set("a", "b").contains(value) should be(true)
     }
   }
@@ -272,11 +272,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = g.findMatches(input)
     m.size should be(2)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("hippo")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Hippopotamus")
     }
@@ -302,11 +302,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = matchAnnotatedJavaFields.findMatches(input)
     m.size should be(2)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("hippo")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Hippopotamus")
     }
@@ -346,11 +346,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val ml = new SavingMatchListener
     val m = g.findMatches(input, Some(ml))
     m.size should be(2)
-    m.head("name").head match {
+    m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("hippo")
     }
-    m.head("type").head match {
+    m.head.childrenNamed("type").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Hippopotamus")
     }
@@ -377,8 +377,8 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = ymlKeys.findMatches(input)
     m.size should be(1)
     //println(TreeNodeUtils.toShortString(m.head))
-    val keys = m.head("key")
-    val values = m.head("value")
+    val keys = m.head.childrenNamed("key")
+    val values = m.head.childrenNamed("value")
     keys.size should be(2)
     val k1 = keys.head
     k1.value should equal("CI_DEPLOY_USERNAME")
@@ -398,8 +398,8 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = repTest.findMatches(input)
     m.size should be(2)
     //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    m.head("keys").size should be(1)
-    val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
+    m.head.childrenNamed("keys").size should be(1)
+    val keys: Seq[TreeNode] = m.head.childrenNamed("keys").head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
     keys.size should be(4)
     keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
   }
@@ -417,8 +417,8 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = repsepTest.findMatches(input)
     m.size should be(2)
     //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    m.head("keys").size should be(1)
-    val keys: Seq[TreeNode] = m.head("keys").head.asInstanceOf[ContainerTreeNode]("key")
+    m.head.childrenNamed("keys").size should be(1)
+    val keys: Seq[TreeNode] = m.head.childrenNamed("keys").head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
     keys.size should be(4)
     keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
   }

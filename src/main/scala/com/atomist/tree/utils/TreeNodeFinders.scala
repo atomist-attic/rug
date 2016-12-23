@@ -18,7 +18,7 @@ object TreeNodeFinders {
 
   def requiredSingleChild(parent: TreeNode, name: String): TreeNode = parent match {
     case ctn: ContainerTreeNode =>
-      val hits = ctn.apply(name)
+      val hits = ctn.childrenNamed(name)
       if (hits.size != 1)
         throw new IllegalArgumentException(s"Found ${hits.size} matches rather than 1 for [$name] in " +
           s"${parent.nodeName}:${parent.nodeType}[${parent.value}] with children [${ctn.childNodeNames.mkString(",")}]")
@@ -28,7 +28,7 @@ object TreeNodeFinders {
 
   def singleChild(parent: TreeNode, name: String): Option[TreeNode] = parent match {
     case ctn: ContainerTreeNode =>
-      val hits = ctn.apply(name)
+      val hits = ctn.childrenNamed(name)
       if (hits.size == 1)
         Some(hits.head)
       else None
@@ -37,7 +37,7 @@ object TreeNodeFinders {
 
   def requiredSingleFieldValue(parent: TreeNode, name: String): String = parent match {
     case ctn: ContainerTreeNode =>
-      ctn.apply(name) match {
+      ctn.childrenNamed(name) match {
         case Seq(tn: TerminalTreeNode) => tn.value
         case Nil =>  throw new IllegalArgumentException(s"Found no fields for [$name] in $parent: Needed exactly 1")
       }

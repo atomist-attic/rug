@@ -78,7 +78,7 @@ object JsonType {
         case p: MutableContainerTreeNode if "pair".equals(p.nodeName) =>
           Seq(new PairMutableView(p, parent))
         case o: MutableContainerTreeNode if "object".equals(o.nodeName) =>
-          val nodes: Seq[PairMutableView] = o.apply("pair").map(p => new PairMutableView(p.asInstanceOf[MutableContainerTreeNode], parent))
+          val nodes: Seq[PairMutableView] = o.childrenNamed("pair").map(p => new PairMutableView(p.asInstanceOf[MutableContainerTreeNode], parent))
           nodes
       }
     case x => Nil
@@ -111,7 +111,7 @@ class JsonMutableView(
   : value
   ;
   */
-  private val soleKid: MutableContainerTreeNode = currentParsed.apply("value").head match {
+  private val soleKid: MutableContainerTreeNode = currentParsed.childrenNamed("value").head match {
     case mv: MutableContainerTreeNode => mv
   }
 

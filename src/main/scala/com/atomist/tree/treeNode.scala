@@ -76,7 +76,7 @@ trait ContainerTreeNode extends TreeNode {
     *
     * @param key field name
     */
-  def apply(key: String): Seq[TreeNode] =
+  def childrenNamed(key: String): Seq[TreeNode] =
     childNodes.filter(f => f.nodeName.equals(key))
 }
 

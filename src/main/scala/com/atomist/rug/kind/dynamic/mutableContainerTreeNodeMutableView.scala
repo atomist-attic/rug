@@ -39,7 +39,7 @@ class MutableContainerMutableView(
           @ExportFunctionParameterDescription(name = "value",
             description = "The new value")
           newValue: String): Unit = {
-    originalBackingObject(key).toList match {
+    originalBackingObject.childrenNamed(key).toList match {
       case (sm:MutableTreeNode) :: Nil =>
         logger.debug(s"Updating ${sm.value} to $newValue on ${this.currentBackingObject.nodeName}")
         sm.update(newValue)

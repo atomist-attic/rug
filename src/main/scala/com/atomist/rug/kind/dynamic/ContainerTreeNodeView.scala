@@ -29,7 +29,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
   def valueOf(@ExportFunctionParameterDescription(name = "name",
     description = "The match key whose content you want")
               name: String): Object = {
-    originalBackingObject(name).toList match {
+    originalBackingObject.childrenNamed(name).toList match {
       case Nil => ???
       case List(f: TreeNode) => f.value
       case _ => ???
@@ -44,7 +44,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def childNodeTypes: Set[String] = currentBackingObject.childNodeTypes
 
-  override def children(fieldName: String): Seq[MutableView[_]] = currentBackingObject(fieldName) collect {
+  override def children(fieldName: String): Seq[MutableView[_]] = currentBackingObject.childrenNamed(fieldName) collect {
     case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
     case o: ContainerTreeNode => viewFrom(o)
     case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)

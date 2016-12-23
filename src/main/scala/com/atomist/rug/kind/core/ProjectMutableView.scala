@@ -54,7 +54,7 @@ class ProjectMutableView(
     new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)
 
   val TypeName = Typed.typeToTypeName(classOf[ProjectMutableView])
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case TypeName =>
       // Special case. We don't want a "project" directory to confuse us
       Seq(this)

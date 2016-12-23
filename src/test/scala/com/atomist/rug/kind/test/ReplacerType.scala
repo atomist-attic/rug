@@ -24,8 +24,10 @@ class ReplacerType(ev: Evaluator) extends Type(ev) {
   @Autowired
   protected def viewClass: Class[StringReplacingMutableView] = classOf[StringReplacingMutableView]
 
-  protected def listViews(rugAs: ArtifactSource, selected: Selected,
-                          context: MutableView[_], poa: ProjectOperationArguments,
+  protected def listViews(rugAs: ArtifactSource,
+                          selected: Selected,
+                          context: MutableView[_],
+                          poa: ProjectOperationArguments,
                           identifierMap: Map[String, AnyRef]): Seq[MutableView[_]] = context match {
     case pmv: ProjectMutableView =>
       pmv.currentBackingObject.allFiles.filter(f => f.path.contains(".java"))

@@ -12,11 +12,11 @@ class ElmCaseMutableView(
 
   override def nodeType: String = ElmModuleType.CaseAlias
 
-  override def childrenNames: Seq[String] = Seq(CaseClauseAlias)
+  override def childNodeNames: Set[String] = Set(CaseClauseAlias)
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case CaseClauseAlias => ec.clauses.map(cc => new ElmCaseClauseMutableView(cc, this))
     case x => throw new RugRuntimeException(null, s"Script error: No child with name [$x] of Elm case")
   }
@@ -55,7 +55,7 @@ class ElmCaseClauseMutableView(
   override def childNodeTypes: Set[String] = childNodeNames
 
   @ExportFunction(readOnly = true, description = "String content of case clause")
-  def body = ecc.value
+  def body: String = ecc.value
 
   @ExportFunction(readOnly = false, description = "Replace body of the case clause")
   def replaceBody(@ExportFunctionParameterDescription(name = "newBody", description = "New case clause body")
@@ -64,8 +64,8 @@ class ElmCaseClauseMutableView(
     ecc.replaceBody(newBody)
   }
 
-  override def childrenNames: Seq[String] = Nil
+  override def childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
 }

@@ -29,7 +29,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
   def valueOf(@ExportFunctionParameterDescription(name = "name",
     description = "The match key whose content you want")
               name: String): Object = {
-    originalBackingObject(name).toList match {
+    originalBackingObject.childrenNamed(name).toList match {
       case Nil => ???
       case List(f: TreeNode) => f.value
       case _ => ???
@@ -37,14 +37,11 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
     //.getOrElse("")
   }
 
-  override def childrenNames: Seq[String] = {
-    val names = currentBackingObject.childNodeNames.toSeq
-    names
-  }
+  override def childNodeNames: Set[String] = currentBackingObject.childNodeNames
 
   override def childNodeTypes: Set[String] = currentBackingObject.childNodeTypes
 
-  override def children(fieldName: String): Seq[MutableView[_]] = currentBackingObject(fieldName) collect {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = currentBackingObject.childrenNamed(fieldName) collect {
     case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
     case o: ContainerTreeNode => viewFrom(o)
     case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)
@@ -88,11 +85,11 @@ class ScalarValueView(
                newValue: String): Unit =
     originalBackingObject.update(newValue)
 
-  override val childrenNames: Seq[String] = Seq(originalBackingObject.nodeName)
+  override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)
 
   override def childNodeTypes: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   override def toString = s"${getClass.getSimpleName} wrapping $currentBackingObject"
 }

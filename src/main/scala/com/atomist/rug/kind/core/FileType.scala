@@ -20,8 +20,11 @@ class FileType(
 
   override def viewManifest: Manifest[FileMutableView] = manifest[FileMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
-                                   poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
+                                   poa: ProjectOperationArguments,
+                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     (selected.kind, context) match {
       case (`name`, pmv: ProjectMutableView) =>
         Some(pmv.currentBackingObject.allFiles.map(f => new FileMutableView(f, pmv)))

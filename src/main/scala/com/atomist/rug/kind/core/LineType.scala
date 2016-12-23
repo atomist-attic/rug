@@ -27,7 +27,9 @@ class LineType(
   /** Describe the MutableView subclass to allow for reflective function export */
   override def viewManifest: Manifest[_] = manifest[LineMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
@@ -51,6 +53,8 @@ class LineMutableView(
     with TerminalView[String] {
 
   override def nodeName: String = "line"
+
+  override def childNodeNames: Set[String] = Set()
 
   @ExportFunction(readOnly = false, description = "Update this line's content")
   def update(@ExportFunctionParameterDescription(name = "s2",

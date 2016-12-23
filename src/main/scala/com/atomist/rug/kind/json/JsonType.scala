@@ -29,7 +29,9 @@ class JsonType(
 
   override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
@@ -78,7 +80,7 @@ object JsonType {
         case p: MutableContainerTreeNode if "pair".equals(p.nodeName) =>
           Seq(new PairMutableView(p, parent))
         case o: MutableContainerTreeNode if "object".equals(o.nodeName) =>
-          val nodes: Seq[PairMutableView] = o.apply("pair").map(p => new PairMutableView(p.asInstanceOf[MutableContainerTreeNode], parent))
+          val nodes: Seq[PairMutableView] = o.childrenNamed("pair").map(p => new PairMutableView(p.asInstanceOf[MutableContainerTreeNode], parent))
           nodes
       }
     case x => Nil
@@ -111,16 +113,16 @@ class JsonMutableView(
   : value
   ;
   */
-  private val soleKid: MutableContainerTreeNode = currentParsed.apply("value").head match {
+  private val soleKid: MutableContainerTreeNode = currentParsed.childrenNamed("value").head match {
     case mv: MutableContainerTreeNode => mv
   }
 
   override protected def currentContent: String = currentParsed.value
 
-  override def childrenNames: Seq[String] =
-    findPairsInValueNode(this, soleKid).map(_.nodeName).distinct
+  override def childNodeNames: Set[String] =
+    findPairsInValueNode(this, soleKid).map(_.nodeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = {
     findPairsInValueNode(this, soleKid)
       .filter(n => fieldName.equals(n.nodeName))
   }
@@ -170,9 +172,9 @@ private class PairMutableView(
 
   override def value: String = currentBackingObject.value
 
-  override def childrenNames: Seq[String] = kids.map(k => k.nodeName)
+  override def childNodeNames: Set[String] = kids.map(k => k.nodeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] =
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
     kids.filter(k => k.nodeName.equals(fieldName))
 
   @ExportFunction(readOnly = false, description = "setValue")
@@ -226,11 +228,11 @@ private class JsonStringView(
                newValue: String): Unit =
     originalBackingObject.update("\"" + newValue + "\"")
 
-  override val childrenNames: Seq[String] = Seq(originalBackingObject.nodeName)
+  override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)
 
   override def childNodeTypes: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   override def toString = s"${getClass.getSimpleName} wrapping $currentBackingObject"
 }

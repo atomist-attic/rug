@@ -19,9 +19,9 @@ class ElmFunctionMutableView(
 
   override def nodeName: String = ef.functionName
 
-  override val childrenNames: Seq[String] = Seq(CaseAlias, RecordValueAlias)
+  override val childNodeNames: Set[String] = Set(CaseAlias, RecordValueAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case CaseAlias =>
       ef.body match {
         case c: ElmCase => Seq(new ElmCaseMutableView(c, this))
@@ -53,13 +53,13 @@ class ElmFunctionMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Name of the function")
-  def name = ef.functionName
+  def name: String = ef.functionName
 
   @ExportFunction(readOnly = true, description = "The body of the function")
-  def body = ef.body.value
+  def body: String = ef.body.value
 
   @ExportFunction(readOnly = true, description = "The body of the type specification")
-  def typeSpecification = ef.elmType match {
+  def typeSpecification: String = ef.elmType match {
     case Some(et) => et.value
     case None => ""
   }
@@ -94,12 +94,12 @@ class ElmTypeMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override val childrenNames: Seq[String] = Seq(CaseAlias)
+  override val childNodeNames: Set[String] = Set(CaseAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = true, description = "Name of the function")
-  def name = eut.typeName
+  def name: String = eut.typeName
 
   @ExportFunction(readOnly = false, description = "Add")
   def addConstructor(@ExportFunctionParameterDescription(name = "constructor",
@@ -125,9 +125,9 @@ class ElmImportMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override val childrenNames: Seq[String] = Seq()
+  override val childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = true, description = "Name of the imported module")
   def module = imp.moduleName
@@ -147,9 +147,9 @@ class ElmTypeAliasMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override val childrenNames: Seq[String] = Seq(RecordTypeAlias)
+  override val childNodeNames: Set[String] = Set(RecordTypeAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RecordTypeAlias => ta.alias match {
       case rt: ElmRecordType => Seq(new ElmRecordTypeMutableView(rt, this))
       case _ => Nil
@@ -184,9 +184,9 @@ class ElmRecordTypeMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override def childrenNames: Seq[String] = rec.fields.map { _.recordFieldTypeName }
+  override def childNodeNames: Set[String] = rec.fields.map(_.recordFieldTypeName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = false, description = "Add a field to the record type")
   def add(@ExportFunctionParameterDescription(name = "name", description = "Record identifier")
@@ -206,9 +206,9 @@ class ElmRecordValueMutableView(
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override def childrenNames: Seq[String] = rec.fields.map { e => e.elmRecordFieldName }
+  override def childNodeNames: Set[String] = rec.fields.map(e => e.elmRecordFieldName).toSet
 
-  override def children(fieldName: String): Seq[MutableView[_]] = ???
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = ???
 
   @ExportFunction(readOnly = false, description = "Add a field to the record")
   def add(@ExportFunctionParameterDescription(name = "name", description = "Name of the field")

@@ -2,7 +2,7 @@ package com.atomist.rug.kind.elm.ElmModel
 
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode}
 import com.atomist.rug.kind.elm.{ElmModuleType, ElmParserCombinator}
-import com.atomist.tree.SimpleTerminalTreeNode
+import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 
 object ElmTypeModels {
 
@@ -13,6 +13,9 @@ object ElmTypeModels {
     with ElmTypeSpecification {
     // I tried to do this as a trait. It didn't work. Something
     // about UpdatableScalarFieldValue is not a superclass of ParsedMutableStringUpdatingObjectValue
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   case class ElmTypeWithParameters(
@@ -24,12 +27,19 @@ object ElmTypeModels {
     insertFieldCheckingPosition(typeNameField)
 
     def typeName = typeNameField.value
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
   }
 
   case class ElmTupleType(
                            elements: Seq[ElmTypeSpecification]
                          ) extends ParsedMutableContainerTreeNode("tuple-type")
-    with ElmTypeSpecification
+    with ElmTypeSpecification {
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
+  }
 
   case class ElmRecordType(
                             initialFields: Seq[ElmRecordFieldType]
@@ -38,6 +48,8 @@ object ElmTypeModels {
       with ElmTypeSpecification {
 
     private var _fields: Seq[ElmRecordFieldType] = initialFields
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
     appendFields(initialFields)
 
@@ -77,6 +89,10 @@ object ElmTypeModels {
     insertFieldCheckingPosition(recordFieldTypeNameField)
     insertFieldCheckingPosition(typeSpec)
 
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
     def recordFieldTypeName = recordFieldTypeNameField.value
   }
 
@@ -85,6 +101,9 @@ object ElmTypeModels {
       with ElmTypeSpecification {
 
     appendFields(bits)
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
   }
 
 }

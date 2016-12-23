@@ -36,7 +36,7 @@ trait ReflectiveExportContainerTreeNode extends ContainerTreeNode {
     kidMethods.flatMap(k => k.invoke())
   }
 
-  final override def apply(key: String): Seq[TreeNode] = {
+  final override def childrenNamed(key: String): Seq[TreeNode] = {
     kidMethods.find(k => k.name.equals(key)).map(k => k.invoke()).getOrElse(Nil)
   }
 

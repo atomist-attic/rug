@@ -24,8 +24,11 @@ class JavaSourceType(evaluator: Evaluator)
 
   override def viewManifest: Manifest[JavaSourceMutableView] = manifest[JavaSourceMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
-                                   poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
+                                   poa: ProjectOperationArguments,
+                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
       case pv: ProjectMutableView =>
         Some(JavaProjectMutableView(pv).javaSourceViews)

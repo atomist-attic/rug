@@ -28,7 +28,8 @@ class JavaProjectType(
 
   override def viewManifest: Manifest[JavaProjectMutableView] = manifest[JavaProjectMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
                                    context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {

@@ -228,6 +228,8 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   //TODO - why does replacing this with matching fail to compile?
                   if (ret.isInstanceOf[Double]) {
                     ret.asInstanceOf[Double].toInt
+                  }else if(ret.isInstanceOf[Integer]){
+                    ret.asInstanceOf[Integer].toInt
                   } else {
                     throw new RuntimeException("Unrecognised return type from comparator: " + ret.getClass.getName)
                   }

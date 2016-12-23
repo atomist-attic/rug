@@ -12,7 +12,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   val DirectoryTypeName = Typed.typeToTypeName(classOf[DirectoryMutableView])
   override def childNodeTypes: Set[String] = Set(FileTypeName, DirectoryTypeName)
 
-  override def childrenNames: Seq[String] = currentBackingObject.artifacts.map(_.name)
+  override def childNodeNames: Set[String] = currentBackingObject.artifacts.map(_.name).toSet
 
   override def nodeName: String = name
 
@@ -67,5 +67,5 @@ class DirectoryMutableView(
   @ExportFunction(readOnly = true, description = "Return the name of the directory")
   override def name: String = currentBackingObject.name
 
-  override def children(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
 }

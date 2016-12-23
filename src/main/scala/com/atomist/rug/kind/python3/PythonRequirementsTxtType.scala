@@ -22,7 +22,9 @@ class RequirementsType(
 
   override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
@@ -84,9 +86,9 @@ class RequirementsTxtMutableView(
 
   override protected def currentContent: String = currentParsed.value
 
-  override val childrenNames: Seq[String] = Seq(RequirementAlias)
+  override val childNodeNames: Set[String] = Set(RequirementAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case RequirementAlias =>
       val reqs = currentParsed.requirements
       reqs.map(r => new RequirementMutableView(r, this))
@@ -104,9 +106,9 @@ class RequirementsTxtMutableView(
 class RequirementMutableView(requirement: Requirement, parent: RequirementsTxtMutableView)
   extends ViewSupport[Requirement](requirement, parent) {
 
-  override def childrenNames: Seq[String] = Nil
+  override def childNodeNames: Set[String] = Set()
 
-  override def children(fieldName: String): Seq[MutableView[_]] = Nil
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Nil
 
   override def childNodeTypes: Set[String] = Set()
 

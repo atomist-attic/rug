@@ -115,16 +115,16 @@ class ElmModuleMutableView(
 
   import ElmModuleType._
 
-  override val childrenNames: Seq[String] = Seq(FunctionAlias, TypeAliasAlias, TypeAlias, CaseAlias, ImportAlias)
+  override def childNodeNames: Set[String] = Set(FunctionAlias, TypeAliasAlias, TypeAlias, CaseAlias, ImportAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case FunctionAlias => em.functions.map(f => new ElmFunctionMutableView(f, this))
     case TypeAlias => em.types.map(t => new ElmTypeMutableView(t, this))
     case TypeAliasAlias => em.typeAliases.map(ta => new ElmTypeAliasMutableView(ta, this))
     case ImportAlias => em.imports.map(i => new ElmImportMutableView(i, this))
     case CaseAlias => em.functions
       .map(f => new ElmFunctionMutableView(f, this))
-      .flatMap(fmv => fmv.children(CaseAlias))
+      .flatMap(fmv => fmv.childrenNamed(CaseAlias))
     case x => throw new RugRuntimeException(null, s"Script error: No child with name [$x] of Elm module type")
   }
 }

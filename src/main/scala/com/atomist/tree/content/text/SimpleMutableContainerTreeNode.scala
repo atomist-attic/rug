@@ -11,6 +11,9 @@ class SimpleMutableContainerTreeNode(
   extends AbstractMutableContainerTreeNode(name) {
 
   initialFieldValues.foreach(insertFieldCheckingPosition)
+
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
 }
 
 object SimpleMutableContainerTreeNode {

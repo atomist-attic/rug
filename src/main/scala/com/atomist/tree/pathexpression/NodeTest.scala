@@ -65,7 +65,7 @@ case class NamedNodeTest(name: String)
       tn match {
         case ctn: ContainerTreeNode =>
           val kids: List[TreeNode] =
-            ctn.apply(name).toList match {
+            ctn.childrenNamed(name).toList match {
               case Nil =>
                 TreeNodeOperations.invokeMethodIfPresent[TreeNode](tn, name).
                   map {

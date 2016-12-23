@@ -26,7 +26,6 @@ trait DynamicTypeInformation extends TypeInformation
 trait StaticTypeInformation extends TypeInformation {
 
   def operations: Seq[TypeOperation]
-
 }
 
 /**
@@ -83,8 +82,7 @@ case class TypeOperation(
     // println(s"About to invoke ${methods.head} with args=$args")
     try {
       methods.head.invoke(target, args: _*)
-    }
-    catch {
+    } catch {
       case t: Throwable =>
         val argDiagnostics = args map {
           case null => "null"

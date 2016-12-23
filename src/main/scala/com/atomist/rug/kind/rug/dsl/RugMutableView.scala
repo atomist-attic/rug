@@ -25,12 +25,10 @@ class RugMutableView(originalBackingObject: FileArtifact,
     * Ordering is significant. If there is more than one child name,
     * the first returned will be the default.
     */
-  override def childrenNames: Seq[String] = Seq()
+  override def childNodeTypes: Set[String] = Set()
 
   // TODO not very nice that we need to express children in terms of MutableView, not View, but it's OK for now
-  override def children(fieldName: String): Seq[MutableView[_]] = Seq()
-
-  override def childNodeTypes: Set[String] = Set()
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = Seq()
 
   /**
     * Return current content for the file.

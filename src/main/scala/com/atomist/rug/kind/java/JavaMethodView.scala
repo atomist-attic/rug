@@ -13,16 +13,16 @@ class JavaMethodView(originalBackingObject: MethodDeclaration, parent: JavaClass
 
   override def nodeType: String = JavaTypeType.MethodAlias
 
-  override def childrenNames: Seq[String] = Seq("java.parameter")
+  override def childNodeNames: Set[String] = Set("JavaParameter")
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
-    case "java.parameter" =>
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+    case "JavaParameter" =>
       currentBackingObject.getParameters.asScala.map(new JavaMethodParameterView(_, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
   @ExportFunction(readOnly = true, description = "Return the name of the method")
-  def name = currentBackingObject.getName
+  def name: String = currentBackingObject.getName
 
   @ExportFunction(readOnly = true,
     description = "Return the Javadoc for the method, or an empty string if there isn't any")

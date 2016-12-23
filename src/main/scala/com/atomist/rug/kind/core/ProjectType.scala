@@ -22,9 +22,11 @@ class ProjectType(
 
   override def viewManifest: Manifest[ProjectMutableView] = manifest[ProjectMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
                                    context: MutableView[_],
-                                   poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+                                   poa: ProjectOperationArguments,
+                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     // Special case where we want only one
     context match {
       case pmv: ProjectMutableView =>

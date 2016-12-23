@@ -13,10 +13,10 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
 
   override def nodeType: String = "constructor"
 
-  override def childrenNames: Seq[String] = Seq("java.parameter")
+  override def childNodeNames: Set[String] = Set("JavaParameter")
 
-  override def children(fieldName: String): Seq[MutableView[_]] = fieldName match {
-    case "java.parameter" =>
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
+    case "JavaParameter" =>
       currentBackingObject.getParameters.asScala.map(new JavaConstructorParameterView(_, this))
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }

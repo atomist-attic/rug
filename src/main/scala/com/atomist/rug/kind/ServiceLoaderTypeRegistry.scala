@@ -16,7 +16,8 @@ import scala.collection.JavaConverters._
   * @see Type
   */
 class ServiceLoaderTypeRegistry
-  extends TypeRegistry with LazyLogging {
+  extends TypeRegistry
+    with LazyLogging {
 
   private lazy val typesMap: Map[String, Typed] = {
     ServiceLoader.load(classOf[Typed]).asScala.map {
@@ -24,7 +25,7 @@ class ServiceLoaderTypeRegistry
         logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")
         t.typeInformation match {
           case st: StaticTypeInformation =>
-            logger.debug(s"Found operations: ${st.operations.map(st => st.name).mkString(",")}")
+            logger.debug(s"Found operations: ${st.operations.map(_.name).mkString(",")}")
           case _ =>
         }
         t.name -> t
@@ -33,11 +34,9 @@ class ServiceLoaderTypeRegistry
     }
   }.toMap
 
-  override def findByName(kind: String): Option[Typed] =
-    typesMap.get(kind)
+  override def findByName(kind: String): Option[Typed] = typesMap.get(kind)
 
   override def typeNames: Traversable[String] = typesMap.keys
 
   override def types: Seq[Typed] = typesMap.values.toSeq
-
 }

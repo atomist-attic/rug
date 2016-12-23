@@ -3,6 +3,7 @@ package com.atomist.rug.kind.python3
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, ParsedMutableContainerTreeNode}
 import com.atomist.util.scalaparsing.CommonTypesParser
 import com.atomist.source.StringFileArtifact
+import com.atomist.tree.TreeNode
 
 /**
   * Parse a Python requirements.txt file.
@@ -69,6 +70,9 @@ class Requirement(
 
   appendField(packageName)
   version.map(appendField(_))
+
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
 }
 
 class Requirements(
@@ -78,6 +82,8 @@ class Requirements(
   appendFields(_requirements)
 
   def requirements: Seq[Requirement] = _requirements
+
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
   /**
     * Add the given requirement

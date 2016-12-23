@@ -54,7 +54,7 @@ class RugMutableViewTest extends FlatSpec
     val tsEditor = tsEditorFile.get.content
     println("it turned into: " + tsEditor)
 
-    val resultOfTsEditor = executeTypescript("BananaToCarrot.ts", tsEditor, InputProject)
+    val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject)
 
     singleFileArtifactSourcesAreEquivalent(resultOfTsEditor, resultOfRugEditor) should be(true)
 

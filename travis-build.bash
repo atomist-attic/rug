@@ -43,6 +43,10 @@ function main() {
         return 1
     fi
 
+    if ! $mvn scoverage:report; then
+        err "failed to generated test coverage report, continuing"
+    fi
+
     if [[ $TRAVIS_PULL_REQUEST != false ]]; then
         msg "not publishing or tagging pull request"
         return 0

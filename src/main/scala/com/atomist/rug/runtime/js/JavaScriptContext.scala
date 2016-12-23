@@ -17,15 +17,23 @@ import scala.collection.JavaConverters._
   */
 class JavaScriptContext(rugAs: ArtifactSource, allowedClasses: Set[String] = Set.empty[String]) extends LazyLogging {
 
+  private val commonOptions = Array("--optimistic-types", "--language=es6")
+
+  /**
+    * At the time of writing, allowedClasses were only used for test.
+    *
+    * If you do need to expose some classes to JS, then make sure you configure to use a locked down classloader and security manager
+    */
   val engine: NashornScriptEngine =
-    new NashornScriptEngineFactory().getScriptEngine(new ClassFilter {
-      override def exposeToScripts(s: String) = {
-        if (!allowedClasses.contains(s)) {
-          false
-        }else{
-          true
+      new NashornScriptEngineFactory().getScriptEngine(
+        if(allowedClasses.isEmpty) commonOptions :+ "--no-java" else commonOptions,
+        if(allowedClasses.isEmpty) null else Thread.currentThread().getContextClassLoader,//TODO - do we need our own loader here?
+        new ClassFilter {
+          override def exposeToScripts(s: String): Boolean = {
+            allowedClasses.contains(s)
+          }
         }
-      }}).asInstanceOf[NashornScriptEngine]
+      ).asInstanceOf[NashornScriptEngine]
 
   configureEngine(engine)
 

@@ -33,9 +33,9 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
 
   override protected def currentContent: String = Objects.toString(compilationUnit.getOrElse(""))
 
-  override def childrenNames: Seq[String] = Seq(JavaTypeAlias)
+  override def childNodeNames: Set[String] = Set(JavaTypeAlias)
 
-  override def children(fieldName: String): Seq[MutableView[_]] = (compilationUnit, fieldName) match {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = (compilationUnit, fieldName) match {
     case (None, _) => Nil
     case (Some(cu), JavaTypeAlias) =>
       cu.getTypes.asScala

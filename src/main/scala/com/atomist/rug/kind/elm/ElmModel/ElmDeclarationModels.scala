@@ -29,6 +29,10 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("port")
       with ElmDeclaration {
     def declaredIdentifier: String = name.value
+
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
   }
 
   class ElmTypeAlias(
@@ -38,7 +42,11 @@ object ElmDeclarationModels {
 
     override def declaredIdentifier: String = nameField.value
 
+    override def childNodeNames: Set[String] = Set()
+
     override def nodeType: String = ElmModuleType.TypeAliasAlias
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Seq(alias)
 
     private var _alias = initialAlias
 
@@ -47,7 +55,7 @@ object ElmDeclarationModels {
 
     def alias: ElmTypeSpecification = _alias
 
-    def typeAliasName = nameField.value
+    def typeAliasName: String = nameField.value
 
     def setTypeAliasName(newName: String): Unit = nameField.update(newName)
 
@@ -62,6 +70,10 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("union-type") with ElmDeclaration {
 
     override def declaredIdentifier: String = typeName
+
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     private var _values = initialValues
 
@@ -98,6 +110,10 @@ object ElmDeclarationModels {
       with ElmDeclaration
       with CanBeThoughtOfAsAFunction
       with IHaveAMutableBody {
+
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     override def declaredIdentifier: String = functionName
 
@@ -138,6 +154,9 @@ object ElmDeclarationModels {
     extends ParsedMutableContainerTreeNode("patterned constant")
       with ElmDeclaration {
     override def declaredIdentifier: String = ???
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
   }
 
   class ElmSimpleConstantDeclaration(nameField: MutableTerminalTreeNode, initialBody: ElmExpression, initialElmType: Option[(MutableTerminalTreeNode, ElmTypeSpecification)] = None)
@@ -145,6 +164,10 @@ object ElmDeclarationModels {
       with ElmDeclaration
       with CanBeThoughtOfAsAFunction
       with IHaveAMutableBody {
+
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
     override def declaredIdentifier: String = nameField.value
 
@@ -159,7 +182,7 @@ object ElmDeclarationModels {
     insertFieldCheckingPosition(nameField)
     initBody(initialBody)
 
-    def functionName = nameField.value
+    def functionName: String = nameField.value
 
     def setFunctionName(name: String): Unit = {
       nameField.update(name)

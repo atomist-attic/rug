@@ -20,6 +20,8 @@ package object ElmModel {
 
     def names = _names
 
+    override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
     def contains(name: String) = names.exists(_.value == name)
 
     def addExposure(localVariableReference: TerminalTreeNode): Unit = {
@@ -54,6 +56,11 @@ package object ElmModel {
                    initialImports: Seq[Import] = Nil,
                    val declarations: Seq[ElmDeclaration] = Nil)
     extends ParsedMutableContainerTreeNode(nameField.value) {
+
+    override def childNodeNames: Set[String] = Set()
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
 
     private var _exposing = initialExposing
 
@@ -171,6 +178,9 @@ package object ElmModel {
 
     insertFieldCheckingPosition(moduleNameField)
     exposing.foreach(insertFieldCheckingPosition(_))
+
+
+    override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
     def moduleName = moduleNameField.value
 

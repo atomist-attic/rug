@@ -29,9 +29,8 @@ class MutableTerminalTreeNode(
   private var currentValue = initialValue
 
   @ExportFunction(readOnly = false, description = "Update the node value")
-  override def update(newValue: String): Unit = {
+  override def update(newValue: String): Unit =
     currentValue = newValue
-  }
 
   override def endPosition: InputPosition = startPosition + currentValue.length
 

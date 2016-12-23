@@ -24,16 +24,16 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
   }
 
   val RugTypeName = Typed.typeToTypeName(classOf[RugMutableView])
-  override def childrenNames: Seq[String] = RugTypeName +: super.childrenNames
+  override def childNodeTypes: Set[String] = super.childNodeTypes + RugTypeName
 
-  override def children(typeName: String): Seq[MutableView[_]] = typeName match {
+  override def childrenNamed(typeName: String): Seq[MutableView[_]] = typeName match {
     case RugTypeName =>
       pmv.files.asScala.
         filter(_.filename.endsWith(RugType.RugExtension)).
         map{fabmv: FileArtifactBackedMutableView => new RugMutableView(fabmv.currentBackingObject, this)}
 
     case other =>
-      super.children(typeName)
+      super.childrenNamed(typeName)
   }
 
 }

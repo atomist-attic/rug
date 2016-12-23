@@ -20,11 +20,13 @@ class ServicesType(
 
   override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
-                                   context: MutableView[_], poa: ProjectOperationArguments,
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
+                                   context: MutableView[_],
+                                   poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {
-      case s: ServicesMutableView => Some(s.children("service"))
+      case s: ServicesMutableView => Some(s.childrenNamed("service"))
     }
   }
 }
@@ -41,9 +43,8 @@ class ServiceMutableView(override val parent: ServicesMutableView,
   extends ProjectMutableView(rugAs, service.project, atomistConfig) {
 
   @ExportFunction(readOnly = true, description = "Raise issue in this service's issue tracker")
-  def raiseIssue(name: String): Unit = {
+  def raiseIssue(name: String): Unit =
     service.issueRouter.raiseIssue(service, Issue(name))
-  }
 
   def updateTo(newBackingObject: ArtifactSource, roo: RunOtherOperation): Unit = {
     super.updateTo(newBackingObject)
@@ -61,15 +62,12 @@ class ServiceMutableView(override val parent: ServicesMutableView,
     *
     * @param editorName name of editor to use
     * @param params     parameters to pass to the editor
-    * @return
     */
-  override def editWith(editorName: String,
-               params: Map[String, Object]): Unit =
+  override def editWith(editorName: String, params: Map[String, Object]): Unit =
     super.editWith(editorName, params, parent.serviceSource.projectOperations)
 
   // TODO parameter handling
   @ExportFunction(readOnly = false, description = "Edit project with the named editor")
-  def editUsing(editorName: String): Unit = {
+  def editUsing(editorName: String): Unit =
     editWith(editorName, Map[String, String]())
-  }
 }

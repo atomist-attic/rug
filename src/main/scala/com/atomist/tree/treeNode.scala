@@ -42,20 +42,20 @@ trait ContainerTreeNode extends TreeNode {
 
   /**
     * Return all children of this node
+    *
     * @return all the children of this node.
     *         Ordering is significant
     */
-  def childNodes: Seq[TreeNode]
+  def childNodes: Seq[TreeNode] =
+    childNodeNames.toSeq.flatMap(name => childrenNamed(name))
 
   /**
     * Return the names of children of this node
+    *
     * @return the names of children. There may be multiple children
     *         with a given name
     */
-  def childNodeNames: Set[String] =
-    if (childNodes != null)
-      childNodes.map(_.nodeName).toSet
-    else Set()
+  def childNodeNames: Set[String]
 
   def childNodeTypes: Set[String]
 
@@ -76,8 +76,8 @@ trait ContainerTreeNode extends TreeNode {
     *
     * @param key field name
     */
-  def apply(key: String): Seq[TreeNode] =
-    childNodes.filter(f => f.nodeName.equals(key))
+  def childrenNamed(key: String): Seq[TreeNode]
+
 }
 
 /**

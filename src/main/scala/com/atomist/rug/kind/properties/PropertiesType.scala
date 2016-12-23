@@ -19,7 +19,8 @@ class PropertiesType(
 
   override def viewManifest: Manifest[PropertiesMutableView] = manifest[PropertiesMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource, selected: Selected,
+  override protected def findAllIn(rugAs: ArtifactSource,
+                                   selected: Selected,
                                    context: MutableView[_],
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {

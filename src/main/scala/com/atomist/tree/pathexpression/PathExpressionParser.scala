@@ -37,7 +37,7 @@ trait PathExpressionParser extends CommonTypesParser {
           n => {
             n match {
               case ctn: ContainerTreeNode =>
-                val extracted = ctn(prop)
+                val extracted = ctn.childrenNamed(prop)
                 if (extracted.size == 1)
                   test(extracted.head, literal, n)
                 else

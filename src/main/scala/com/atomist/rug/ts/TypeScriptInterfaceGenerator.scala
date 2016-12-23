@@ -43,18 +43,20 @@ class TypeScriptInterfaceGenerator(
 
   val OutputPathParam = "output_path"
 
+  val ParentInterface = "ParentType"
+
   val helper = new TypeScriptGenerationHelper()
 
   private val indent = "    "
 
   private case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo], parent: String = "TreeNode") {
 
-    override def toString = {
+    override def toString: String = {
       val output = new StringBuilder("")
       output ++= emitDocComment(description)
       output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${config.separator}}${indent.dropRight(1)} // interface $name"
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}// interface $name"
       output.toString
     }
   }
@@ -72,9 +74,24 @@ class TypeScriptInterfaceGenerator(
     override def toString = s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
-  private case class MethodParam(name: String, paramType: String) {
+  private class MethodParam(val name: String, val paramType: String) {
+
+    def canEqual(a: Any): Boolean = a.isInstanceOf[MethodParam]
+
+    override def equals(that: Any): Boolean =
+      that match {
+        case that: MethodParam => that.canEqual(this) && this.paramType.hashCode == that.paramType.hashCode
+        case _ => false
+      }
+
+    override def hashCode: Int = paramType.hashCode
 
     override def toString = s"$name: $paramType"
+  }
+
+  private object MethodParam {
+
+    def apply(name: String, paramType: String) = new MethodParam(name, paramType)
   }
 
   addParameter(Parameter(OutputPathParam, ".*").
@@ -85,7 +102,7 @@ class TypeScriptInterfaceGenerator(
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = emitInterfaces(poa)
-    //println(s"The content of ${createdFile.path} is\n${createdFile.content}")
+    // println(s"The content of ${createdFile.path} is\n${createdFile.content}")
     new SimpleFileBasedArtifactSource("Rug user model", createdFile)
   }
 
@@ -101,8 +118,22 @@ class TypeScriptInterfaceGenerator(
 
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
-  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
-    allTypes.map(t => InterfaceType(t.name, t.description, getMethodInfo(t)))
+  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
+    val methods = allTypes.map(t => t.name -> getMethodInfo(t)).toMap
+    val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {
+      case (_, lst) => lst.size > 1
+    }).keys.toSeq.sortWith(_.name < _.name)
+
+    val parent = if (duplicateMethods.isEmpty) None else Some(
+      InterfaceType(ParentInterface, "TypeScript superinterface", duplicateMethods))
+
+    parent.toList ::: allTypes.map(t => {
+      val allMethods = methods.getOrElse(t.name, Nil)
+      val uniqueMethods = allMethods diff duplicateMethods
+      if (allMethods.size == uniqueMethods.size) InterfaceType(t.name, t.description, allMethods)
+      else InterfaceType(t.name, t.description, uniqueMethods, ParentInterface)
+    }).toList
+  }
 
   private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
     val alreadyGenerated = ListBuffer.empty[InterfaceType]

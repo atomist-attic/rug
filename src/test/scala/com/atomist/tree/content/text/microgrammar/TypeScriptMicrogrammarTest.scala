@@ -26,13 +26,13 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    edit(project: Project) {
       |
       |      let mg = new Microgrammar('modelVersion', `<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
-      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine()//.customize(mg)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().customize(mg)
       |
       |      var t: string = `filecount=${project.fileCount()}`
       |
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
-      |        console.log(`Matched file=${n.value()}`);
-      |        //n.update('Foo bar')
+      |        //console.log(`Matched file=${n.value()}`);
+      |        n.update('Foo bar')
       |      })
       |
       |        return new Result(Status.Success, `OK`)
@@ -42,7 +42,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       | """.stripMargin
 
 
-  it should "run use microgrammar defined in TypeScript" in pendingUntilFixed {
+  it should "run use microgrammar defined in TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))
   }
@@ -53,8 +53,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     val target = ParsingTargets.NewStartSpringIoProject
     jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))) match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(2)
-        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+        sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
     }
     jsed
   }

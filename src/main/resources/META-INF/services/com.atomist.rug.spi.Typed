@@ -13,6 +13,7 @@ com.atomist.rug.kind.json.JsonType
 com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.pom.PomType
 
+com.atomist.rug.kind.dynamic.MutableContainerTypeProvider
 com.atomist.rug.kind.python3.PythonFileType
 com.atomist.rug.kind.python3.RequirementsType
 com.atomist.rug.kind.python3.PythonRequirementsTxtType

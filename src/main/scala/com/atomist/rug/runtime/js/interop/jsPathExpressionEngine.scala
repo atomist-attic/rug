@@ -46,10 +46,10 @@ class jsPathExpressionEngine(
     * @param mg microgrammar objects
     * @return
     */
-  def customize(mg: String): jsPathExpressionEngine = {
+  def customize(mg: Object): jsPathExpressionEngine = {
     val things = Seq(mg)
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
-      things.map(dynamicTypeDefinitionToTypeProvider(_))
+      things.map(dynamicTypeDefinitionToTypeProvider)
     )
     new jsPathExpressionEngine(this.ee, tr)
   }

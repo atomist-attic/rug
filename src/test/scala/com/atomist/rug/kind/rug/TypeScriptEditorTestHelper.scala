@@ -21,10 +21,12 @@ trait TypeScriptEditorTestHelper extends Matchers {
                                       others: Seq[ProjectOperation] = Nil)
   : ArtifactSource = {
 
-    val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
-    val cas = TestUtils.compileWithModel(as)
+    val cas = {
+      val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
+      TestUtils.compileWithModel(as)
+    }
 
-    val eds = JavaScriptOperationFinder.fromJavaScriptArchive(as)
+    val eds = JavaScriptOperationFinder.fromJavaScriptArchive(cas)
 
     if (eds.isEmpty) {
       print(program); throw new Exception("No editor was parsed")

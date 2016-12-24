@@ -31,12 +31,12 @@ class DefaultEvaluator(
                                          identifierMap: Map[String, Object],
                                          poa: ProjectOperationArguments): Seq[Object] = {
     def evaluateArg: FunctionArg => Object = {
-      case fa: FunctionArg => evaluate(fa, as, rc, target, alias, identifierMap, poa)
       case ident: IdentifierFunctionArg =>
         val resolved = identifierMap.get(ident.name)
         resolved.getOrElse(
           throw new UndefinedRugIdentifiersException("unknown", s"Cannot resolve identifier '${ident.parameterName}' referenced in $functionInvocation", Seq(ident.name))
         )
+      case fa: FunctionArg => evaluate(fa, as, rc, target, alias, identifierMap, poa)
     }
 
     val evaluatedArgs: Seq[Object] = functionInvocation.args.map(evaluateArg)

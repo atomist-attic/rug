@@ -66,9 +66,8 @@ abstract class JavaScriptInvokingProjectOperation(
     // Translate parameters if necessary
     val processedArgs = args.foldLeft(Seq[Object]())(
       (acc: Seq[Object], cur: Object) => cur match {
-        case poa: ProjectOperationArguments => {
-            acc :+ poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
-        }
+        case poa: ProjectOperationArguments =>
+          acc :+ poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
         case x => acc :+ x
       }
     )

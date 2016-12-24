@@ -64,6 +64,10 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         Some(context.childrenNamed(selected.kind).collect {
           case mv: MutableView[_] => mv
         })
+      else if (context.childNodeNames.contains(selected.kind))
+        Some(context.childrenNamed(selected.kind).collect {
+          case mv: MutableView[_] => mv
+        })
       else None
 
     val fromGlobalTypes: Option[Seq[MutableView[_]]] =

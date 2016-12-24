@@ -24,18 +24,6 @@ case class Operations(
   val allOperations: Seq[ProjectOperation] =
     generators ++ editors ++ reviewers ++ executors
 
-  def publishedReviewers: Seq[ProjectReviewer] = reviewers.collect {
-    case red: RugDrivenProjectReviewer if red.program.publishedName.isDefined =>
-      red
-  }
-
-  def +(that: Operations) =
-    Operations(generators ++ that.generators,
-      editors ++ that.editors,
-      reviewers ++ that.reviewers,
-      executors ++ that.executors
-    )
-
   def generatorNames: Seq[String] = generators.map(_.name)
 
   def editorNames: Seq[String] = editors.map(_.name)
@@ -44,31 +32,7 @@ case class Operations(
 
   def executorNames: Seq[String] = executors.map(_.name)
 
-  def findEditor(editorName: String): ProjectEditor = {
-    editors.find(ed => editorName.equals(ed.name)).getOrElse(
-      throw new RugReferenceException(editorName, s"No editor with name '$editorName': Know of [${editorNames.mkString(",")}]")
-    )
-  }
-
-  def findGenerator(generatorName: String): ProjectGenerator = {
-    generators.find(g => generatorName.equals(g.name)).getOrElse(
-      throw new RugReferenceException(generatorName, s"No generator with name '$generatorName': Know of [${generatorNames.mkString(",")}]")
-    )
-  }
-
-  def findReviewer(reviewerName: String): ProjectReviewer = {
-    reviewers.find(r => reviewerName.equals(r.name)).getOrElse(
-      throw new RugReferenceException(reviewerName, s"No reviewer with name '$reviewerName': Know of [${reviewerNames.mkString(",")}]")
-    )
-  }
-
-  def findExecutor(executorName: String): Executor = {
-    executors.find(ex => executorName.equals(ex.name)).getOrElse(
-      throw new RugReferenceException(executorName, s"No executor with name '$executorName': Know of [${executorNames.mkString(",")}]")
-    )
-  }
-
-  override def toString = {
+  override def toString: String = {
     def showOp(op: ProjectOperation): String = {
       s"${op.name} - ${op.parameters.map(_.name).mkString(",")}" +
         (if (op.description.length > op.name.length) s"\n\t\t${op.description}" else "")

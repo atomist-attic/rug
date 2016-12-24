@@ -8,9 +8,10 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.microgrammar.{MatcherDSLDefinitionParser, MatcherMicrogrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
 
 import scala.collection.JavaConverters._
 
@@ -29,16 +30,45 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
   * Paralleled by a user model TypeScript interface.
+  * One is shared between all users, backed by a global TypeRegistry.
+  * Users can call the customize() method to add further dynamic
+  * type definitions, such as microgrammars, in a specific usage.
+  *
   * Parameters are detyped for interop. Not intended for use directly by Scala or Java callers,
   * which should use PathExpressionEngine, hence the unusual naming convention.
   *
   * @see ExpressionEngine
   * @param ee underlying ExpressionEngine that does the actual work
   */
-class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine) {
+class jsPathExpressionEngine(
+                              val ee: ExpressionEngine = new PathExpressionEngine,
+                              typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
-  // TypeRegistry shared among all users
-  private val sharedTypeRegistry: TypeRegistry = DefaultTypeRegistry
+  /**
+    * Return a customized version of this path expression engine for use in a specific
+    * context, with its own microgrammar types
+    * @param dynamicType JavaScript rest dynamic type definitions.
+    *           Presently,
+    * @return customized instance of this engine
+    */
+  def addType(dynamicType: Object): jsPathExpressionEngine = {
+    val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
+      Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
+    )
+    new jsPathExpressionEngine(this.ee, tr)
+  }
+
+  private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
+    case som: ScriptObjectMirror =>
+      // It's a microgrammar
+      val name = NashornUtils.stringProperty(som, "name")
+      val grammar = NashornUtils.stringProperty(som, "grammar")
+      if (name == null || grammar == null)
+        throw new RugRuntimeException(null, "A microgrammar must specify both name and grammar")
+      val parsed = jsPathExpressionEngine.matcherParser.parse(grammar)
+      val mg = new MatcherMicrogrammar(name, parsed)
+      new MicrogrammarTypeProvider(mg)
+  }
 
   /**
     * Evaluate the given path expression.
@@ -50,14 +80,14 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: Object, pe: Object /*, microgrammars: Object*/): Match = {
+  def evaluate(root: Object, pe: Object): Match = {
     pe match {
       case som: ScriptObjectMirror =>
         // Examine a JavaScript object passed to us. It's probably a
         // TypeScript class with an "expression" property
         val expr = NashornUtils.stringProperty(som, "expression")
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, sharedTypeRegistry) match {
+        ee.evaluate(toTreeNode(root), parsed, typeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
@@ -66,7 +96,7 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
         }
       case expr: String =>
         val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, sharedTypeRegistry) match {
+        ee.evaluate(toTreeNode(root), parsed, typeRegistry) match {
           case Right(nodes) =>
             val m = Match(root, wrap(nodes))
             m
@@ -130,7 +160,7 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
     */
   def children(parent: Object, name: String): util.List[Object] = {
     val rootTn = toTreeNode(parent)
-    val typ = sharedTypeRegistry.findByName(name).getOrElse(???)
+    val typ = typeRegistry.findByName(name).getOrElse(???)
     (typ, rootTn) match {
       case (cvf: ContextlessViewFinder, mv: MutableView[_]) =>
         val kids = cvf.findAllIn(mv).getOrElse(Nil)
@@ -148,10 +178,16 @@ class jsPathExpressionEngine(val ee: ExpressionEngine = new PathExpressionEngine
     */
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
     new TypeScriptArray(nodes.map(k => new SafeCommittingProxy({
-      sharedTypeRegistry.findByName(k.nodeType).getOrElse(
+      typeRegistry.findByName(k.nodeType).getOrElse(
         throw new UnsupportedOperationException(s"Cannot find type for node type [${k.nodeType}]")
       )
     },
       k).asInstanceOf[Object]).asJava)
   }
+}
+
+object jsPathExpressionEngine {
+
+  val matcherParser = new MatcherDSLDefinitionParser
+
 }

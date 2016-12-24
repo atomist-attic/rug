@@ -18,6 +18,12 @@ class MutableTreeNodeUpdater(soo: MutableContainerTreeNode)
   }
 }
 
+
+class MutableContainerTypeProvider extends TypeProvider(classOf[MutableContainerMutableView]) {
+
+  override def description: String = "Generic container"
+}
+
 /**
   * Fronts any view with hierarchy
   *
@@ -25,10 +31,12 @@ class MutableTreeNodeUpdater(soo: MutableContainerTreeNode)
   * @param parent
   */
 class MutableContainerMutableView(
-                                            originalBackingObject: MutableContainerTreeNode,
-                                            parent: MutableView[_])
+                                   originalBackingObject: MutableContainerTreeNode,
+                                   parent: MutableView[_])
   extends ContainerTreeNodeView[MutableContainerTreeNode](originalBackingObject, parent)
     with LazyLogging {
+
+  override def nodeType = "MutableContainer"
 
   override def dirty: Boolean = originalBackingObject.dirty
 
@@ -40,7 +48,7 @@ class MutableContainerMutableView(
             description = "The new value")
           newValue: String): Unit = {
     originalBackingObject.childrenNamed(key).toList match {
-      case (sm:MutableTreeNode) :: Nil =>
+      case (sm: MutableTreeNode) :: Nil =>
         logger.debug(s"Updating ${sm.value} to $newValue on ${this.currentBackingObject.nodeName}")
         sm.update(newValue)
         require(dirty)

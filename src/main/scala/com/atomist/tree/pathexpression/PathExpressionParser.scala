@@ -73,7 +73,7 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private def index: Parser[Predicate] = integer ^^ {
-    case n => new IndexPredicate(s"[$n]", n)
+    n => IndexPredicate(s"[$n]", n)
   }
 
   private def truePredicate: Parser[Predicate] = "true" ^^ (_ => TruePredicate)
@@ -85,7 +85,7 @@ trait PathExpressionParser extends CommonTypesParser {
     index
 
   private def negatedPredicate: Parser[Predicate] = "not" ~> "(" ~> predicateExpression <~ ")" ^^ {
-    case pred => NegationOf(pred)
+    pred => NegationOf(pred)
   }
 
   private def logicalOp: Parser[String] = "and" | "or"

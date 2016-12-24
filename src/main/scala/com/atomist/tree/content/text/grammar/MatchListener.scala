@@ -50,17 +50,3 @@ abstract class AbstractMatchListener(val name: String) extends MatchListener {
 
   final override def matches: Int = _matches
 }
-
-class ConsoleMatchListener(name: String, verbose: Boolean = false)
-  extends AbstractMatchListener(name)
-    with LazyLogging {
-
-  override protected def onMatchInternal(m: ContainerTreeNode): Unit = {
-    m.accept(ConsoleVisitor, 0)
-  }
-
-  override def onSkip(junk: PositionalString): Unit = {
-    if (verbose)
-      logger.info(s"Skipped [$junk]")
-  }
-}

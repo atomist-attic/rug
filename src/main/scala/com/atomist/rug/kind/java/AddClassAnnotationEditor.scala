@@ -1,7 +1,6 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.java.TypeSelection.TypeSelector
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.{JavaConstants, JavaHelpers, JavaParserUtils}
 import com.github.javaparser.JavaParser
@@ -18,7 +17,7 @@ import scala.collection.JavaConverters._
   * @param annotationPackageName Annotation package None means default package
   */
 // TODO this supports only marker annotations: Need superclass to generalize
-class AddClassAnnotationEditor(selector: TypeSelector,
+class AddClassAnnotationEditor(selector: ClassOrInterfaceDeclaration => Boolean,
                                annotationPackageName: Option[String],
                                annotationName: String,
                                javaSourcePath: String = JavaConstants.DefaultBaseSourcePath)

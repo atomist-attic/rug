@@ -11,7 +11,7 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar.{MatcherDSLDefinitionParser, MatcherMicrogrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
 
 import scala.collection.JavaConverters._
 
@@ -30,6 +30,10 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
   * Paralleled by a user model TypeScript interface.
+  * One is shared between all users, backed by a global TypeRegistry.
+  * Users can call the customize() method to add further dynamic
+  * type definitions, such as microgrammars, in a specific usage.
+  *
   * Parameters are detyped for interop. Not intended for use directly by Scala or Java callers,
   * which should use PathExpressionEngine, hence the unusual naming convention.
   *
@@ -43,13 +47,13 @@ class jsPathExpressionEngine(
   /**
     * Return a customized version of this path expression engine for use in a specific
     * context, with its own microgrammar types
-    * @param mg microgrammar objects
-    * @return
+    * @param dynamicType JavaScript rest dynamic type definitions.
+    *           Presently,
+    * @return customized instance of this engine
     */
-  def customize(mg: Object): jsPathExpressionEngine = {
-    val things = Seq(mg)
+  def addType(dynamicType: Object): jsPathExpressionEngine = {
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
-      things.map(dynamicTypeDefinitionToTypeProvider)
+      Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
     new jsPathExpressionEngine(this.ee, tr)
   }

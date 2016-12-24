@@ -3,7 +3,6 @@ package com.atomist.rug.kind.java
 import java.io.InputStreamReader
 import java.util.{List => JList}
 
-import com.atomist.project.Extractor
 import com.atomist.source.{ArtifactSourceAccessException, FileArtifact}
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.{JavaParser, ParseException}
@@ -18,7 +17,7 @@ import scala.collection.JavaConverters._
 /**
   * Extract JavaParser CompilationUnits from Artifact Source.
   */
-object GitHubJavaParserExtractor extends Extractor[JList[FileArtifact], Seq[FileAndCompilationUnit]] with LazyLogging {
+object GitHubJavaParserExtractor extends Function[JList[FileArtifact], Seq[FileAndCompilationUnit]] with LazyLogging {
 
   override def apply(javaFiles: JList[FileArtifact]): Seq[FileAndCompilationUnit] = {
     javaFiles.asScala.map(f => {

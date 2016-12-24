@@ -1,7 +1,6 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.tree.content.project.{ConfigValue, Configuration, SimpleConfigValue, SimpleConfiguration}
-import com.atomist.project.Extractor
 import com.atomist.source.FileArtifact
 import org.apache.commons.lang3.StringUtils
 
@@ -11,7 +10,7 @@ import scala.io.Source
 /**
   * Read application.properties file and return configuration
   */
-class ExtractApplicationProperties(source: String) extends Extractor[FileArtifact, Configuration] {
+class ExtractApplicationProperties(source: String) extends Function[FileArtifact, Configuration] {
 
   override def apply(f: FileArtifact): Configuration = {
     val isWhiteSpace: String => Boolean = line => StringUtils.isWhitespace(line)

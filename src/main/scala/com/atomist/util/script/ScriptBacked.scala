@@ -5,10 +5,7 @@ import com.atomist.source.FileArtifact
 /**
   * Identifies a script.
   */
-case class Script(name: String, content: String) {
-
-  def this(f: FileArtifact) = this(f.name, f.content)
-}
+case class Script(name: String, content: String)
 
 /**
   * Facade for scripts implemented in JavaScript or some other sandboxed

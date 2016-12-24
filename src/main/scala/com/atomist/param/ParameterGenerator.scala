@@ -27,5 +27,5 @@ object ParameterGenerator {
     */
   @throws[IllegalArgumentException]
   def validParameterValuesFor(p: Parameterized): ParameterValues =
-    new SimpleParameterValues(p.parameters.map(validValueFor(_)))
+    new SimpleParameterValues(p.parameters.map(validValueFor))
 }

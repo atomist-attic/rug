@@ -10,7 +10,7 @@ trait NameValuePair {
 
   def description: String
 
-  override def equals(that: Any) = EqualsBuilder.reflectionEquals(this, that)
+  override def equals(that: Any): Boolean = EqualsBuilder.reflectionEquals(this, that)
 
   override def hashCode(): Int = HashCodeBuilder.reflectionHashCode(this)
 }

@@ -20,7 +20,7 @@ class StatePredicateManager extends InputConsumer {
   override def consume(c: Char): Unit = predicates.values.foreach(_.consume(c))
 
   def valueOf[R](predicateName: String): Option[R] = predicates.get(predicateName).map(p => p.state) match {
-    case or: Option[R] => or
+    case or: Option[R @unchecked] => or
     case x =>
       println(s"Warning: No predicate value or bad value found for [$predicateName]($x)")
       None

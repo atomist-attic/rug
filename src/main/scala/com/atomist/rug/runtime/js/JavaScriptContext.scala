@@ -83,9 +83,8 @@ class JavaScriptContext(rugAs: ArtifactSource, allowedClasses: Set[String] = Set
     try
       Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
     catch {
-      case e: Exception => {
+      case e: Exception =>
         throw new RuntimeException("Unable to set up ArtifactSource based module loader", e)
-      }
     }
   }
 

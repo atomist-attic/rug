@@ -3,6 +3,7 @@ package com.atomist.rug.kind.rug.dsl
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.rug.archive.RugArchiveProjectType
 import com.atomist.rug.spi.ExportFunction
+import com.atomist.rug.ts.RugTranspiler
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TerminalTreeNode
 
@@ -10,7 +11,22 @@ class EditorMutableView(originalBackingObject: FileArtifact,
                         parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) with TerminalTreeNode {
 
-  val _currentContent = originalBackingObject.content
+  @ExportFunction(readOnly = false, description = "Change a .rug to a .ts editor")
+  def convertToTypeScript(): Unit = {
+    if (isRugDsl) {
+      println("I was called! I am your friend!")
+      val rugDsl = currentBackingObject.content
+      val rugPath = path
+      val transpiler = new RugTranspiler()
+      setPath(transpiler.rugPathToTsPath(rugPath))
+      val ts = transpiler.transpile(rugDsl)
+      _currentContent = ts
+      println("I changed my path and content, I swear I did something")
+      commit()
+    }
+  }
+
+  private var _currentContent = originalBackingObject.content
 
   private def isRugDsl: Boolean = currentBackingObject.name.endsWith(RugArchiveProjectType.RugExtension)
 

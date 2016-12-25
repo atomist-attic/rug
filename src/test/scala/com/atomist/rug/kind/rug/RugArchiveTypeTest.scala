@@ -20,7 +20,7 @@ class RugArchiveTypeTest extends FlatSpec
       |  do eval { print("The rug name is " + rug_name) }
       |  with Editor r when r.name = rug_name begin
       |    do eval { print("Changing rug " + r.name() ) }
-      |    do eval { p.convertToTypeScript(r) }
+      |    do r.convertToTypeScript
       |  end
       |end
     """.stripMargin

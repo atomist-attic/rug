@@ -3,7 +3,7 @@ package com.atomist.rug.kind.rug
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class RugMutableViewTest extends FlatSpec
+class RugArchiveTypeTest extends FlatSpec
   with Matchers
   with RugEditorTestHelper
   with TypeScriptEditorTestHelper
@@ -18,7 +18,7 @@ class RugMutableViewTest extends FlatSpec
       |
       |with RugArchiveProject p begin
       |  do eval { print("The rug name is " + rug_name) }
-      |  with Rug r when r.name = rug_name begin
+      |  with Editor r when r.name = rug_name begin
       |    do eval { print("Changing rug " + r.name() ) }
       |    do eval { p.convertToTypeScript(r) }
       |  end

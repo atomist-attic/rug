@@ -7,12 +7,11 @@ import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
-class RugType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
+class EditorType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
 
-  override def viewManifest: Manifest[_] = manifest[RugMutableView]
+  override def viewManifest: Manifest[_] = manifest[EditorMutableView]
 
-  private def isRugFile(f: FileArtifact): Boolean = f.name.endsWith(RugType.RugExtension)
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
@@ -22,7 +21,7 @@ class RugType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTyp
     context match {
       case pmv: ProjectMutableView => ???
       case f: FileArtifactBackedMutableView =>
-        Some(Seq(new RugMutableView(f.currentBackingObject, f.parent)))
+        Some(Seq(new EditorMutableView(f.currentBackingObject, f.parent)))
       case d: DirectoryMutableView => ???
       case _ => None
     }
@@ -30,7 +29,7 @@ class RugType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTyp
   /**
     * Description of this type
     */
-  override def description: String = "Rug file"
+  override def description: String = "Rug Editor, in Rug DSL or typescript"
 
 }
 

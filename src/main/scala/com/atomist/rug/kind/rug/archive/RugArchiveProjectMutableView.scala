@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.rug.archive
 
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.rug.dsl.{RugMutableView, RugType}
+import com.atomist.rug.kind.rug.dsl.{EditorMutableView, RugType}
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
 import com.atomist.rug.spi.{ExportFunction, MutableView, Typed}
 import com.atomist.rug.ts.RugTranspiler
@@ -12,7 +12,7 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
   extends ProjectDecoratingMutableView(pmv) {
 
   @ExportFunction(readOnly = false, description = "Change a .rug to a .ts editor")
-  def convertToTypeScript(r: RugMutableView): Unit = {
+  def convertToTypeScript(r: EditorMutableView): Unit = {
     println ("I was called! I am your friend!")
     val rugDsl = r.currentBackingObject.content
     val rugPath = r.path
@@ -23,14 +23,14 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
     println("I deleted a file and added one, I swear I did something")
   }
 
-  val RugTypeName = Typed.typeToTypeName(classOf[RugMutableView])
+  val RugTypeName = Typed.typeToTypeName(classOf[EditorMutableView])
   override def childNodeTypes: Set[String] = super.childNodeTypes + RugTypeName
 
   override def childrenNamed(typeName: String): Seq[MutableView[_]] = typeName match {
     case RugTypeName =>
       pmv.files.asScala.
         filter(_.filename.endsWith(RugType.RugExtension)).
-        map{fabmv: FileArtifactBackedMutableView => new RugMutableView(fabmv.currentBackingObject, this)}
+        map{fabmv: FileArtifactBackedMutableView => new EditorMutableView(fabmv.currentBackingObject, this)}
 
     case other =>
       super.childrenNamed(typeName)

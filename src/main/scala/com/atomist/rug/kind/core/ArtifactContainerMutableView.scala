@@ -1,24 +1,16 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
+import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
-
-object ArtifactContainerMutableView {
-
-  val FileAlias = "file"
-
-  val DirectoryAlias = "directory"
-
-}
-
-import com.atomist.rug.kind.core.ArtifactContainerMutableView._
 
 abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
                                                                      originalBackingObject: T,
                                                                      parent: MutableView[_])
   extends ViewSupport[T](originalBackingObject, parent) {
 
-  override def childNodeTypes: Set[String] = Set(FileAlias, DirectoryAlias)
+  val FileTypeName = Typed.typeToTypeName(classOf[FileMutableView])
+  val DirectoryTypeName = Typed.typeToTypeName(classOf[DirectoryMutableView])
+  override def childNodeTypes: Set[String] = Set(FileTypeName, DirectoryTypeName)
 
   override def childNodeNames: Set[String] = currentBackingObject.artifacts.map(_.name).toSet
 
@@ -27,9 +19,9 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   def name: String
 
   protected def kids(fieldName: String, parent: ProjectMutableView): Seq[MutableView[_]] = fieldName match {
-    case FileAlias =>
+    case FileTypeName =>
       currentBackingObject.allFiles.view.map(f => new FileMutableView(f, parent))
-    case DirectoryAlias =>
+    case DirectoryTypeName =>
       currentBackingObject.allDirectories.view.map(d => new DirectoryMutableView(d, parent))
     case maybeContainedArtifactName =>
       val arts = currentBackingObject.artifacts.filter(_.name.equals(maybeContainedArtifactName))
@@ -71,8 +63,6 @@ class DirectoryMutableView(
                             originalBackingObject: DirectoryArtifact,
                             override val parent: ProjectMutableView)
   extends ArtifactContainerMutableView[DirectoryArtifact](originalBackingObject, parent) {
-
-  override def nodeType: String = DirectoryAlias
 
   @ExportFunction(readOnly = true, description = "Return the name of the directory")
   override def name: String = currentBackingObject.name

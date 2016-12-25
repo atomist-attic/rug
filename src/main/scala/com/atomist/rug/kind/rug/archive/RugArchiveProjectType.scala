@@ -26,3 +26,9 @@ class RugArchiveProjectType
   }
 
 }
+
+
+object RugArchiveProjectType {
+  val RugExtension = ".rug"
+  val TypeScriptExtension = ".ts"
+}

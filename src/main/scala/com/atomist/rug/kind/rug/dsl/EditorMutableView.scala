@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.rug.dsl
 
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.rug.archive.RugArchiveProjectType
 import com.atomist.rug.spi.ExportFunction
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TerminalTreeNode
@@ -11,7 +12,7 @@ class EditorMutableView(originalBackingObject: FileArtifact,
 
   val _currentContent = originalBackingObject.content
 
-  private def isRugDsl: Boolean = currentBackingObject.name.endsWith(RugType.RugExtension)
+  private def isRugDsl: Boolean = currentBackingObject.name.endsWith(RugArchiveProjectType.RugExtension)
 
   private def removeSuffix(suffix: String, whole: String) =
     if (whole.endsWith(suffix))
@@ -21,8 +22,8 @@ class EditorMutableView(originalBackingObject: FileArtifact,
 
   private def removeFileSuffix(filename:String): String =
     {
-      removeSuffix(".ts",
-        removeSuffix(".rug",
+      removeSuffix(RugArchiveProjectType.TypeScriptExtension,
+        removeSuffix(RugArchiveProjectType.RugExtension,
           filename))
     }
 

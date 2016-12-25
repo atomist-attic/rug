@@ -32,7 +32,3 @@ class EditorType(evaluator: Evaluator) extends Type(evaluator) with Reflectively
   override def description: String = "Rug Editor, in Rug DSL or typescript"
 
 }
-
-object RugType {
-  val RugExtension = ".rug"
-}

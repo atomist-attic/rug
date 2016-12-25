@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.rug.archive
 
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.rug.dsl.{EditorMutableView, RugType}
+import com.atomist.rug.kind.rug.dsl.EditorMutableView
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
 import com.atomist.rug.spi.{ExportFunction, MutableView, Typed}
 import com.atomist.rug.ts.RugTranspiler
@@ -23,13 +23,13 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
     println("I deleted a file and added one, I swear I did something")
   }
 
-  val RugTypeName = Typed.typeToTypeName(classOf[EditorMutableView])
-  override def childNodeTypes: Set[String] = super.childNodeTypes + RugTypeName
+  private val EditorTypeName: String = Typed.typeToTypeName(classOf[EditorMutableView])
+  override def childNodeTypes: Set[String] = super.childNodeTypes + EditorTypeName
 
   override def childrenNamed(typeName: String): Seq[MutableView[_]] = typeName match {
-    case RugTypeName =>
+    case EditorTypeName =>
       pmv.files.asScala.
-        filter(_.filename.endsWith(RugType.RugExtension)).
+        filter(f => f.filename.endsWith(RugArchiveProjectType.RugExtension) || f.filename.endsWith(RugArchiveProjectType.TypeScriptExtension)).
         map{fabmv: FileArtifactBackedMutableView => new EditorMutableView(fabmv.currentBackingObject, this)}
 
     case other =>
@@ -37,3 +37,5 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
   }
 
 }
+
+

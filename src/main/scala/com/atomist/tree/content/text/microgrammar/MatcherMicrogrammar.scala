@@ -10,12 +10,14 @@ import scala.collection.mutable.ListBuffer
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
-class MatcherMicrogrammar(val name: String, val matcher: Matcher) extends Microgrammar {
+class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
 
   // Transformation to run on matched nodes
   private val transform = collapse(
     ctn => ctn.nodeName.equals(Concat.DefaultConcatName)
   ) andThen RemovePadding andThen Prune
+
+  override def name: String = matcher.name
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val nodes = findMatchesInternal(input, l)

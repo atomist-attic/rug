@@ -67,9 +67,11 @@ class jsPathExpressionEngine(
       val grammar = NashornUtils.stringProperty(som, "grammar")
       if (name == null || grammar == null)
         throw new RugRuntimeException(null, "A microgrammar must specify both name and grammar")
-      val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(grammar, matcherRegistry)
-      val mg = new MatcherMicrogrammar(name, parsedMatcher)
+      println(s"Parsing $name=$grammar with ${matcherRegistry}")
+      val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
+      println("Parsed matcher=" + parsedMatcher)
       matcherRegistry += parsedMatcher
+      val mg = new MatcherMicrogrammar(parsedMatcher)
       new MicrogrammarTypeProvider(mg)
   }
 

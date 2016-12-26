@@ -9,7 +9,7 @@ class MatcherUsageTest extends FlatSpec with Matchers {
   val mgp = new MatcherDefinitionParser
 
   it should "match literal" in {
-    val matcher = mgp.parseMatcher("def foo")
+    val matcher = mgp.parseMatcher("foo", "def foo")
     matcher.matchPrefix(0, "def foo thing") match {
       case Some(pm) =>
     }
@@ -18,17 +18,17 @@ class MatcherUsageTest extends FlatSpec with Matchers {
   // TODO this is a debatable case. Why wouldn't we just match with a regex or literal string
   // if there's nothing dynamic in the content? No nodes are created
   it should "match literal using microgrammar" in pendingUntilFixed {
-    val matcher = mgp.parseMatcher("def foo")
+    val matcher = mgp.parseMatcher("lit", "def foo")
     //println(matcher)
     // Problem is that this is discarded as nothing is bound
-    val mg = new MatcherMicrogrammar("deff", matcher)
+    val mg = new MatcherMicrogrammar(matcher)
     mg.findMatches("def foo bar").size should be(1)
   }
 
   it should "match regex using microgrammar" in {
-    val matcher = mgp.parseMatcher("def $foo:§f.o§")
+    val matcher = mgp.parseMatcher("l", "def $foo:§f.o§")
     //println(matcher)
-    val mg = new MatcherMicrogrammar("deff", matcher)
+    val mg = new MatcherMicrogrammar(matcher)
     val input = "def foo bar"
     matcher.matchPrefix(0, input) match {
       case Some(pm) =>
@@ -38,9 +38,8 @@ class MatcherUsageTest extends FlatSpec with Matchers {
 
   it should "match regex in Maven POM" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-
-    val mg = new MatcherMicrogrammar("gid",
-      mgp.parseMatcher("<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
+    val mg = new MatcherMicrogrammar(
+      mgp.parseMatcher("m", "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
     println(mg.matcher)
     val pom = proj.findFile("pom.xml").get.content
     val matches = mg.findMatches(pom)

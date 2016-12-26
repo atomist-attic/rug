@@ -34,5 +34,5 @@ object RugTestTokens extends CommonRugTokens {
 
   val KeywordsToAvoidInBody = CommonReservedWords ++
     Set(ScenarioToken,
-      GivenToken, ThenToken, NoChangeToken)
+      GivenToken, ThenToken, NoChangeToken, WhenToken)
 }

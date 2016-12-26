@@ -13,7 +13,7 @@ import com.atomist.source._
   * Represents a BDD style test scenario
   *
   * @param name             Name of the scenario. Natural text
-  * @param given            given
+  * @param givenFiles            given
   * @param editorInvocation editor and parameters to invoke it
   * @param outcome          assertions about the result of invoking the editor
   */
@@ -22,7 +22,8 @@ case class TestScenario(
                          debug: Boolean,
                          imports: Seq[Import],
                          computations: Seq[Computation],
-                         given: Given,
+                         givenFiles: GivenFiles,
+                         givenInvocations: Seq[RunOtherOperation],
                          editorInvocation: RunOtherOperation,
                          outcome: Then
                        ) extends RugOperationSupport {
@@ -59,7 +60,7 @@ case class TestScenario(
     */
   def input(testBacking: ArtifactSource): ArtifactSource = {
     val executeAgainst = new SimpleFileBasedArtifactSource("test target",
-      given.fileSpecs.flatMap(_.toFiles(testBacking)))
+      givenFiles.fileSpecs.flatMap(_.toFiles(testBacking)))
     executeAgainst
   }
 
@@ -73,7 +74,7 @@ case class TestScenario(
   }
 }
 
-case class Given(fileSpecs: Seq[FileSpec])
+case class GivenFiles(fileSpecs: Seq[FileSpec])
 
 /**
   * Extract files from a backing artifact source

@@ -47,7 +47,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val findFile = "/File()[@name='pom.xml']"
 
     val mg: Microgrammar = new MatcherMicrogrammar("modelVersion",
-      mgp.parse("<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
+      mgp.parseMatcher("<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
 
     val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
       Seq(new MicrogrammarTypeProvider(mg))

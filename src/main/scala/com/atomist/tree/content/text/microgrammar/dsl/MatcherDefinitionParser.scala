@@ -78,47 +78,23 @@ class MatcherDefinitionParser extends CommonTypesParser {
       concatenation |
       matcherTerm
 
-  private def microgrammar(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
+  private def matcher(implicit registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 
   /**
-    * Parse the given microgrammar definition given a registry of known matchers
+    * Parse the given microgrammar definition given a registry of known matchers.
+    * Caller is responsible for updating the registry is they wish
     *
     * @param microgrammarDef definition
     * @param mRegistry       known matchers
     * @return matcher definition
     */
   @throws[BadRugException]
-  def parse(microgrammarDef: String, mRegistry: MatcherRegistry = EmptyMatcherRegistry): Matcher = microgrammarDef match {
+  def parseMatcher(microgrammarDef: String, mRegistry: MatcherRegistry = EmptyMatcherRegistry): Matcher = microgrammarDef match {
     case null =>
       throw new BadRugException(s"The null string is not a valid microgrammar") {}
     case _ =>
       implicit val registry: MatcherRegistry = mRegistry
-      parseTo(StringFileArtifact("<input>", microgrammarDef), phrase(microgrammar))
-  }
-
-  /**
-    * Parse several microgrammars, building a matcher and validating references.
-    */
-  @throws[BadRugException]
-  def parseInOrder(microgrammarDefs: Seq[MicrogrammarDefinition], startingRegistry: MatcherRegistry = EmptyMatcherRegistry): MatcherRegistry = {
-    val mmr = new MutableMatcherRegistry(startingRegistry)
-    for {
-      md <- microgrammarDefs
-    } {
-      val parsed = Reference(parse(md.sentence, mmr), md.name)
-      mmr register parsed
-    }
-    mmr
-  }
-
-  private class MutableMatcherRegistry(start: MatcherRegistry) extends MatcherRegistry {
-    private var matchers = start.definitions
-
-    override def find(name: String): Option[Matcher] = matchers.find(_.name.equals(name))
-
-    override def definitions: Seq[Matcher] = matchers
-
-    def register(m: Matcher): Unit = matchers = matchers :+ m
+      parseTo(StringFileArtifact("<input>", microgrammarDef), phrase(matcher))
   }
 
 }

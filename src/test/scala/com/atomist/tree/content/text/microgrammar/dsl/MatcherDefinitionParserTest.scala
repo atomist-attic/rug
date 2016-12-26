@@ -12,20 +12,20 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val bogusInputs = Seq(null, "", "$", "[", "▶")
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parse(bad)
+        an[BadRugException] should be thrownBy mgp.parseMatcher(bad)
       }
   }
 
   it should "accept valid literal" in {
     val validLiterals = Seq("a", "aa", "a&a", "woiurwieur", "def")
-    for (v <- validLiterals) mgp.parse(v) match {
+    for (v <- validLiterals) mgp.parseMatcher(v) match {
       case Literal(`v`, None) =>
     }
   }
 
   it should "accept valid regex" in {
     val validLiterals = Seq("§a§", "§[.*]§", "§[.]§")
-    for (v <- validLiterals) mgp.parse(v) match {
+    for (v <- validLiterals) mgp.parseMatcher(v) match {
       case Regex(_, rex, _) =>
     }
   }
@@ -42,7 +42,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   it should "accept valid inline regex" in {
     val validLiterals = Seq("$foo:§a§", "$foo:§.*§", "$foo:§.§")
-    for (v <- validLiterals) mgp.parse(v) match {
+    for (v <- validLiterals) mgp.parseMatcher(v) match {
       case Regex("foo", rex, _) =>
         withClue(s"String [$v] should contain regex [$rex]") {
           v.contains(rex) should be (true) }
@@ -54,7 +54,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val cat = Literal("cat", named = Some("cat"))
     val mr = SimpleMatcherRegistry(Seq(dog,cat))
     val validDescendantPhrases = Seq("▶$:cat", "▶$d:dog")
-    for (v <- validDescendantPhrases) mgp.parse(v, mr) match {
+    for (v <- validDescendantPhrases) mgp.parseMatcher(v, mr) match {
       case w: Wrap =>
     }
   }
@@ -64,7 +64,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val cat = Literal("cat", named = Some("Cat"))
     val mr = SimpleMatcherRegistry(Seq(dog,cat))
     val validDescendantPhrases = Seq("▶$fido:dog[curlyDepth=3]", "▶$felix:Cat[fat=false]")
-    for (v <- validDescendantPhrases) mgp.parse(v, mr) match {
+    for (v <- validDescendantPhrases) mgp.parseMatcher(v, mr) match {
       //case Literal(l, None) =>
       case _ =>
     }
@@ -77,7 +77,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
     val mr = SimpleMatcherRegistry(Seq(otherPattern, scalaMethod, theMethod))
     val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
-    for (v <- validUseOfVars) mgp.parse(v, mr) match {
+    for (v <- validUseOfVars) mgp.parseMatcher(v, mr) match {
       case m: Matcher =>
     }
   }
@@ -86,7 +86,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
     for (v <- validUseOfVars) {
       withClue(s"[$v] is not a bound valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parse(v)
+        an[BadRugException] should be thrownBy mgp.parseMatcher(v)
       }
     }
   }
@@ -95,7 +95,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val bogusInputs = Seq("$", "$$", "$***", "$7iud:eiruieur", "$ foo:bar")
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parse(bad)
+        an[BadRugException] should be thrownBy mgp.parseMatcher(bad)
       }
   }
 
@@ -103,7 +103,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val validLiterals = Seq("a a", "aa bb", "a &a", "one two three four", "def f = { \"blah\" }")
     for (v <- validLiterals) {
       withClue(s"[$v] IS a valid microgrammar definition") {
-        mgp.parse(v) match {
+        mgp.parseMatcher(v) match {
           case cat: Concat =>
             cat.matchPrefix(0, v) match {
               case Some(PatternMatch(_, _, matched, `v`, _)) =>
@@ -114,11 +114,4 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse multiple valid sentences" in {
-    val validInputs = Seq(MicrogrammarDefinition("a", "a"), MicrogrammarDefinition("thing", "def foo"))
-    val mr = mgp.parseInOrder(validInputs)
-    mr.definitions.size should be (2)
-    mr.find("a") should be(defined)
-    mr.find("thing") should be (defined)
-  }
 }

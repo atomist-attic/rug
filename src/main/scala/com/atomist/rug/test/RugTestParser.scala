@@ -41,7 +41,7 @@ object RugTestParser
 
   private def fileSpec: Parser[FileSpec] = inlineFile | loadedFile | filesUnder | archiveRoot | emptyArchive
 
-  private def given: Parser[Given] = GivenToken.r ~> rep1(fileSpec) ^^ (f => Given(f))
+  private def given: Parser[GivenFiles] = GivenToken.r ~> rep1(fileSpec) ^^ (f => GivenFiles(f))
 
   // We override this to disable ANDing as we want separate predicates
   override protected def predicateExpression: Parser[Predicate] = predicateTerm
@@ -73,7 +73,7 @@ object RugTestParser
     rep(uses) ~ rep(letStatement) ~
     given ~ opt(WhenToken) ~ runOtherOperation ~ andThen ^^ {
     case name ~ debug ~ uses ~ computations ~ g ~ whenToken ~ roo ~ andThen =>
-      TestScenario(name, debug, uses, computations, g, roo, andThen)
+      TestScenario(name, debug, uses, computations, g, Seq(), roo, andThen)
   }
 
   private def testPrograms: Parser[Seq[TestScenario]] = phrase(rep1(testProgram))

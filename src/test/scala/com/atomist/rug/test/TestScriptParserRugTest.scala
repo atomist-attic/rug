@@ -40,17 +40,17 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
 
   it should "default debug flag to false" in {
     val scenario = parseSingleFileAssertion("src/main/java/Dog.java")
-    scenario.debug should be (false)
+    scenario.debug should be(false)
   }
 
   it should "set debug flag explicitly to false" in {
     val scenario = parseSingleFileAssertion("src/main/java/Dog.java", Some(false))
-    scenario.debug should be (false)
+    scenario.debug should be(false)
   }
 
   it should "set debug flag explicitly to true" in {
     val scenario = parseSingleFileAssertion("src/main/java/Dog.java", Some(true))
-    scenario.debug should be (true)
+    scenario.debug should be(true)
   }
 
   it should "parse single file assertion with unusual characters besides space in filename" in {
@@ -82,7 +82,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val test = tp.head
     test.name should be(scenarioName)
     test.computations.size should be(0)
-    test.given.fileSpecs should equal(Seq(f))
+    test.givenFiles.fileSpecs should equal(Seq(f))
     test.outcome.assertions should equal(Seq(PredicateAssertion(ParsedRegisteredFunctionPredicate("contentEquals",
       Seq(WrappedFunctionArg(SimpleLiteral(filepath.replace("Dog", "Cat"))),
         WrappedFunctionArg(SimpleLiteral("class Cat {}"))
@@ -117,7 +117,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
-    test.given.fileSpecs should equal(Seq(f))
+    test.givenFiles.fileSpecs should equal(Seq(f))
     test.outcome.assertions should equal(Seq(PredicateAssertion(ParsedRegisteredFunctionPredicate("contentEquals",
       Seq(WrappedFunctionArg(SimpleLiteral("src/main/java/Cat.java")),
         WrappedFunctionArg(SimpleLiteral("class Cat {}")))))
@@ -144,9 +144,9 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
-    test.given.fileSpecs should equal(Seq(f))
+    test.givenFiles.fileSpecs should equal(Seq(f))
     val poa = test.args(new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/something", "a file")))
-    poa.parameterValues.size should be>=(2)
+    poa.parameterValues.size should be >= (2)
     poa.paramValue("old_class") should equal("Dog")
     poa.paramValue("new_class") should equal("Cat")
 
@@ -175,7 +175,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
-    test.given.fileSpecs should equal(Seq(EmptyArchiveFileSpec))
+    test.givenFiles.fileSpecs should equal(Seq(EmptyArchiveFileSpec))
   }
 
   it should "parse load archive root" in {
@@ -197,7 +197,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
-    test.given.fileSpecs should equal(Seq(ArchiveRootFileSpec))
+    test.givenFiles.fileSpecs should equal(Seq(ArchiveRootFileSpec))
   }
 
   it should "parse file load assertion" in {
@@ -220,7 +220,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     tp.size should be(1)
     val test = tp.head
     test.name should be(scenarioName)
-    test.given.fileSpecs should equal(Seq(f))
+    test.givenFiles.fileSpecs should equal(Seq(f))
     test.outcome.assertions should equal(Seq(PredicateAssertion(ParsedRegisteredFunctionPredicate("contentEquals",
       Seq(WrappedFunctionArg(SimpleLiteral("src/main/java/Cat.java")),
         WrappedFunctionArg(SimpleLiteral("class Cat {}")))))
@@ -247,7 +247,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
-    test.given.fileSpecs should equal(Seq(f, f))
+    test.givenFiles.fileSpecs should equal(Seq(f, f))
     test.outcome.assertions.size should be(2)
     //    test.outcome.assertions should equal(Seq(PredicateAssertion(
     //      ParsedRegisteredFunctionPredicate("contentEquals",
@@ -282,7 +282,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.size should be(1)
     val test = tp.head
-    test.given.fileSpecs should equal(Seq(f, f))
+    test.givenFiles.fileSpecs should equal(Seq(f, f))
     //    test.outcome.assertions should equal(Seq(PredicateAssertion(
     //      ParsedRegisteredFunctionPredicate("contentEquals",
     //        Seq(StringLiteralFunctionArg("src/main/java/Cat.java"),
@@ -385,5 +385,23 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
       """.stripMargin
     val tp = parser.parse(StringFileArtifact("x.rt", prog))
     tp.head.outcome.assertions.size should be(6)
+  }
+
+  it.should("allow operations in the given clause").in {
+    val prog =
+      """scenario This Editor should be idempotent
+        |
+        |given
+        |  ArchiveRoot
+        |  UpgradeToBeginnerProgram
+        |
+        |when
+        |  UpgradeToBeginnerProgram
+        |
+        |then
+        |  NoChange""".stripMargin
+    val parsed = parser.parse(StringFileArtifact("IdempotencyTest.rt", prog))
+    val myTest = parsed.head
+    myTest.givenInvocations.size should be(1)
   }
 }

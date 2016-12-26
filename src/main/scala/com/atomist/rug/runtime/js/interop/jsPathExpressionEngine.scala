@@ -8,7 +8,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.microgrammar.{MatcherDSLDefinitionParser, MatcherMicrogrammar, MicrogrammarTypeProvider}
+import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
 import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
@@ -42,7 +42,8 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
   */
 class jsPathExpressionEngine(
                               val ee: ExpressionEngine = new PathExpressionEngine,
-                              typeRegistry: TypeRegistry = DefaultTypeRegistry) {
+                              typeRegistry: TypeRegistry = DefaultTypeRegistry,
+                              private var matcherRegistry: MatcherRegistry = EmptyMatcherRegistry) {
 
   /**
     * Return a customized version of this path expression engine for use in a specific
@@ -55,7 +56,7 @@ class jsPathExpressionEngine(
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(this.ee, tr)
+    new jsPathExpressionEngine(this.ee, tr, matcherRegistry)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
@@ -65,8 +66,9 @@ class jsPathExpressionEngine(
       val grammar = NashornUtils.stringProperty(som, "grammar")
       if (name == null || grammar == null)
         throw new RugRuntimeException(null, "A microgrammar must specify both name and grammar")
-      val parsed = jsPathExpressionEngine.matcherParser.parse(grammar)
-      val mg = new MatcherMicrogrammar(name, parsed)
+      val parsedMatcher = jsPathExpressionEngine.matcherParser.parse(grammar, matcherRegistry)
+      val mg = new MatcherMicrogrammar(name, parsedMatcher)
+      matcherRegistry += parsedMatcher
       new MicrogrammarTypeProvider(mg)
   }
 

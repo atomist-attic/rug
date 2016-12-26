@@ -20,7 +20,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
-      |    description: string = "Uses microgrammars"
+      |    description: string = "Uses single microgrammar"
       |
       |    edit(project: Project) {
       |      let mg = new Microgrammar('modelVersion', `<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
@@ -35,10 +35,41 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |  var editor = new MgEditor()
       | """.stripMargin
 
+  val ModifiesWithSimpleMicrogrammarSplitInto2: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses 2 microgrammars"
+      |
+      |    edit(project: Project) {
+      |      let mg1 = new Microgrammar('mv1', `$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
+      |
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
+      |        n.update('Foo bar')
+      |      })
+      |      return new Result(Status.Success, `OK`)
+      |    }
+      |  }
+      |  var editor = new MgEditor()
+      | """.stripMargin
+
 
   it should "run use microgrammar defined in TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))
+  }
+
+  it should "run use microgrammar defined in TypeScript in 2 consts" in pendingUntilFixed {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+      ModifiesWithSimpleMicrogrammarSplitInto2))
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {

@@ -58,11 +58,12 @@ class MatcherDSLDefinitionParser extends CommonTypesParser {
         registry
           .find(kind)
           .map(m => Reference(m, name))
-          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind]") {})
+          .getOrElse(throw new BadRugException(
+            s"Cannot find referenced matcher of type [$kind] in $registry") {})
       case None ~ _ ~ kind ~ predicate =>
         registry
           .find(kind)
-          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind]") {})
+          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind] in $registry") {})
     }
 
   // $name:[.*]

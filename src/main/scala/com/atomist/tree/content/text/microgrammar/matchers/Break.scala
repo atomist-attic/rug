@@ -1,5 +1,6 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.matchers
 
+import com.atomist.tree.content.text.microgrammar.{Matcher, PatternMatch}
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
 /**
@@ -12,7 +13,7 @@ import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPositi
   */
 case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends Matcher {
 
-  override def name = named.getOrElse("break")
+  override def name: String = named.getOrElse("break")
 
   override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
     if (input != null && input.length() > 0) {

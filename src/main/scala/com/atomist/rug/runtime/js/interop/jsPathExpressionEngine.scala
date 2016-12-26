@@ -9,6 +9,7 @@ import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
+import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
 import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
@@ -190,6 +191,6 @@ class jsPathExpressionEngine(
 
 object jsPathExpressionEngine {
 
-  val matcherParser = new MatcherDSLDefinitionParser
+  val matcherParser = new MatcherDefinitionParser
 
 }

@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.content.text.microgrammar.matchers.Break
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

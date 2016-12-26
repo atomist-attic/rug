@@ -1,4 +1,4 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
@@ -7,7 +7,8 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
-import com.atomist.tree.{MutableTreeNode, TreeNode}
+import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, Microgrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -21,7 +22,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-  val mgp = new MatcherDSLDefinitionParser
+  val mgp = new MatcherDefinitionParser
 
   it should "use simple microgrammar to match in single file" in
     useSimpleMicrogrammarAgainstSingleFile

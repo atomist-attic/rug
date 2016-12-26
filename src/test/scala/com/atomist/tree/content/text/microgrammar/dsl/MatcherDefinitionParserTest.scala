@@ -1,12 +1,12 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.rug.BadRugException
-import com.atomist.source.StringFileArtifact
+import com.atomist.tree.content.text.microgrammar._
 import org.scalatest.{FlatSpec, Matchers}
 
-class MatcherDSLDefinitionParserTest extends FlatSpec with Matchers {
+class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
-  val mgp = new MatcherDSLDefinitionParser
+  val mgp = new MatcherDefinitionParser
 
   it should "reject null string" in {
     val bogusInputs = Seq(null, "", "$", "[", "▶")

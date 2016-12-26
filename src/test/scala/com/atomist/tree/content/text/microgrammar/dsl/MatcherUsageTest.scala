@@ -1,11 +1,12 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
+import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
 import org.scalatest.{FlatSpec, Matchers}
 
-class MatcherDSLUsageTest extends FlatSpec with Matchers {
+class MatcherUsageTest extends FlatSpec with Matchers {
 
-  val mgp = new MatcherDSLDefinitionParser
+  val mgp = new MatcherDefinitionParser
 
   it should "match literal" in {
     val matcher = mgp.parse("def foo")

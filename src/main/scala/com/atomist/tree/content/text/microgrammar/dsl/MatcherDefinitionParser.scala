@@ -1,13 +1,14 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.rug.BadRugException
 import com.atomist.source.StringFileArtifact
+import com.atomist.tree.content.text.microgrammar._
 import com.atomist.util.scalaparsing.CommonTypesParser
 
 /**
   * Parse our matcher DSL using a Scala parser combinator.
   */
-class MatcherDSLDefinitionParser extends CommonTypesParser {
+class MatcherDefinitionParser extends CommonTypesParser {
 
   // This parser does NOT skip whitespace, unlike most parser combinators.
   // So we need to override this value.

@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.rug.kind.grammar.MicrogrammarTest
+import com.atomist.tree.content.text.microgrammar.matchers.Break
 
 class MatcherMicrogrammarTest extends MicrogrammarTest {
 

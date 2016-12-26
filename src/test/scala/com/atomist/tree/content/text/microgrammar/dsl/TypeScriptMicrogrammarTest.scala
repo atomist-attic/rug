@@ -1,4 +1,4 @@
-package com.atomist.tree.content.text.microgrammar
+package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.edit.SuccessfulModification
@@ -67,7 +67,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       ModifiesWithSimpleMicrogrammar))
   }
 
-  it should "run use microgrammar defined in TypeScript in 2 consts" in pendingUntilFixed {
+  it should "run use microgrammar defined in TypeScript in 2 consts" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammarSplitInto2))
   }

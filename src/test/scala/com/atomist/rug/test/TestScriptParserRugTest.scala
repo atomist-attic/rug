@@ -404,4 +404,23 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val myTest = parsed.head
     myTest.givenInvocations.size should be(1)
   }
+
+  it should "allow multiple operations in the given clause" in {
+    val prog =
+      """scenario This Editor should be idempotent
+        |
+        |given
+        |  ArchiveRoot
+        |  UpgradeToBeginnerProgram
+        |  UpgradeToBeginnerProgram some_arg=banana
+        |
+        |when
+        |  UpgradeToBeginnerProgram
+        |
+        |then
+        |  NoChange""".stripMargin
+    val parsed = parser.parse(StringFileArtifact("IdempotencyTest.rt", prog))
+    val myTest = parsed.head
+    myTest.givenInvocations.size should be(2)
+  }
 }

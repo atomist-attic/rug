@@ -1,6 +1,6 @@
 package com.atomist.rug.test
 
-import com.atomist.rug.parser.{CommonRugProductionsParser, Predicate}
+import com.atomist.rug.parser.{CommonRugProductionsParser, Predicate, RunOtherOperation}
 import com.atomist.source.FileArtifact
 
 /**
@@ -41,7 +41,9 @@ object RugTestParser
 
   private def fileSpec: Parser[FileSpec] = inlineFile | loadedFile | filesUnder | archiveRoot | emptyArchive
 
-  private def given: Parser[GivenFiles] = GivenToken.r ~> rep1(fileSpec) ^^ (f => GivenFiles(f))
+  private def givenFiles: Parser[GivenFiles] = GivenToken.r ~> rep1(fileSpec) ^^ (f => GivenFiles(f))
+
+  private def givenOperations: Parser[Seq[RunOtherOperation]] = rep(runOtherOperation)
 
   // We override this to disable ANDing as we want separate predicates
   override protected def predicateExpression: Parser[Predicate] = predicateTerm
@@ -71,9 +73,15 @@ object RugTestParser
 
   private def testProgram: Parser[TestScenario] = scenarioName ~ debug ~
     rep(uses) ~ rep(letStatement) ~
-    given ~ opt(WhenToken) ~ runOtherOperation ~ andThen ^^ {
-    case name ~ debug ~ uses ~ computations ~ g ~ whenToken ~ roo ~ andThen =>
-      TestScenario(name, debug, uses, computations, g, Seq(), roo, andThen)
+    givenFiles ~ opt(givenOperations ~ WhenToken | WhenToken) ~ runOtherOperation ~ andThen ^^ {
+    case name ~ debug ~ uses ~ computations ~ gf ~ Some((go: Seq[RunOtherOperation]) ~ whenToken) ~ roo ~ andThen =>
+      TestScenario(name, debug, uses, computations, gf, go, roo, andThen)
+    case name ~ debug ~ uses ~ computations ~ gf ~ Some(whenToken) ~ roo ~ andThen =>
+      TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)
+    case name ~ debug ~ uses ~ computations ~ gf ~ None ~ roo ~ andThen =>
+      TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)
+
+
   }
 
   private def testPrograms: Parser[Seq[TestScenario]] = phrase(rep1(testProgram))

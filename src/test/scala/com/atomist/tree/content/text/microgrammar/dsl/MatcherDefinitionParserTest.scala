@@ -132,7 +132,9 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "accept valid break in string" in {
     val f = s"""<tr class="emoji_row">$BreakOpenToken<span data-original="${BreakCloseToken}and now for something completely different"""
     mgp.parseMatcher("f", f) match {
-      case x =>
+      case x : Matcher =>
+        val matchThisYouMicrogrammar = x.matchPrefix(0, """<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different blah blah more things here""")
+        matchThisYouMicrogrammar.isDefined should be(true)
     }
   }
 }

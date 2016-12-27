@@ -91,6 +91,10 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
       val poa: ProjectOperationArguments = test.args(testResources)
       eventLog.recordParameters(poa)
 
+      if (test.givenInvocations.nonEmpty) {
+        ??? // not implemented
+      }
+
       val applicability = ed.applicability(testResources)
 
       test.outcome.assertions.toList match {

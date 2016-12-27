@@ -30,7 +30,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
     * @return
     */
   private def break(implicit matcherName: String, registry: MatcherRegistry): Parser[Break] =
-    "¡" ~> matcherExpression() <~ "¡" ^^ (m => Break(m))
+    "¡" ~> matcherExpression <~ "¡" ^^ (m => Break(m))
 
   private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
 
@@ -86,12 +86,10 @@ class MatcherDefinitionParser extends CommonTypesParser {
       case newName ~ _ ~ regex => regex.copy(name = newName)
     }
 
-  private def matcherExpression()(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
+  private def matcherExpression(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
     descendantClause |
       concatenation |
       matcherTerm
-
-  private def matcher(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] = matcherExpression
 
   /**
     * Parse the given microgrammar definition given a registry of known matchers.
@@ -109,7 +107,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
     case _ =>
       implicit val matcherName: String = name
       implicit val registry: MatcherRegistry = mRegistry
-      val m = parseTo(StringFileArtifact("<input>", matcherDef), phrase(matcher))
+      val m = parseTo(StringFileArtifact("<input>", matcherDef), phrase(matcherExpression))
       m
   }
 

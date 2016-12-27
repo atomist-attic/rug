@@ -27,6 +27,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   /**
     * Skip till this clause
+    *
     * @return
     */
   private def break(implicit matcherName: String, registry: MatcherRegistry): Parser[Break] =
@@ -37,7 +38,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
   // Applies to a boxed clause
   // [curlyDepth=1]
   private def predicate(implicit matcherName: String, registry: MatcherRegistry): Parser[StatePredicateTest] =
-    "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
+  "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
     case predicateName ~ "=" ~ predicateVal => StatePredicateTest(predicateName, predicateVal)
   }
 
@@ -52,6 +53,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   private def matcherTerm(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
     rex |
+      break |
       literal |
       variableReference() |
       inlineReference()

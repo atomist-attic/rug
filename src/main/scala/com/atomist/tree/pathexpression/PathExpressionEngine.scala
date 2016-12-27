@@ -39,7 +39,3 @@ class PathExpressionEngine extends ExpressionEngine {
   }
 
 }
-
-case class PathExpression(
-                           locationSteps: Seq[LocationStep]
-                         )

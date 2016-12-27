@@ -26,7 +26,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be(1)
     val ls = parsed.locationSteps.head
     ls.axis should be (Child)
-    ls.predicate should be (None)
+    ls.predicateToEvaluate should be (TruePredicate)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
       case x => fail(s"node test is not a NamedNodeTest: $x")
@@ -39,7 +39,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be(1)
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
-    ls.predicate should be(None)
+    ls.predicateToEvaluate should be(TruePredicate)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
       case x => fail(s"node test is not a NamedNodeTest: $x")
@@ -56,7 +56,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed1.locationSteps.size should be(1)
     val ls1 = parsed.locationSteps.head
     ls1.axis should be(ls.axis)
-    ls1.predicate should be(ls.predicate)
+    ls1.predicateToEvaluate should be(ls.predicateToEvaluate)
     ls1.test should be(ls.test)
   }
 
@@ -66,7 +66,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be(1)
     val ls = parsed.locationSteps.head
     ls.axis should be (Descendant)
-    ls.predicate should be (None)
+    ls.predicateToEvaluate should be (TruePredicate)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
       case x => fail(s"node test is not a NamedNodeTest: $x")
@@ -79,7 +79,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be(1)
     val ls = parsed.locationSteps.head
     ls.axis should be(Descendant)
-    ls.predicate should be(None)
+    ls.predicateToEvaluate should be(TruePredicate)
     ls.test match {
       case nnt: NamedNodeTest => nnt.name should be ("src")
       case x => fail(s"node test is not a NamedNodeTest: $x")
@@ -96,7 +96,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed1.locationSteps.size should be(1)
     val ls1 = parsed.locationSteps.head
     ls1.axis should be(ls.axis)
-    ls1.predicate should be(ls.predicate)
+    ls1.predicateToEvaluate should be(ls.predicateToEvaluate)
     ls1.test should be(ls.test)
   }
 
@@ -106,7 +106,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be (1)
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
-    ls.predicate should be(None)
+    ls.predicateToEvaluate should be(TruePredicate)
     ls.test should be(ObjectType("Issue"))
   }
 
@@ -116,8 +116,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be (1)
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
-    ls.predicate match {
-      case Some(p@IndexPredicate("[4]", 4)) =>
+    ls.predicateToEvaluate match {
+      case p@IndexPredicate("[4]", 4) =>
       case x => fail(s"predicate did not match expected type: $x")
     }
     ls.test match {
@@ -132,8 +132,8 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be (1)
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
-    ls.predicate match {
-      case Some(p@SimplePredicate("size=large", _)) =>
+    ls.predicateToEvaluate match {
+      case p@SimplePredicate("size=large", _) =>
       case x => fail(s"predicate did not match expected type: $x")
     }
     ls.test match {
@@ -147,8 +147,5 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val parsed = pep.parsePathExpression(pe)
     parsed.locationSteps.size should be (3)
   }
-//  it should "parse expression with type jump" in {
-//    val pe = "/issue/test1:repo/project/src/main/java//*:file->java.class"
-//    val parsed = pep.parsePathExpression(pe)
-//  }
+
 }

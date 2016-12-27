@@ -117,14 +117,8 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def axis: Parser[AxisSpecifier] = attribute | descendant | child
 
-  private def combine(preds: Seq[Predicate]): Option[Predicate] = preds match {
-    case Nil => None
-    case pred :: Nil => Some(pred)
-    case preds => Some(preds.head and combine(preds.tail).get)
-  }
-
   private def locationStep: Parser[LocationStep] = axis ~ nodeTest ~ rep(predicate) ^^ {
-    case a ~ t ~ preds => LocationStep(a, t, combine(preds))
+    case a ~ t ~ preds => LocationStep(a, t, preds)
   }
 
   private val slashSeparator = "/"

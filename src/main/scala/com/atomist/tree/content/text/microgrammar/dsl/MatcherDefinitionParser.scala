@@ -6,24 +6,27 @@ import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.matchers.Break
 import com.atomist.util.scalaparsing.CommonTypesParser
 
+import scala.util.matching.{Regex => ScalaRegex}
+
 /**
   * Parse our matcher DSL using a Scala parser combinator.
   */
 class MatcherDefinitionParser extends CommonTypesParser {
 
+  import MatcherDefinitionParser._
+
   // This parser does NOT skip whitespace, unlike most parser combinators.
   // So we need to override this value.
-  override protected val whiteSpace = "".r
+  override protected val whiteSpace: ScalaRegex = "".r
 
   private def whitespaceSep: Parser[String] = """\s*""".r
 
   // TODO may want to consider whether we want to use $
   private def literal: Parser[Literal] =
-    """[^▶\s\[\]\¡\§$]+""".r ^^ (l => Literal(l))
+    AnythingButReservedCharacters ^^ (l => Literal(l))
 
   private def rex(implicit matcherName: String): Parser[Regex] =
-  //regex('[', ']')
-    "§" ~> """[^\¡\§]+""".r <~ "§" ^^ (r => Regex(matcherName, r))
+    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(matcherName, r))
 
   /**
     * Skip till this clause
@@ -31,19 +34,16 @@ class MatcherDefinitionParser extends CommonTypesParser {
     * @return
     */
   private def break(implicit matcherName: String, registry: MatcherRegistry): Parser[Break] =
-    "¡" ~> matcherExpression <~ "¡" ^^ (m => Break(m))
+    BreakOpenToken ~> matcherExpression <~ BreakCloseToken ^^ (m => Break(m))
 
   private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
 
   // Applies to a boxed clause
   // [curlyDepth=1]
   private def predicate(implicit matcherName: String, registry: MatcherRegistry): Parser[StatePredicateTest] =
-  "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
+  PredicateOpenToken ~> ident ~ "=" ~ predicateValue <~ PredicateCloseToken ^^ {
     case predicateName ~ "=" ~ predicateVal => StatePredicateTest(predicateName, predicateVal)
   }
-
-  private def boxedClause(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
-    "[" ~> matcherExpression <~ "]" ~ opt(predicate)
 
   // There is a deeper level to this game
   // The boxed clause should be a subnode of this node, rather than have its fields added directly
@@ -84,7 +84,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   // $name:[.*]
   private def inlineReference()(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
-    "$" ~> ident ~ ":" ~ rex ^^ {
+    VariableDeclarationToken ~> ident ~ ":" ~ rex ^^ {
       case newName ~ _ ~ regex => regex.copy(name = newName)
     }
 
@@ -113,6 +113,36 @@ class MatcherDefinitionParser extends CommonTypesParser {
       m
   }
 
+}
+
+object MatcherDefinitionParser {
+
+  val BreakOpenToken = "¡"
+  val BreakCloseToken = "¡"
+  val RegexpOpenToken = "§"
+  val RegexpCloseToken = "§"
+  val DescendToken = "▶"
+  val PredicateOpenToken = "["
+  val PredicateCloseToken = "]"
+  val VariableDeclarationToken = "$"
+
+
+  private def escape(token: String) = """\""" + token
+  def anythingBut(tokens: Set[String]): ScalaRegex =
+    ("""[^""" + // NOT any of the following characters
+      tokens.mkString("") +
+      """]+""").r // at least one of any other character
+
+  val AnythingButReservedCharacters: ScalaRegex =
+    anythingBut(Set(
+      DescendToken,
+      """\s""", // whitespace
+      escape(PredicateOpenToken),
+      escape(PredicateCloseToken),
+      escape(BreakOpenToken), // didn't include BreakCloseToken because they're currently identical
+      escape(RegexpOpenToken),  // didn't include RegexpCloseToken because they're currently identical
+      VariableDeclarationToken
+    ))
 }
 
 private case class StatePredicateTest(name: String, value: String)

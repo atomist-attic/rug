@@ -4,7 +4,7 @@ import com.atomist.tree.content.text.microgrammar.{Matcher, PatternMatch}
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
 /**
-  * Similar to a SNOBOL "break". If we don't eventually find the literal,
+  * Similar to a SNOBOL "break". If we don't eventually find the terminating pattern in breakToMatcher,
   * we don't match. Matches the content up to and including the final matcher.
   *
   * @param breakToMatcher matcher that might match

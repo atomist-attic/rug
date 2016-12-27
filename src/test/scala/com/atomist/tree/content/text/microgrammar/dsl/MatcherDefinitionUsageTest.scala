@@ -19,15 +19,12 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
   // if there's nothing dynamic in the content? No nodes are created
   it should "match literal using microgrammar" in pendingUntilFixed {
     val matcher = mgp.parseMatcher("lit", "def foo")
-    //println(matcher)
-    // Problem is that this is discarded as nothing is bound
     val mg = new MatcherMicrogrammar(matcher)
     mg.findMatches("def foo bar").size should be(1)
   }
 
   it should "match regex using microgrammar" in {
     val matcher = mgp.parseMatcher("l", "def $foo:§f.o§")
-    //println(matcher)
     val mg = new MatcherMicrogrammar(matcher)
     val input = "def foo bar"
     matcher.matchPrefix(0, input) match {
@@ -40,14 +37,12 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val mg = new MatcherMicrogrammar(
       mgp.parseMatcher("m", "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
-    println(mg.matcher)
     val pom = proj.findFile("pom.xml").get.content
     val matches = mg.findMatches(pom)
-    println(matches)
     matches.size should be(1)
   }
 
-  it should "parse Slack emoji html" in pendingUntilFixed {
+  it should "parse Slack emoji html" in {
     val html =
       """<tr class="emoji_row">
         |													<td class="align_middle"><span data-original="https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg" class="lazy emoji-wrapper"></span></td>
@@ -67,17 +62,14 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
     val mg = new MatcherMicrogrammar(
       mgp.parseMatcher("emoji",
-        """<tr class="emoji_row">.*<span data-original="$emojiUrl:§https://.*§".*:$name:§[a-z0-9_-]*§:.*</tr"""))
+        """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[^\"]+§" class="$name:§[\sa-zA-Z0-9_\-]*§"""
+      ))
 
     val matches = mg.findMatches(html)
     matches.size should be(1)
 
-    for (elem <- matches;
-         field <- elem.fieldValues
-    ) {
-      println(field.nodeName + " = " + field.value)
-    }
-
+    matches.head.fieldValues.head.value should be ("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+    matches.head.fieldValues(1).value should be ("lazy emoji-wrapper")
   }
 
 }

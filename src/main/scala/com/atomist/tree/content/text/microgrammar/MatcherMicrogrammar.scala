@@ -65,4 +65,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     }
     nodes
   }
+
+  override def toString: String = s"MatcherMicrogrammar wrapping [$matcher]"
+
 }

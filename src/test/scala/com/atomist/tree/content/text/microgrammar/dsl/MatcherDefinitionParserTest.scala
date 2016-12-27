@@ -8,6 +8,8 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
+  import MatcherDefinitionParser._
+
   it should "reject null string" in {
     val bogusInputs = Seq(null, "", "$", "[", "▶")
     for (bad <- bogusInputs)
@@ -24,7 +26,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   }
 
   it should "accept valid regex" in {
-    val validLiterals = Seq("§a§", "§[.*]§", "§[.]§")
+    val validLiterals = Seq(
+      s"${RegexpOpenToken}a$RegexpCloseToken",
+      s"$RegexpOpenToken[.*]$RegexpCloseToken",
+      s"$RegexpOpenToken[.]$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("y", v) match {
       case Regex("y", rex, _) =>
     }
@@ -41,7 +46,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 //  }
 
   it should "accept valid inline regex" in {
-    val validLiterals = Seq("$foo:§a§", "$foo:§.*§", "$foo:§.§")
+    val validLiterals = Seq(
+      s"${VariableDeclarationToken}foo:${RegexpOpenToken}a$RegexpCloseToken",
+      s"${VariableDeclarationToken}foo:${RegexpOpenToken}.*$RegexpCloseToken",
+      s"${VariableDeclarationToken}foo:${RegexpOpenToken}.$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("x", v) match {
       case Regex("foo", rex, _) =>
         withClue(s"String [$v] should contain regex [$rex]") {
@@ -114,4 +122,19 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "accept valid break alone" in {
+    val f = s"""$BreakOpenToken<span data-original="$BreakCloseToken"""
+    mgp.parseMatcher("f", f) match {
+      case x =>
+    }
+  }
+
+  it should "accept valid break in string" in {
+    val f = s"""<tr class="emoji_row">$BreakOpenToken<span data-original="${BreakCloseToken}and now for something completely different"""
+    mgp.parseMatcher("f", f) match {
+      case x : Matcher =>
+        val matchThisYouMicrogrammar = x.matchPrefix(0, """<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different blah blah more things here""")
+        matchThisYouMicrogrammar.isDefined should be(true)
+    }
+  }
 }

@@ -67,7 +67,8 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
     val mg = new MatcherMicrogrammar(
       mgp.parseMatcher("emoji",
-        """<tr class="emoji_row">.*<span data-original="$emojiUrl:§https://.*§".*:$name:§[a-z0-9_-]*§:.*</tr"""))
+        """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[a-zA_Z\.-_]+§" class="$name:§[a-z\S0-9_-]*§"""))
+    println(mg)
 
     val matches = mg.findMatches(html)
     matches.size should be(1)

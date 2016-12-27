@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar.dsl
 import com.atomist.rug.BadRugException
 import com.atomist.source.StringFileArtifact
 import com.atomist.tree.content.text.microgrammar._
+import com.atomist.tree.content.text.microgrammar.matchers.Break
 import com.atomist.util.scalaparsing.CommonTypesParser
 
 /**
@@ -18,20 +19,30 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   // TODO may want to consider whether we want to use $
   private def literal: Parser[Literal] =
-    """[^▶\s\[\]$]+""".r ^^ (l => Literal(l))
+    """[^▶\s\[\]\¡\§$]+""".r ^^ (l => Literal(l))
 
   private def rex(implicit matcherName: String): Parser[Regex] =
   //regex('[', ']')
-    "§" ~> "[^\\§]+".r <~ "§" ^^ (r => Regex(matcherName, r))
+    "§" ~> """[^\¡\§]+""".r <~ "§" ^^ (r => Regex(matcherName, r))
+
+  /**
+    * Skip till this clause
+    * @return
+    */
+  private def break(implicit matcherName: String, registry: MatcherRegistry): Parser[Break] =
+    "¡" ~> matcherExpression() <~ "¡" ^^ (m => Break(m))
 
   private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
 
+  // Applies to a boxed clause
   // [curlyDepth=1]
-  private def predicate(implicit matcherName: String, registry: MatcherRegistry): Parser[StatePredicateTest] = "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
+  private def predicate(implicit matcherName: String, registry: MatcherRegistry): Parser[StatePredicateTest] =
+    "[" ~> ident ~ "=" ~ predicateValue <~ "]" ^^ {
     case predicateName ~ "=" ~ predicateVal => StatePredicateTest(predicateName, predicateVal)
   }
 
-  private def boxedClause(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] = "[" ~> matcherExpression <~ "]" ~ opt(predicate)
+  private def boxedClause(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
+    "[" ~> matcherExpression <~ "]" ~ opt(predicate)
 
   // There is a deeper level to this game
   // The boxed clause should be a subnode of this node, rather than have its fields added directly

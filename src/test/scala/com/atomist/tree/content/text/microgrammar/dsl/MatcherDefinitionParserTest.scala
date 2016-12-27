@@ -114,4 +114,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "accept valid break" in {
+    val f = """<tr class="emoji_row">¡<span data-original="¡$emojiUrl"""
+    mgp.parseMatcher("f", f) match {
+      case x =>
+    }
+  }
 }

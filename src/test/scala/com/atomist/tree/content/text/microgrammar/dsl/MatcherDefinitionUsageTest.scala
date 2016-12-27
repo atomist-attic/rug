@@ -67,20 +67,21 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
     val mg = new MatcherMicrogrammar(
       mgp.parseMatcher("emoji",
-        """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[a-zA_Z\.\-_0-9]+§"""
+        """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[^\"]+§" class="$name:§[a-zA-Z0-9_\-]*§"""
         //"""<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[a-zA_Z\.\-_0-9]+§" class="$name:§[a-zA-Z0-9_\-]*§"""
       ))
-    println(mg)
+    //println(mg)
 
     val matches = mg.findMatches(html)
     matches.size should be(1)
 
-    for (elem <- matches;
-         field <- elem.fieldValues
-    ) {
-      println(field.nodeName + " = " + field.value)
-    }
-
+//    for (elem <- matches;
+//         field <- elem.fieldValues
+//    ) {
+//      println(field.nodeName + " = " + field.value)
+//    }
+    matches.head.fieldValues.head.value should be ("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+    matches.head.fieldValues(1).value should be ("lazyemoji-wrapper")
   }
 
 }

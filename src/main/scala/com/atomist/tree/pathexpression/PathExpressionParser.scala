@@ -3,7 +3,7 @@ package com.atomist.tree.pathexpression
 import java.util.Objects
 
 import com.atomist.source.StringFileArtifact
-import com.atomist.tree.pathexpression.PathExpressionEngine._
+import com.atomist.tree.pathexpression.PathExpressionParsingConstants._
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.scalaparsing.CommonTypesParser
@@ -149,5 +149,21 @@ trait PathExpressionParser extends CommonTypesParser {
 object PathExpressionParser extends PathExpressionParser {
 
   implicit def parseString(expr: String): PathExpression = PathExpressionParser.parsePathExpression(expr)
+
+}
+
+private object PathExpressionParsingConstants {
+
+  val DotSeparator = "."
+
+  val SlashSeparator = "/"
+
+  val AmongSeparator = "$"
+
+  val SlashSlash = "//"
+
+  val PredicateOpen = "["
+
+  val PredicateClose = "]"
 
 }

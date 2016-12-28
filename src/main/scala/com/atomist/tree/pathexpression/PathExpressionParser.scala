@@ -17,8 +17,13 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def objectType: Parser[String] = identifierRefString(Set(), ident)
 
-  private def child: Parser[AxisSpecifier] = opt("child::") ^^
-    (s => Child)
+  private def child: Parser[AxisSpecifier] = opt(s"$ChildAxis::") ^^ {
+    case Some(_) => Child
+    case _ => Child
+  }
+
+  private def navigationAxis: Parser[AxisSpecifier] = identifierRefString(StandardAxes, ident) <~ "::" ^^
+    (s => NavigationAxis(s))
 
   private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
 
@@ -110,12 +115,16 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeTest: Parser[NodeTest] = nodeTypeTest | nodeNameTest | allNodes
 
-  private def attribute: Parser[AxisSpecifier] = ("attribute::" | "@") ^^ (s => Attribute)
+  private def property: Parser[AxisSpecifier] = (s"$PropertyAxis::" | "@") ^^ (s => Attribute)
 
-  private def descendant: Parser[AxisSpecifier] = ("descendant::" | "/") ^^
+  private def descendant: Parser[AxisSpecifier] = (s"$DescendantAxis::" | "/") ^^
     (s => Descendant)
 
-  private def axis: Parser[AxisSpecifier] = attribute | descendant | child
+  private def axis: Parser[AxisSpecifier] =
+    property |
+      navigationAxis |
+      descendant |
+      child
 
   private def locationStep: Parser[LocationStep] = axis ~ nodeTest ~ rep(predicate) ^^ {
     case a ~ t ~ preds => LocationStep(a, t, preds)
@@ -159,5 +168,18 @@ private object PathExpressionParsingConstants {
   val PredicateOpen = "["
 
   val PredicateClose = "]"
+
+  val PropertyAxis = "property"
+
+  val ChildAxis = "child"
+
+  val DescendantAxis = "descendant"
+
+  val SelfAxis = "self"
+
+  /**
+    * Axes that can't be a property
+    */
+  val StandardAxes = Set(PropertyAxis, ChildAxis, DescendantAxis, SelfAxis)
 
 }

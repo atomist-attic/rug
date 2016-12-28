@@ -23,7 +23,7 @@ case class LocationStep(axis: AxisSpecifier,
       case Right(nodes) => Right(
         nodes
           .map(nodePreparer)
-          .filter(tn => predicateToEvaluate(tn, nodes))
+          .filter(tn => predicateToEvaluate.evaluate(tn, nodes))
       )
       case failure => failure
     }

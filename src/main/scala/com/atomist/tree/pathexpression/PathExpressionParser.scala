@@ -27,32 +27,17 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
 
-  private def test(extracted: Any, value: Any, n: TreeNode): Boolean = {
-    value.equals(extracted)
-  }
-
-  private def propertyTest: Parser[Predicate] = "@" ~> nodeName ~ EqualsToken ~ singleQuotedString ^^ {
-    case prop ~ op ~ literal =>
-      val f: TreeNode => Boolean = prop match {
+  private def propertyTest: Parser[Predicate] =
+    "@" ~> nodeName ~ EqualsToken ~ singleQuotedString ^^ {
+      case prop ~ op ~ literal => prop match {
         case "name" =>
-          n => test(n.nodeName, literal, n)
+          NodeNameTest(literal)
         case "type" =>
-          n => test(n.nodeType, literal, n)
+          NodeTypeTest(literal)
         case propName: String =>
-          n => {
-            n match {
-              case ctn: ContainerTreeNode =>
-                val extracted = ctn.childrenNamed(prop)
-                if (extracted.size == 1)
-                  test(extracted.head, literal, n)
-                else
-                  false
-              case _ => false
-            }
-          }
+          PropertyValueTest(propName, literal)
       }
-      SimplePredicate(s"$prop=$literal", (tn, _) => f(tn))
-  }
+    }
 
   private def nullLiteral: Parser[Object] = "null" ^^ (_ => null)
 
@@ -62,7 +47,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
     case methodName ~ args ~ op ~ literal =>
-      SimplePredicate(s".$methodName", (n, among) => {
+      FunctionPredicate(s".$methodName", (n, among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
         Objects.equals(literal, invoked)
       })
@@ -74,7 +59,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def booleanMethodInvocation: Parser[Predicate] = "." ~> nodeName ~ args ^^ {
     case methodName ~ args =>
-      SimplePredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+      FunctionPredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
   }
 
   private def index: Parser[Predicate] = integer ^^ {
@@ -94,7 +79,7 @@ trait PathExpressionParser extends CommonTypesParser {
       index
 
   private def negatedPredicate: Parser[Predicate] = "not" ~> "(" ~> predicateExpression <~ ")" ^^ {
-    pred => NegationOf(pred)
+    pred => NegationOfPredicate(pred)
   }
 
   private def logicalOp: Parser[String] = "and" | "or"

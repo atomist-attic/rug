@@ -133,7 +133,9 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicateToEvaluate match {
-      case p@SimplePredicate("size=large", _) =>
+      case np: PropertyValueTest =>
+        np.property should be ("size")
+        np.expectedValue should be ("large")
       case x => fail(s"predicate did not match expected type: $x")
     }
     ls.test match {
@@ -142,7 +144,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse a json jump" in {
+  it should "parse into json" in {
     val pe = "/*[@name='elm-package.json']/Json()/summary"
     val parsed = pep.parsePathExpression(pe)
     parsed.locationSteps.size should be (3)
@@ -155,6 +157,26 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(1).axis match {
       case NavigationAxis("belongsTo") =>
+    }
+  }
+
+  it should "parse a property name axis specifier using double quoted strings" in {
+    val pe = """/Issue()[@state="open"]/belongsTo::Repo()[@name="rug-cli"]"""
+    val parsed = pep.parsePathExpression(pe)
+    println(parsed)
+    parsed.locationSteps.size should be (2)
+    parsed.locationSteps(1).axis match {
+      case NavigationAxis("belongsTo") =>
+    }
+  }
+
+  it should "parse predicate to understandable repo" in {
+    val pe = """/Issue()[@state='open']/belongsTo::Repo()[@name='rug-cli']"""
+    val parsed = pep.parsePathExpression(pe)
+    println(parsed)
+    parsed.locationSteps.size should be (2)
+    parsed.locationSteps(0).predicates.head match {
+      case PropertyValueTest("state", "open") =>
     }
   }
 

@@ -30,7 +30,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
     case Right(nodes) =>
-      ExecutionResult(nodes.filter(tn => predicate(tn, nodes)))
+      ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes)))
     case failure => failure
   }
 

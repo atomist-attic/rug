@@ -156,7 +156,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     rtn2.right.get should equal (Nil)
   }
 
-  it should "compare method value to int" in {
+  it should "compare method value to int with method" in {
     val rn = new ParsedMutableContainerTreeNode("root")
     val tn = new ParsedMutableContainerTreeNode("name") {
       def age = 25
@@ -168,6 +168,21 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     rtn.right.get should equal (Seq(tn))
 
     val expr2 = "/*[.age()=26]"
+    val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
+    rtn2.right.get should equal (Nil)
+  }
+
+  it should "compare method value to int with property" in {
+    val rn = new ParsedMutableContainerTreeNode("root")
+    val tn = new ParsedMutableContainerTreeNode("name")
+    tn.appendField(SimpleTerminalTreeNode("age", "25"))
+    rn.appendField(tn)
+
+    val expr = "/*[@age='25']"
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(tn))
+
+    val expr2 = "/*[@age='26']"
     val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
     rtn2.right.get should equal (Nil)
   }

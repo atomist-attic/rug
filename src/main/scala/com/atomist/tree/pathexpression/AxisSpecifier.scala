@@ -57,3 +57,9 @@ object Descendant extends AxisSpecifier {
 }
 
 object Attribute extends AxisSpecifier
+
+/**
+  * Navigation via the node property with the given name
+  * @param name name to navigate into
+  */
+case class NavigationAxis(name: String) extends AxisSpecifier

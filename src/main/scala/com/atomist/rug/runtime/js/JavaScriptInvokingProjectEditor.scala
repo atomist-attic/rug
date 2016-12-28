@@ -30,7 +30,7 @@ class JavaScriptInvokingProjectEditor(
   override protected def modifyInternal(
                                          targetProject: ArtifactSource,
                                          poa: ProjectOperationArguments): ModificationAttempt = {
-    val tr = time {
+    val (result, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs, targetProject, atomistConfig = DefaultAtomistConfig, context)
 
       try {
@@ -51,8 +51,8 @@ class JavaScriptInvokingProjectEditor(
           FailedModificationAttempt(f.getMessage)
       }
     }
-    logger.debug(s"$name modifyInternal took ${tr._2}ms")
-    tr._1
+    logger.debug(s"$name modifyInternal took ${elapsedTime}ms")
+    result
   }
 
 }

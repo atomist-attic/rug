@@ -115,13 +115,13 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeTest: Parser[NodeTest] = nodeTypeTest | nodeNameTest | allNodes
 
-  private def attribute: Parser[AxisSpecifier] = (s"$PropertyAxis::" | "@") ^^ (s => Attribute)
+  private def property: Parser[AxisSpecifier] = (s"$PropertyAxis::" | "@") ^^ (s => Attribute)
 
   private def descendant: Parser[AxisSpecifier] = (s"$DescendantAxis::" | "/") ^^
     (s => Descendant)
 
   private def axis: Parser[AxisSpecifier] =
-    attribute |
+    property |
       navigationAxis |
       descendant |
       child

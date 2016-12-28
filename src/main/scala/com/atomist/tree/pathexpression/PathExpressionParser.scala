@@ -3,9 +3,8 @@ package com.atomist.tree.pathexpression
 import java.util.Objects
 
 import com.atomist.source.StringFileArtifact
-import com.atomist.tree.pathexpression.PathExpressionParsingConstants._
 import com.atomist.tree.content.text.TreeNodeOperations._
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.pathexpression.PathExpressionParsingConstants._
 import com.atomist.util.scalaparsing.CommonTypesParser
 
 /**
@@ -28,7 +27,7 @@ trait PathExpressionParser extends CommonTypesParser {
   private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
 
   private def propertyTest: Parser[Predicate] =
-    "@" ~> nodeName ~ EqualsToken ~ singleQuotedString ^^ {
+    "@" ~> nodeName ~ EqualsToken ~ (singleQuotedString | doubleQuotedString) ^^ {
       case prop ~ op ~ literal => prop match {
         case "name" =>
           NodeNameTest(literal)

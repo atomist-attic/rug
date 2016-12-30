@@ -20,7 +20,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   override def name = "Rug Transpiler"
 
-  override def extension = "rug"
+  override def extensions =  Seq("rug")
+
+  // Make sure the transpiler gets loaded first
+  override def order: Int = Integer.MIN_VALUE
 
   val RugExtension = ".rug"
 
@@ -353,3 +356,6 @@ case class RugTranspilerConfig(
                                 editMethodName: String = "edit"
                               )
   extends TypeScriptGenerationConfig
+
+// For the JDK ServiceLoader we need a no arg constructor
+class DefaultRugTranspiler extends RugTranspiler {}

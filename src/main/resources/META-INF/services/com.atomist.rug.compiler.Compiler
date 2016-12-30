@@ -1,0 +1,2 @@
+# keep this commented out until the transpiler is fully implemented
+#com.atomist.rug.ts.DefaultRugTranspiler

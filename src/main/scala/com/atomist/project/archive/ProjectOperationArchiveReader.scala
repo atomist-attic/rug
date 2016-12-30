@@ -4,7 +4,6 @@ import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGene
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
@@ -49,8 +48,8 @@ class ProjectOperationArchiveReader(
       // TODO returning an editor that really is a generator is confusing
       case red: RugDrivenProjectEditor => red
 
-        // TODO these can't be generators yet.
-        // This is a hack to avoid breaking tests
+      // TODO these can't be generators yet.
+      // This is a hack to avoid breaking tests
       case ed: JavaScriptInvokingProjectEditor => ed
     }
 
@@ -58,6 +57,7 @@ class ProjectOperationArchiveReader(
       case g: ProjectGenerator => g
       case red: RugDrivenProjectEditor if red.program.publishedName.isDefined =>
         // TODO want to pull up published name so it's not Rug only
+        import ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(startingProject)
         // TODO remove blanks in the generator names; we need to have a proper solution for this
         val name = red.program.publishedName.get
@@ -75,8 +75,13 @@ class ProjectOperationArchiveReader(
 
     Operations(generators, editors, reviewers, executors)
   }
+}
 
-  def removeAtomistTemplateContent(startingProject: ArtifactSource): ArtifactSource = {
+object ProjectOperationArchiveReaderUtils {
+
+  def removeAtomistTemplateContent(startingProject: ArtifactSource, atomistConfig: AtomistConfig = DefaultAtomistConfig): ArtifactSource = {
     startingProject.filter(d => !d.path.equals(atomistConfig.atomistRoot), f => true)
   }
 }
+
+

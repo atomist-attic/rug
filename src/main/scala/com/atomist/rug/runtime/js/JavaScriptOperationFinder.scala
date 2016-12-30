@@ -57,13 +57,16 @@ object JavaScriptOperationFinder {
   }
 
 
-  //todo clean up this dispatch/signature stuff - too coupled
+  //TODO clean up this dispatch/signature stuff - too coupled
   private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
     jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
       case (v, Some(EditorType)) =>
         new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(GeneratorType)) =>
-        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs)
+        //TODO properly fix the following
+        import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
+        val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
+        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, project)
       case (v, Some(ExecutorType)) =>
         new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
     }

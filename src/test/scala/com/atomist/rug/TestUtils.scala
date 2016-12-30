@@ -40,7 +40,8 @@ object TestUtils extends Matchers {
     pe.modify(as, poa)
   }
 
-  val user_model =  new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("target/.atomist"))).withPathAbove(".atomist");
+  // This brings in a node_modules directory that was copied there by a maven goal called copy-ts, which takes it from src/main/typescript
+  val user_model = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("target/.atomist"))).withPathAbove(".atomist");
 
   val compiler = new TypeScriptCompiler()
 

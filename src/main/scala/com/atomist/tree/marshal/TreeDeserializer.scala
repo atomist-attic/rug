@@ -1,36 +1,29 @@
 package com.atomist.tree.marshal
 
-import java.util
 import java.util.Collections
 
-import com.atomist.tree.TreeNode
 import com.fasterxml.jackson.annotation.JsonAnySetter
-import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.{DeserializationFeature, JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 
 object TreeDeserializer {
 
-  def fromJson(json: String): TreeNode = {
-    val mapper = new ObjectMapper()
+  def fromJson(json: String): List[Map[String, Object]] = {
+    val mapper = new ObjectMapper() with ScalaObjectMapper
     mapper.registerModule(DefaultScalaModule)
-    //mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-
-    val node = mapper.readValue(json, new TypeReference[java.util.Map[String, Object]] {})
-
-    System.out.println(mapper.writeValueAsString(node))
-    null
+    val node = mapper.readValue(json, classOf[List[Map[String, Object]]])
+    println(mapper.writeValueAsString(node))
+    node
   }
-
 }
-
 
 /**
   * Intermediate representation of parsed JSON
   */
 class DeserializedNode {
 
-  private var properties: Map[String,Any] = Map()
+  private var properties: Map[String, Any] = Map()
 
   @JsonAnySetter
   def set(name: String, value: Any) {
@@ -39,5 +32,4 @@ class DeserializedNode {
   }
 
   var `type`: java.util.List[String] = Collections.emptyList()
-
 }

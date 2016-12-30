@@ -6,28 +6,50 @@ class TreeDeserializerTest extends FlatSpec with Matchers {
 
   val t1: String =
     """
-      |{"number":7,
-      |  "state":"closed",
-      |  "id":"189105883",
-      |  "title":"and something more",
-      |  "body":"",
-      |  "nodeId":2179,
-      |  "type":["Issue"]},
-      | {"message":"crushing issue #7",
-      |  "sha":"c239591ccd28dea8ce7ee5728df779f063f3f677",
-      |  "nodeId":2184,
-      |  "type":["Commit"]},
-      | {"login":"Jim Clark",
-      |  "email":"slimslenderslacks@gmail.com",
-      |  "nodeId":1590,
-      |  "type":["GitHubId"]},
-      | {"startNodeId":2179, "endNodeId":2184, "type":"RESOLVED_BY"},
-      | {"startNodeId":2184, "endNodeId":1590, "type":"AUTHOR"}
+      |[
+      |  {
+      |    "number": 7,
+      |    "state": "closed",
+      |    "id": "189105883",
+      |    "title": "and something more",
+      |    "body": "",
+      |    "nodeId": 2179,
+      |    "type": [
+      |      "Issue"
+      |    ]
+      |  },
+      |  {
+      |    "message": "crushing issue #7",
+      |    "sha": "c239591ccd28dea8ce7ee5728df779f063f3f677",
+      |    "nodeId": 2184,
+      |    "type": [
+      |      "Commit"
+      |    ]
+      |  },
+      |  {
+      |    "login": "Jim Clark",
+      |    "email": "slimslenderslacks@gmail.com",
+      |    "nodeId": 1590,
+      |    "type": [
+      |      "GitHubId"
+      |    ]
+      |  },
+      |  {
+      |    "startNodeId": 2179,
+      |    "endNodeId": 2184,
+      |    "type": "RESOLVED_BY"
+      |  },
+      |  {
+      |    "startNodeId": 2184,
+      |    "endNodeId": 1590,
+      |    "type": "AUTHOR"
+      |  }
+      |]
     """.stripMargin
 
   it should "deserialize simple tree" in {
-     val tree = TreeDeserializer.fromJson(t1)
-    tree.nodeType should be ("Issue")
+    val tree = TreeDeserializer.fromJson(t1)
+    tree.head("number") should be(7)
+    // tree.nodeType should be ("Issue")
   }
-
 }

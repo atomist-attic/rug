@@ -7,7 +7,7 @@
     <version>0.8.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
-    <description>Rug runtime</description>
+    <description>Rug Runtime</description>
     <properties>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-compiler</artifactId>
-            <version>0.4.0</version>
+            <version>0.5.1</version>
         </dependency>
         <dependency>
             <groupId>com.coveo</groupId>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-typescript-compiler</artifactId>
-            <version>0.6.0</version>
+            <version>0.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

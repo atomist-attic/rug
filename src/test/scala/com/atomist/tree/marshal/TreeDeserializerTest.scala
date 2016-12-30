@@ -48,8 +48,8 @@ class TreeDeserializerTest extends FlatSpec with Matchers {
     """.stripMargin
 
   it should "deserialize simple tree" in {
-    val tree = TreeDeserializer.fromJson(t1)
-    tree.head("number") should be(7)
-    // tree.nodeType should be ("Issue")
+    val node = TreeDeserializer.fromJson(t1)
+    node.nodeType should be ("Issue")
+    val k = node.childrenNamed("number").size should be (1)
   }
 }

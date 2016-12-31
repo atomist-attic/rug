@@ -133,7 +133,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicateToEvaluate match {
-      case np: PropertyValueTest =>
+      case np: PropertyValuePredicate =>
         np.property should be ("size")
         np.expectedValue should be ("large")
       case x => fail(s"predicate did not match expected type: $x")
@@ -176,7 +176,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(0).predicates.head match {
-      case PropertyValueTest("state", "open") =>
+      case PropertyValuePredicate("state", "open") =>
     }
   }
 

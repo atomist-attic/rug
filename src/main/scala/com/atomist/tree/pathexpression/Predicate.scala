@@ -91,7 +91,7 @@ case class IndexPredicate(name: String, i: Int) extends Predicate {
 
 }
 
-case class PropertyValueTest(property: String, expectedValue: String) extends Predicate {
+case class PropertyValuePredicate(property: String, expectedValue: String) extends Predicate {
 
   override def name: String = s"$property=[$expectedValue]"
 
@@ -108,7 +108,7 @@ case class PropertyValueTest(property: String, expectedValue: String) extends Pr
       }
 }
 
-case class NodeNameTest(expectedName: String) extends Predicate {
+case class NodeNamePredicate(expectedName: String) extends Predicate {
 
   override def name: String = s"name=[$expectedName]"
 
@@ -117,7 +117,7 @@ case class NodeNameTest(expectedName: String) extends Predicate {
 }
 
 
-case class NodeTypeTest(expectedType: String) extends Predicate {
+case class NodeTypePredicate(expectedType: String) extends Predicate {
 
   override def name: String = s"type=[$expectedType]"
 

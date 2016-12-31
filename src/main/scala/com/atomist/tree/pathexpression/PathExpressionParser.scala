@@ -30,11 +30,11 @@ trait PathExpressionParser extends CommonTypesParser {
     "@" ~> nodeName ~ EqualsToken ~ (singleQuotedString | doubleQuotedString) ^^ {
       case prop ~ op ~ literal => prop match {
         case "name" =>
-          NodeNameTest(literal)
+          NodeNamePredicate(literal)
         case "type" =>
-          NodeTypeTest(literal)
+          NodeTypePredicate(literal)
         case propName: String =>
-          PropertyValueTest(propName, literal)
+          PropertyValuePredicate(propName, literal)
       }
     }
 

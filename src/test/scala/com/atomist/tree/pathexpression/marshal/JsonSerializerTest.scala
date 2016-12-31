@@ -20,8 +20,8 @@ class JsonSerializerTest extends FlatSpec with Matchers {
         NavigationAxis("resolvedBy"),
         NamedNodeTest("Commit"),
         Seq(
-          PropertyValueTest("age", "25"),
-          NodeNameTest("Commit")
+          PropertyValuePredicate("age", "25"),
+          NodeNamePredicate("Commit")
         )
     )))
     val json = JsonSerializer.toJson(pe)

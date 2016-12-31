@@ -2,7 +2,7 @@ package com.atomist.tree.marshal
 
 import org.scalatest.{FlatSpec, Matchers}
 
-class TreeDeserializerTest extends FlatSpec with Matchers {
+class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
 
   val t1: String =
     """
@@ -48,7 +48,7 @@ class TreeDeserializerTest extends FlatSpec with Matchers {
     """.stripMargin
 
   it should "deserialize simple tree" in {
-    val node = TreeDeserializer.fromJson(t1)
+    val node = LinkedJsonTreeDeserializer.fromJson(t1)
     node.nodeType should be ("Issue")
     val k = node.childrenNamed("number").size should be (1)
   }

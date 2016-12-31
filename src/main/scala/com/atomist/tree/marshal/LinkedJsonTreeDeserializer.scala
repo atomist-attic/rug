@@ -1,17 +1,22 @@
 package com.atomist.tree.marshal
 
-import java.util.Collections
-
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, InputPosition, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
-import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 
-object TreeDeserializer {
+/**
+  * Deserialize a tree from JSON
+  */
+object LinkedJsonTreeDeserializer {
 
-  private val SpecialProperties = Set("nodeId", "type")
+  private val NodeId = "nodeId"
+  private val StartNodeId = "startNodeId"
+  private val EndNodeId = "endNodeId"
+  private val Type = "type"
+
+  // Properties that we handle specially, rather than treating as ordinary subnodes
+  private val SpecialProperties = Set(NodeId, Type)
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
@@ -33,9 +38,9 @@ object TreeDeserializer {
     val nodes: Seq[LinkableContainerTreeNode] =
       for {
         m <- l
-        if !m.contains("startNodeId")
+        if !m.contains(StartNodeId)
       } yield {
-        val nodeType: String = m.get("type") match {
+        val nodeType: String = m.get(Type) match {
           case Some(l: Seq[_]) => l.last.toString
           case None => throw new IllegalArgumentException(s"Type is required")
         }
@@ -48,7 +53,7 @@ object TreeDeserializer {
             SimpleTerminalTreeNode(k, m.get(k).toString)
           }
         val ctn = new LinkableContainerTreeNode(nodeName, nodeType, simpleFields.toSeq)
-        val nodeId: String = m.getOrElse("nodeId", ???).toString
+        val nodeId: String = requiredStringEntry(m, NodeId)
         idToNode += (nodeId -> ctn)
         ctn
       }
@@ -56,14 +61,16 @@ object TreeDeserializer {
     // Create the linkages
     for {
       m <- l
-      if m.contains("startNodeId")
+      if m.contains(StartNodeId)
     } {
-      val startNodeId: String = m.getOrElse("startNodeId", ???).toString
-      val endNodeId: String = m.getOrElse("endNodeId", ???).toString
-      val link: String = m.getOrElse("type", ???).toString
+      val startNodeId: String = requiredStringEntry(m, StartNodeId)
+      val endNodeId: String = requiredStringEntry(m, EndNodeId)
+      val link: String = requiredStringEntry(m, Type)
       println(s"Creating link from $startNodeId to $endNodeId")
       idToNode.get(startNodeId) match {
-        case Some(parent) => parent.link(idToNode.get(endNodeId).getOrElse(???), link)
+        case Some(parent) => parent.link(
+          idToNode.getOrElse(endNodeId, ???),
+          link)
         case None => ???
       }
     }
@@ -71,10 +78,17 @@ object TreeDeserializer {
     // Return the root node
     nodes.head
   }
+
+  private def requiredStringEntry(m: Map[String,Any], key: String): String =
+    m.get(key) match {
+      case None => throw new IllegalArgumentException(s"Property [$key] was required, but not found in map with keys [${m.keySet.mkString(",")}]")
+      case Some(s: String) => s
+      case Some(x) => x.toString
+    }
 }
 
 
-class LinkableContainerTreeNode(
+private class LinkableContainerTreeNode(
                                  val nodeName: String,
                                  override val nodeType: String,
                                  private var fieldValues: Seq[TreeNode]

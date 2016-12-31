@@ -4,10 +4,13 @@ import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 
 /**
   * One of the three core elements of a LocationStep. Inspired by XPath NodeTest.
   */
+@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
 trait NodeTest {
 
   /**

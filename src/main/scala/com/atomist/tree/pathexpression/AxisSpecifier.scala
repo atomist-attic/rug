@@ -2,13 +2,16 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.{Visitable, Visitor}
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 
 import scala.collection.mutable.ListBuffer
 
 /**
   * Inspire by XPath axis specifier concept. Represents a direction
-  * of navigation rom a node.
+  * of navigation from a node.
   */
+@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
 trait AxisSpecifier {
 
   override def toString: String = this.getClass.getSimpleName

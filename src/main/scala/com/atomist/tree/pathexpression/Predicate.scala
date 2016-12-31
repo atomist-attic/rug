@@ -1,6 +1,8 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 
 /**
   * Based on the XPath concept of a predicate. A predicate acts on a sequence of nodes
@@ -8,6 +10,7 @@ import com.atomist.tree.{ContainerTreeNode, TreeNode}
   * Predicates can be evaluated against materialized objects, and most predicates expose enough information
   * to generate queries against external systems to retrieve data.
   */
+@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
 trait Predicate {
 
   def name: String

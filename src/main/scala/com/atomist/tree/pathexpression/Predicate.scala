@@ -1,6 +1,8 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 
 /**
   * Based on the XPath concept of a predicate. A predicate acts on a sequence of nodes
@@ -8,6 +10,7 @@ import com.atomist.tree.{ContainerTreeNode, TreeNode}
   * Predicates can be evaluated against materialized objects, and most predicates expose enough information
   * to generate queries against external systems to retrieve data.
   */
+@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
 trait Predicate {
 
   def name: String
@@ -88,7 +91,7 @@ case class IndexPredicate(name: String, i: Int) extends Predicate {
 
 }
 
-case class PropertyValueTest(property: String, expectedValue: String) extends Predicate {
+case class PropertyValuePredicate(property: String, expectedValue: String) extends Predicate {
 
   override def name: String = s"$property=[$expectedValue]"
 
@@ -105,7 +108,7 @@ case class PropertyValueTest(property: String, expectedValue: String) extends Pr
       }
 }
 
-case class NodeNameTest(expectedName: String) extends Predicate {
+case class NodeNamePredicate(expectedName: String) extends Predicate {
 
   override def name: String = s"name=[$expectedName]"
 
@@ -114,7 +117,7 @@ case class NodeNameTest(expectedName: String) extends Predicate {
 }
 
 
-case class NodeTypeTest(expectedType: String) extends Predicate {
+case class NodeTypePredicate(expectedType: String) extends Predicate {
 
   override def name: String = s"type=[$expectedType]"
 

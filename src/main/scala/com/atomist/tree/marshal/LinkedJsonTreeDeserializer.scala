@@ -18,9 +18,13 @@ object LinkedJsonTreeDeserializer {
   // Properties that we handle specially, rather than treating as ordinary subnodes
   private val SpecialProperties = Set(NodeId, Type)
 
+  // Configure this to handle Scala
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
+  /**
+    * Deserialize from JSON
+    */
   def fromJson(json: String): ContainerTreeNode = {
     val l = toListOfMaps(json)
     nodeify(l)
@@ -69,9 +73,11 @@ object LinkedJsonTreeDeserializer {
       println(s"Creating link from $startNodeId to $endNodeId")
       idToNode.get(startNodeId) match {
         case Some(parent) => parent.link(
-          idToNode.getOrElse(endNodeId, ???),
+          idToNode.getOrElse(endNodeId,
+            throw new IllegalArgumentException(s"Cannot link to end node $endNodeId: not found")),
           link)
-        case None => ???
+        case None =>
+          throw new IllegalArgumentException(s"Cannot link to start node $startNodeId: not found")
       }
     }
 

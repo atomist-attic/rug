@@ -4,11 +4,12 @@ import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Deserialize a tree from JSON
   */
-object LinkedJsonTreeDeserializer {
+object LinkedJsonTreeDeserializer extends LazyLogging {
 
   private val NodeId = "nodeId"
   private val StartNodeId = "startNodeId"
@@ -70,7 +71,7 @@ object LinkedJsonTreeDeserializer {
       val startNodeId: String = requiredStringEntry(m, StartNodeId)
       val endNodeId: String = requiredStringEntry(m, EndNodeId)
       val link: String = requiredStringEntry(m, Type)
-      println(s"Creating link from $startNodeId to $endNodeId")
+      logger.debug(s"Creating link from $startNodeId to $endNodeId")
       idToNode.get(startNodeId) match {
         case Some(parent) => parent.link(
           idToNode.getOrElse(endNodeId,

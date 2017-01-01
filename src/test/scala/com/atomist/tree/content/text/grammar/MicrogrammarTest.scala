@@ -159,7 +159,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val m = mg.findMatches(input, ml)
     if (ml.isDefined) ml.get.matches should equal(1)
     m.size should be(1)
-    println(TreeNodeUtils.toShortString(m.head))
+    //println(TreeNodeUtils.toShortString(m.head))
     m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("bar")

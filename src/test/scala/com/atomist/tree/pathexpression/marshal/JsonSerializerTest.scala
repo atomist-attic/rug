@@ -10,7 +10,7 @@ class JsonSerializerTest extends FlatSpec with Matchers {
       LocationStep(Child, NamedNodeTest("foo"), Seq(TruePredicate)))
     )
     val json = JsonSerializer.toJson(pe)
-    println(json)
+    //println(json)
     json.contains("Child\"") should be (true)
   }
 
@@ -26,7 +26,7 @@ class JsonSerializerTest extends FlatSpec with Matchers {
         )
     )))
     val json = JsonSerializer.toJson(pe)
-    println(json)
+    //println(json)
   }
 
 }

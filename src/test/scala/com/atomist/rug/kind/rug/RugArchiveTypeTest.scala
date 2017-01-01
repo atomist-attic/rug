@@ -6,8 +6,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class RugArchiveTypeTest extends FlatSpec
   with Matchers
   with RugEditorTestHelper
-  with TypeScriptEditorTestHelper
-{
+  with TypeScriptEditorTestHelper {
 
   // the editor I want to work.
   val ConvertRugToTsEditor =
@@ -17,9 +16,9 @@ class RugArchiveTypeTest extends FlatSpec
       |param rug_name: ^.*$
       |
       |with RugArchiveProject p begin
-      |  do eval { print("The rug name is " + rug_name) }
+      |  #do eval { print("The rug name is " + rug_name) }
       |  with Editor r when r.name = rug_name begin
-      |    do eval { print("Changing rug " + r.name() ) }
+      |    #do eval { print("Changing rug " + r.name() ) }
       |    do r.convertToTypeScript
       |  end
       |end
@@ -52,7 +51,7 @@ class RugArchiveTypeTest extends FlatSpec
     val tsEditorFile = result.findFile(".atomist/editors/BananaToCarrot.ts")
     tsEditorFile.isDefined should be(true)
     val tsEditor = tsEditorFile.get.content
-    println("it turned into: " + tsEditor)
+    //println("it turned into: " + tsEditor)
 
     val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject)
 

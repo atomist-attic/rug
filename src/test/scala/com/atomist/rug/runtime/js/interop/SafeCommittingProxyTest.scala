@@ -29,7 +29,7 @@ class SafeCommittingProxyTest extends FlatSpec with Matchers {
      sc.getMember("setContent")
   }
 
-  it should "not allow invocation of registred command function" in {
+  it should "not allow invocation of registered command function" in {
     val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)

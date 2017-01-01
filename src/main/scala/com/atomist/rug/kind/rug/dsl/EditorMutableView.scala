@@ -14,14 +14,14 @@ class EditorMutableView(originalBackingObject: FileArtifact,
   @ExportFunction(readOnly = false, description = "Change a .rug to a .ts editor")
   def convertToTypeScript(): Unit = {
     if (isRugDsl) {
-      println("I was called! I am your friend!")
+      //println("I was called! I am your friend!")
       val rugDsl = currentBackingObject.content
       val rugPath = path
       val transpiler = new RugTranspiler()
       setPath(transpiler.rugPathToTsPath(rugPath))
       val ts = transpiler.transpile(rugDsl)
       _currentContent = ts
-      println("I changed my path and content, I swear I did something")
+      //println("I changed my path and content, I swear I did something")
       commit()
     }
   }

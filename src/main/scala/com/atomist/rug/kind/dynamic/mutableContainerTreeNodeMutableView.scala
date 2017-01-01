@@ -75,7 +75,7 @@ class MutableContainerMutableView(
     originalBackingObject match {
       case msoo: SimpleMutableContainerTreeNode =>
         msoo.update(newValue)
-        println(s"Updated to $msoo")
+        //println(s"Updated to $msoo")
     }
     require(dirty)
     parent.commit()

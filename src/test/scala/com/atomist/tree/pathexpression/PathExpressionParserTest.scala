@@ -153,7 +153,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a property name axis specifier" in {
     val pe = """/Issue()[@state='open']/belongsTo::Repo()[@name='rug-cli']"""
     val parsed = pep.parsePathExpression(pe)
-    println(parsed)
+    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(1).axis match {
       case NavigationAxis("belongsTo") =>
@@ -163,7 +163,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a property name axis specifier using double quoted strings" in {
     val pe = """/Issue()[@state="open"]/belongsTo::Repo()[@name="rug-cli"]"""
     val parsed = pep.parsePathExpression(pe)
-    println(parsed)
+    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(1).axis match {
       case NavigationAxis("belongsTo") =>
@@ -173,7 +173,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse predicate to understandable repo" in {
     val pe = """/Issue()[@state='open']/belongsTo::Repo()[@name='rug-cli']"""
     val parsed = pep.parsePathExpression(pe)
-    println(parsed)
+    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(0).predicates.head match {
       case PropertyValuePredicate("state", "open") =>

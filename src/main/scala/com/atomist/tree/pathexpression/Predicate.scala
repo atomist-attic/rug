@@ -99,7 +99,9 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
         case ctn: ContainerTreeNode =>
           val extracted = ctn.childrenNamed(property)
           if (extracted.size == 1) {
-            extracted.head.value.equals(expectedValue)
+            val result = extracted.head.value.equals(expectedValue)
+            //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
+            result
           }
           else
             false

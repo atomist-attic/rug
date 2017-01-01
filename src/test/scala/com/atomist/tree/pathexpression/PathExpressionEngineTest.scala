@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.tree.SimpleTerminalTreeNode
+import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode}
 import com.atomist.tree.content.text.ParsedMutableContainerTreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -196,6 +196,34 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val expr = "/thing"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(kid))
+  }
+
+  it should "handle a property name axis specifier and Object type" in {
+    val tn = new ContainerTreeNodeImpl("Issue", "Issue")
+    tn.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    tn.addField(repo)
+    // TODO should we be able to handle a property called "name"?
+    val expr = """/Issue()[@state='open']/belongsTo::Repo()[@name2='rug-cli']"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(tn)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(repo))
+  }
+
+  it should "handle a property name axis specifier" in {
+    val tn = new ContainerTreeNodeImpl("Issue", "Issue")
+    tn.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    tn.addField(repo)
+    // TODO should we be able to handle a property called "name"?
+    val expr = """/Issue()[@state='open']/belongsTo::*[@name2='rug-cli']"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(tn)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(repo))
   }
 
 //  it should "find properties in container tree node 3 levels deep" in {

@@ -10,12 +10,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 /**
   * One of the three core elements of a LocationStep. Inspired by XPath NodeTest.
   */
-@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
+@JsonTypeInfo(include = As.WRAPPER_OBJECT, use = Id.NAME)
 trait NodeTest {
 
   /**
     * Find nodes from the given node, observing the given AxisSpecifier
-    * @param tn node to drill down from
+    *
+    * @param tn   node to drill down from
     * @param axis AxisSpecifier indicating the kind of navigation
     * @return Resulting nodes
     */
@@ -32,10 +33,10 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
 
   final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
-    case Right(nodes) =>
-      ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes)))
-    case failure => failure
-  }
+      case Right(nodes) =>
+        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes)))
+      case failure => failure
+    }
 
   /**
     * Subclasses can override this to provide a more efficient implementation.
@@ -52,6 +53,13 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
       ExecutionResult(kids)
+    case NavigationAxis(propertyName) =>
+      val nodes = tn match {
+        case ctn: ContainerTreeNode =>
+          ctn.childrenNamed(propertyName)
+        case _ => Nil
+      }
+      ExecutionResult(nodes)
   }
 }
 

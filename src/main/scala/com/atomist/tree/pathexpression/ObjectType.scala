@@ -4,13 +4,16 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Return all nodes of the given type
   *
-  * @param typeName
+  * @param typeName name of the type we're looking into
   */
-case class ObjectType(typeName: String) extends NodeTest {
+case class ObjectType(typeName: String)
+  extends NodeTest
+    with LazyLogging {
 
   private def _childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] = typeRegistry.findByName(typeName) match {
     case Some(cr: ChildResolver) => Some(cr)
@@ -26,6 +29,7 @@ case class ObjectType(typeName: String) extends NodeTest {
 
   private val eligibleNode: TreeNode => Boolean = n => typeName.equals(n.nodeType)
 
+  // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {
     tn match {
       case ctn: ContainerTreeNode =>
@@ -46,6 +50,13 @@ case class ObjectType(typeName: String) extends NodeTest {
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {
+      case NavigationAxis(propertyName) =>
+        val nodes = tn match {
+          case ctn: ContainerTreeNode =>
+            ctn.childrenNamed(propertyName)
+          case _ => Nil
+        }
+        ExecutionResult(nodes)
       case Self => ExecutionResult(List(tn))
       case Child =>
         ExecutionResult(findMeUnder(tn, typeRegistry))

@@ -62,7 +62,7 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 
   private def index: Parser[Predicate] = integer ^^ {
-    n => IndexPredicate(s"[$n]", n)
+    n => IndexPredicate(n)
   }
 
   private def truePredicate: Parser[Predicate] = "true" ^^ (_ => TruePredicate)

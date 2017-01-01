@@ -11,6 +11,7 @@ class JsonSerializerTest extends FlatSpec with Matchers {
     )
     val json = JsonSerializer.toJson(pe)
     println(json)
+    json.contains("Child\"") should be (true)
   }
 
   it should "serialize more complex step expression" in {

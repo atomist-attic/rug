@@ -2,8 +2,7 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.{Visitable, Visitor}
-import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
+import com.fasterxml.jackson.annotation.JsonProperty
 
 import scala.collection.mutable.ListBuffer
 
@@ -11,10 +10,16 @@ import scala.collection.mutable.ListBuffer
   * Inspire by XPath axis specifier concept. Represents a direction
   * of navigation from a node.
   */
-@JsonTypeInfo(include=As.WRAPPER_OBJECT, use=Id.NAME)
 trait AxisSpecifier {
 
-  override def toString: String = this.getClass.getSimpleName
+  @JsonProperty
+  def name: String = {
+    // Get rid of the trailing $ from an object
+    getClass.getSimpleName.replace("$", "")
+  }
+
+  override def toString: String = name
+
 }
 
 /**
@@ -57,12 +62,15 @@ object Descendant extends AxisSpecifier {
 
     def nodes: Seq[TreeNode] = _nodes.distinct
   }
+
 }
 
 object Attribute extends AxisSpecifier
 
 /**
   * Navigation via the node property with the given name
-  * @param name name to navigate into
+  *
+  * @param propertyName name to navigate into
   */
-case class NavigationAxis(name: String) extends AxisSpecifier
+case class NavigationAxis(propertyName: String)
+  extends AxisSpecifier

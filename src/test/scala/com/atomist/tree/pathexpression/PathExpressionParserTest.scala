@@ -117,7 +117,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicateToEvaluate match {
-      case p@IndexPredicate("[4]", 4) =>
+      case p@IndexPredicate(4) =>
       case x => fail(s"predicate did not match expected type: $x")
     }
     ls.test match {

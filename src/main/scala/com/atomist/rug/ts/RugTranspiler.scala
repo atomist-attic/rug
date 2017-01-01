@@ -38,7 +38,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     source + typeScripts
   }
 
-  def rugPathToTsPath(rugPath: String) = rugPath.dropRight(RugExtension.length) + ".ts"
+  def rugPathToTsPath(rugPath: String): String = rugPath.dropRight(RugExtension.length) + ".ts"
 
 
   override def supports(source: ArtifactSource): Boolean = true

@@ -3,12 +3,12 @@ package com.atomist.rug
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
-import com.atomist.rug.kind.core.FileMutableView
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
+import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.rug.runtime.rugdsl.LambdaPredicate
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import org.scalatest.{FlatSpec, Matchers}
 
 abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
@@ -31,6 +31,23 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
     r.allFiles.size should be > (0)
     r.allFiles.foreach(f => f.content.contains(license) should be(true))
+  }
+
+  it should "execute simple program with parameters using dot notation in predicate" in {
+    val goBowling =
+      """
+        |@description 'A very short tempered editor'
+        |editor Caspar
+        |
+        |param message: ^.*$
+        |
+        |let text = "// I'm talkin' about ethics"
+        |
+        |with File f when f.name = "Dog.java"
+        |do
+        | append text
+      """.stripMargin
+    simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 
   it should "execute simple program with = literal in predicate" in {
@@ -65,6 +82,28 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         | append text
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
+  }
+
+  it should "execute simple program with parameters and JavaScript regexp transform" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |param text: ^.*$
+        |param message: ^.*$
+        |
+        |with File f
+        | when isJava
+        |do
+        |  setContent {
+        |   var re = /Dog/gi;
+        |   return f.content().replace(re, 'Cat');
+        |   };
+      """.stripMargin
+    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
+    val expected = originalFile.content.replace("Dog", "Cat")
+    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
   }
 
   it should "accept extra parameter containing -" in {
@@ -105,6 +144,27 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     ), pipeline = pipeline)
   }
 
+  it should "execute simple program with illegal JavaScript parameter name" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |param text: ^.*$
+        |param message: ^.*$
+        |
+        |with File f
+        | when isJava
+        |begin
+        |  do setContent { "WWW" + f.content() + text }
+        |  do setContent { f.content().substring(3) }
+        |end
+      """.stripMargin
+    simpleAppenderProgramExpectingParameters(goBowling,
+      extraParams = Map("this-is-bad" -> "whatever"),
+      pipeline = pipeline)
+  }
+
   it should "execute simple program with parameters and JavaScript transform" in {
     val goBowling =
       """
@@ -117,6 +177,22 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |with File f
         |do
         |  setContent { f.content() + text }
+      """.stripMargin
+    simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
+  }
+
+  it should "execute simple program with parameters, simple JavaScript file function using computed value and transform function" in {
+    val goBowling =
+      s"""
+         |@description "That's over the line!"
+         |editor Caspar
+         |
+         |let extension = ".java"
+         |
+         |with File f
+         | when { f.name().indexOf(extension) > 0 }
+         |do
+         | append "$extraText"
       """.stripMargin
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
@@ -332,8 +408,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))
 
     val eds = pipeline.create(as,None)
-
-
     eds.size should be(1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 

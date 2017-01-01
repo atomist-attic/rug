@@ -69,7 +69,7 @@ class jsPathExpressionEngine(
         throw new RugRuntimeException(null, "A microgrammar must specify both name and grammar")
       //println(s"Parsing $name=$grammar with ${matcherRegistry}")
       val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
-      println("Parsed matcher=" + parsedMatcher)
+      //println("Parsed matcher=" + parsedMatcher)
       matcherRegistry += parsedMatcher
       val mg = new MatcherMicrogrammar(parsedMatcher)
       new MicrogrammarTypeProvider(mg)

@@ -76,28 +76,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     simpleAppenderProgramExpectingParameters(goBowling)
   }
 
-  it should "execute simple program with parameters using JavaScript action block" in {
-    val goBowling =
-      """
-        |editor Caspar
-        |
-        |param text: ^.*$
-        |param message: ^.*$
-        |
-        |{
-        |
-        |for (i = 0; i < project.files().length; i++) {
-        |    var currentFile = project.files().get(i);
-        |    if (currentFile.isJava()) {
-        |        currentFile.append(text);
-        |    }
-        |}
-        |
-        |}
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
-  }
-
   it should "fail to execute simple program with parameters and transform function using undefined identifier" in {
     val goBowling =
       """
@@ -125,29 +103,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
          |
          |with File f
          | when { f.name().endsWith(extension) }
-         |do
-         | append "$extraText"
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
-  }
-
-  it should "execute simple program with parameters, complex JavaScript file function and transform function" in {
-    val goBowling =
-      s"""
-         |@description "What is this, the high hat?"
-         |editor Caspar
-         |
-         |param text: ^.*$$
-         |param message: ^.*$$
-         |
-         |with File f
-         | when {
-         |  var flag = true;
-         |  if (1 > 2) {
-         |      // println("Something");
-         |  }
-         |  return f.name().endsWith(".java") && flag;
-         | }
          |do
          | append "$extraText"
       """.stripMargin
@@ -284,18 +239,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
       case micturation: BadRugException =>
         micturation.getMessage.contains("NotThing") should be(true)
     }
-  }
-
-  it should "run editor with complicated regular expression" in {
-    val complexRegexEditor =
-      """editor ComplexRegexpReplace
-        |
-        |with Project p
-        |  do regexpReplace "^\\s*class\\s+Dog\\s*\\{\\s*\\}" "ssalc Dog {}"
-      """.stripMargin
-    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
-    val expected = originalFile.content.replace("class", "ssalc")
-    simpleAppenderProgramExpectingParameters(complexRegexEditor, Some(expected))
   }
 
   // PUT in a deliberate type error and expect to see a good message

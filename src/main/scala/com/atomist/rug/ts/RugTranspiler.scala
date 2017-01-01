@@ -116,7 +116,9 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         ts ++= config.separator
     }
     ts ++= "}\n"
-    ts ++= s"""var editor = new ${rug.name}();"""
+
+    // Check that editors have distinct names
+    ts ++= s"""var editor_${JavaHelpers.lowerize(rug.name)} = new ${rug.name}();"""
     ts.toString()
   }
 
@@ -185,7 +187,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def rooCode(roo: RunOtherOperation, params: Seq[Parameter]): String = {
-    val kvs = if(params.nonEmpty) ", {"+ params.map(p => s"""${p.getName}: ${p.getName}""").mkString(", ") + "}" else ""
+    val kvs = ", {"+ params.map(p => s"""${p.getName}: ${p.getName}""").mkString(", ") + "}"
     s"""project.editWith("${roo.name}"$kvs)"""
   }
 

@@ -121,9 +121,8 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
          | editWith Caspar
          |
          |editor Caspar
-         |{
-         | project.addFile("Caspar" , "$content");
-         |}
+         |with Project
+         |  do addFile "Caspar"  "$content"
       """.stripMargin
     )
   }

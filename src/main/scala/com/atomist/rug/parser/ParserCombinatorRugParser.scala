@@ -153,9 +153,8 @@ class ParserCombinatorRugParser(
 
   protected def scriptActionBlock: Parser[ScriptBlock] = javaScriptBlock
 
-  private def opActions: Parser[Seq[Action]] = (scriptActionBlock | rep1(action(simpleWithDoStep))) ^^ {
-    case sb: ScriptBlock => Seq(ScriptBlockAction(sb))
-    case actions: Seq[Action @unchecked] => actions
+  private def opActions: Parser[Seq[Action]] =  rep1(action(simpleWithDoStep)) ^^ {
+    case actions => actions
   }
 
   private def rugEditor: Parser[RugEditor] =

@@ -181,25 +181,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     rp.withs.head.alias should be("project")
   }
 
-  it should "allow actions to be specified in JavaScript" in {
-    val prog =
-      """
-        |@description "I can get you a toe!"
-        |editor Caspar
-        |
-        |param num: ^\d+$
-        |
-        |{
-        | print(project)
-        |}
-      """.stripMargin
-    val rp = ri.parse(prog).head
-    rp.actions.size should be(1)
-    rp.actions.head match {
-      case ScriptBlockAction(c: JavaScriptBlock) =>
-    }
-  }
-
   it should "allow arguments to be specified in JavaScript" in {
     val prog =
       """

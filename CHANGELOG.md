@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.7.1...HEAD
 
+### Added
+
+-   NavigationAxis: New AxisSpecifier that allows navigating via a property in path expression language
+
 ### Changed
 
 -   **BREAKING** Naming convention for Rug types now UpperCamelCase,
@@ -17,6 +21,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** Rug tree expression syntax has been changed to more
     closely resemble XPath where possible
+
+-   **BREAKING** Rug DSL: A Rug can no longer specify its action in JavaScript:
+    In this case, use TypeScript or JavaScript.
+
 
 ### Fixed
 

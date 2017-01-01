@@ -85,28 +85,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     ), pipeline = pipeline)
   }
 
-  it should "execute simple program with parameters using JavaScript action block" in {
-    val goBowling =
-      """
-        |editor Caspar
-        |
-        |param text: ^.*$
-        |param message: ^.*$
-        |
-        |{
-        |
-        |for (i = 0; i < project.files().length; i++) {
-        |    var currentFile = project.files().get(i);
-        |    if (currentFile.isJava()) {
-        |        currentFile.append(text);
-        |    }
-        |}
-        |
-        |}
-      """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
-  }
-
   it should "accept extra parameters containing - and JavaScript" in {
     val goBowling =
       """
@@ -229,12 +207,27 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |  if (1 > 2) {
          |      // println("Something");
          |  }
-         |  return f.name().endsWith(".java") && flag;
+         |  return f.name().indexOf(".java") != -1 && flag;
          | }
          |do
          | append "$extraText"
       """.stripMargin
-    simpleAppenderProgramExpectingParameters(goBowling)
+    simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
+  }
+
+  it should "execute simple program with regexp transform via globals" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |with Project p
+        |do
+        |  replace "Dog" "Cat"
+      """.stripMargin
+    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
+    val expected = originalFile.content.replace("Dog", "Cat")
+    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
   }
 
   it should "execute simple program with template interpretation" in {

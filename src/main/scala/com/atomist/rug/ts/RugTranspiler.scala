@@ -180,6 +180,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       helper.indented(withBlockCode(prog, w, outerAlias), indentDepth)
     case roo: RunOtherOperation =>
       helper.indented(rooCode(roo,prog.parameters), indentDepth)
+    case sba: ScriptBlockAction =>
+      sba.scriptBlock.content
   }
 
   private def rooCode(roo: RunOtherOperation, params: Seq[Parameter]): String = {

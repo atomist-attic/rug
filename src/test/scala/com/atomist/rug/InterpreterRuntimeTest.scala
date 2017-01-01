@@ -150,21 +150,6 @@ class InterpreterRuntimeTest extends AbstractRuntimeTest {
     simpleAppenderProgramExpectingParameters(goBowling, Some(expected))
   }
 
-  it should "execute simple program with regexp transform via globals" in {
-    val goBowling =
-      """
-        |@description "I can get you a toe!"
-        |editor Caspar
-        |
-        |with Project p
-        |do
-        |  replace "Dog" "Cat"
-      """.stripMargin
-    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
-    val expected = originalFile.content.replace("Dog", "Cat")
-    simpleAppenderProgramExpectingParameters(goBowling, Some(expected))
-  }
-
   it should "allow int let value in call other operation" in {
     val goBowling =
       """

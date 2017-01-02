@@ -383,30 +383,52 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 
-//  it should "allow int let value in call other operation" in {
-//    val goBowling =
-//      """
-//        |@description "I can get you a toe!"
-//        |editor Caspar
-//        |
-//        |let x = 2
-//        |
-//        |Other num = x
-//        |
-//        |
-//        |@description "This is a second editor"
-//        |editor Other
-//        |
-//        |param num: ^\d+$
-//        |
-//        |with Project p
-//        |do
-//        |  replace "Dog" num
-//      """.stripMargin
-//    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
-//    val expected = originalFile.content.replace("Dog", "2")
-//    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
-//  }
+  /*
+  it should "allow int let value in call other operation" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |Other num = 2
+        |
+        |@description "This is a second editor"
+        |editor Other
+        |
+        |param num: ^\d+$
+        |
+        |with Project p
+        |do
+        |  replace "Dog" num
+      """.stripMargin
+    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
+    val expected = originalFile.content.replace("Dog", "2")
+    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
+  }
+
+  it should "allow int let value in call other operation using parameter" in {
+    val goBowling =
+      """
+        |@description "I can get you a toe!"
+        |editor Caspar
+        |
+        |Other
+        |
+        |
+        |@description "This is a second editor"
+        |editor Other
+        |
+        |param num: ^\d+$
+        |
+        |with Project p
+        |do
+        |  replace "Dog" "2"
+      """.stripMargin
+    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
+    val expected = originalFile.content.replace("Dog", "2")
+    simpleAppenderProgramExpectingParameters(goBowling, Some(expected), pipeline = pipeline)
+  }
+  */
 
   it should "handle custom kind of 'line' nested under file" in pendingUntilFixed {
     val program =

@@ -5,7 +5,7 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
+import com.atomist.rug.runtime.rugdsl.{ContextAwareProjectOperation, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
 import com.atomist.source.{ArtifactSource, FileArtifact}
@@ -15,6 +15,7 @@ import scala.collection.Seq
 
 /**
   * Reads an archive and extracts Atomist project operations.
+  * These can either be Rug DSL archives or TypeScript or JavaScript files.
   */
 class ProjectOperationArchiveReader(
                                      atomistConfig: AtomistConfig = DefaultAtomistConfig,
@@ -43,6 +44,12 @@ class ProjectOperationArchiveReader(
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations ++ fromTs)
 
     val operations = fromOldPipeline ++ fromTs
+
+    operations foreach {
+      case capo: ContextAwareProjectOperation =>
+        //println(s"Set context on $capo")
+        capo.setContext(operations)
+    }
 
     val editors = operations collect {
       // TODO returning an editor that really is a generator is confusing

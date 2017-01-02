@@ -42,12 +42,15 @@ abstract class JavaScriptInvokingProjectOperation(
 
   readParametersFromMetadata.foreach(p => addParameter(p))
 
-  protected var _context: Seq[ProjectOperation] = Nil
+  private var _context: Seq[ProjectOperation] = Nil
 
-  override def setContext(ctx: Seq[ProjectOperation]): Unit =
+  override def setContext(ctx: Seq[ProjectOperation]): Unit = {
     _context = ctx
+  }
 
-  protected def context: Seq[ProjectOperation] = _context
+  protected def context: Seq[ProjectOperation] = {
+    _context
+  }
 
   override def description: String = jsVar.getMember("description").asInstanceOf[String] match {
     case s: String => s

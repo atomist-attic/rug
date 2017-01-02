@@ -40,7 +40,11 @@ object JavaScriptOperationFinder {
                             atomistConfig: AtomistConfig = DefaultAtomistConfig,
                             context: JavaScriptContext = null): Seq[ProjectOperation] = {
 
-    val jsc = if (context == null) new JavaScriptContext(rugAs) else context
+    val jsc: JavaScriptContext =
+      if (context == null)
+        new JavaScriptContext(rugAs)
+      else
+        context
 
     val filtered = atomistConfig.atomistContent(rugAs)
       .filter(d => true,

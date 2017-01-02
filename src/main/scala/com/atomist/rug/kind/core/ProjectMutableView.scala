@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.core
 
+import java.util
 import java.util.{Collections, Objects}
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -28,7 +29,8 @@ object ProjectMutableView {
 }
 
 /**
-  * Operations.
+  * Operations on a project. Backed by an immutable ArtifactSource,
+  * using copy on write.
   *
   * @param rugAs                 backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
@@ -38,7 +40,7 @@ class ProjectMutableView(
                           val rugAs: ArtifactSource,
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
-                          po: Seq[ProjectOperation] = Nil,
+                          projectOperations: Seq[ProjectOperation] = Nil,
                           ctx: UserModelContext = DefaultAtomistFacade)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null) {
 
@@ -48,12 +50,16 @@ class ProjectMutableView(
 
   import ProjectMutableView._
 
-  val templateContent = atomistConfig.templateContentIn(rugAs)
+  /**
+    * Content used only for templates.
+    */
+  val templateContent: ArtifactSource = atomistConfig.templateContentIn(rugAs)
 
   private lazy val mergeTool =
     new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)
 
-  val TypeName = Typed.typeToTypeName(classOf[ProjectMutableView])
+  val TypeName: String = Typed.typeToTypeName(classOf[ProjectMutableView])
+
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case TypeName =>
       // Special case. We don't want a "project" directory to confuse us
@@ -373,7 +379,7 @@ class ProjectMutableView(
       """
         |Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.
       """)
-  def projects = Collections.singletonList(this)
+  def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
 
   @ExportFunction(readOnly = false,
     description = "Files in this archive")
@@ -410,7 +416,8 @@ class ProjectMutableView(
   }
 
   protected def editWith(editorName: String, params: Map[String, Object]): Unit = {
-    editWith(editorName, params, this.po)
+    logger.debug(s"Editing with ${this.projectOperations.map(_.name).mkString(",")}")
+    editWith(editorName, params, this.projectOperations)
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
@@ -436,7 +443,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true, description="Return a new Project View based on the original backing object (normally the .atomist/ directory)")
   def backingArchiveProject(): ProjectMutableView ={
-    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,po)
+    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,projectOperations)
   }
   /**
     * Convenient method to apply an editor.

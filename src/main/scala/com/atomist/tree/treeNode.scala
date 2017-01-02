@@ -5,11 +5,17 @@ import com.atomist.util.{Visitable, Visitor}
 
 /**
   * Represents a node in a tree. May be terminal or non-terminal.
+  * This is a core Rug abstraction. Path expressions run against TreeNodes.
+  * Rug types are TreeNodes. Some TreeNodes are updatable, some are
+  * purely for reference.
+  * A TreeNode may be backed by a resource such as
+  * an Issue in an issue tracker, by an AST element in a programming language source file,
+  * or by a file or directory.
   */
 trait TreeNode extends Visitable {
 
   /**
-    * Can this node be obtained from a top level type such as File
+    * Can this node be obtained from a top level type such as File?
     */
   val searchable: Boolean = true
 
@@ -88,23 +94,3 @@ trait TerminalTreeNode extends TreeNode {
   override def accept(v: Visitor, depth: Int): Unit = v.visit(this, depth)
 }
 
-/**
-  * Convenient terminal node implementation.
-  * Prefer PaddingNode for padding.
-  * @param nodeName name of the field (usually unimportant)
-  * @param value field content.
-  */
-case class SimpleTerminalTreeNode(nodeName: String, value: String)
-  extends TerminalTreeNode
-
-/**
-  * Convenient class for padding nodes
-  * @param description description of what's being padded
-  * @param value padding content
-  */
-case class PaddingTreeNode(description: String, value: String)
-  extends TerminalTreeNode {
-
-  override def nodeName = s"padding:$description"
-
-}

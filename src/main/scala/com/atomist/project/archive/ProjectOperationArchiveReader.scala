@@ -48,7 +48,7 @@ class ProjectOperationArchiveReader(
     operations foreach {
       case capo: ContextAwareProjectOperation =>
         //println(s"Set context on $capo")
-        capo.setContext(operations)
+        capo.setContext(operations ++ otherOperations)
     }
 
     val editors = operations collect {

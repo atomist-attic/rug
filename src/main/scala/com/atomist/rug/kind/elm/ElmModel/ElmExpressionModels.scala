@@ -131,7 +131,7 @@ object ElmExpressionModels {
     insertFieldCheckingPosition(_matchOn)
     for (c <- initialClauses) insertFieldCheckingPosition(c)
 
-    override def nodeType: String = ElmModuleType.CaseAlias
+    override def nodeType: Set[String] = Set(ElmModuleType.CaseAlias)
 
     def matchOn: ElmExpression = _matchOn
 
@@ -172,7 +172,7 @@ object ElmExpressionModels {
 
     override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
-    override def nodeType: String = ElmModuleType.CaseClauseAlias
+    override def nodeType: Set[String] = Set(ElmModuleType.CaseClauseAlias)
 
     private var _left = initialLeft
 

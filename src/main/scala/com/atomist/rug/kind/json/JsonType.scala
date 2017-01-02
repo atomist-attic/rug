@@ -210,7 +210,7 @@ private class JsonStringView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  override def nodeType: String = currentBackingObject.nodeType
+  override def nodeType: Set[String] = currentBackingObject.nodeType
 
   override def nodeName: String = originalBackingObject.nodeName
 

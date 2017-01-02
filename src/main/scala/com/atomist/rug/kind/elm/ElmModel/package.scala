@@ -64,9 +64,9 @@ package object ElmModel {
 
     private var _exposing = initialExposing
 
-    override def nodeType: String = Typed.typeClassToTypeName(classOf[ElmModuleType])
+    override def nodeType: Set[String] = Set(Typed.typeClassToTypeName(classOf[ElmModuleType]))
 
-    def exposing = _exposing
+    def exposing: Exposing = _exposing
 
     // Populate initial fields
     // The AST isn't flat, but the fields are from the point of building our result string

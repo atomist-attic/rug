@@ -19,7 +19,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def nodeName: String = currentBackingObject.nodeName
 
-  override def nodeType: String = currentBackingObject.nodeType
+  override def nodeType: Set[String] = currentBackingObject.nodeType
 
   override def value = currentBackingObject.value
 
@@ -68,11 +68,11 @@ class ScalarValueView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  override def nodeType: String = currentBackingObject.nodeType
+  override def nodeType:Set[String] = currentBackingObject.nodeType
 
   override def nodeName: String = originalBackingObject.nodeName
 
-  override def value = originalBackingObject.value
+  override def value: String = originalBackingObject.value
 
   override def update(to: String): Unit = setValue(to)
 

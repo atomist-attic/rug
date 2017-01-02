@@ -10,7 +10,7 @@ class ElmCaseMutableView(
                           parent: ElmFunctionMutableView)
   extends TreeViewSupport[ElmCase](ec, parent) {
 
-  override def nodeType: String = ElmModuleType.CaseAlias
+  override def nodeType: Set[String] = Set(ElmModuleType.CaseAlias)
 
   override def childNodeNames: Set[String] = Set(CaseClauseAlias)
 

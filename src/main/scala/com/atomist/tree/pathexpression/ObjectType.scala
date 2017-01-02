@@ -27,7 +27,7 @@ case class ObjectType(typeName: String)
     throw new IllegalArgumentException(s"Type [$typeName] does not support contextless resolution")
   )
 
-  private val eligibleNode: TreeNode => Boolean = n => typeName.equals(n.nodeType)
+  private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
 
   // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {

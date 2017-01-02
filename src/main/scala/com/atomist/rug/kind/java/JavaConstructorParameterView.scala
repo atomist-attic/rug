@@ -9,7 +9,7 @@ class JavaConstructorParameterView(originalBackingObject: Parameter, parent: Jav
 
   override def nodeName: String = "constructor"
 
-  override def nodeType: String = "constructor"
+  override def nodeType: Set[String] = Set("constructor")
 
   override def childNodeNames: Set[String] = Set()
 

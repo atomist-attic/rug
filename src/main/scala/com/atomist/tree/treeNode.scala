@@ -31,7 +31,7 @@ trait TreeNode extends Visitable {
     * nodes in a tree with the same type.
     * @return the type of the node.
     */
-  def nodeType: String = Typed.typeToTypeName(getClass)
+  def nodeType: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   /**
     * All nodes have values: Either a terminal value or the

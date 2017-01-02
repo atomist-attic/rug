@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
-import com.atomist.rug.spi.{CommandRegistry, MutableView, StaticTypeInformation, Typed}
+import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.util.lang.TypeScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
@@ -13,13 +13,18 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
-  * @param typ  Rug type we are fronting
+  * @param types  Rug types we are fronting. This is a union type.
   * @param node node we are fronting
   */
-class SafeCommittingProxy(typ: Typed,
+class SafeCommittingProxy(types: Set[Typed],
                           val node: TreeNode,
-                          commandRegistry: CommandRegistry = DefaultCommandRegistry)
+                          commandRegistry: CommandRegistry)
   extends AbstractJSObject {
+
+  def this(t: Typed, node: TreeNode, commandRegistry: CommandRegistry = DefaultCommandRegistry) =
+    this(Set(t), node, commandRegistry)
+
+  private val typ = UnionType(types)
 
   import SafeCommittingProxy.MagicJavaScriptMethods
 
@@ -81,4 +86,18 @@ private object SafeCommittingProxy {
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
   def MagicJavaScriptMethods = Set("valueOf", "toString")
+}
+
+
+// TODO this is a hack for now, which can't handle more than one type
+private case class UnionType(types: Set[Typed]) extends Typed {
+
+  override def description: String = s"Union-${types.map(_.name).mkString(":")}"
+
+  override def underlyingType: Class[_] = ???
+
+  override def typeInformation: TypeInformation = {
+    if (types.size > 1) ???
+    types.head.typeInformation
+  }
 }

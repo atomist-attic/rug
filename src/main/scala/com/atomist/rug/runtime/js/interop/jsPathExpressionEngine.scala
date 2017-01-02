@@ -4,6 +4,7 @@ import java.util
 import java.util.Collections
 
 import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.spi._
@@ -12,7 +13,7 @@ import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.TypeScriptArray
-import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
@@ -49,8 +50,9 @@ class jsPathExpressionEngine(
   /**
     * Return a customized version of this path expression engine for use in a specific
     * context, with its own microgrammar types
+    *
     * @param dynamicType JavaScript rest dynamic type definitions.
-    *           Presently,
+    *                    Presently,
     * @return customized instance of this engine
     */
   def addType(dynamicType: Object): jsPathExpressionEngine = {
@@ -161,7 +163,7 @@ class jsPathExpressionEngine(
     * Find the children of the current node of the named type
     *
     * @param parent parent node we want to look under
-    * @param name name of the children we want to look for
+    * @param name   name of the children we want to look for
     */
   def children(parent: Object, name: String): util.List[Object] = {
     val rootTn = toTreeNode(parent)
@@ -182,12 +184,16 @@ class jsPathExpressionEngine(
     * @return TypeScript and JavaScript-friendly list
     */
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
-    new TypeScriptArray(nodes.map(k => new SafeCommittingProxy({
-      typeRegistry.findByName(k.nodeType).getOrElse(
-        throw new UnsupportedOperationException(s"Cannot find type for node type [${k.nodeType}]")
-      )
-    },
-      k).asInstanceOf[Object]).asJava)
+    val cr: CommandRegistry = DefaultCommandRegistry
+    def nodeTypes(node: TreeNode) =
+      node.nodeType.map(t => typeRegistry.findByName(t).getOrElse(
+        throw new UnsupportedOperationException(s"Cannot find type for node type [$t]")
+      ))
+
+    new TypeScriptArray(
+      nodes.map(n => new SafeCommittingProxy(nodeTypes(n), n, cr))
+        .map(_.asInstanceOf[Object])
+        .asJava)
   }
 }
 

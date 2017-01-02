@@ -22,10 +22,11 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
   }.toMap
 
   override def findByNodeAndName(treeNode: TreeNode, name: String): Option[Command[TreeNode]] = {
-    commandsMap.get(KeyedCommand(treeNode.nodeType, name)) match {
-      case Some(c) => Option(c)
-      case _ => Option.empty
-    }
+//    commandsMap.get(KeyedCommand(treeNode.nodeType, name)) match {
+//      case Some(c) => Option(c)
+//      case _ => Option.empty
+//    }
+    ???
   }
 }
 

@@ -50,7 +50,7 @@ class ImportMutableView(
 
   override def nodeName: String = "import"
 
-  override def nodeType: String = "import"
+  override def nodeType: Set[String] = Set("import")
 
   override def childNodeTypes: Set[String] = childNodeNames
 

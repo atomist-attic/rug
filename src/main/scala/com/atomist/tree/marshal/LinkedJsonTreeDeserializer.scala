@@ -57,7 +57,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
           } yield {
             SimpleTerminalTreeNode(k, m.get(k).toString)
           }
-        val ctn = new LinkableContainerTreeNode(nodeName, nodeType, simpleFields.toSeq)
+        val ctn = new LinkableContainerTreeNode(nodeName, Set(nodeType), simpleFields.toSeq)
         val nodeId: String = requiredStringEntry(m, NodeId)
         idToNode += (nodeId -> ctn)
         ctn
@@ -97,7 +97,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
 
 private class LinkableContainerTreeNode(
                                  val nodeName: String,
-                                 override val nodeType: String,
+                                 override val nodeType: Set[String],
                                  private var fieldValues: Seq[TreeNode]
                                )
   extends ContainerTreeNode {
@@ -112,7 +112,7 @@ private class LinkableContainerTreeNode(
     fieldValues.map(f => f.nodeName).toSet
 
   override def childNodeTypes: Set[String] =
-    fieldValues.map(f => f.nodeType).toSet
+    fieldValues.flatMap(f => f.nodeType).toSet
 
   override def value: String = ???
 

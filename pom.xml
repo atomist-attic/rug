@@ -321,7 +321,7 @@
                         <phase>process-test-resources</phase>
                         <configuration>
                             <tasks>
-                                <exec executable="target/node_modules/typescript/bin/tsc">
+                                <exec executable="target/node_modules/typescript/bin/tsc" failonerror="true">
                                     <arg value="-p"/>
                                     <arg value="target/.atomist/node_modules/@atomist/rug/"/>
                                 </exec>

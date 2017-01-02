@@ -46,16 +46,17 @@
             <artifactId>rug-compiler</artifactId>
             <version>0.5.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.coveo</groupId>
-            <artifactId>nashorn-commonjs-modules</artifactId>
-            <version>1.0.5</version>
-        </dependency>
+        <!-- for now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
+             when running rug install etc. This has to become part of the language <-> runtime version mapping -->
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-typescript-compiler</artifactId>
             <version>0.7.1</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.coveo</groupId>
+            <artifactId>nashorn-commonjs-modules</artifactId>
+            <version>1.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.github.julianthome</groupId>

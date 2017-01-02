@@ -10,7 +10,7 @@ trait Command[T <: TreeNode] {
   /**
     * The TreeNode the name function should become available
     */
-  def `type`: String
+  def nodeTypes: Set[String]
 
   /**
     * Name of the function on TreeNode

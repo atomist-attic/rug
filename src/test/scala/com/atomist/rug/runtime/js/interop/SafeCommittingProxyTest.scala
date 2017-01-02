@@ -64,7 +64,7 @@ class FakeCommandRegistry(fakeCommand: FakeCommand = new FakeCommand) extends Co
 }
 
 class FakeCommand extends Command[FileMutableView] {
-  override def `type`: String = "file"
+  override def nodeTypes = Set("file")
 
   override def name: String = "execute"
 

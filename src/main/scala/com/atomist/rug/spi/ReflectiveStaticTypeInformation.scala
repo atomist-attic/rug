@@ -41,8 +41,6 @@ abstract class TypeProvider(c: Class[_]) extends Typed {
 
   override val name: String = Typed.typeToTypeName(c)
 
-  override def underlyingType: Class[_] = c
-
   override def typeInformation: TypeInformation =
     new ReflectiveStaticTypeInformation(c)
 }

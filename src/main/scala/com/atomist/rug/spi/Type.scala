@@ -16,8 +16,6 @@ abstract class Type(
                    )
   extends ViewFinder with Typed {
 
-  override def underlyingType: Class[_] = viewManifest.runtimeClass
-
   /** Describe the MutableView subclass to allow for reflective function export */
   def viewManifest: Manifest[_]
 

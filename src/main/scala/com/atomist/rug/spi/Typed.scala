@@ -44,13 +44,6 @@ trait Typed {
   def description: String
 
   /**
-    * FQN of the type.
-    *
-    * @return the underlying class
-    */
-  def underlyingType: Class[_]
-
-  /**
     * Expose type information. Return an instance of StaticTypeInformation if
     * operations are known to help with compile time validation and tooling.
     *

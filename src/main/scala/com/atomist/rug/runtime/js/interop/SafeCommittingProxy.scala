@@ -86,18 +86,25 @@ private object SafeCommittingProxy {
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
   def MagicJavaScriptMethods = Set("valueOf", "toString")
+
 }
 
 
-// TODO this is a hack for now, which can't handle more than one type
+/**
+  * Return a type that exposes all the operations on the given set of types
+  * @param types set of types to expose
+  */
 private case class UnionType(types: Set[Typed]) extends Typed {
 
   override def description: String = s"Union-${types.map(_.name).mkString(":")}"
 
-  override def underlyingType: Class[_] = ???
-
-  override def typeInformation: TypeInformation = {
-    if (types.size > 1) ???
-    types.head.typeInformation
+  // TODO what about duplicate names?
+  override val typeInformation: TypeInformation = {
+    val allOps: Set[TypeOperation] = (types.map(_.typeInformation) collect {
+      case sti: StaticTypeInformation => sti.operations
+    }).flatten
+    new StaticTypeInformation {
+      override def operations: Seq[TypeOperation] = allOps.toSeq
+    }
   }
 }

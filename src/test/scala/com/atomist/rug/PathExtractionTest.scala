@@ -2,7 +2,7 @@ package com.atomist.rug
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

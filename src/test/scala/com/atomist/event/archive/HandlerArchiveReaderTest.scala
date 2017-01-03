@@ -44,7 +44,7 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", FirstHandler)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(1)
-    handlers(0).rootNodeName should be("issue")
+    handlers.head.rootNodeName should be("issue")
   }
 
   it should "parse two handlers" in {
@@ -52,8 +52,8 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(2)
-    handlers.filter(h => h.rootNodeName == "issue").isEmpty should be(false)
-    handlers.filter(h => h.rootNodeName == "commit").isEmpty should be(false)
+    !handlers.exists(h => h.rootNodeName == "issue") should be(false)
+    !handlers.exists(h => h.rootNodeName == "commit") should be(false)
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

@@ -15,9 +15,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
 
   it should "failed to parse an unanchored path expression" in {
     val pe = "big/lebowski"
-    an[BadRugSyntaxException] should be thrownBy(
-      pep.parsePathExpression(pe)
-      )
+    an[BadRugSyntaxException] should be thrownBy pep.parsePathExpression(pe)
   }
 
   it should "parse a child axis" in {
@@ -175,7 +173,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val parsed = pep.parsePathExpression(pe)
     //println(parsed)
     parsed.locationSteps.size should be (2)
-    parsed.locationSteps(0).predicates.head match {
+    parsed.locationSteps.head.predicates.head match {
       case PropertyValuePredicate("state", "open") =>
     }
   }

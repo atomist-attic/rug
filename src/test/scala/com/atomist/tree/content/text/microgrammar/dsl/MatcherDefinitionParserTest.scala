@@ -35,21 +35,11 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
-//  it should "parse regex in isolaion" in {
-//    val l = "[0-]"
-//    val mgp2 = new MatcherDSLDefinitionParser {
-//      def p(s: String) = {
-//        parseTo(StringFileArtifact("x", s), regex('[', ']'))
-//      }
-//    }
-//    mgp2.p(l)
-//  }
-
   it should "accept valid inline regex" in {
     val validLiterals = Seq(
       s"${VariableDeclarationToken}foo:${RegexpOpenToken}a$RegexpCloseToken",
-      s"${VariableDeclarationToken}foo:${RegexpOpenToken}.*$RegexpCloseToken",
-      s"${VariableDeclarationToken}foo:${RegexpOpenToken}.$RegexpCloseToken")
+      s"${VariableDeclarationToken}foo:$RegexpOpenToken.*$RegexpCloseToken",
+      s"${VariableDeclarationToken}foo:$RegexpOpenToken.$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("x", v) match {
       case Regex("foo", rex, _) =>
         withClue(s"String [$v] should contain regex [$rex]") {

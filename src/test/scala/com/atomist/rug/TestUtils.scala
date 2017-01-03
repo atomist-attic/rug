@@ -8,7 +8,7 @@ import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulM
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
-import com.atomist.source.{ArtifactSource}
+import com.atomist.source.ArtifactSource
 import org.scalatest.Matchers
 
 object TestUtils extends Matchers {
@@ -35,13 +35,13 @@ object TestUtils extends Matchers {
                           pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
 
     val eds = pipeline.create(backingAs + program, None)
-    eds.size should be >= (1)
+    eds.size should be >= 1
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, poa)
   }
 
   // This brings in a node_modules directory that was copied there by a maven goal called copy-ts, which takes it from src/main/typescript
-  val user_model = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("target/.atomist"))).withPathAbove(".atomist");
+  val user_model = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("target/.atomist"))).withPathAbove(".atomist")
 
   val compiler = new TypeScriptCompiler()
 

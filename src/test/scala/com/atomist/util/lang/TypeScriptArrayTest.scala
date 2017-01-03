@@ -5,7 +5,7 @@ import java.util
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.NoModificationNeeded
 import com.atomist.rug.TestUtils
-import com.atomist.rug.runtime.js.interop.{DefaultAtomistFacade, UserModelContext}
+import com.atomist.rug.runtime.js.interop.UserModelContext
 import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

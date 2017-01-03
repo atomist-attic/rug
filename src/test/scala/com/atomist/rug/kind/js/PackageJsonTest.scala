@@ -85,7 +85,7 @@ class PackageJsonTest extends FlatSpec with Matchers {
         |do
         |  setPackageName new_name
       """.stripMargin
-    val edited = updateWith(prog)
+    updateWith(prog)
   }
 
   it should "update package name with JavaScript JSON" in {
@@ -105,7 +105,7 @@ class PackageJsonTest extends FlatSpec with Matchers {
         |    return JSON.stringify(pkg, null, 4);
         |  }
       """.stripMargin
-    val edited = updateWith(prog)
+    updateWith(prog)
   }
 
   // Return new content

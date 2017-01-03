@@ -11,7 +11,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import JavaVerifier._
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
-import com.atomist.rug.ts.RugTranspiler
 
 object JavaTypeUsageTest extends Matchers {
 
@@ -66,8 +65,6 @@ object JavaTypeUsageTest extends Matchers {
 class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaTypeUsageTest._
-
-  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler(CompilerFactory.create())))
 
   private val tsPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create())))
 
@@ -301,7 +298,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = result.findFile("src/main/java/com/atomist/Dog.java").get
     result.findFile(dog.path).isDefined should be(false)
     f.content.contains("package com.atomist;") should be(true)
-    val c = result.findFile(cat.path).get
+
     // Should now import Dog
     f.content should include("import com.atomist.Dog;")
   }
@@ -330,7 +327,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val result = executeJava(program,"editors/ClassAnnotated.rug")
     val f = result.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("@FooBar")
   }
 
@@ -348,7 +345,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("import java.util.List")
   }
 
@@ -377,7 +374,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val r = executeJava(program, "editors/ClassAnnotated.rug", as)
     val f = r.findFile(impl.path).get
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content shouldNot include(s"import $pkg.$ann")
     f.content should include(s"@$ann")
   }
@@ -407,7 +404,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program, "editors/ClassExtended.rug", as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
-    unupdatedParentFile shouldEqual(parentFile)
+    unupdatedParentFile shouldEqual parentFile
 
     val updatedChildFile = r.findFile(childFile.path).get
     updatedChildFile.content should include(s"import $pkg.$ann")
@@ -438,7 +435,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program, "editors/ClassExtended.rug", as)
 
     val unupdatedParentFile = r.findFile(parentFile.path).get
-    unupdatedParentFile shouldEqual(parentFile)
+    unupdatedParentFile shouldEqual parentFile
 
     val updatedChildFile = r.findFile(childFile.path).get
     updatedChildFile.content should include(s"import $pkg.$ann;")
@@ -469,7 +466,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program, "editors/ClassAnnotated.rug", as)
 
     val unupdatedNotRelevantFile = r.findFile(notRelevantFile.path).get
-    unupdatedNotRelevantFile shouldEqual(notRelevantFile)
+    unupdatedNotRelevantFile shouldEqual notRelevantFile
 
     val updatedImpl = r.findFile(impl.path).get
     updatedImpl.content should include(newHeader)
@@ -487,7 +484,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r1 = executeJava(program1,"editors/ClassAnnotated.rug", as)
 
     val unupdatedNotRelevantFile1 = r1.findFile(notRelevantFile.path).get
-    unupdatedNotRelevantFile1 shouldEqual(notRelevantFile)
+    unupdatedNotRelevantFile1 shouldEqual notRelevantFile
 
     val updatedImpl1 = r1.findFile(impl.path).get
     updatedImpl1.content should include(newHeader1)
@@ -517,7 +514,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug", as)
 
     val unchangedImpl = r.findFile(impl.path).get
-    unchangedImpl.content contentEquals (impl.content) should be(true)
+    unchangedImpl.content contentEquals impl.content should be (true)
 
     val updatedInterface = r.findFile(interfaceFile.path).get
     updatedInterface.content should include(s"import com.foo.bar.Baz;")
@@ -550,7 +547,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedAbstractClass.content should include("@Baz")
 
     val unchangedConcrete = r.findFile(concreteFile.path).get
-    unchangedConcrete.content contentEquals (concreteFile.content) should be(true)
+    unchangedConcrete.content contentEquals concreteFile.content should be (true)
   }
 
   it should "allow access to project" in {
@@ -570,7 +567,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("import com.someone.Foobar;")
     f.content should include("@Foobar")
   }
@@ -591,7 +588,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("import com.someone.Foobar;")
     f.content should include("@Foobar")
   }
@@ -612,7 +609,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("import com.someone.Foobar;")
     f.content should include("@Foobar")
   }
@@ -633,7 +630,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
-    f.content.lines.size should be > (0)
+    f.content.lines.size should be > 0
     f.content should include("import com.someone.Foobar;")
     f.content should include("@Foobar")
   }

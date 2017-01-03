@@ -1,7 +1,7 @@
 package com.atomist.rug.compiler
 
 import com.atomist.rug.TestUtils
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 

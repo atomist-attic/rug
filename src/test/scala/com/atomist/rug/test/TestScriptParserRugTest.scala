@@ -146,7 +146,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     test.name should be(scenarioName)
     test.givenFiles.fileSpecs should equal(Seq(f))
     val poa = test.args(new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/something", "a file")))
-    poa.parameterValues.size should be >= (2)
+    poa.parameterValues.size should be >= 2
     poa.paramValue("old_class") should equal("Dog")
     poa.paramValue("new_class") should equal("Cat")
 
@@ -179,7 +179,6 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
   }
 
   it should "parse load archive root" in {
-    val f = FilesUnderFileSpec("resources")
     val scenarioName = "Class rename should work"
     val prog =
       s"""
@@ -295,7 +294,6 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
   }
 
   it should "accept NoChange keyword" in {
-    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
       """
         |scenario Foobar
@@ -314,7 +312,6 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
   }
 
   it should "accept NotApplicable keyword" in {
-    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
       """
         |scenario Foobar
@@ -333,7 +330,6 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
   }
 
   it should "accept ShouldFail keyword" in {
-    val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
       """
         |scenario Foobar

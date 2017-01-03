@@ -228,7 +228,7 @@ class K8Test extends FlatSpec with Matchers {
         |    return JSON.stringify(json, null, 4);
         |  }
       """.stripMargin
-    val edited = updateWith(prog)
+    updateWith(prog)
   }
 
   // Return new content

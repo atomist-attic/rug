@@ -16,7 +16,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
   it should "handle javaFileCount" in {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
-    jpv.javaFileCount should be > (1)
+    jpv.javaFileCount should be > 1
   }
 
   it should "refuse to move package with invalid name" in {
@@ -217,7 +217,6 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.renamePackage(oldPackage, newPackage)
     jpv.dirty should be(true)
 
-    val hasRef = jpv.currentBackingObject.findFile(newFile.path).get
     jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
 
     import com.atomist.rug.kind.core.ProjectType._

@@ -20,7 +20,7 @@ class MutableTerminalTreeNodeTest extends FlatSpec with Matchers {
 
   it should "update empty string at end of input" in {
     val initialInput = "Some cats are cool"
-    val sm = new MutableTerminalTreeNode("animal", "", LineInputPositionImpl(initialInput, 1, initialInput.size))
+    val sm = new MutableTerminalTreeNode("animal", "", LineInputPositionImpl(initialInput, 1, initialInput.length))
     sm.update("er than others")
     sm.value should equal("er than others")
   }

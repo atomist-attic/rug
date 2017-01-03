@@ -58,7 +58,6 @@ class RugCompilerTest extends FlatSpec with Matchers {
   }
 
   it should "demand functions exist on kind" in {
-    val fr = FixedRugFunctionRegistry()
     val absquatulate = "absquatulate"
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val successBlock = SuccessBlock("did it!")
@@ -89,12 +88,11 @@ class RugCompilerTest extends FlatSpec with Matchers {
   }
 
   it should "insist on identifiers being declared" in {
-    val fr = FixedRugFunctionRegistry(
+    FixedRugFunctionRegistry(
       Map(
         "absquatulate" -> new LambdaPredicate[FileMutableView]("absquatulate", f => true)
       )
     )
-    //val interpreter = new DefaultRugCompiler(compiler, DefaultTypeRegistry)
 
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val doStep = FunctionDoStep("absquatulate", None, Seq(IdentifierFunctionArg("missing")))
@@ -114,7 +112,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val successBlock = SuccessBlock("did it!")
     val program = RugEditor("foobar", None, Nil, "Thingie", Nil, Nil, None, Seq(new Parameter("p1")), Nil,
       Seq(With("File", "f", None, fileExpression, Seq(doStep))), Some(successBlock))
-    val pe = compiler compile program
+    compiler compile program
   }
 
   it should "return verify name" in {

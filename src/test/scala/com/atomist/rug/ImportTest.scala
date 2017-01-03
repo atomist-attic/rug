@@ -15,5 +15,4 @@ class ImportTest extends FlatSpec with Matchers {
     val imp = Import(s"com.foo.bar.$simpleName1")
     imp.simpleName should equal (simpleName1)
   }
-
 }

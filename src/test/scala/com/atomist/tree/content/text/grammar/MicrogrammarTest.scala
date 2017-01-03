@@ -1,9 +1,7 @@
-package com.atomist.rug.kind.grammar
+package com.atomist.tree.content.text.grammar
 
 import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar._
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -15,7 +13,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val g = thingGrammar
     val input = "This is a test"
     val m = g.strictMatch(input)
-    m.count should be >= (1)
+    m.count should be >= 1
     m.childrenNamed("thing").head match {
       case sm: MutableTerminalTreeNode =>
         sm.nodeName should equal("thing")
@@ -32,7 +30,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
 
   it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
-    matches.count should be >= (2)
+    matches.count should be >= 2
     matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
@@ -48,7 +46,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val input = "Henry was aged 19"
     val matches = g.strictMatch(input)
     matches.value should equal(input)
-    matches.count should be >= (2)
+    matches.count should be >= 2
     matches.dirty should be(false)
     matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
@@ -70,7 +68,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val input = "rubbish goes here. Henry was aged 12"
     val m = g.findMatches(input)
     m.size should be(1)
-    m.head.count should be >= (2)
+    m.head.count should be >= 2
     m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
@@ -85,7 +83,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val g = aWasaB
     val m = g.findMatches("Henry was aged 24. Blah blah")
     m.size should be(1)
-    m.head.count should be >= (2)
+    m.head.count should be >= 2
     m.head.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
@@ -112,7 +110,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     val g = aWasaB
     val m = g.findMatches(input)
     m.size should be(2)
-    m.head.count should be >= (2)
+    m.head.count should be >= 2
     val t = m(1)
     t.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
@@ -198,7 +196,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     m.size should be(1)
     val last: MutableContainerTreeNode = m.head
     val params = last.childrenNamed("params").head.asInstanceOf[ContainerTreeNode].childrenNamed("param_def")
-    params.size should be >= (2)
+    params.size should be >= 2
     params foreach {
       case pad: SimpleTerminalTreeNode => pad.nodeName.contains("pad") should be(true)
       case soo: MutableContainerTreeNode =>
@@ -227,7 +225,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
          |
          | def baz(): String = null
          |
-         | def other(a: Int,${pad1}b${pad1}:${pad2}Int): Int = a + b
+         | def other(a: Int,${pad1}b$pad1:${pad2}Int): Int = a + b
          |}
       """.stripMargin
     val m = matchScalaMethodHeaderRepsep.findMatches(input)
@@ -242,7 +240,7 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
     }
     val last: MutableContainerTreeNode = m(2)
     val params = last.childrenNamed("params").head.asInstanceOf[ContainerTreeNode].childrenNamed("param_def")
-    params.size should be >= (2)
+    params.size should be >= 2
     params foreach {
       case pad: SimpleTerminalTreeNode => pad.nodeName.contains("pad") should be(true)
       case soo: MutableContainerTreeNode =>

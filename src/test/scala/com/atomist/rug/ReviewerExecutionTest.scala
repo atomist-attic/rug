@@ -2,7 +2,6 @@ package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.review.{ProjectReviewer, ReviewResult, Severity}
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

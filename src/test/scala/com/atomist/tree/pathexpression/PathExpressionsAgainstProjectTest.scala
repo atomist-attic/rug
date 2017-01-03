@@ -241,7 +241,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/main/java/com/example/File()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be >(0)
+    rtn.right.get.size should be > 0
   }
 
   it should "match existing types with name" in {

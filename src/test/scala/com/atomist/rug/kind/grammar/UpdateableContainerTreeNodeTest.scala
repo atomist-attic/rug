@@ -14,7 +14,7 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     val line = inputA + inputB
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
@@ -34,7 +34,7 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     val line = inputA + inputB
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
 
@@ -50,11 +50,11 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
   it should "pad between scalar matches" in {
     val inputA = "foo"
     val inputB = "bar"
-    val unmatchedBollocks = "this is bollocks"
-    val line = inputA + unmatchedBollocks + inputB
+    val unmatchedContent = "this is incorrect"
+    val line = inputA + unmatchedContent + inputB
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
 
@@ -63,17 +63,17 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     f2.update(newInputB)
     soo.dirty should be(true)
     val updated = soo.value
-    updated should equal(inputA + unmatchedBollocks + newInputB)
+    updated should equal(inputA + unmatchedContent + newInputB)
   }
 
   it should "pad first character if not matched" in {
     val inputA = "foo"
     val inputB = "bar"
-    val unmatchedBollocks = "this is bollocks"
-    val line = " " + inputA + unmatchedBollocks + inputB
+    val unmatchedContent = "this is incorrect"
+    val line = " " + inputA + unmatchedContent + inputB
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 1))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, 1 + inputA.size + unmatchedBollocks.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, 1 + inputA.length + unmatchedContent.length))
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
     soo.childNodes.head.nodeName.contains("pad") should be (true)
@@ -83,7 +83,7 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     f2.update(newInputB)
     soo.dirty should be(true)
     val updated = soo.value
-    updated should equal(" " + inputA + unmatchedBollocks + newInputB)
+    updated should equal(" " + inputA + unmatchedContent + newInputB)
   }
 
   it should "allow nesting match" in {
@@ -91,15 +91,15 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     val inputB = "bar"
     val inputC = "Lisbon"
     val inputD = "Alentejo"
-    val unmatchedBollocks = "this is bollocks"
+    val unmatchedContent = "this is incorrect"
     val bollocks2 = "(more bollocks)"
-    val line = inputA + unmatchedBollocks + inputB + inputC + bollocks2 + inputD
+    val line = inputA + unmatchedContent + inputB + inputC + bollocks2 + inputD
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size + inputB.size))
-    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size + inputB.size + inputC.size + bollocks2.size))
+    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
+    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
 
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
 
@@ -128,15 +128,15 @@ class UpdateableContainerTreeNodeTest extends FlatSpec with Matchers {
     val inputB = "bar"
     val inputC = "Lisbon"
     val inputD = "Alentejo"
-    val unmatchedBollocks = "this is bollocks"
-    val bollocks2 = "(more bollocks)"
-    val line = inputA + unmatchedBollocks + inputB + inputC + bollocks2 + inputD + trailingPadding
+    val unmatchedContent = "this is incorrect"
+    val moreContent = "(more content)"
+    val line = inputA + unmatchedContent + inputB + inputC + moreContent + inputD + trailingPadding
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size + inputB.size))
-    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.size + unmatchedBollocks.size + inputB.size + inputC.size + bollocks2.size))
+    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
+    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
 

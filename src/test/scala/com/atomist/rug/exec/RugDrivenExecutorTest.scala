@@ -1,15 +1,12 @@
 package com.atomist.rug.exec
 
-import java.io.File
-
 import com.atomist.project.{Executor, SimpleProjectOperationArguments}
-import com.atomist.rug.compiler.typescript.{TypeScriptCompiler}
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.service._
 import com.atomist.rug.runtime.rugdsl.RugDrivenExecutor
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline, TestUtils}
 import com.atomist.source._
-import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -105,8 +102,8 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
 
     val latestVersions = services.updatePersister.latestVersion.values
 
-    latestVersions.size should be>=(2)
-    latestVersions.foreach(_.findFile("Caspar").get.content.equals(content) should be(true))
+    latestVersions.size should be>=2
+    latestVersions.foreach(source => source.findFile("Caspar").get.content.equals(content) should be(true))
     // We should have raised the issue for the one service that already had this file
     services.issues.size should be (1)
   }
@@ -176,7 +173,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
   private def updateAllProjects(content: String, rug: String,
                                 rugPath: String = "executors/AddSomeCaspar.rug",
                                 pipeline: RugPipeline = new DefaultRugPipeline()) {
-    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, rug)) + TestUtils.user_model;
+    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, rug)) + TestUtils.user_model
 
     //val files = as.allFiles
     val ops = pipeline.create(as,None)
@@ -189,7 +186,7 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
 
     val latestVersions = services.updatePersister.latestVersion.values
     latestVersions.size should be(2)
-    latestVersions.foreach(_.findFile("Caspar").get.content.equals(content) should be(true))
+    latestVersions.foreach(source => source.findFile("Caspar").get.content.equals(content) should be(true))
   }
 }
 

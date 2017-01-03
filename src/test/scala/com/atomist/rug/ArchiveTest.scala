@@ -33,7 +33,7 @@ class ArchiveTest extends FlatSpec with Matchers {
       StringFileArtifact("Redeploy.rug", prog))
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.create(as, None, Nil)
-    eds shouldBe (empty)
+    eds shouldBe empty
   }
 
   it should s"find single file under ${atomistConfig.editorsRoot}" in {
@@ -109,11 +109,15 @@ class ArchiveTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  it should "find 2 editors in separate files and access template under .atomist" in
-    verify2FilesWithArchiveAccess(Seq(prog1, prog2), true)
+  it should "find 2 editors in separate files and access template under .atomist" in {
+    val canAccess = true
+    verify2FilesWithArchiveAccess(Seq(prog1, prog2), canAccess)
+  }
 
-  it should "find 2 editors in separate files and access template under root" in
-    verify2FilesWithArchiveAccess(Seq(prog1, prog2), false)
+  it should "find 2 editors in separate files and access template under root" in {
+    val canAccess = false
+    verify2FilesWithArchiveAccess(Seq(prog1, prog2), canAccess)
+  }
 
   private def verify2FilesWithArchiveAccess(files: Seq[FileArtifact], useDotAtomist: Boolean) {
     val rootToUse = if (useDotAtomist) atomistConfig.templatesRoot else atomistConfig.templatesDirectory

@@ -4,9 +4,6 @@ import com.atomist.tree.PaddingTreeNode
 import com.atomist.tree.utils.TreeNodeFinders
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Created by rod on 11/1/16.
-  */
 class TreeNodeOperationsTest extends FlatSpec with Matchers {
 
   import TreeNodeOperations._
@@ -41,7 +38,7 @@ class TreeNodeOperationsTest extends FlatSpec with Matchers {
 
     val mc = SimpleMutableContainerTreeNode.wholeInput("name", Seq(f1, empty), input)
     mc.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (true)
-    val transformed = (collapse("empty"))(mc)
+    val transformed = collapse("empty")(mc)
     transformed.childNodes.exists(cn => cn.nodeName.equals("empty")) should be (false)
   }
 

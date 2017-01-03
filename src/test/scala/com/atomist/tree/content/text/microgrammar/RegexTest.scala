@@ -2,9 +2,6 @@ package com.atomist.tree.content.text.microgrammar
 
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Created by rod on 10/29/16.
-  */
 class RegexTest extends FlatSpec with Matchers {
 
   it should "match greedy regex" in {

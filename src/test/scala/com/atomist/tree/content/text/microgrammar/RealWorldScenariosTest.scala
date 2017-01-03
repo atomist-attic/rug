@@ -3,9 +3,6 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.microgrammar.matchers.Break
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Created by rod on 10/29/16.
-  */
 class RealWorldScenariosTest extends FlatSpec with Matchers {
 
   private def javaIdentifier(name: String) = Regex(name, "[a-zA-Z][a-zA-Z0-9]*")

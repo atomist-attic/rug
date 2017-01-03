@@ -137,7 +137,6 @@ function parseNameVal(cmd) {
     // a space or = first.  space ==> old, "=" ==> new
     var word;
     var words = parseWords(cmd.rest);
-
     cmd.args = {};
 
     if (words.length === 0) {
@@ -161,6 +160,9 @@ function parseNameVal(cmd) {
         var i;
         for (i = 0; i < words.length; i++) {
             word = words[i];
+            if(word === "#$#"){
+               continue;
+            }
             if (word.indexOf('=') == -1) {
                 cmd.error = 'Syntax error - can\'t find = in ' + word
                     + '. Must be of the form: name=value';
@@ -252,7 +254,7 @@ function parseJsonOrList(cmd) {
 
 // Dispatch Table. see line_parsers.go for the parse functions.
 // The command is parsed and mapped to the line parser. The line parser
-// recieves the arguments but not the command, and returns an AST after
+// receives the arguments but not the command, and returns an AST after
 // reformulating the arguments according to the rules in the parser
 // functions. Errors are propagated up by Parse() and the resulting AST can
 // be incorporated directly into the existing AST as a next.
@@ -325,7 +327,6 @@ function parseLine(line, lineno) {
         // log.debug('Invalid Dockerfile command:', command.name);
         commandParserFn = parseString;
     }
-
     if (commandParserFn(command)) {
         // Successfully converted the arguments.
         command.raw = line;
@@ -381,7 +382,6 @@ function parse(contents, options) {
         }
         remainder = parseResult.remainder;
     }
-
     return commands;
 }
 

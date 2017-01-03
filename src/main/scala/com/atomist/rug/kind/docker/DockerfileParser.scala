@@ -14,7 +14,14 @@ import scala.collection.JavaConverters._
 object DockerfileParser {
 
   val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
-
+  val consoleJs =
+    """
+      |console = {
+      |   log: print,
+      |   warn: print,
+      |   error: print
+      |};
+    """.stripMargin
   def parse(content: String): Dockerfile = {
     val param = Option(content).getOrElse("")
     val content1 = param.replace("\r\n", "\n").replace("\r", "\n")
@@ -22,6 +29,7 @@ object DockerfileParser {
       withCloseable(new InputStreamReader(is))(reader => {
         try {
           val engine = new ScriptEngineManager(null).getEngineByName("nashorn")
+          engine.eval(consoleJs)
           engine.eval(reader)
           val invocable = engine.asInstanceOf[Invocable]
           val result = invocable.invokeFunction("parse", content1, Map("includeComments" -> "true").asJava)

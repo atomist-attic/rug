@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Double-quoted strings in Rug DSL are now interpreted similarly to
     Java double-quoted strings
 
+-   LABEL section in files parsed by Dockerfile type did not handle 
+    multi-line strings correctly as per https://github.com/atomist/rug/issues/140
+
 ## [0.7.1] - 2016-12-19
 
 [0.7.1]: https://github.com/atomist/rug/compare/0.7.0...0.7.1

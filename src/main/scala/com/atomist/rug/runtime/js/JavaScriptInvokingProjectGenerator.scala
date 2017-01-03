@@ -17,7 +17,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 class JavaScriptInvokingProjectGenerator(
                                           jsc: JavaScriptContext,
                                           jsVar: ScriptObjectMirror,
-                                          rugAs: ArtifactSource
+                                          rugAs: ArtifactSource,
+                                          startProject: ArtifactSource
                                         )
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
@@ -28,8 +29,7 @@ class JavaScriptInvokingProjectGenerator(
   override def generate(poa: ProjectOperationArguments): ArtifactSource = {
     validateParameters(poa)
     val tr = time {
-      val newEmptyAs = EmptyArtifactSource(s"${getClass.getSimpleName}-new")
-      val pmv = new ProjectMutableView(rugAs, newEmptyAs, atomistConfig = DefaultAtomistConfig, context)
+      val pmv = new ProjectMutableView(rugAs, startProject, atomistConfig = DefaultAtomistConfig, context)
 
       val result = invokeMemberWithParameters("populate", wrapProject(pmv), poa)
 

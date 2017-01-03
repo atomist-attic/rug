@@ -70,7 +70,7 @@ object JavaScriptOperationFinder {
         //TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
-        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, project)
+        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
       case (v, Some(ExecutorType)) =>
         new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
     }

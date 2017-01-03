@@ -11,7 +11,7 @@ class JavaMethodView(originalBackingObject: MethodDeclaration, parent: JavaClass
 
   override def nodeName: String = name
 
-  override def nodeType: String = JavaTypeType.MethodAlias
+  override def nodeType: Set[String] = Set(JavaTypeType.MethodAlias)
 
   override def childNodeNames: Set[String] = Set("JavaParameter")
 

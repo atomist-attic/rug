@@ -11,7 +11,7 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
 
   override def nodeName: String = "constructor"
 
-  override def nodeType: String = "constructor"
+  override def nodeType: Set[String] = Set("constructor")
 
   override def childNodeNames: Set[String] = Set("JavaParameter")
 

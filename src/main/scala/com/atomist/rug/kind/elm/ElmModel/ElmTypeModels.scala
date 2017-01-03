@@ -53,7 +53,7 @@ object ElmTypeModels {
 
     appendFields(initialFields)
 
-    override def nodeType: String = ElmModuleType.RecordTypeAlias
+    override def nodeType: Set[String] = Set(ElmModuleType.RecordTypeAlias)
 
     def fields: Seq[ElmRecordFieldType] = _fields
 

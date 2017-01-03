@@ -23,7 +23,7 @@ class ServicesMutableView(rugAs: ArtifactSource,
 
   override def nodeName: String = "services"
 
-  override def nodeType: String = "services"
+  override def nodeType: Set[String] = Set("services")
 
   override val childNodeNames: Set[String] = Set("service")
 

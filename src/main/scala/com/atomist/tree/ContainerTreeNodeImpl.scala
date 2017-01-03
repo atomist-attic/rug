@@ -7,8 +7,11 @@ package com.atomist.tree
   */
 class ContainerTreeNodeImpl(
                              val nodeName: String,
-                             override val nodeType: String)
+                             override val nodeType: Set[String])
   extends ContainerTreeNode {
+
+  def this(nodeName: String, nt: String) =
+    this(nodeName, Set(nt))
 
   private var kids: Seq[TreeNode] = Seq()
 
@@ -18,7 +21,7 @@ class ContainerTreeNodeImpl(
 
   override def childNodeNames: Set[String] = kids.map(_.nodeName).toSet
 
-  override def childNodeTypes: Set[String] = kids.map(_.nodeType).toSet
+  override def childNodeTypes: Set[String] = kids.flatMap(_.nodeType).toSet
 
   override def childrenNamed(key: String): Seq[TreeNode] = kids.filter(_.nodeName.equals(key))
 

@@ -70,6 +70,6 @@ abstract class TreeViewSupport[T <: TreeNode](originalBackingObject: T, parent: 
 
   override def value: String = currentBackingObject.value
 
-  override def nodeType: String = currentBackingObject.nodeType
+  override def nodeType: Set[String] = currentBackingObject.nodeType
 
 }

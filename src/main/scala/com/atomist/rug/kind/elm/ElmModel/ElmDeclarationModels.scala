@@ -44,7 +44,7 @@ object ElmDeclarationModels {
 
     override def childNodeNames: Set[String] = Set()
 
-    override def nodeType: String = ElmModuleType.TypeAliasAlias
+    override def nodeType: Set[String] = Set(ElmModuleType.TypeAliasAlias)
 
     override def childrenNamed(key: String): Seq[TreeNode] = Seq(alias)
 
@@ -128,9 +128,9 @@ object ElmDeclarationModels {
     insertFieldCheckingPosition(nameField)
     initBody(initialBody)
 
-    override def nodeType: String = ElmModuleType.FunctionAlias
+    override def nodeType: Set[String] = Set(ElmModuleType.FunctionAlias)
 
-    def functionName = nameField.value
+    def functionName: String = nameField.value
 
     def setFunctionName(name: String): Unit = {
       nameField.update(name)

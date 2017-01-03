@@ -123,7 +123,7 @@ case class NodeTypePredicate(expectedType: String) extends Predicate {
   override def toString: String = s"type=[$expectedType]"
 
   override def evaluate(n: TreeNode, returnedNodes: Seq[TreeNode]): Boolean =
-    n.nodeType.equals(expectedType)
+    n.nodeType.contains(expectedType)
 
 }
 

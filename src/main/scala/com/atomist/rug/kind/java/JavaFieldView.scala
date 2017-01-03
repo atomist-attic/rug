@@ -11,7 +11,7 @@ class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOr
 
   override def nodeName: String = name
 
-  override def nodeType: String = JavaSourceType.FieldAlias
+  override def nodeType: Set[String] = Set(JavaSourceType.FieldAlias)
 
   override def childNodeNames: Set[String] = Set()
 

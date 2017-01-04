@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.rug.kind.java.JavaTypeType._
+import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.source.ArtifactSource
 import com.github.javaparser.JavaParser
 import org.scalatest.Matchers

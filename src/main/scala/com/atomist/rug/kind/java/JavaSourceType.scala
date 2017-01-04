@@ -1,7 +1,8 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileType, ProjectMutableView, ProjectType}
+import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -15,6 +16,7 @@ import com.typesafe.scalalogging.LazyLogging
   */
 class JavaSourceType(evaluator: Evaluator)
   extends Type(evaluator)
+    with ContextlessViewFinder
     with ReflectivelyTypedType
     with LazyLogging {
 
@@ -23,6 +25,9 @@ class JavaSourceType(evaluator: Evaluator)
   override def description = "Java source file"
 
   override def viewManifest: Manifest[JavaSourceMutableView] = manifest[JavaSourceMutableView]
+
+  override val resolvesFromNodeTypes: Set[String] =
+    Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType], classOf[JavaSourceType])
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
@@ -43,8 +48,6 @@ class JavaSourceType(evaluator: Evaluator)
 object JavaSourceType {
 
   val JavaExtension = ".java"
-
-  val JavaSourceAlias = "java.source"
 
   val FieldAlias = "field"
 }

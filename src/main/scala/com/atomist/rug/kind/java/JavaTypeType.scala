@@ -4,6 +4,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.JavaTypeType._
+import JavaSourceType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -13,6 +14,10 @@ import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
 
 import scala.collection.JavaConverters._
 
+/**
+  * Type resolution for a Java type (class or interface)
+  * @param evaluator used to evaluate expressions
+  */
 class JavaTypeType(evaluator: Evaluator)
   extends Type(evaluator)
     with ContextlessViewFinder
@@ -69,8 +74,6 @@ object JavaTypeType {
   val FieldAlias: String = "field"
 
   val MethodAlias: String = "method"
-
-  val JavaExtension: String = ".java"
 
   val JavaTypeAlias: String = Typed.typeClassToTypeName(classOf[JavaTypeType])
 

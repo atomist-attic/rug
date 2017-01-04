@@ -218,7 +218,6 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
     repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
     tn.addField(repo)
-    // TODO should we be able to handle a property called "name"?
     val expr = """/Issue()[@state='open']/belongsTo::*[@name2='rug-cli']"""
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(tn)
@@ -226,33 +225,30 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     rtn.right.get should equal (Seq(repo))
   }
 
-//  it should "find properties in container tree node 3 levels deep" in {
-//    val tn = new ParsedMutableContainerTreeNode("name")
-//    val prop1 = new ParsedMutableContainerTreeNode("nested")
-//    val prop11 = new ParsedMutableContainerTreeNode("level2")
-//    val fooNode = SimpleTerminalTreeNode("foo", "foo")
-//    prop1.appendField(prop11)
-//    prop11.appendField(fooNode)
-//    tn.appendField(prop1)
-//    tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-//
-//    val expr = "nested/level2/['Foo']"
-//    val rtn = ee.evaluate(tn, expr)
-//    rtn.right.get should equal (Seq(fooNode))
-//  }
-
   it should "handle a property name axis specifier nested predicate with Object type" in {
     val issue = new ContainerTreeNodeImpl("Issue", "Issue")
     issue.addField(SimpleTerminalTreeNode("state", "open"))
     val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
     repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
     issue.addField(repo)
-    // TODO should we be able to handle a property called "name"?
     val expr = """/Issue()[@state='open'][/belongsTo::Repo()[@name2='rug-cli']]"""
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "not match due to unsatisfied nested predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    val expr = """/Issue()[@state='open'][/nonsense::Repo()[@name2='rug-cli']]"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Nil)
   }
 
 }

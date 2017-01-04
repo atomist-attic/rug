@@ -52,8 +52,8 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(2)
-    !handlers.exists(h => h.rootNodeName == "issue") should be(false)
-    !handlers.exists(h => h.rootNodeName == "commit") should be(false)
+    handlers.exists(h => h.rootNodeName == "issue") should be(true)
+    handlers.exists(h => h.rootNodeName == "commit") should be(true)
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

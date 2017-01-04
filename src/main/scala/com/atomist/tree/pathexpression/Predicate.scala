@@ -191,14 +191,14 @@ case class FunctionPredicate(override val name: String, f: (TreeNode, Seq[TreeNo
 }
 
 
-case class NestedPathExpressionPredicate(pe: PathExpression) extends Predicate {
+case class NestedPathExpressionPredicate(expression: PathExpression) extends Predicate {
 
   override def evaluate(nodeToTest: TreeNode,
                         returnedNodes: Seq[TreeNode],
                         ee: ExpressionEngine,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): Boolean = {
-    ee.evaluate(nodeToTest, pe, typeRegistry, nodePreparer) match {
+    ee.evaluate(nodeToTest, expression, typeRegistry, nodePreparer) match {
       case Left(_) => false
       case Right(nodes) => nodes.nonEmpty
     }

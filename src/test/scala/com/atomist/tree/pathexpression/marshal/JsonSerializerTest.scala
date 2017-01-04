@@ -29,4 +29,12 @@ class JsonSerializerTest extends FlatSpec with Matchers {
     //println(json)
   }
 
+  it should "serialize expression with nested predicate" in {
+    val expr = "/src//File()[/JavaType()]"
+    val pe = PathExpressionParser.parsePathExpression(expr)
+    val json = JsonSerializer.toJson(pe)
+    //println(json)
+    json.contains("NestedPath") should be (true)
+  }
+
 }

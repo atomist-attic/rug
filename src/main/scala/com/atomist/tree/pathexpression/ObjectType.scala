@@ -4,7 +4,7 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
-import com.typesafe.scalalogging.LazyLogging
+import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
 /**
   * Return all nodes of the given type
@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
   */
 case class ObjectType(typeName: String)
   extends NodeTest
-    with LazyLogging {
+    with SerializationFriendlyLazyLogging {
 
   private def _childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] = typeRegistry.findByName(typeName) match {
     case Some(cr: ChildResolver) => Some(cr)
@@ -45,7 +45,6 @@ case class ObjectType(typeName: String)
           }
       case _ => Nil
     }
-    //println(s"Returning ${kids.size} ${kids.mkString("\n")} for type $typeName under $tn")
   }
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {

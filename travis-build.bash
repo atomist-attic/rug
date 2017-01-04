@@ -38,13 +38,13 @@ function main() {
         fi
     fi
 
-    if ! $mvn install -Dmaven.javadoc.skip=true; then
-        err "maven install failed"
-        return 1
+    if ! $mvn scoverage:report -Dmaven.javadoc.skip=true; then
+        err "failed to generated test coverage report, continuing"
     fi
 
-    if ! $mvn scoverage:report; then
-        err "failed to generated test coverage report, continuing"
+    if ! $mvn install -DskipTests -Dmaven.javadoc.skip=true; then
+        err "maven install failed"
+        return 1
     fi
 
     if [[ $TRAVIS_PULL_REQUEST != false ]]; then

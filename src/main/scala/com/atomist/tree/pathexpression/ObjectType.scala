@@ -48,7 +48,7 @@ case class ObjectType(typeName: String)
     //println(s"Returning ${kids.size} ${kids.mkString("\n")} for type $typeName under $tn")
   }
 
-  override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = {
+  override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {
       case NavigationAxis(propertyName) =>
         val nodes = tn match {

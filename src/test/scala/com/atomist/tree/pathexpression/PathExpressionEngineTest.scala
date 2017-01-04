@@ -241,4 +241,18 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 //    rtn.right.get should equal (Seq(fooNode))
 //  }
 
+  it should "handle a property name axis specifier nested predicate with Object type" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    // TODO should we be able to handle a property called "name"?
+    val expr = """/Issue()[@state='open'][/belongsTo::Repo()[@name2='rug-cli']]"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
 }

@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.7.1...HEAD
 
+## [0.8.0] - 2017-01-04
+
+[0.8.0]: https://github.com/atomist/rug/compare/0.7.1...0.8.0
+
 ### Added
 
--   NavigationAxis: New AxisSpecifier that allows navigating via a property in path expression language
+-   NavigationAxis: New AxisSpecifier that allows navigating via a
+    property in path expression language
+
+-   Path expression predicates can contain path expressions
 
 ### Changed
 

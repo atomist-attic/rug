@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   **BREAKING** Rug DSL: A Rug can no longer specify its action in JavaScript:
     In this case, use TypeScript or JavaScript.
 
+-   **BREAKING** FileArtifactMutableView is now named FileMutableView
 
 ### Fixed
 

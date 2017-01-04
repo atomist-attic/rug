@@ -11,21 +11,22 @@ class PathExpressionEngine extends ExpressionEngine {
 
   import ExpressionEngine.NodePreparer
 
-  override def evaluate(node: TreeNode, parsed: PathExpression,
+  override def evaluate(node: TreeNode,
+                        parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
     var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
     for (locationStep <- parsed.locationSteps) {
       val nextNodes = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
-          val next: ExecutionResult = locationStep.follow(n, typeRegistry, nodePreparer.getOrElse(n => n))
+          val next: ExecutionResult = locationStep.follow(n, this, typeRegistry, nodePreparer.getOrElse(n => n))
           next
         case Right(Nil) =>
           ExecutionResult(Nil)
         case Right(seq) =>
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
-              locationStep.follow(kid, typeRegistry, nodePreparer.getOrElse(n => n))
+              locationStep.follow(kid, this, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
           ExecutionResult(kids)

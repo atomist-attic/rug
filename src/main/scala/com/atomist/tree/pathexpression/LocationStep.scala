@@ -18,12 +18,12 @@ case class LocationStep(axis: AxisSpecifier,
 
   import ExpressionEngine.NodePreparer
 
-  def follow(tn: TreeNode, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
-    test.follow(tn, axis, typeRegistry) match {
+  def follow(tn: TreeNode, ee: ExpressionEngine, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
+    test.follow(tn, axis, ee, typeRegistry) match {
       case Right(nodes) => Right(
         nodes
           .map(nodePreparer)
-          .filter(tn => predicateToEvaluate.evaluate(tn, nodes))
+          .filter(tn => predicateToEvaluate.evaluate(tn, nodes, ee, typeRegistry, Some(nodePreparer)))
       )
       case failure => failure
     }

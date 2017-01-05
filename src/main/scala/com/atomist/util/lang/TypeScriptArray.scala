@@ -106,7 +106,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
     lyst.add(i, e)
   }
 
-  // TODO - odd that intellij doens't like this, but generates a guff implementation by default...
+  // TODO - odd that intellij doesn't like this, but generates a guff implementation by default...
   override def toArray[X](ts: Array[X with Object]): Array[X with Object] = {
     lyst.toArray[X](ts)
   }
@@ -116,7 +116,8 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
       case "filter" =>
         new AbstractJSObject {
           override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-            val iter = lyst.listIterator()
+            val res = new util.ArrayList[T](lyst)
+            val iter = res.listIterator()
             while (iter.hasNext) {
               val thing = iter.next()
               val thisArg = if (args.length > 1) args(1) else thiz
@@ -131,7 +132,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   ???
               }
             }
-            TypeScriptArray.this
+            new TypeScriptArray[T](res)
           }
         }
       case "length" => lyst.size().asInstanceOf[AnyRef]

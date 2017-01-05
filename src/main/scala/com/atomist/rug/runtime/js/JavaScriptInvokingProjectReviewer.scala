@@ -2,30 +2,23 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.project.edit._
+import com.atomist.project.review.{ProjectReviewer, ReviewResult}
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-class JavaScriptInvokingProjectReviewer (
-                                          jsc: JavaScriptContext,
-                                          jsVar: ScriptObjectMirror,
-                                          rugAs: ArtifactSource
-                                        )
+class JavaScriptInvokingProjectReviewer(
+                                         jsc: JavaScriptContext,
+                                         jsVar: ScriptObjectMirror,
+                                         rugAs: ArtifactSource
+                                       )
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
-    with ProjectEditorSupport {
+    with ProjectReviewer {
 
   override val name: String = jsVar.getMember("name").asInstanceOf[String]
 
-  override def impacts: Set[Impact] = Impacts.UnknownImpacts
-
-  override def applicability(as: ArtifactSource): Applicability = Applicability.OK
-
-  override protected def modifyInternal(
-                                         targetProject: ArtifactSource,
-                                         poa: ProjectOperationArguments): ModificationAttempt = {
+  override def review(targetProject: ArtifactSource, poa: ProjectOperationArguments): ReviewResult = {
     val (result, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs,
         targetProject,
@@ -33,24 +26,12 @@ class JavaScriptInvokingProjectReviewer (
         context)
 
       try {
-        //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        val res = invokeMemberWithParameters("edit",
+        val res = invokeMemberWithParameters("review",
           wrapProject(pmv),
           poa)
-
-        if (pmv.currentBackingObject == targetProject) {
-          NoModificationNeeded("OK")
-        }
-        else {
-          SuccessfulModification(pmv.currentBackingObject, impacts, "OK")
-        }
-      }
-      catch {
-        case f: InstantEditorFailureException =>
-          FailedModificationAttempt(f.getMessage)
       }
     }
-    logger.debug(s"$name modifyInternal took ${elapsedTime}ms")
-    result
+    logger.debug(s"$name review took ${elapsedTime}ms")
+    null
   }
 }

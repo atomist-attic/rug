@@ -35,10 +35,10 @@ class JavaScriptInvokingProjectReviewer(
       }
     }
     logger.debug(s"$name review took ${elapsedTime}ms")
-    convertJavaScriptResponsToReviewResult(response)
+    convertJavaScriptResponseToReviewResult(response)
   }
 
-  private def convertJavaScriptResponsToReviewResult(response: ScriptObjectMirror): ReviewResult = {
+  private def convertJavaScriptResponseToReviewResult(response: ScriptObjectMirror): ReviewResult = {
 
     val responseNote = response.get("note")
     val reviewResult: ReviewResult = response.get("comments") match {
@@ -46,7 +46,22 @@ class JavaScriptInvokingProjectReviewer(
         if (som.isArray) {
           val convertedComments:Iterable[ReviewComment] = som.asScala.values.map {
             case commentSom: ScriptObjectMirror =>
-              ReviewComment(commentSom.get("comment").toString, Severity(commentSom.get("severity").toString.toInt))
+              ReviewComment(
+                commentSom.get("comment").toString,
+                Severity(commentSom.get("severity").toString.toInt),
+                commentSom.get("fileName") match {
+                  case null => None
+                  case fileName: String => Option(name)
+                },
+                commentSom.get("line") match {
+                  case null => None
+                  case line => Option(line.toString.toInt)
+                },
+                commentSom.get("column") match {
+                  case null => None
+                  case column => Option(column.toString.toInt)
+                }
+              )
           }
           ReviewResult(responseNote.toString, convertedComments.to)
         } else {

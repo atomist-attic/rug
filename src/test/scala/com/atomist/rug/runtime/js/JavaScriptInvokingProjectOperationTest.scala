@@ -70,6 +70,27 @@ object JavaScriptInvokingProjectOperationTest {
          |  }
          |var editor = new SimpleEditor()
     """.stripMargin
+
+  val SimpleReviewerWithBrokenParameterPattern =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {ReviewResult, ReviewComment, Parameter} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleReviewer implements ProjectReviewer {
+       |    name: string = "Simple"
+       |    description: string = "A nice little reviewer"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
+       |    review(project: Project, {content} : {content: string}) {
+       |      //p["otherParam"] = p.content
+       |      return new ReviewResult("",
+       |          <ReviewComment[]>[]
+       |        );
+       |    }
+       |  }
+       |var reviewer = new SimpleReviewer()
+    """.stripMargin
 }
 
 class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
@@ -88,6 +109,12 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
 
   it should "run simple reviewer compiled from TypeScript and validate the pattern correctly" in {
     invokeAndVerifySimpleReviewer(StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts", SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters))
+  }
+
+  it should "run simple reviewer and throw an exception for the bad pattern" in {
+    assertThrows[InvalidRugParameterPatternException] {
+      invokeAndVerifySimpleReviewer(StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts", SimpleReviewerWithBrokenParameterPattern))
+    }
   }
 
   private def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {

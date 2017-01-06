@@ -53,7 +53,7 @@ object TypeScriptRugReviewerTest {
          |var reviewer = new SimpleReviewer()
     """.stripMargin
 
-  val SimpleReviewerWithParametersSingleCommentReviewResult =
+  val SimpleReviewerWithParametersSinglePartialCommentReviewResult =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
@@ -68,6 +68,28 @@ object TypeScriptRugReviewerTest {
        |      //p["otherParam"] = p.content
        |      return new ReviewResult(content,
        |          <ReviewComment[]>[new ReviewComment(content, Severity.Broken)]
+       |        );
+       |    }
+       |  }
+       |var reviewer = new SimpleReviewer()
+    """.stripMargin
+
+  val SimpleReviewerWithParametersMultiPartialCommentsReviewResult =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {ReviewResult, ReviewComment, Parameter, Severity} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleReviewer implements ProjectReviewer {
+       |    name: string = "Simple"
+       |    description: string = "A nice little reviewer"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    review(project: Project, {content} : {content: string}) {
+       |      //p["otherParam"] = p.content
+       |      return new ReviewResult(content,
+       |          <ReviewComment[]>[new ReviewComment(content, Severity.Broken),
+       |                            new ReviewComment("something else", Severity.Fine)]
        |        );
        |    }
        |  }
@@ -96,16 +118,43 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     reviewResult.comments.isEmpty should be(true)
   }
 
-  it should "run simple reviewer compiled from TypeScript with parameters and populated single comment ReviewResult" in {
+  it should "run simple reviewer compiled from TypeScript with parameters and populated single partial comment ReviewResult" in {
     val reviewResult = invokeAndVerifySimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",
-      SimpleReviewerWithParametersSingleCommentReviewResult))
+      SimpleReviewerWithParametersSinglePartialCommentReviewResult))
 
     reviewResult.note should be(ParameterContent)
     reviewResult.comments.isEmpty should be(false)
     val singleComment = reviewResult.comments.head
     singleComment.comment should be(ParameterContent)
     singleComment.severity should be(Severity.BROKEN)
+    singleComment.fileName should be(None)
+    singleComment.line should be(None)
+    singleComment.column should be(None)
+  }
+
+  it should "run simple reviewer compiled from TypeScript with parameters and populated multiple partial comments in the ReviewResult" in {
+    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+      s".atomist/reviewers/SimpleReviewer.ts",
+      SimpleReviewerWithParametersMultiPartialCommentsReviewResult))
+
+    reviewResult.note should be(ParameterContent)
+    reviewResult.comments.isEmpty should be(false)
+    reviewResult.comments.length should be(2)
+
+    val firstComment = reviewResult.comments.head
+    firstComment.comment should be(ParameterContent)
+    firstComment.severity should be(Severity.BROKEN)
+    firstComment.fileName should be(None)
+    firstComment.line should be(None)
+    firstComment.column should be(None)
+
+    val secondComment = reviewResult.comments.tail.head
+    secondComment.comment should be("something else")
+    secondComment.severity should be(Severity.FINE)
+    secondComment.fileName should be(None)
+    secondComment.line should be(None)
+    secondComment.column should be(None)
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {

@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.project.edit.SuccessfulModification
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
@@ -16,19 +15,18 @@ object TypeScriptRugReviewerTest {
   val SimpleReviewerWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
+      |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
+      |import {ReviewResult,ReviewComment} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleEditor implements ProjectEditor {
+      |class SimpleReviewer implements ProjectReviewer {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
-      |    edit(project: Project):Result {
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |    review(project: Project):ReviewResult {
+      |        return new ReviewResult("",
+      |        <ReviewComment[]>[])
       |    }
       |}
-      |var editor = new SimpleEditor()
+      |var reviewer = new SimpleReviewer()
     """.stripMargin
 
 }
@@ -37,23 +35,20 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   import TypeScriptRugReviewerTest._
 
   it should "run simple reviewer compiled from TypeScript without parameters using support class" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleReviewerWithoutParameters))
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts", SimpleReviewerWithoutParameters))
   }
 
-  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectReviewer = {
     val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectReviewer]
     jsed.name should be("Simple")
     jsed.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))) match {
-      case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(2)
-        sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
-    }
+    jsed.review(target, SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God")))
+
     jsed
   }
 }

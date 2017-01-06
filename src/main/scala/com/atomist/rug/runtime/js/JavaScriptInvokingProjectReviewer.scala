@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.project.review.{ProjectReviewer, ReviewResult}
+import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult, Severity}
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
@@ -41,10 +41,19 @@ class JavaScriptInvokingProjectReviewer(
   private def convertJavaScriptResponsToReviewResult(response: ScriptObjectMirror): ReviewResult = {
 
     val responseNote = response.get("note")
-    val responseComments = response.get("comments") match {
-      case som: ScriptObjectMirror => som
+    val reviewResult: ReviewResult = response.get("comments") match {
+      case som: ScriptObjectMirror =>
+        if (som.isArray) {
+          val convertedComments:Iterable[ReviewComment] = som.asScala.values.map {
+            case commentSom: ScriptObjectMirror =>
+              ReviewComment(commentSom.get("comment").toString, Severity(commentSom.get("severity").toString.toInt))
+          }
+          ReviewResult(responseNote.toString, convertedComments.to)
+        } else {
+          ReviewResult(responseNote.toString)
+        }
     }
 
-    ReviewResult(responseNote.toString)
+    reviewResult
   }
 }

@@ -59,9 +59,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val rtn = ee.evaluate(pmv, findFile, tr)
     rtn.right.get.size should be(1)
 
-    val modelVersion = findFile + "/pom()"
-
-    //val modelVersion = findFile + "/pom()/modelVersion()"
+    val modelVersion = findFile + "/pom()/modelVersion()"
 
     val grtn = ee.evaluate(pmv, modelVersion, tr)
     grtn.right.get.size should be(1)

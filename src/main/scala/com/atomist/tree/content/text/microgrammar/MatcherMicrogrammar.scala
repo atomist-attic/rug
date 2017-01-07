@@ -25,7 +25,8 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
       case mut: MutableContainerTreeNode =>
         outputNode(input, mut)
       case tn: TerminalTreeNode =>
-        new MicrogrammarField(tn.nodeName, tn.nodeName, Seq(tn), tn.startPosition, tn.endPosition)
+        val raw = new MicrogrammarField(tn.nodeName, tn.nodeName, Seq(tn), tn.startPosition, tn.endPosition)
+        SimpleMutableContainerTreeNode.wrap(name, raw)
     }
   }
 

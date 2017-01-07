@@ -21,7 +21,8 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def nodeType: Set[String] = currentBackingObject.nodeType
 
-  override def value = currentBackingObject.value
+  @ExportFunction(readOnly = true, description = "Value")
+  override def value: String = currentBackingObject.value
 
   override def dirty: Boolean = originalBackingObject.dirty
 

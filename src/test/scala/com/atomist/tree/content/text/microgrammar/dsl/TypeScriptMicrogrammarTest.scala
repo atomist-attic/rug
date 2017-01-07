@@ -23,10 +23,10 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses single microgrammar"
       |
       |    edit(project: Project) {
-      |      let mg = new Microgrammar('modelVersion', `<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg = new Microgrammar('modelVersion', `<modelVersion>$version:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
       |
-      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
       |        n.update('Foo bar')
       |      })
       |      return new Result(Status.Success, `OK`)
@@ -48,11 +48,12 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg1 = new Microgrammar('mv1', `$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
       |
-      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
+      |        if (n.value() != "4.0.0") project.fail("" + n.value())
       |        n.update('Foo bar')
       |      })
       |      return new Result(Status.Success, `OK`)

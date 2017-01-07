@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, SimpleMutableContainerTreeNode}
+import com.atomist.tree.content.text._
 import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
@@ -25,7 +25,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
       case mut: MutableContainerTreeNode =>
         outputNode(input, mut)
       case tn: TerminalTreeNode =>
-        new SimpleMutableContainerTreeNode(tn.nodeName, Seq(tn), tn.startPosition, tn.endPosition)
+        new MicrogrammarField(tn.nodeName, tn.nodeName, Seq(tn), tn.startPosition, tn.endPosition)
     }
   }
 
@@ -68,4 +68,15 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
 
   override def toString: String = s"MatcherMicrogrammar wrapping [$matcher]"
 
+}
+
+private class MicrogrammarField(name: String,
+                                typ: String,
+                                fields: Seq[TreeNode],
+                                startPosition: InputPosition,
+                                endPosition: InputPosition)
+  extends SimpleMutableContainerTreeNode(
+    name: String, fields, startPosition, endPosition) {
+
+  override val nodeType = Set(typ)
 }

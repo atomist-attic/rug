@@ -31,6 +31,9 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
     nodes.size should be (1)
+    withClue(s"Type was ${nodes.head.nodeType}") {
+      nodes.head.nodeType.contains("modelVersion") should be(true)
+    }
     nodes.head match {
       case mtn: MutableContainerMutableView =>
         mtn.update(highlyImprobableValue)
@@ -47,15 +50,19 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val findFile = "/File()[@name='pom.xml']"
 
     val mg: Microgrammar = new MatcherMicrogrammar(
-      mgp.parseMatcher("modelVersion", "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
+      mgp.parseMatcher("pom",
+        "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
 
     val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
       Seq(new MicrogrammarTypeProvider(mg))
     )
     val rtn = ee.evaluate(pmv, findFile, tr)
     rtn.right.get.size should be(1)
-    // TODO do we need the name
-    val modelVersion = findFile + "/modelVersion()"
+
+    val modelVersion = findFile + "/pom()"
+
+    //val modelVersion = findFile + "/pom()/modelVersion()"
+
     val grtn = ee.evaluate(pmv, modelVersion, tr)
     grtn.right.get.size should be(1)
     (pmv, grtn.right.get)

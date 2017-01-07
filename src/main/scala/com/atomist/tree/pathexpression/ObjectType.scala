@@ -15,17 +15,11 @@ case class ObjectType(typeName: String)
   extends NodeTest
     with SerializationFriendlyLazyLogging {
 
-  private def _childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] = typeRegistry.findByName(typeName) match {
+  private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
+    typeRegistry.findByName(typeName) match {
     case Some(cr: ChildResolver) => Some(cr)
-    case None => throw new IllegalArgumentException(s"No type with name [$typeName]")
-    case _ =>
-      // The parent node doesn't support contextless resolution
-      None
+    case _ => None
   }
-
-  private def childResolver(typeRegistry: TypeRegistry) = _childResolver(typeRegistry).getOrElse(
-    throw new IllegalArgumentException(s"Type [$typeName] does not support contextless resolution")
-  )
 
   private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
 
@@ -39,7 +33,12 @@ case class ObjectType(typeName: String)
         else
           tn match {
             case mv: MutableView[_] =>
-              childResolver(typeRegistry).findAllIn(mv).getOrElse(Nil)
+              childResolver(typeRegistry) match {
+                case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
+                case None =>
+                  throw new IllegalArgumentException(
+                    s"No type with name [$typeName]: Node=$tn, Kids=${directKids}")
+              }
             case x =>
               throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
           }

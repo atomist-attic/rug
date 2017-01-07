@@ -186,9 +186,7 @@ class jsPathExpressionEngine(
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
     val cr: CommandRegistry = DefaultCommandRegistry
     def nodeTypes(node: TreeNode) =
-      node.nodeType.map(t => typeRegistry.findByName(t).getOrElse(
-        throw new UnsupportedOperationException(s"Cannot find type for node type [$t]")
-      ))
+      node.nodeType.flatMap(t => typeRegistry.findByName(t))
 
     new TypeScriptArray(
       nodes.map(n => new SafeCommittingProxy(nodeTypes(n), n, cr))

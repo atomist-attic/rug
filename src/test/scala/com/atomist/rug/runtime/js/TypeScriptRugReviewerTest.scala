@@ -44,7 +44,6 @@ object TypeScriptRugReviewerTest {
          |    description: string = "A nice little reviewer"
          |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
          |    review(project: Project, {content} : {content: string}) {
-         |      //p["otherParam"] = p.content
          |      return new ReviewResult(content,
          |          <ReviewComment[]>[]
          |        );
@@ -65,9 +64,8 @@ object TypeScriptRugReviewerTest {
        |    description: string = "A nice little reviewer"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
        |      return new ReviewResult(content,
-       |          <ReviewComment[]>[new ReviewComment(content, Severity.Broken)]
+       |          [new ReviewComment(content, Severity.Broken)]
        |        );
        |    }
        |  }
@@ -86,10 +84,8 @@ object TypeScriptRugReviewerTest {
        |    description: string = "A nice little reviewer"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
-       |      return new ReviewResult(content,
-       |          <ReviewComment[]>[new ReviewComment(content, Severity.Broken),
-       |                            new ReviewComment("something else", Severity.Fine)]
+       |      return new ReviewResult(content, [new ReviewComment(content, Severity.Broken),
+       |                                        new ReviewComment("something else", Severity.Fine)]
        |        );
        |    }
        |  }
@@ -108,9 +104,8 @@ object TypeScriptRugReviewerTest {
        |    description: string = "A nice little reviewer"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
        |      return new ReviewResult(content,
-       |          <ReviewComment[]>[new ReviewComment(
+       |           [new ReviewComment(
        |            content,
        |            Severity.Broken,
        |            "file.txt",

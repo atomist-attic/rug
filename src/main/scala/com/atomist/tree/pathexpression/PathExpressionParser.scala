@@ -69,13 +69,17 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def falsePredicate: Parser[Predicate] = "false" ^^ (_ => FalsePredicate)
 
+  private def nestedPathExpressionPredicate: Parser[Predicate] =
+    pathExpression ^^ (pe => NestedPathExpressionPredicate(pe))
+
   private def predicateTerm: Parser[Predicate] =
     methodInvocationTest |
       propertyTest |
       booleanMethodInvocation |
       truePredicate |
       falsePredicate |
-      index
+      index |
+      nestedPathExpressionPredicate
 
   private def negatedPredicate: Parser[Predicate] = "not" ~> "(" ~> predicateExpression <~ ")" ^^ {
     pred => NegationOfPredicate(pred)

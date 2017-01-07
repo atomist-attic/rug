@@ -42,15 +42,22 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |       //ensure we return another TypeScriptArray
       |       project.files().sort().sort()
       |
-      |       this.lyst.filter(t => true)
-      |       if(this.lyst.length != 1){
+      |       let filtered: string[] = this.lyst.filter(t => true)
+      |       if(filtered.length != 1){
       |          throw new Error("Array length should be 1 after filtering none");
       |       }
       |
-      |       this.lyst.filter(t => false)
-      |       if(this.lyst.length != 0){
+      |       filtered = this.lyst.filter(t => false)
+      |       if(filtered.length != 0){
       |          throw new Error("Array length should be 0 after filtering all");
       |       }
+      |
+      |       if(this.lyst.length != 1){
+      |          throw new Error("Original array should not be modified by filter")
+      |       }
+      |
+      |       this.lyst.pop()//clean up
+      |
       |       this.lyst.push("another")
       |       if(this.lyst.length != 1){
       |          throw new Error("Array length should be 1 after push");
@@ -64,8 +71,10 @@ class TypeScriptArrayTest extends FlatSpec with Matchers {
       |
       |       let strs: string[] = this.lyst.concat(["1"], ["2", "3"])
       |       if(strs.length != 4){
-      |         throw new Error("Array length should be 4 after concat");
+      |         throw new Error(`Array length should be 4 after concat, actually: ${strs.length}`);
       |       }
+      |
+      |
       |       this.lyst.push("thing")
       |       let str: string = this.lyst.join(".")
       |

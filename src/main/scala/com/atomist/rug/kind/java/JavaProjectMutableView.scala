@@ -41,7 +41,7 @@ class JavaProjectType(
   }
 }
 
-import com.atomist.rug.kind.java.JavaTypeType._
+import com.atomist.rug.kind.java.JavaSourceType._
 
 /**
   * Exposes Java project status, allowing refactoring, tests for

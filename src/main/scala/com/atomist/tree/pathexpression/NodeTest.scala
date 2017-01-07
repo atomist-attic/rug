@@ -20,7 +20,7 @@ trait NodeTest {
     * @param axis AxisSpecifier indicating the kind of navigation
     * @return Resulting nodes
     */
-  def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult
+  def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult
 
 }
 
@@ -31,10 +31,10 @@ trait NodeTest {
   */
 abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
 
-  final override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult =
+  final override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
       case Right(nodes) =>
-        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes)))
+        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes, ee, typeRegistry, None)))
       case failure => failure
     }
 
@@ -71,7 +71,7 @@ object All extends PredicatedNodeTest("All", TruePredicate)
 case class NamedNodeTest(name: String)
   extends NodeTest {
 
-  override def follow(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
+  override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Child =>
       tn match {
         case ctn: ContainerTreeNode =>

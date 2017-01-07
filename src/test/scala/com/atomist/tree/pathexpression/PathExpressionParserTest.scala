@@ -178,4 +178,14 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "parse nested predicate" in {
+    val pe = """/Issue()[@state='open'][/belongsTo::Repo()[@name='rug-cli']]"""
+    val parsed = pep.parsePathExpression(pe)
+    //println(parsed)
+    parsed.locationSteps.size should be (1)
+    parsed.locationSteps.head.predicates(1) match {
+      case np: NestedPathExpressionPredicate =>
+    }
+  }
+
 }

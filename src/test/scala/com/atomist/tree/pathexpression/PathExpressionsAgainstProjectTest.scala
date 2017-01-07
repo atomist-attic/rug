@@ -32,10 +32,10 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.nonEmpty should be (true)
+    rtn.right.get.nonEmpty should be(true)
     val expr2 = "/src/main/java"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.nonEmpty should be (true)
+    rtn2.right.get.nonEmpty should be(true)
   }
 
   it should "find properties file in project" in {
@@ -43,7 +43,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src//*[@name='application.properties']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   it should "find properties file in directory" in {
@@ -51,7 +51,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/main/resources/*[@name='application.properties']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   it should "jump straight into Java type" in {
@@ -77,9 +77,9 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val rtn3 = ee.evaluate(pmv, expr3, DefaultTypeRegistry)
     // We have left out test classes
     rtn3.right.get.size should be(0)
-//    rtn3.right.get.foreach {
-//      case j: JavaClassOrInterfaceView =>
-//    }
+    //    rtn3.right.get.foreach {
+    //      case j: JavaClassOrInterfaceView =>
+    //    }
   }
 
   it should "jump into Java type" in {
@@ -168,7 +168,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr2 = "/src//File()/JavaType()[@name='DemoApplication']"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be (1)
+    rtn2.right.get.size should be(1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
     }
@@ -179,7 +179,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr2 = "/src/main/java/com/example/JavaType()[@name='DemoApplication' and @type='JavaType']"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be (1)
+    rtn2.right.get.size should be(1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
     }
@@ -191,7 +191,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     // Second filter is really a no op
     val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract()]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be (0)
+    rtn2.right.get.size should be(0)
   }
 
   it should "handle OR" in {
@@ -202,20 +202,20 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     // Second filter is really a no op
     val expr = "/*[@name='license.txt' or @name='foo']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
-//  it should "find files irrespective of case" in {
-//    val proj = SimpleFileBasedArtifactSource(
-//      StringFileArtifact("license.txt", "The blah blah license")
-//    )
-//    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-//
-//    // Second filter is really a no op
-//    val expr = "/[name='license.txt' or name='foo']"
-//    val rtn = ee.evaluate(pmv, expr)
-//    rtn.right.get.size should be (1)
-//  }
+  //  it should "find files irrespective of case" in {
+  //    val proj = SimpleFileBasedArtifactSource(
+  //      StringFileArtifact("license.txt", "The blah blah license")
+  //    )
+  //    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+  //
+  //    // Second filter is really a no op
+  //    val expr = "/[name='license.txt' or name='foo']"
+  //    val rtn = ee.evaluate(pmv, expr)
+  //    rtn.right.get.size should be (1)
+  //  }
 
   it should "jump into Java type and test on name" in {
     val proj = ParsingTargets.NewStartSpringIoProject
@@ -223,18 +223,18 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     // Second filter is really a no op
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and .pkg()='com.example']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   // We know longer support this behavior, of refusing to do a type jump
-//  it should "not jump when * is used" in {
-//    val proj = ParsingTargets.NewStartSpringIoProject
-//    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-//    // Second filter is really a no op
-//    val expr = "/src/main/java/com/example/*:java.class[type='java.class' and .pkg()='com.example']"
-//    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-//    rtn.right.get.size should be (0)
-//  }
+  //  it should "not jump when * is used" in {
+  //    val proj = ParsingTargets.NewStartSpringIoProject
+  //    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+  //    // Second filter is really a no op
+  //    val expr = "/src/main/java/com/example/*:java.class[type='java.class' and .pkg()='com.example']"
+  //    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+  //    rtn.right.get.size should be (0)
+  //  }
 
   it should "match existing types when * is used" in {
     val proj = ParsingTargets.NewStartSpringIoProject
@@ -252,7 +252,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/File()[@name='thing']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   it should "test not(predicate)" in {
@@ -260,7 +260,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.wrong')]"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   it should "allow multiple predicates instead of 'and'" in {
@@ -268,7 +268,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/main/java/com/example/JavaType()[.pkg()='com.example']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(1)
   }
 
   it should "select Elm class using method" in {
@@ -294,11 +294,35 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr2 = "/src/ElmModule()[.exposes('main')]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    rtn2.right.get.size should be (1)
+    rtn2.right.get.size should be(1)
     rtn2.right.get.head match {
       case em: ElmModuleMutableView =>
         em.name should equal("Main")
     }
+  }
+
+  it should "find files containing Java sources or types" in {
+    val types = Set("JavaType", "JavaSource")
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    // Second filter is really a no op
+    for (nestedType <- types) {
+      val expr2 = s"/src//File()[/$nestedType()]"
+      val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+      val nodes = rtn2.right.get
+      nodes.size should be > 1
+      nodes.forall(n => n.nodeType.contains("File")) should be(true)
+    }
+  }
+
+  it should "not find files containing Elm modules in Java project" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    // Second filter is really a no op
+    val expr2 = s"/src//File()[/ElmModule()]"
+    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val nodes = rtn2.right.get
+    nodes.isEmpty should be (true)
   }
 
 }

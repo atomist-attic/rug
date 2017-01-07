@@ -51,11 +51,11 @@ case class ObjectType(typeName: String)
       case NavigationAxis(propertyName) =>
         val nodes = tn match {
           case ctn: ContainerTreeNode =>
-            ctn.childrenNamed(propertyName)
+            ctn.childrenNamed(propertyName).filter(eligibleNode)
           case _ => Nil
         }
         ExecutionResult(nodes)
-      case Self => ExecutionResult(List(tn))
+      case Self => ExecutionResult(List(tn).filter(eligibleNode))
       case Child =>
         ExecutionResult(findMeUnder(tn, typeRegistry))
       case Descendant =>

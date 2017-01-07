@@ -95,6 +95,32 @@ object TypeScriptRugReviewerTest {
        |  }
        |var reviewer = new SimpleReviewer()
     """.stripMargin
+
+  val SimpleReviewerWithParametersSingleCompleteCommentReviewResult =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {ReviewResult, ReviewComment, Parameter, Severity} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleReviewer implements ProjectReviewer {
+       |    name: string = "Simple"
+       |    description: string = "A nice little reviewer"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    review(project: Project, {content} : {content: string}) {
+       |      //p["otherParam"] = p.content
+       |      return new ReviewResult(content,
+       |          <ReviewComment[]>[new ReviewComment(
+       |            content,
+       |            Severity.Broken,
+       |            "file.txt",
+       |            1,
+       |            1)]
+       |        );
+       |    }
+       |  }
+       |var reviewer = new SimpleReviewer()
+    """.stripMargin
 }
 
 class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
@@ -155,6 +181,21 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     secondComment.fileName should be(None)
     secondComment.line should be(None)
     secondComment.column should be(None)
+  }
+
+  it should "run simple reviewer compiled from TypeScript with parameters and populated complete comment ReviewResult" in {
+    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+      s".atomist/reviewers/SimpleReviewer.ts",
+      SimpleReviewerWithParametersSingleCompleteCommentReviewResult))
+
+    reviewResult.note should be(ParameterContent)
+    reviewResult.comments.isEmpty should be(false)
+    val singleComment = reviewResult.comments.head
+    singleComment.comment should be(ParameterContent)
+    singleComment.severity should be(Severity.BROKEN)
+    singleComment.fileName should be(Some("file.txt"))
+    singleComment.line should be(Some(1))
+    singleComment.column should be(Some(1))
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {

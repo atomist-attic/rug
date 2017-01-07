@@ -51,7 +51,7 @@ class JavaScriptInvokingProjectReviewer(
                 Severity(commentSom.get("severity").toString.toInt),
                 commentSom.get("fileName") match {
                   case null => None
-                  case fileName: String => Option(name)
+                  case fileName: String => Option(fileName)
                 },
                 commentSom.get("line") match {
                   case null => None

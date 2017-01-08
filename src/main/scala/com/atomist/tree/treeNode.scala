@@ -1,6 +1,6 @@
 package com.atomist.tree
 
-import com.atomist.rug.spi.Typed
+import com.atomist.rug.spi.{ExportFunction, Typed}
 import com.atomist.util.{Visitable, Visitor}
 
 /**
@@ -24,6 +24,7 @@ trait TreeNode extends Visitable {
     * with files. However, node names do not always need to be unique.
     * @return name of the individual node
     */
+  @ExportFunction(readOnly = true, description = "Name of the node")
   def nodeName: String
 
   /**
@@ -31,12 +32,14 @@ trait TreeNode extends Visitable {
     * nodes in a tree with the same type.
     * @return the type of the node.
     */
+  @ExportFunction(readOnly = true, description = "Type of the node")
   def nodeType: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   /**
     * All nodes have values: Either a terminal value or the
     * values built up from subnodes.
     */
+  @ExportFunction(readOnly = true, description = "Node content")
   def value: String
 
 }

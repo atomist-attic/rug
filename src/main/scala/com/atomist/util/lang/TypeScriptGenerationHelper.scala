@@ -39,6 +39,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.service.ServiceMutableView>" => "any[]"
       case "List" => "any[]" // TODO improve this
       case "FileArtifactMutableView" => "File"   // TODO this is nasty
+      case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }

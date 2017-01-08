@@ -1,9 +1,6 @@
 package com.atomist.rug.spi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Used to annotate methods in Rug type implementation classes that are callable
@@ -11,6 +8,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Inherited
 public @interface ExportFunction {
 
     boolean readOnly();

@@ -26,6 +26,8 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
     val candidates = commands.filter(c => c.name == name && !c.nodeTypes.filter(t => nodeTypes.contains(t)).isEmpty)
     candidates.length match {
       case 1 => Option(candidates(0))
+      case 0 =>
+        throw new RugRuntimeException("CommandType", s"No Command registered for '${name}' on treeNode '${treeNode.nodeType}'")
       case _ =>
         throw new RugRuntimeException("CommandType", s"Multiple Commands registered for '${name}' on treeNode '${treeNode.nodeType}'")
     }

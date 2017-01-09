@@ -23,10 +23,10 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses single microgrammar"
       |
       |    edit(project: Project) {
-      |      let mg = new Microgrammar('modelVersion', `<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg = new Microgrammar('modelVersion', `<modelVersion>$version:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
       |
-      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
       |        n.update('Foo bar')
       |      })
       |      return new Result(Status.Success, `OK`)
@@ -48,12 +48,39 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg1 = new Microgrammar('mv1', `$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
       |
-      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()", n => {
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
+      |        if (n.value() != "4.0.0") project.fail("" + n.value())
       |        n.update('Foo bar')
+      |      })
+      |      return new Result(Status.Success, `OK`)
+      |    }
+      |  }
+      |  var editor = new MgEditor()
+      | """.stripMargin
+
+  val NavigatesNested: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses single microgrammar"
+      |
+      |    edit(project: Project) {
+      |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      |
+      |      eng.with<TreeNode>(project, "//File()/method()/type()", n => {
+      |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
+      |        n.update(n.value() + "x")
       |      })
       |      return new Result(Status.Success, `OK`)
       |    }
@@ -70,6 +97,18 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   it should "run use microgrammar defined in TypeScript in 2 consts" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammarSplitInto2))
+  }
+
+  it should "navigate nested" in {
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNested)))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val target = ParsingTargets.SpringIoGuidesRestServiceSource
+    jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
+      case sm: SuccessfulModification =>
+        //sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
+    }
+    jsed
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {

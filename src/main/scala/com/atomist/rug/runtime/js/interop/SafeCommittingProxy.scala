@@ -38,7 +38,7 @@ class SafeCommittingProxy(types: Set[Typed],
 
       if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
             throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name")
+              s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found ${possibleOps}")
       }
 
       new AbstractJSObject() {
@@ -96,11 +96,13 @@ private object SafeCommittingProxy {
   */
 private case class UnionType(types: Set[Typed]) extends Typed {
 
-  override def description: String = s"Union-${types.map(_.name).mkString(":")}"
+  private val typesToUnion = Set(TypeOperation.TreeNodeType) ++ types
+
+  override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
 
   // TODO what about duplicate names?
   override val typeInformation: TypeInformation = {
-    val allOps: Set[TypeOperation] = (types.map(_.typeInformation) collect {
+    val allOps: Set[TypeOperation] = (typesToUnion.map(_.typeInformation) collect {
       case sti: StaticTypeInformation => sti.operations
     }).flatten
     new StaticTypeInformation {

@@ -2,6 +2,7 @@ package com.atomist.rug.spi
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.tree.TreeNode
 
 /**
   * Type information about a language element such as a Type.
@@ -62,6 +63,8 @@ case class TypeOperation(
                           definedOn: Class[_],
                           example: Option[String]) {
 
+  import TypeOperation._
+
   def hasExample: Boolean = example.isDefined
 
   /**
@@ -70,9 +73,10 @@ case class TypeOperation(
     */
   def invoke(target: Object, rawArgs: Seq[AnyRef]): Object = {
     val args = rawArgs.map(a => NashornUtils.toJavaType(a))
+    // Include TreeNode methods, although the annotations won't be inherited
     val methods = target.getClass.getMethods.toSeq.filter(m =>
       this.name.equals(m.getName) &&
-        m.getDeclaredAnnotations.exists(ann => ann.isInstanceOf[ExportFunction]) &&
+        (m.getDeclaredAnnotations.exists(ann => ann.isInstanceOf[ExportFunction]) || TreeNodeOperations.contains(m.getName)) &&
         this.parameters.size == m.getParameterCount
     )
     if (methods.size != 1)
@@ -91,4 +95,19 @@ case class TypeOperation(
         throw new RugRuntimeException(null, s"Exception invoking ${methods.head} with args=${argDiagnostics.mkString(",")}: ${t.getMessage}", t)
     }
   }
+}
+
+
+object TypeOperation {
+
+  val TreeNodeTypeInformation: StaticTypeInformation =
+    new ReflectiveStaticTypeInformation(classOf[TreeNode])
+
+  val TreeNodeType = new Typed {
+    override def description: String = "TreeNode operations"
+    override def typeInformation: TypeInformation = TreeNodeTypeInformation
+  }
+
+  val TreeNodeOperations: Set[String] =
+    TreeNodeTypeInformation.operations.map(_.name).toSet
 }

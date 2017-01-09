@@ -1,10 +1,9 @@
 package com.atomist.rug.rugdoc
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.rug.TestUtils
-import com.atomist.rug.compiler.typescript.{TypeScriptCompiler}
+import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptInterfaceGenerator}
-import com.atomist.source.{FileArtifact, FileEditor, StringFileArtifact}
+import com.atomist.source.{FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
@@ -36,7 +35,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val compiled = tsc.compile(withoutImport)
     val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
     ts shouldBe defined
-    println(ts.get.content)
+    //println(ts.get.content)
 
     val js = compiled.allFiles.find(_.name.endsWith(".js"))
     js shouldBe defined

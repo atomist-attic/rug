@@ -19,7 +19,8 @@ trait UserModelContext {
   */
 trait UserServices {
 
-  def pathExpressionEngine() : jsPathExpressionEngine
+  def pathExpressionEngine: jsPathExpressionEngine
+
 }
 
 

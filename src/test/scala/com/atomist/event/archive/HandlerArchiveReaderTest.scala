@@ -57,6 +57,9 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
   }
 
   object TestTreeMaterializer extends TreeMaterializer {
+
     override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = ???
+
+    override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = ???
   }
 }

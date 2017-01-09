@@ -22,7 +22,7 @@ class ServicesMutableView(rugAs: ArtifactSource,
   extends ViewSupport[ServiceSource](serviceSource, null)
     with UserServices {
 
-  private val pathExpressionEng = new jsPathExpressionEngine()
+  private val pathExpressionEng = new jsPathExpressionEngine(serviceSource.treeMaterializer)
 
   @ExportFunction(readOnly = true, description = "Use to execute path expression")
   override def pathExpressionEngine: jsPathExpressionEngine =

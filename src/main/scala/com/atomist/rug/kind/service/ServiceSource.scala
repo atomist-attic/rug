@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.service
 
+import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
 import com.atomist.project.ProjectOperation
 import com.atomist.project.review.ReviewResult
 import com.atomist.rug.runtime.js.interop.UserServices
@@ -15,6 +16,11 @@ trait ServiceSource extends UserServices {
   def messageBuilder: MessageBuilder
 
   def projectOperations: Seq[ProjectOperation] = Nil
+
+  /**
+    * Used to hydrate nodes before running a path expression
+    */
+  def treeMaterializer: TreeMaterializer = IdentityTreeMaterializer
 
 }
 

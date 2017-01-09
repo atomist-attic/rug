@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   TypeScript Reviewers
 
+### Fixed
+
+-   TS parameter tags were not being extracted
+    https://github.com/atomist/rug/issues/151
+-   Parameters for TS editors/generators were defaulting to displayable=false.
+    They now default to displayable=true.
+    https://github.com/atomist/rug/issues/148
+
 ## [0.8.0] - 2017-01-04
 
 [0.8.0]: https://github.com/atomist/rug/compare/0.7.1...0.8.0

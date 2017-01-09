@@ -19,7 +19,6 @@ object JavaScriptInvokingProjectOperationTest {
        |    description: string = "A nice little editor"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    edit(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
        |      return new Result(Status.Success,
        |        `Edited Project now containing $${project.fileCount()} files: \n`
        |        );
@@ -40,7 +39,6 @@ object JavaScriptInvokingProjectOperationTest {
        |    description: string = "A nice little reviewer"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
        |      return new ReviewResult("",
        |          <ReviewComment[]>[]
        |        );
@@ -62,7 +60,6 @@ object JavaScriptInvokingProjectOperationTest {
          |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
          |
          |    edit(project: Project, {content} : {content: string}) {
-         |      //p["otherParam"] = p.content
          |      return new Result(Status.Success,
          |        `Edited Project now containing $${project.fileCount()} files: \n`
          |        );
@@ -83,7 +80,6 @@ object JavaScriptInvokingProjectOperationTest {
        |    description: string = "A nice little reviewer"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
-       |      //p["otherParam"] = p.content
        |      return new ReviewResult("",
        |          <ReviewComment[]>[]
        |        );

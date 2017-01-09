@@ -1,5 +1,7 @@
 package com.atomist.rug.kind.service
 
+import java.util
+
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.tree.TreeNode
 
@@ -74,17 +76,23 @@ trait ActionRegistry {
     */
   def findByName(name: String): Action
 
-}
-
-class Action(title: String,
-                  callback: Callback,
-                  parameters: java.util.List[ParameterValue]) {
-
-  def bindParameter(name: String, value: Object) = {
+  /**
+    * Bind a parameter to the given Action
+    * @param action the action to bind the parameter to
+    * @param name the name of the parameter
+    * @param value the value of the parameter
+    * @return the action including the newly bound parameter
+    */
+  def bindParameter(action: Action, name: String, value: Object): Action = {
+    val parameters = new util.ArrayList(action.parameters)
     parameters.add(new SimpleParameterValue(name, value))
+    Action(action.title, action.callback, parameters)
   }
 }
 
+case class Action(title: String,
+                  callback: Callback,
+                  parameters: java.util.List[ParameterValue])
 
 case class Callback(rug: Rug)
 

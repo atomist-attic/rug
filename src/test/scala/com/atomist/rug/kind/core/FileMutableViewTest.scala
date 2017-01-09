@@ -3,9 +3,9 @@ package com.atomist.rug.kind.core
 import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.source.{FileArtifact, StringFileArtifact}
 
-class FileArtifactMutableViewTest extends FlatSpec with Matchers {
+class FileMutableViewTest extends FlatSpec with Matchers {
 
-  it should "handle nameContains" in {
+  "FileMutableView" should "handle nameContains" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
     fmv.nameContains(".*") should be (false)

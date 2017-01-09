@@ -12,7 +12,7 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
-import com.atomist.util.lang.TypeScriptArray
+import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -190,7 +190,7 @@ class jsPathExpressionEngine(
         throw new UnsupportedOperationException(s"Cannot find type for node type [$t]")
       ))
 
-    new TypeScriptArray(
+    new JavaScriptArray(
       nodes.map(n => new SafeCommittingProxy(nodeTypes(n), n, cr))
         .map(_.asInstanceOf[Object])
         .asJava)

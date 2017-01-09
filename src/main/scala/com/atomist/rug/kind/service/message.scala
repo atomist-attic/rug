@@ -83,11 +83,7 @@ trait ActionRegistry {
     * @param value the value of the parameter
     * @return the action including the newly bound parameter
     */
-  def bindParameter(action: Action, name: String, value: Object): Action = {
-    val parameters = new util.ArrayList(action.parameters)
-    parameters.add(new SimpleParameterValue(name, value))
-    Action(action.title, action.callback, parameters)
-  }
+  def bindParameter(action: Action, name: String, value: Object): Action
 }
 
 case class Action(title: String,

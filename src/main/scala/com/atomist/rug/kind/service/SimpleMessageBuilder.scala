@@ -63,6 +63,8 @@ case class ImmutableMessage(
 object EmptyActionRegistry extends ActionRegistry {
 
   override def findByName(name: String): Action = null
+
+  override def bindParameter(action: Action, name: String, value: Object) = null
 }
 
 class ConsoleMessageBuilder(teamId: String, actionRegistry: ActionRegistry)

@@ -66,7 +66,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    edit(project: Project, {old_name, new_name }: {old_name: string, new_name: string}): Result {
         |
         |        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |        let allModules: Array<ElmModule> =
+        |        let allModules: ElmModule[] =
         |             eng.children<ElmModule>(project, "ElmModule")
         |
         |         for (let em of allModules) if (em.name() == old_name) {

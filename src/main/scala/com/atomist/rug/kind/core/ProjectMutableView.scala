@@ -462,9 +462,11 @@ class ProjectMutableView(
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context = new ProjectContext(ctx)
 }
-class ProjectContext(ctx: UserModelContext) {
 
-  def pathExpressionEngine() : jsPathExpressionEngine = {
+
+class ProjectContext(ctx: UserModelContext) extends UserServices {
+
+  override def pathExpressionEngine() : jsPathExpressionEngine = {
     ctx.registry("PathExpressionEngine").asInstanceOf[jsPathExpressionEngine]
   }
 }

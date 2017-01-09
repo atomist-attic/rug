@@ -14,6 +14,8 @@ object JavaScriptOperationFinder {
 
   val EditorType = "editor"
 
+  val ReviewerType = "reviewer"
+
   val GeneratorType = "generator"
 
   /**
@@ -23,6 +25,7 @@ object JavaScriptOperationFinder {
   val KnownSignatures = Map(
     ExecutorType -> JsRugOperationSignature(Set("execute")),
     EditorType -> JsRugOperationSignature(Set("edit")),
+    ReviewerType -> JsRugOperationSignature(Set("review")),
     GeneratorType -> JsRugOperationSignature(Set("populate")))
 
   val jsFile: FileArtifact => Boolean = f => f.name.endsWith(".js")
@@ -49,7 +52,7 @@ object JavaScriptOperationFinder {
     val filtered = atomistConfig.atomistContent(rugAs)
       .filter(d => true,
         f => jsFile(f)
-          && (f.path.startsWith(atomistConfig.editorsRoot) || f.path.startsWith(atomistConfig.executorsRoot)))
+          && (f.path.startsWith(atomistConfig.editorsRoot) || f.path.startsWith(atomistConfig.reviewersRoot) || f.path.startsWith(atomistConfig.executorsRoot)))
 
     for (f <- filtered.allFiles) {
       jsc.eval(f)
@@ -57,7 +60,6 @@ object JavaScriptOperationFinder {
 
     val operations = operationsFromVars(rugAs, jsc)
     operations
-
   }
 
 
@@ -66,6 +68,8 @@ object JavaScriptOperationFinder {
     jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
       case (v, Some(EditorType)) =>
         new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
+      case (v, Some(ReviewerType)) =>
+        new JavaScriptInvokingProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(GeneratorType)) =>
         //TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent

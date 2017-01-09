@@ -14,6 +14,16 @@ trait UserModelContext {
 
 
 /**
+  * Services available to all JavaScript operations, whether
+  * Editors or Executors or Handlers etc.
+  */
+trait UserServices {
+
+  def pathExpressionEngine() : jsPathExpressionEngine
+}
+
+
+/**
   * Entry point to Atomist system
   */
 trait AtomistFacade extends UserModelContext {

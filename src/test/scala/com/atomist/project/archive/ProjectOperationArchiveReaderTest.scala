@@ -112,10 +112,13 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       |import {Parameter, Result, Status} from '@atomist/rug/operations/RugOperation'
       |import {Services} from '@atomist/rug/model/Core'
       |
-      |class SimpleExecutor implements Executor{
+      |class SimpleExecutor implements Executor {
       |    name: string = "SimpleExecutor"
       |    description: string = "A nice little executionist"
       |    execute(services: Services): Result {
+      |
+      |        if (services.pathExpressionEngine() == null)
+      |         throw new Error("Something is horribly wrong")
       |        return new Result(Status.Success,
       |         `We are clever`)
       |    }

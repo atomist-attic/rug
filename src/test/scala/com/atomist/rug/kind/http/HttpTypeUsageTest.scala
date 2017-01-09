@@ -4,6 +4,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.{Executor, SimpleProjectOperationArguments}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.kind.service._
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 import org.springframework.http.HttpMethod
@@ -17,6 +18,9 @@ class HttpTypeUsageTest extends FlatSpec with Matchers {
 
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
+
+    override def pathExpressionEngine(): jsPathExpressionEngine =
+      new jsPathExpressionEngine()
 
     override def messageBuilder: MessageBuilder =
       new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)

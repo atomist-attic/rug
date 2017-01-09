@@ -3,6 +3,7 @@ package com.atomist.rug.exec
 import com.atomist.project.{Executor, SimpleProjectOperationArguments}
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.service._
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.rug.runtime.rugdsl.RugDrivenExecutor
 import com.atomist.rug.ts.RugTranspiler
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline, TestUtils}
@@ -193,6 +194,9 @@ class RugDrivenExecutorTest extends FlatSpec with Matchers {
 class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource with IssueRouter {
 
   val updatePersister = new FakeUpdatePersister
+
+  override def pathExpressionEngine(): jsPathExpressionEngine =
+    new jsPathExpressionEngine()
 
   override def messageBuilder: MessageBuilder =
     new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)

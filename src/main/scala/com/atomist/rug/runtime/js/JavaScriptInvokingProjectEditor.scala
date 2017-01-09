@@ -10,8 +10,7 @@ import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
-  * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
-  * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
+  * ProjectEditor implementation that invokes a JavaScript function.
   */
 class JavaScriptInvokingProjectEditor(
                                    jsc: JavaScriptContext,
@@ -57,5 +56,4 @@ class JavaScriptInvokingProjectEditor(
     logger.debug(s"$name modifyInternal took ${elapsedTime}ms")
     result
   }
-
 }

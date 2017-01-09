@@ -2,12 +2,13 @@ package com.atomist.rug.kind.service
 
 import com.atomist.project.ProjectOperation
 import com.atomist.project.review.ReviewResult
+import com.atomist.rug.runtime.js.interop.UserServices
 import com.atomist.source.ArtifactSource
 
 /**
   * Returns a group of services we can act on
   */
-trait ServiceSource {
+trait ServiceSource extends UserServices {
 
   def services: Seq[Service]
 

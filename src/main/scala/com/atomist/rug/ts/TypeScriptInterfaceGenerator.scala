@@ -184,7 +184,6 @@ class TypeScriptInterfaceGenerator(
               yield {
                 if (p.name.startsWith("arg"))
                   System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${op.name} has no name annotation")
-
                 MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType))
               }
 
@@ -237,8 +236,9 @@ case class InterfaceGenerationConfig(
 
   val imports: String =
     """
-      |import {TreeNode} from '../tree/PathExpression'
-      |import {ProjectContext} from '../operations/ProjectEditor' """.stripMargin
+      |import {TreeNode,PathExpressionEngine} from '../tree/PathExpression'
+      |import {ProjectContext} from '../operations/ProjectEditor' """
+      .stripMargin
 
   val licenseHeader: String =
     """

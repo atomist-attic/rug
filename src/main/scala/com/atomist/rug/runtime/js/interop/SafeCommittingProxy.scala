@@ -4,7 +4,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
-import com.atomist.util.lang.TypeScriptArray
+import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
 
 /**
@@ -67,7 +67,7 @@ class SafeCommittingProxy(types: Set[Typed],
               // a collection
               returned match {
                 case l: java.util.List[_] =>
-                  new TypeScriptArray(l)
+                  new JavaScriptArray(l)
                 case _ => returned
               }
           }

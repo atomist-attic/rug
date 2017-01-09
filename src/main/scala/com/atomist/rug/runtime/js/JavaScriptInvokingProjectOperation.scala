@@ -38,7 +38,7 @@ abstract class JavaScriptInvokingProjectOperation(
   private val projectType = typeRegistry.findByName("Project")
     .getOrElse(throw new TypeNotPresentException("Project", null))
 
-  readTagsFromMetadata.foreach(t => addTag(t))
+  readTagsFromMetadata(jsVar).foreach(t => addTag(t))
 
   readParametersFromMetadata.foreach(p => addParameter(p))
 
@@ -77,9 +77,9 @@ abstract class JavaScriptInvokingProjectOperation(
     jsVar.callMember(member,processedArgs: _* )
   }
 
-  protected def readTagsFromMetadata: Seq[Tag] = {
+  protected def readTagsFromMetadata(someVar: ScriptObjectMirror): Seq[Tag] = {
     Try {
-      jsVar.getMember("tags") match {
+      someVar.getMember("tags") match {
         case som: ScriptObjectMirror =>
           val stringValues = som.values().asScala collect {
             case s: String => s
@@ -105,12 +105,16 @@ abstract class JavaScriptInvokingProjectOperation(
         p.setMaxLength(details.get("maxLength").asInstanceOf[Int])
         p.setMinLength(details.get("minLength").asInstanceOf[Int])
         p.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
-        p.setDisplayable(details.get("displayable").asInstanceOf[Boolean])
+        val disp = details.get("displayable")
+        p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
         p.setRequired(details.get("required").asInstanceOf[Boolean])
+
         details.get("default") match {
           case x: String => p.setDefaultValue(x.toString)
           case _ =>
         }
+
+        p.addTags(readTagsFromMetadata(details))
 
         p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
         p.describedAs(details.get("description").asInstanceOf[String])

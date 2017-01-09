@@ -22,10 +22,13 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val withoutImport = output ✎ new FileEditor {
       override def canAffect(f: FileArtifact): Boolean = true
 
+      // Note: We need to pretend we have imports that will be available
+      // at runtime
       override def edit(f: FileArtifact): FileArtifact =
         f.withContent(f.content.replace(InterfaceGenerationConfig().imports,
           """
             |interface ProjectContext {}
+            |interface PathExpressionEngine {}
             |interface TreeNode {}
           """.stripMargin))
     }
@@ -33,7 +36,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val compiled = tsc.compile(withoutImport)
     val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
     ts shouldBe defined
-    // println(ts.get.content)
+    println(ts.get.content)
 
     val js = compiled.allFiles.find(_.name.endsWith(".js"))
     js shouldBe defined

@@ -1,5 +1,7 @@
 package com.atomist.util.lang
 
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+
 /**
   * Useful helps for generating TypeScript
   *
@@ -19,6 +21,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   }
 
   def javaTypeToTypeScriptType(jt: String): String = {
+    val pathExpressionEngineClassName = "class " + classOf[jsPathExpressionEngine].getName()
     jt match {
       case "String" => "string"
       case "boolean" => "boolean"
@@ -39,6 +42,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.service.ServiceMutableView>" => "any[]"
       case "List" => "any[]" // TODO improve this
       case "FileArtifactMutableView" => "File"   // TODO this is nasty
+      case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }

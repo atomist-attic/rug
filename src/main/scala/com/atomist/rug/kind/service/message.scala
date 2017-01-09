@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.service
 
-import com.atomist.param.ParameterValue
+import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.tree.TreeNode
 
 /**
@@ -76,10 +76,14 @@ trait ActionRegistry {
 
 }
 
-
-case class Action(title: String,
+class Action(title: String,
                   callback: Callback,
-                  parameters: java.util.List[ParameterValue])
+                  parameters: java.util.List[ParameterValue]) {
+
+  def bindParameter(name: String, value: Object) = {
+    parameters.add(new SimpleParameterValue(name, value))
+  }
+}
 
 
 case class Callback(rug: Rug)

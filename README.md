@@ -8,14 +8,14 @@ The Rug runtime: Support for Atomist **project operations** such as project edit
 Key areas of functionality:
 
 
- Area |  Purpose | Base Package |  Remarks
---|---|---|---|---
- Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions
-Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in the Rug DSL or TypeScript.
- Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*
-TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | We also provide a TypeScript library to simplify authoring TypeScript rugs
-Rug DSL | DSL for writing simple Rugs | `com.atomist.rug.runtime.rugdsl` | Implemented using Scala parser combinators. *The Rug interpreter implementation will be replaced by a Rug-to-TypeScript transpiler.*
-Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Immature, but an important part of the ultimate vision
+|  Area |  Purpose | Base Package |  Remarks | 
+|---|---|---|---|---|
+|  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions  
+| Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in the Rug DSL or TypeScript.
+|  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |  
+| TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | We also provide a TypeScript library to simplify authoring TypeScript rugs 
+| Rug DSL | DSL for writing simple Rugs | `com.atomist.rug.runtime.rugdsl` | Implemented using Scala parser combinators. *The Rug interpreter implementation will be replaced by a Rug-to-TypeScript transpiler.*
+| Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Immature, but an important part of the ultimate vision
 
 See
 

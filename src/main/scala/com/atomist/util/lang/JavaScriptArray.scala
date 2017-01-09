@@ -7,10 +7,9 @@ import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptFunction
 
 /**
-  * Decorate a java.util.List instance with anything required to implement the TS array methods:
-  * https://www.tutorialspoint.com/typescript/typescript_arrays.htm
+  * Decorate a java.util.List instance with anything required to implement the JS array methods
   */
-class TypeScriptArray[T](val toProxy: java.util.List[T])
+class JavaScriptArray[T](val toProxy: java.util.List[T])
   extends AbstractJSObject
     with java.util.List[T] {
 
@@ -132,7 +131,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   ???
               }
             }
-            new TypeScriptArray[T](res)
+            new JavaScriptArray[T](res)
           }
         }
       case "length" => lyst.size().asInstanceOf[AnyRef]
@@ -166,7 +165,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
           }
 
           newList.addAll(lyst)
-          new TypeScriptArray(newList)
+          new JavaScriptArray(newList)
         }
       }
       case "pop" => new AbstractJSObject {
@@ -202,11 +201,11 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
               val head = args.head.asInstanceOf[Int]
               val begin = if (head >= 0) head else lyst.size() + head
               args.length match {
-                case 1 => new TypeScriptArray[T](lyst.subList(begin, lyst.size()))
+                case 1 => new JavaScriptArray[T](lyst.subList(begin, lyst.size()))
                 case _ =>
                   val theEnd = args(1).asInstanceOf[Int]
                   val end = if (theEnd >= 0) theEnd else lyst.size() + theEnd
-                  new TypeScriptArray[T](lyst.subList(begin, end))
+                  new JavaScriptArray[T](lyst.subList(begin, end))
               }
           }
         }
@@ -220,7 +219,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   t.toString.compareTo(t1.toString)
                 }
               })
-              TypeScriptArray.this
+              JavaScriptArray.this
             case 1 =>
               val filterfn = args.head.asInstanceOf[ScriptObjectMirror]
               lyst.sort(new Comparator[T] {
@@ -236,7 +235,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
                   }
                 }
               })
-              TypeScriptArray.this
+              JavaScriptArray.this
           }
         }
       }
@@ -250,14 +249,14 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
               args.length match {
                 case 1 =>
                   val deleteCount = lyst.size() - begin
-                  val result = new TypeScriptArray[T](new util.ArrayList[T])
+                  val result = new JavaScriptArray[T](new util.ArrayList[T])
                   for (i <- 1 to deleteCount) {
                     result.add(lyst.remove(begin))
                   }
                   result
                 case _ =>
                   val deleteCount = Math.min(args(1).asInstanceOf[Int], lyst.size())
-                  val result = new TypeScriptArray[T](new util.ArrayList[T])
+                  val result = new JavaScriptArray[T](new util.ArrayList[T])
 
                   for (i <- 1 to deleteCount) {
                     result.add(lyst.remove(begin))
@@ -363,7 +362,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val map = args.head.asInstanceOf[ScriptObjectMirror]
           val iter = lyst.listIterator()
-          val res = new TypeScriptArray[AnyRef](new util.ArrayList[AnyRef]())
+          val res = new JavaScriptArray[AnyRef](new util.ArrayList[AnyRef]())
           while (iter.hasNext) {
             val thing = iter.next()
             val thisArg = if (args.length > 1) args(1) else thiz
@@ -376,7 +375,7 @@ class TypeScriptArray[T](val toProxy: java.util.List[T])
       case "reduce" => new ReducerJSObject[T](lyst)
 
       case "reduceRight" =>
-        val reversed = new TypeScriptArray[T](new util.ArrayList[T](lyst))
+        val reversed = new JavaScriptArray[T](new util.ArrayList[T](lyst))
         util.Collections.reverse(reversed)
         new ReducerJSObject[T](reversed)
 

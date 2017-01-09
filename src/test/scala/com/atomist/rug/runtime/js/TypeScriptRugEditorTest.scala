@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js
 
+import com.atomist.param.Tag
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
@@ -7,6 +8,8 @@ import com.atomist.rug.TestUtils
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.mutable.ListBuffer
 
 object TypeScriptRugEditorTest {
 
@@ -81,9 +84,8 @@ object TypeScriptRugEditorTest {
        |    name: string = "Simple"
        |    description: string = "My simple editor"
        |    tags: string[] = ["java", "maven"]
-       |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100}]
+       |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]}]
        |    edit(project: Project, {content} : {content: string}) {
-       |      //TODO p["otherParam"] = p.content
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |      return new Result(Status.Success,
        |        `Edited Project now containing $${project.fileCount()} files: \n`
@@ -125,7 +127,7 @@ object TypeScriptRugEditorTest {
        |    description: string = "A nice little editor"
        |    tags: string[] = ["java", "maven"]
        |    parameters: Parameter[] = [
-       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders"},
+       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders", displayable: false},
        |        {name: "num", description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100, default: 10}
        |    ]
        |
@@ -199,7 +201,6 @@ object TypeScriptRugEditorTest {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
-      |      //console.log(pe.expression);
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
       |      var t: string = `param=${packageName},filecount=${m.root().fileCount()}`
@@ -331,8 +332,11 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor adding to our parameters object" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+    val jsed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters), Seq(otherEditor))
+    val p = jsed.parameters.head
+    p.getTags should be(ListBuffer(Tag("foo","foo"),Tag("bar","bar")))
+    p.isDisplayable should be(true)
   }
 
   it should "find tags" in {
@@ -352,6 +356,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.getDisplayName should be("content")
     p.getPattern should be(ContentPattern)
     p.getMaxLength should be(100)
+    p.isDisplayable should be(false)
   }
 
   it should "find description" in {

@@ -50,6 +50,8 @@ class HandlerTest extends FlatSpec with Matchers {
 
 object TestAtomistFacade extends AtomistFacade {
 
+  override def teamId: String = "foobar"
+
   def on(s: String, handler: Any): Unit = {
     handler match {
       case som: ScriptObjectMirror =>
@@ -60,7 +62,7 @@ object TestAtomistFacade extends AtomistFacade {
   }
 
   override val registry = Map(
-    "PathExpressionEngine" -> new jsPathExpressionEngine
+    "PathExpressionEngine" -> new jsPathExpressionEngine(this)
   )
 
   override def messageBuilder = new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)

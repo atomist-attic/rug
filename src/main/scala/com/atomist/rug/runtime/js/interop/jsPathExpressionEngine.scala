@@ -8,6 +8,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
+import com.atomist.rug.kind.service.TeamContext
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
@@ -44,7 +45,7 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
   * @param ee underlying ExpressionEngine that does the actual work
   */
 class jsPathExpressionEngine(
-                              treeMaterializer: TreeMaterializer = IdentityTreeMaterializer,
+                              teamContext: TeamContext,
                               val ee: ExpressionEngine = new PathExpressionEngine,
                               typeRegistry: TypeRegistry = DefaultTypeRegistry,
                               private var matcherRegistry: MatcherRegistry = EmptyMatcherRegistry) {
@@ -61,7 +62,7 @@ class jsPathExpressionEngine(
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(treeMaterializer, this.ee, tr, matcherRegistry)
+    new jsPathExpressionEngine(teamContext, this.ee, tr, matcherRegistry)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
@@ -100,7 +101,7 @@ class jsPathExpressionEngine(
         PathExpressionParser.parsePathExpression(expr)
     }
 
-    val hydrated = treeMaterializer.hydrate("TEAM_ID", toTreeNode(root), parsed)
+    val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
         val m = Match(root, wrap(nodes))

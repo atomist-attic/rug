@@ -9,13 +9,25 @@ import com.atomist.source.ArtifactSource
 /**
   * Returns a group of services we can act on
   */
-trait ServiceSource extends UserServices {
+trait ServiceSource extends UserServices with TeamContext {
 
   def services: Seq[Service]
 
   def messageBuilder: MessageBuilder
 
   def projectOperations: Seq[ProjectOperation] = Nil
+
+}
+
+/**
+  * Information available for invocation within a team
+  */
+trait TeamContext {
+
+  /**
+    * Id of the team we're working on behalf of
+    */
+  def teamId: String
 
   /**
     * Used to hydrate nodes before running a path expression

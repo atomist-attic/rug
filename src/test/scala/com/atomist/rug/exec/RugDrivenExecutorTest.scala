@@ -195,11 +195,13 @@ class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource
 
   val updatePersister = new FakeUpdatePersister
 
-  override def pathExpressionEngine(): jsPathExpressionEngine =
-    new jsPathExpressionEngine()
+  val teamId = "atomist-test"
+
+  override def pathExpressionEngine: jsPathExpressionEngine =
+    new jsPathExpressionEngine(teamContext = this)
 
   override def messageBuilder: MessageBuilder =
-    new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)
+    new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
 
   var issues = ListBuffer.empty[Issue]
 

@@ -15,7 +15,7 @@ trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
   import Severity._
 
   @ExportFunction(readOnly = false,
-    description = "Operate on this. Use when you want to operate on an object in an embedded language such as JavaScript or Clojure")
+    description = "Evaluate, i.e., compile and execute, JavaScript code.")
   final def eval(o: Object) {}
 
   @ExportFunction(readOnly = false,

@@ -3,15 +3,17 @@ package com.atomist.rug.runtime.js.interop
 import java.util
 import java.util.Collections
 
+import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
+import com.atomist.rug.kind.service.TeamContext
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
-import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
+import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -43,6 +45,7 @@ case class Match(root: Object, matches: _root_.java.util.List[Object])
   * @param ee underlying ExpressionEngine that does the actual work
   */
 class jsPathExpressionEngine(
+                              teamContext: TeamContext,
                               val ee: ExpressionEngine = new PathExpressionEngine,
                               typeRegistry: TypeRegistry = DefaultTypeRegistry,
                               private var matcherRegistry: MatcherRegistry = EmptyMatcherRegistry) {
@@ -59,7 +62,7 @@ class jsPathExpressionEngine(
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(this.ee, tr, matcherRegistry)
+    new jsPathExpressionEngine(teamContext, this.ee, tr, matcherRegistry)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
@@ -88,26 +91,23 @@ class jsPathExpressionEngine(
     * @return a Match
     */
   def evaluate(root: Object, pe: Object): Match = {
-    pe match {
+    val parsed: PathExpression = pe match {
       case som: ScriptObjectMirror =>
         // Examine a JavaScript object passed to us. It's probably a
         // TypeScript class with an "expression" property
         val expr = NashornUtils.stringProperty(som, "expression")
-        val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, typeRegistry) match {
-          case Right(nodes) =>
-            val m = Match(root, wrap(nodes))
-            m
-          case Left(_) =>
-            Match(root, Collections.emptyList())
-        }
+        PathExpressionParser.parsePathExpression(expr)
       case expr: String =>
-        val parsed = PathExpressionParser.parsePathExpression(expr)
-        ee.evaluate(toTreeNode(root), parsed, typeRegistry) match {
-          case Right(nodes) =>
-            val m = Match(root, wrap(nodes))
-            m
-        }
+        PathExpressionParser.parsePathExpression(expr)
+    }
+
+    val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toTreeNode(root), parsed)
+    ee.evaluate(hydrated, parsed, typeRegistry) match {
+      case Right(nodes) =>
+        val m = Match(root, wrap(nodes))
+        m
+      case Left(_) =>
+        Match(root, Collections.emptyList())
     }
   }
 
@@ -185,6 +185,7 @@ class jsPathExpressionEngine(
     */
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
     val cr: CommandRegistry = DefaultCommandRegistry
+
     def nodeTypes(node: TreeNode) =
       node.nodeType.flatMap(t => typeRegistry.findByName(t))
 

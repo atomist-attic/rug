@@ -21,4 +21,24 @@ trait TreeMaterializer {
     */
   def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode
 
+  /**
+    * Given a root node, hydrate it in order to be able to evaluate the given path expression.
+    * @return the hydrated root node against which the expression should be evaluated.
+    */
+  def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode
+
+}
+
+
+/**
+  * TreeMaterializer that never retrieves extra data
+  */
+object IdentityTreeMaterializer extends TreeMaterializer {
+
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = ???
+
+  override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = {
+    //println(s"Hydrating $rawRootNode")
+    rawRootNode
+  }
 }

@@ -41,7 +41,7 @@ class ProjectMutableView(
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
                           projectOperations: Seq[ProjectOperation] = Nil,
-                          ctx: UserModelContext = DefaultAtomistFacade)
+                          ctx: UserModelContext = LocalAtomistFacade)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null) {
 
   // We need this, rather than merely a default, for Java subclasses

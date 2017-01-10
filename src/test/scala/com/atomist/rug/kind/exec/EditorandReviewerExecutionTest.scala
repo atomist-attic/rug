@@ -22,8 +22,10 @@ class EditorAndReviewerExecutionTest extends FlatSpec with Matchers {
   class DummyServiceSource(reviewOutput: Option[ReviewOutputPolicy] = None) extends ServiceSource {
     var latest: Map[Service, ArtifactSource] = Map()
 
-    override def pathExpressionEngine(): jsPathExpressionEngine =
-      new jsPathExpressionEngine()
+    val teamId = "atomist-test"
+
+    override def pathExpressionEngine: jsPathExpressionEngine =
+      new jsPathExpressionEngine(teamContext = this)
 
     override def messageBuilder: MessageBuilder =
       new ConsoleMessageBuilder("TEAM_ID", EmptyActionRegistry)

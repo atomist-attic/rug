@@ -9,6 +9,7 @@ import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.atomist.source.ArtifactSource
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.Matchers
 
 object TestUtils extends Matchers {
@@ -46,6 +47,12 @@ object TestUtils extends Matchers {
   val compiler = new TypeScriptCompiler()
 
   def compileWithModel(tsAs: ArtifactSource) : ArtifactSource = {
-    compiler.compile(tsAs + user_model)
+    compiler.compile(addUserModel(tsAs))
+  }
+  //work around for atomist/artifact-source#16
+  def addUserModel(as: ArtifactSource) : ArtifactSource = {
+    user_model.allFiles.foldLeft(as)((acc: ArtifactSource, fa) => {
+      acc + fa
+    })
   }
 }

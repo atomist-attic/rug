@@ -5,7 +5,7 @@ import com.atomist.rug.{Import, TestUtils}
 import com.atomist.rug.exec.FakeServiceSource
 import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{SimpleDirectoryArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
@@ -165,12 +165,16 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
-    val rugAs = SimpleFileBasedArtifactSource(
+
+
+    val rugAs = TestUtils.addUserModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleEditor.js",
         NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
-    ) + TestUtils.user_model
+    ))
+
+
 
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.editors.size should be(1)

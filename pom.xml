@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-typescript-compiler</artifactId>
-            <version>0.7.2</version>
+            <version>0.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.coveo</groupId>

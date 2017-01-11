@@ -16,6 +16,7 @@ import scala.collection.Seq
 /**
   * Reads an archive and extracts Atomist project operations.
   * These can either be Rug DSL archives or TypeScript or JavaScript files.
+  * Public API!
   */
 class ProjectOperationArchiveReader(
                                      atomistConfig: AtomistConfig = DefaultAtomistConfig,
@@ -25,29 +26,21 @@ class ProjectOperationArchiveReader(
   extends LazyLogging {
 
   val oldInterpreterPipeline = new DefaultRugPipeline(typeRegistry, evaluator, atomistConfig)
-  //val newPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
 
   def findImports(startingProject: ArtifactSource): Seq[Import] = {
     oldInterpreterPipeline.parseRugFiles(startingProject).foldLeft(Nil: Seq[Import]) { (acc, rugProgram) => acc ++ rugProgram.imports }
   }
 
-  // We skip any file with declare var atomist as we can't satisfy it here
-  //TODO - remove this!
-  private val hasDeclareVarAtomist: FileArtifact => Boolean = f =>
-    f.name.endsWith(".ts") && "declare[\\s]+var[\\s]+atomist".r.findAllMatchIn(f.content).nonEmpty
-
   def findOperations(startingProject: ArtifactSource,
                      namespace: Option[String],
-                     otherOperations: Seq[ProjectOperation],
-                     shouldSuppress: FileArtifact => Boolean = hasDeclareVarAtomist): Operations = {
-    val fromTs = JavaScriptOperationFinder.fromJavaScriptArchive(startingProject)
+                     otherOperations: Seq[ProjectOperation]): Operations = {
+    val fromTs = JavaScriptOperationFinder.fromJavaScriptArchive(startingProject.filter(_ => true, (x: FileArtifact) => !atomistConfig.isJsHandler(x)))
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations ++ fromTs)
 
     val operations = fromOldPipeline ++ fromTs
 
     operations foreach {
       case capo: ContextAwareProjectOperation =>
-        //println(s"Set context on $capo")
         capo.setContext(operations ++ otherOperations)
     }
 

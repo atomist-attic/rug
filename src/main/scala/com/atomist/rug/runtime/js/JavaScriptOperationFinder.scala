@@ -1,8 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.ArtifactSource
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -28,11 +27,6 @@ object JavaScriptOperationFinder {
     ReviewerType -> JsRugOperationSignature(Set("review")),
     GeneratorType -> JsRugOperationSignature(Set("populate")))
 
-  val jsFile: FileArtifact => Boolean = f => f.name.endsWith(".js")
-
-  private def excludedTypeScriptPath(atomistConfig: AtomistConfig) =
-    s"${atomistConfig.atomistRoot}/node_modules/"
-
   /**
     * Find and instantiate project operations in the given Rug archive
     *
@@ -40,24 +34,15 @@ object JavaScriptOperationFinder {
     * @return a sequence of instantiated operations backed by JavaScript
     */
   def fromJavaScriptArchive(rugAs: ArtifactSource,
-                            atomistConfig: AtomistConfig = DefaultAtomistConfig,
                             context: JavaScriptContext = null): Seq[ProjectOperation] = {
 
     val jsc: JavaScriptContext =
       if (context == null)
-        new JavaScriptContext(rugAs)
+        new JavaScriptContext()
       else
         context
 
-    val filtered = atomistConfig.atomistContent(rugAs)
-      .filter(d => true,
-        f => jsFile(f)
-          && (f.path.startsWith(atomistConfig.editorsRoot) || f.path.startsWith(atomistConfig.reviewersRoot) || f.path.startsWith(atomistConfig.executorsRoot)))
-
-    for (f <- filtered.allFiles) {
-      jsc.eval(f)
-    }
-
+    jsc.load(rugAs)
     val operations = operationsFromVars(rugAs, jsc)
     operations
   }

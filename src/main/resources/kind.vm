@@ -1,29 +1,27 @@
-
 # Rug Standard Types
 
-#foreach($kind in $kinds )
-$h2 Type: `${kind.name()}`
-**${kind.description()}**
+#foreach( $kind in $kinds )
+$h2 Type: `${kind.name}`
 
-$h3 `${kind.name()}` Operations
+**${kind.description}**
 
-#foreach ($op in $kind.typeInformation().operationsAsJava())
+$h3 `${kind.name}` Operations
 
-$h4 Operation: `${op.name()}`
-    ${op.description()}
+#foreach ( $op in $kind.operations )
+$h4 Operation: `${op.name}`
 
-***Parameters***
+${op.description}
 
-#if ($op.parametersAsJava().size() > 0)
+$h5 `${op.name}` Parameters
 
+#if ($op.size() > 0)
 | Name        | Type           | Description  |
 | ------------|:---------------|:-------------|
-#foreach ($p in $op.parametersAsJava())
-| ***${p.name()}*** | `${p.parameterType()}` | *${p.getDescription()}* |
+#foreach ( $p in $op.parameters )
+| ***${p.name}*** | `${p.parameterType}` | *${p.description}* |
 #end
 #else
 *None*
 #end
-
 #end
 #end

@@ -47,9 +47,11 @@ class VelocityMergeTool(templateContent: ArtifactSource)
       case Some(template) =>
         val templateOutput = new StringWriter
         logger.debug(s"Using template : [$templatePath]")
-        ve.mergeTemplate(templatePath, Charset.defaultCharset().name(), context, templateOutput)
-        val filePath = mergeString(context, toInPlaceFilePath(templatePath)).replace(":", "/")
-        StringFileArtifact(filePath, templateOutput.toString).withMode(template.mode)
+        if (ve.mergeTemplate(templatePath, Charset.defaultCharset().name(), context, templateOutput)) {
+          val filePath = mergeString(context, toInPlaceFilePath(templatePath)).replace(":", "/")
+          StringFileArtifact(filePath, templateOutput.toString).withMode(template.mode)
+        }
+        else throw new InvalidTemplateException(s"failed to merge velocity template: $template")
     }
 
   override def mergeString(context: MergeContext, templateString: String): String = {

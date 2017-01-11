@@ -52,8 +52,7 @@ class ProjectOperationArchiveReader(
     }
 
     val editors = operations collect {
-      // TODO returning an editor that really is a generator is confusing
-      case red: RugDrivenProjectEditor => red
+      case red: RugDrivenProjectEditor if red.program.publishedName.isEmpty => red
 
       // TODO these can't be generators yet.
       // This is a hack to avoid breaking tests

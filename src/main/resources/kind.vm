@@ -12,7 +12,7 @@ $h4 Operation: `${op.name}`
 
 ${op.description}
 
-$h5 `${op.name}` Parameters
+$h5 Parameters
 
 #if ($op.parameters.size() > 0)
 | Name        | Type           | Description  |

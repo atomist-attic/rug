@@ -327,11 +327,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
-    description =
-      """
-        |Merge the given template to the given output path.
-        |
-      """)
+    description = "Merge the given template to the given output path.")
   def merge(@ExportFunctionParameterDescription(name = "template",
     description = "The name of the template within the backing Rug archive, under /.atomist / templates")
             template: String,
@@ -353,12 +349,9 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
-    description =
-      """
-        |Merge templates from the specified directory in the backing archive,
-        |under /.atomist/templates, to the given output path in the project being
-        |edited
-      """)
+    description = """Merge templates from the specified directory in the backing archive,
+under /.atomist/templates, to the given output path in the project being
+edited.""")
   def mergeTemplates(@ExportFunctionParameterDescription(name = "templatesPath",
     description = "Source template path where content will be used to merge into target project")
                      templatesPath: String,
@@ -375,10 +368,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
-    description =
-      """
-        |Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.
-      """)
+    description = "Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.")
   def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
 
   @ExportFunction(readOnly = false,

@@ -14,7 +14,7 @@ ${op.description}
 
 $h5 `${op.name}` Parameters
 
-#if ($op.size() > 0)
+#if ($op.parameters.size() > 0)
 | Name        | Type           | Description  |
 | ------------|:---------------|:-------------|
 #foreach ( $p in $op.parameters )
@@ -23,5 +23,6 @@ $h5 `${op.name}` Parameters
 #else
 *None*
 #end
+
 #end
 #end

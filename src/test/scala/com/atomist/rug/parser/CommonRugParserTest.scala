@@ -69,7 +69,7 @@ object CommonRugParserTest {
        |
        |@tag "java"
        |@tag "spring"
-       |param javaThing: @java_class
+       |param javaThing: @java_package
        |
        |Foobar
       """.stripMargin
@@ -78,7 +78,7 @@ object CommonRugParserTest {
     s"""
        |editor Triplet
        |
-       |param javaThing: @java_class
+       |param javaThing: @java_identifier
        |
        |Foobar
       """.stripMargin

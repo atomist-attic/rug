@@ -22,6 +22,7 @@ object ParameterValidationPatterns {
 
   // True semantic version http://semver.org
   val Version = "^v?(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:[1-9]\\d*|[-A-Za-z\\d]*[-A-Za-z][-A-Za-z\\d]*)(?:\\.(?:[1-9]\\d*|[-A-Za-z\\d]*[-A-Za-z][-A-Za-z\\d]*))*)?(?:\\+[-A-Za-z\\d]+(?:\\.[-A-Za-z\\d]+)*)?$"
+  val VersionRange = "^(?:(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)|[\\[\\(](?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*),(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)[\\]\\)])$"
 
   val NonNegativeInteger = "^(?:0|[1-9]\\d*)$"
   val Url = "^(?:https?|ftp)://[^\\s]+$"

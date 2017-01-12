@@ -16,6 +16,7 @@ object DefaultIdentifierResolver extends IdentifierResolver {
     "ruby_class" -> RubyClass,
     "ruby_identifier" -> RubyIdentifier,
     "semantic_version" -> Version,
+    "version_range" -> VersionRange,
     "url" -> Url,
     "uuid" -> Uuid
   )

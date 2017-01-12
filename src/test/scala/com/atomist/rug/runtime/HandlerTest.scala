@@ -35,10 +35,11 @@ class HandlerTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
 
-    val jsc = new JavaScriptContext(r)
+    val jsc = new JavaScriptContext()
 
     jsc.engine.put("atomist", TestAtomistFacade)
 
+    jsc.load(r)
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       //TODO - call compiler
       //jsc.eval(ts)

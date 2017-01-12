@@ -35,6 +35,23 @@ object TypeScriptRugEditorTest {
       |var editor = new SimpleEditor()
     """.stripMargin
 
+  val SimpleLetStyleEditorWithoutParameters =
+    """
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
+      |
+      |let editor: ProjectEditor  = {
+      |    name: "Simple",
+      |    description: "My simple editor",
+      |    edit(project: Project):Result {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        return new Result(Status.Success,
+      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |    }
+      |}
+    """.stripMargin
+
   val SimpleEditor =
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -138,6 +155,39 @@ object TypeScriptRugEditorTest {
        |    }
        |  }
        |var myeditor = new SimpleEditor()
+    """.stripMargin
+
+    val SimpleTsUtil =
+      """
+        |export class Bar {
+        |   doWork() : void {
+        |      let num: number = 100;
+        |      num += 1;
+        |      //etc.
+        |   }
+        |}
+      """.stripMargin
+
+  val SimpleEditorWithRelativeDependency =
+    """
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
+      |
+      |import {Bar} from './Foo'
+      |
+      |class SimpleEditor implements ProjectEditor {
+      |    name: string = "Simple"
+      |    description: string = "My simple editor"
+      |    edit(project: Project):Result {
+      |        let bar: Bar = new Bar();
+      |        bar.doWork()
+      |        return new Result(Status.Success,
+      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |    }
+      |}
+      |
+      |export var editor = new SimpleEditor()
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
@@ -308,6 +358,11 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
 
+  it should "run simple editor compiled from TypeScript without parameters defined using the let style" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleLetStyleEditorWithoutParameters))
+  }
+
+
   it should "run simple editor twice and see no change the second time" in {
     invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
@@ -344,6 +399,14 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       SimpleEditorTaggedAndMeta))
     ed.tags.size should be(2)
     ed.tags.map(_.name).toSet should equal(Set("java", "maven"))
+  }
+
+  it should "find a dependency in the same artifact source after compilation" in {
+    val simple = StringFileArtifact(s".atomist/editors/SimpleEditorWithRelativeDep.ts",
+      SimpleEditorWithRelativeDependency)
+    val dep = StringFileArtifact(s".atomist/editors/Foo.ts", SimpleTsUtil)
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(simple, dep))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
   }
 
   it should "find parameter metadata" in {

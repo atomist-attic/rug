@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Parameter validation regex `@version_range`
 
+### Changed
+
+-   TypeScript/JavaScript should now "export" instances of Rugs inline with CommonJS standard.
+    Hopefully not a breaking change as there is limited support for automatically exporting legacy ones.
+    
+### Fixed
+
+-   Comments are removed from JS files as they are 'required', and relative imports now work correctly
+    when 'export' is used from TS or vars are added to the global exports var
+    https://github.com/atomist/rug/issues/156
+    
 ## [0.9.0] - 2017-01-09
 
 [0.9.0]: https://github.com/atomist/rug/compare/0.8.0...0.9.0

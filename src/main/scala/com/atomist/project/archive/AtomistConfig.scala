@@ -47,6 +47,8 @@ trait AtomistConfig {
 
   def testExtension: String
 
+  def jsExtension: String
+
   def editorsRoot = s"$atomistRoot/$editorsDirectory"
 
   def templatesRoot = s"$atomistRoot/$templatesDirectory"
@@ -80,14 +82,23 @@ trait AtomistConfig {
     rugArchive.filter(d => d.path.startsWith(atomistRoot), f => f.path.startsWith(atomistRoot))
 
   def isRugSource(f: FileArtifact): Boolean = {
-    f.name.endsWith(rugExtension) && (
+    f.name.endsWith(rugExtension) && isAtomistSource(f)
+
+  }
+
+  def isJsSource(f:FileArtifact): Boolean = {
+    f.name.endsWith(jsExtension) && isAtomistSource(f)
+  }
+
+  def isAtomistSource(f: FileArtifact): Boolean = {
       f.path.startsWith(editorsRoot) ||
-        f.path.startsWith(reviewersRoot) ||
-        f.path.startsWith(executorsRoot) ||
-        f.path.startsWith(editorsDirectory) ||
-        f.path.startsWith(reviewersDirectory) ||
-        f.path.startsWith(executorsDirectory)
-      )
+      f.path.startsWith(reviewersRoot) ||
+      f.path.startsWith(executorsRoot) ||
+      f.path.startsWith(handlersRoot) ||
+      f.path.startsWith(handlersDirectory) ||
+      f.path.startsWith(editorsDirectory) ||
+      f.path.startsWith(reviewersDirectory) ||
+      f.path.startsWith(executorsDirectory)
   }
 
   def isRugTest(f: FileArtifact): Boolean = {
@@ -95,6 +106,11 @@ trait AtomistConfig {
       f.path.startsWith(testsRoot) ||
         f.path.startsWith(testsDirectory)
       )
+  }
+
+  def isJsHandler(f: FileArtifact): Boolean = {
+    f.name.endsWith(jsExtension) &&  (f.path.startsWith(handlersRoot) ||
+      f.path.startsWith(handlersDirectory))
   }
 
   def templateContentIn(rugAs: ArtifactSource): ArtifactSource =
@@ -119,6 +135,8 @@ object DefaultAtomistConfig extends AtomistConfig {
   override val testsDirectory = "tests"
 
   override val rugExtension = ".rug"
+
+  override val jsExtension = ".js"
 
   override def testExtension: String = ".rt"
 }

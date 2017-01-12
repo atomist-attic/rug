@@ -40,43 +40,46 @@ class SafeCommittingProxy(types: Set[Typed],
             throw new RugRuntimeException(null,
               s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found ${possibleOps}")
       }
-
-      new AbstractJSObject() {
-
-        override def isFunction: Boolean = true
-
-        override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-          possibleOps.find(op => op.parameters.size == args.size) match {
-            case None =>
-              commandRegistry.findByNodeAndName(node, name) match {
-                case Some(c) =>
-                  c.invokeOn(node)
-                case _ =>
-                  throw new RugRuntimeException(null,
-                    s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
-              }
-            case Some(op) =>
-              val returned = op.invoke(node, args.toSeq)
-              node match {
-                //case c: { def commit(): Unit } =>
-                case c: MutableView[_] if !op.readOnly =>
-                  c.commit()
-                case _ =>
-              }
-              // The returned type needs to be wrapped if it's
-              // a collection
-              returned match {
-                case l: java.util.List[_] =>
-                  new JavaScriptArray(l)
-                case _ => returned
-              }
-          }
-        }
-      }
+      new MethodInvocationProxy(name, possibleOps)
 
     case _ =>
       // No static type information
       throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
+  }
+
+  private class MethodInvocationProxy(name: String, possibleOps: Seq[TypeOperation])
+    extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      possibleOps.find(op => op.parameters.size == args.size) match {
+        case None =>
+          commandRegistry.findByNodeAndName(node, name) match {
+            case Some(c) =>
+              c.invokeOn(node)
+            case _ =>
+              throw new RugRuntimeException(null,
+                s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+          }
+        case Some(op) =>
+          // Reflective invocation
+          val returned = op.invoke(node, args.toSeq)
+          node match {
+            //case c: { def commit(): Unit } =>
+            case c: MutableView[_] if !op.readOnly =>
+              c.commit()
+            case _ =>
+          }
+          // The returned type needs to be wrapped if it's
+          // a collection
+          returned match {
+            case l: java.util.List[_] =>
+              new JavaScriptArray(l)
+            case _ => returned
+          }
+      }
+    }
   }
 }
 

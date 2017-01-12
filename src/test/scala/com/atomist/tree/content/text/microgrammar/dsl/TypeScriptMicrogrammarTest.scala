@@ -62,7 +62,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |  var editor = new MgEditor()
       | """.stripMargin
 
-  val NavigatesNested: String =
+  val NavigatesNestedUsingPathExpression: String =
     """import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
@@ -88,6 +88,32 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |  var editor = new MgEditor()
       | """.stripMargin
 
+  val NavigatesNestedUsingProperty: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses single microgrammar"
+      |
+      |    edit(project: Project) {
+      |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      |
+      |      eng.with<any>(project, "//File()/method()", n => {
+      |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
+      |        n.update(n.type.value() + "x")
+      |      })
+      |      return new Result(Status.Success, `OK`)
+      |    }
+      |  }
+      |  var editor = new MgEditor()
+      | """.stripMargin
+
 
   it should "run use microgrammar defined in TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
@@ -99,14 +125,26 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       ModifiesWithSimpleMicrogrammarSplitInto2))
   }
 
-  it should "navigate nested" in {
+  it should "navigate nested using path expression" in {
     val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
-      StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNested)))
+      StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingPathExpression)))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         //sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
+    }
+    jsed
+  }
+
+  it should "navigate nested using property" in pendingUntilFixed {
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingProperty)))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val target = ParsingTargets.SpringIoGuidesRestServiceSource
+    jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
+      case sm: SuccessfulModification =>
+      //sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
     }
     jsed
   }

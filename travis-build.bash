@@ -58,9 +58,11 @@ function main() {
         if [[ $TRAVIS_BRANCH == master ]]; then
             mvn_deploy_args=-DaltDeploymentRepository=public-atomist-dev::default::https://atomist.jfrog.io/atomist/libs-dev-local
         fi
-        if ! $mvn deploy -DskipTests $mvn_deploy_args; then
-            err "maven deploy failed"
-            return 1
+        if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if ! $mvn deploy -DskipTests $mvn_deploy_args; then
+                err "maven deploy failed"
+                return 1
+            fi
         fi
 
         if ! git config --global user.email "travis-ci@atomist.com"; then

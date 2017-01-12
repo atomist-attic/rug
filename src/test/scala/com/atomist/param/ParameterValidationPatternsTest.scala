@@ -14,6 +14,7 @@ class ParameterValidationPatternsTest extends FlatSpec with Matchers {
 
   val NonNegativeIntPattern = ParameterValidationPatterns.NonNegativeInteger.r
   val Version = ParameterValidationPatterns.Version.r
+  val VersionRange = ParameterValidationPatterns.VersionRange.r
 
   val UrlPattern = ParameterValidationPatterns.Url.r
 
@@ -184,6 +185,20 @@ class ParameterValidationPatternsTest extends FlatSpec with Matchers {
     }
   }
 
+  "VersionRange" should "accept valid version ranges" in {
+    Seq("0.0.0", "1.2.3", "41.301.990001", "[31.35.65,98.76.543)", "(1.2.3,3.2.1)", "[0.787.99,645890.42356.9]") foreach {
+      case VersionRange(_*) =>
+      case s => fail(s"<$s> did not match $VersionRange")
+    }
+  }
+
+  it should "reject invalid version ranges" in {
+    Seq("7", "0.00.0", "1.02.3", "41.301", "-4.98.23", "1.2.3-SNAPSHOT", "4.3.2+build", "31.35.65,98.76.543", "{1.2.3,3.2.1}", "[6356.787.99)", "[1.2.3,3.2.1-SNAPSHOT)") foreach {
+      case s@VersionRange(_*) => fail(s"<$s> should not have matched $VersionRange")
+      case _ =>
+    }
+  }
+
   "UUID" should "accept valid UUID" in {
     java.util.UUID.randomUUID().toString match {
       case UuidPattern(_*) =>
@@ -194,7 +209,7 @@ class ParameterValidationPatternsTest extends FlatSpec with Matchers {
   it should "reject invalid UUIDs" in {
     Seq("", "   ", "4234213423-234213412-2134123423") foreach {
       case s@UuidPattern(_*) => fail(s"<$s> should not have matched $UuidPattern")
-      case s =>
+      case _ =>
     }
   }
 }

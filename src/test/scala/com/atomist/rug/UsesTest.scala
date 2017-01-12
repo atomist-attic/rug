@@ -327,15 +327,15 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: ^.*$
-        |param bar: ^.*$
+        |param foo: @any
+        |param bar: @any
         |
         |with File f
         | do replace "some" "bar"
         |
         |editor Bar
         |
-        |param baz: ^.*$
+        |param baz: @any
         |
         |with File f
         | do replace "some" "bar"
@@ -460,8 +460,8 @@ class UsesTest extends FlatSpec with Matchers {
         |
         |editor Foo
         |
-        |param foo: ^.*$
-        |param bar: ^.*$
+        |param foo: @semantic_version
+        |param bar: @version_range
         |
         |with File f
         | do replace "some" "bar"

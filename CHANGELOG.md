@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.9.0...HEAD
 
+### Added
+
+-   Parameter validation regex `@version_range`
+
 ## [0.9.0] - 2017-01-09
 
 [0.9.0]: https://github.com/atomist/rug/compare/0.8.0...0.9.0

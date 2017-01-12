@@ -97,7 +97,6 @@ case class TypeOperation(
   }
 }
 
-
 object TypeOperation {
 
   val TreeNodeTypeInformation: StaticTypeInformation =

@@ -3,14 +3,14 @@ package com.atomist.rug.kind.java
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug._
-import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source._
-import com.typesafe.scalalogging.LazyLogging
-import org.scalatest.{FlatSpec, Matchers}
-import JavaVerifier._
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.java.JavaVerifier._
+import com.atomist.source._
+import com.atomist.source.file.ClassPathArtifactSource
+import com.typesafe.scalalogging.LazyLogging
+import org.scalatest.{FlatSpec, Matchers}
 
 object JavaTypeUsageTest extends Matchers {
 
@@ -268,9 +268,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val as = new SimpleFileBasedArtifactSource("", dog)
     val result = executeJava(program, "editors/ClassAnnotated.rug", as)
-    result.allFiles.foreach(f => {
-      logger.debug(f.path + "\n" + f.content + "\n")
-    })
+    result.allFiles.foreach(f =>
+      logger.debug(f.path + "\n" + f.content + "\n"))
 
     val f = result.findFile("src/main/java/com/atomist/Dog.java").get
     result.findFile(dog.path).isDefined should be(false)
@@ -291,9 +290,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val as = new SimpleFileBasedArtifactSource("", Seq(dog, cat, squirrel))
 
     val result = executeJava(program,"editors/ClassAnnotated.rug",  as)
-    result.allFiles.foreach(f => {
-      logger.debug(f.path + "\n" + f.content + "\n")
-    })
+    result.allFiles.foreach(f => logger.debug(f.path + "\n" + f.content + "\n"))
 
     val f = result.findFile("src/main/java/com/atomist/Dog.java").get
     result.findFile(dog.path).isDefined should be(false)
@@ -324,7 +321,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "verify users of renamed class are updated" is pending
 
   private def annotateClass(program: String): Unit = {
-    val result = executeJava(program,"editors/ClassAnnotated.rug")
+    val result = executeJava(program, "editors/ClassAnnotated.rug")
     val f = result.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
@@ -339,14 +336,34 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |with JavaSource j
         |with JavaType c
         |do
-        |  addImport "java.util.List"
+        |  addImport 'java.util.List'
       """.stripMargin
 
-    val r = executeJava(program,"editors/ClassAnnotated.rug")
+    val r = executeJava(program, "editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
     f.content should include("import java.util.List")
+  }
+
+  it should "add and remove import" in {
+    val program =
+      """
+        |editor ClassAnnotated
+        |
+        |with JavaSource j
+        |with JavaType c
+        |begin
+        |  do addImport 'java.util.List'
+        |  do removeImport 'java.util.List'
+        |end
+      """.stripMargin
+
+    val r = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = r.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("import java.util.List")
   }
 
   it should "not add import for annotation added to class in same package" in pendingUntilFixed {

@@ -32,7 +32,19 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
       case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
       case _ => throw new IllegalArgumentException("Failed to get compilation unit")
     }
-    compilationUnit.foreach(cu => JavaParserUtils.addImportsIfNeeded(Seq(fqn), cu))
+    compilationUnit.foreach(JavaParserUtils.addImportsIfNeeded(Seq(fqn), _))
+  }
+
+  @ExportFunction(readOnly = false, description = "Remove an import from the containing Java source")
+  def removeImport(@ExportFunctionParameterDescription(name = "fqn",
+    description = "The fully qualified name of the import")
+                   fqn: String): Unit = {
+    val compilationUnit: Option[CompilationUnit] = parent match {
+      case jsv: JavaSourceMutableView => jsv.compilationUnit
+      case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
+      case _ => throw new IllegalArgumentException("Failed to get compilation unit")
+    }
+    compilationUnit.foreach(JavaParserUtils.removeImportsIfNeeded(Seq(fqn), _))
   }
 
   @ExportFunction(readOnly = true, description = "Does the element have the given annotation?")

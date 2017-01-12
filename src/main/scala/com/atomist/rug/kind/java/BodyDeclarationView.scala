@@ -65,6 +65,17 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
     addImport(s"$pkg.$annotation")
   }
 
+  @ExportFunction(readOnly = false,
+    description = "Remove annotation from the element")
+  def removeAnnotation(@ExportFunctionParameterDescription(name = "pkg", description = "Package where the annotation is sourced")
+                    pkg: String,
+                    @ExportFunctionParameterDescription(name = "annotation",
+                      description = "The annotation to remove")
+                    annotation: String): Unit = {
+    JavaTypeType.annotationRemovedFrom(currentBackingObject, annotation)
+    removeImport(s"$pkg.$annotation")
+  }
+
   /**
     * Commit all changes, invoking updaters and calling parent if necessary.
     */

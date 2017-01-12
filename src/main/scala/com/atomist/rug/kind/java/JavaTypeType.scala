@@ -3,8 +3,8 @@ package com.atomist.rug.kind.java
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.ContextlessViewFinder
+import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.JavaTypeType._
-import JavaSourceType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -16,6 +16,7 @@ import scala.collection.JavaConverters._
 
 /**
   * Type resolution for a Java type (class or interface)
+  *
   * @param evaluator used to evaluate expressions
   */
 class JavaTypeType(evaluator: Evaluator)
@@ -55,17 +56,25 @@ class JavaTypeType(evaluator: Evaluator)
         Some(allClasses)
       case _ => None
     }
-
 }
 
 object JavaTypeType {
 
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val newAnnotation = new MarkerAnnotationExpr(new NameExpr(annotationName))
-    if (!bd.getAnnotations.asScala.map(ann => ann.getName).contains(newAnnotation.getName)) {
+    if (!bd.getAnnotations.asScala.map(_.getName).contains(newAnnotation.getName)) {
       bd.setAnnotations((bd.getAnnotations.asScala :+ newAnnotation).asJava)
       true
     } else // It's already there
+      false
+  }
+
+  def annotationRemovedFrom(bd: BodyDeclaration, annotationName: String): Boolean = {
+    val annotation = new MarkerAnnotationExpr(new NameExpr(annotationName))
+    if (bd.getAnnotations.asScala.map(_.getName).contains(annotation.getName)) {
+      bd.setAnnotations(bd.getAnnotations.asScala.filter(_.equals(annotation.getName)).asJava)
+      true
+    } else // It's already gone
       false
   }
 
@@ -76,5 +85,4 @@ object JavaTypeType {
   val MethodAlias: String = "method"
 
   val JavaTypeAlias: String = Typed.typeClassToTypeName(classOf[JavaTypeType])
-
 }

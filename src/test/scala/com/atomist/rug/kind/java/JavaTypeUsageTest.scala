@@ -222,6 +222,26 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     annotateClass(program)
   }
 
+  it should "remove annotation from class" in {
+    val program =
+      """
+        |@description "I add Foobar annotations"
+        |editor ClassAnnotated
+        |
+        |with JavaType c
+        |begin
+        | do addAnnotation { "com.foo" } "FooBar"
+        | do removeAnnotation { "com.foo" } "FooBar"
+        |end
+      """.stripMargin
+
+    val result = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = result.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("@FooBar")
+  }
+
   val dog = StringFileArtifact(
     "src/main/java/com/foo/bar/Dog.java",
     """
@@ -631,6 +651,29 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@Foobar")
   }
 
+  it should "remove annotation from method" in {
+    val program =
+      """
+        |@description "I add and remove Foobar annotations"
+        |editor ClassAnnotated
+        |
+        |with JavaSource j
+        |with JavaType c
+        |with method m when { m.name().contains("bark") }
+        |begin
+        |  do addAnnotation "com.someone" "Foobar"
+        |  do removeAnnotation "com.someone" "Foobar"
+        |end
+      """.stripMargin
+
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
+    val f = r.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("import com.someone.Foobar;")
+    f.content shouldNot include("@Foobar")
+  }
+
   it should "annotate field" in {
     val program =
       """
@@ -650,5 +693,28 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content.lines.size should be > 0
     f.content should include("import com.someone.Foobar;")
     f.content should include("@Foobar")
+  }
+
+  it should "remove annotation from field" in {
+    val program =
+      """
+        |@description "I add and remove Foobar annotations"
+        |editor ClassAnnotated
+        |
+        |with JavaSource j
+        |with JavaType c
+        |with field f when { f.name().contains("Field") && f.parent().name().contains("Dog") }
+        |begin
+        |  do addAnnotation "com.someone" "Foobar"
+        |  do removeAnnotation "com.someone" "Foobar"
+        |end
+      """.stripMargin
+
+    val r = executeJava(program,"editors/ClassAnnotated.rug")
+    val f = r.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("import com.someone.Foobar;")
+    f.content shouldNot include("@Foobar")
   }
 }

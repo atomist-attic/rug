@@ -288,8 +288,8 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
                                   @ExportFunctionParameterDescription(name = "artifactId",
                                     description = "The value of the dependency's artifactId")
                                   artifactId: String,
-                                  @ExportFunctionParameterDescription(name = "newVersion",
-                                    description = "The value of the dependency's scope to be set")
+                                  @ExportFunctionParameterDescription(name = "newScope",
+                                    description = "The new value of the dependency's scope to be set")
                                   newScope: String): Unit =
     addOrReplaceDependencySubNode(artifactId, groupId, scope, newScope)
 

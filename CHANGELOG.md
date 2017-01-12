@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Comments are removed from JS files as they are 'required', and relative imports now work correctly
     when 'export' is used from TS or vars are added to the global exports var
     https://github.com/atomist/rug/issues/156
+
+-   Generation of Rug types documentation
     
 ## [0.9.0] - 2017-01-09
 

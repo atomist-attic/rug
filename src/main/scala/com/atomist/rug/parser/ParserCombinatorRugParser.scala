@@ -42,7 +42,27 @@ class ParserCombinatorRugParser(
 
   case class AllowedValuesParameterPattern(allowedValues: Seq[String]) extends ParameterPattern
 
-  case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern)
+  case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern) {
+    annotations foreach { a => a match {
+      case d if d.name == "default" =>
+        d.value match {
+          case Some(v: String) => pattern match {
+            case RegexParameterPattern(paramPattern) =>
+              val paramRegex = paramPattern.r
+              v match {
+                case paramRegex(_*) =>
+                case _ =>
+                  throw new InvalidRugParameterDefaultValue(s"parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
+            }
+            case AllowedValuesParameterPattern(values) =>
+              if (!values.toSet.contains(v)) throw new InvalidRugParameterDefaultValue(s"parameter $name default value ($v) is not amongst its allowed values: $values")
+          }
+          case x => throw new InvalidRugAnnotationValueException(s"invalid default parameter value: $x", a)
+        }
+      case _ =>
+      }
+    }
+  }
 
   private def parameter: Parser[ParameterDef] = rep(annotation) ~ ParameterToken.r ~
     parameterName ~ ColonToken ~ paramPattern ^^ {

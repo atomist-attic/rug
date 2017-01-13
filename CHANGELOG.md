@@ -33,8 +33,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   minLength and maxLength now default to -1 as per Rug DSL
     https://github.com/atomist/rug/issues/169
 
--   Allow Java annotations with properties,
+-   Allow Java annotations with properties
     https://github.com/atomist/rug/issues/164
+
+-   Default parameter values are now validated
+    https://github.com/atomist/rug/issues/168
 
 ## [0.9.0] - 2017-01-09
 

@@ -145,7 +145,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   it should "allow newlines in a triple quoted string" in {
     val tripleStringContent =
       """Sometimes you eat the bear and
-        |(aside) much obliged
+        |(aside) much obliged,
         |sometimes the bear, well,
         |he eats you.
         |""".stripMargin
@@ -268,6 +268,128 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     val step = actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation]
     step.args.size should equal(1)
     step.args.head.isInstanceOf[WrappedFunctionArg] should be(true)
+  }
+
+  it should "allow valid allowed parameter values list" in {
+    val prog =
+      """
+        |@description "Invalid default parameter"
+        |editor InvalidDefaultParameter
+        |
+        |param name: ["a", "valid", "list"]
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    val actions = ri.parse(prog).head
+    actions.parameters.size should be(1)
+    val p = actions.parameters.head
+    p.getName should be("name")
+    p.getAllowedValues.size should be(3)
+    p.isRequired should be(true)
+  }
+
+  it should "not allow invalid allowed parameter values list" in {
+    val prog =
+      """
+        |@description "Invalid default parameter"
+        |editor InvalidDefaultParameter
+        |
+        |param name: "not", "a", "valid", "list"
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    an[BadRugException] should be thrownBy (ri.parse(prog))
+  }
+
+  it should "allow valid default parameter value" in {
+    val prog =
+      """
+        |@description "Valid default parameter"
+        |editor ValidDefaultParameter
+        |
+        |@default "432.678.980"
+        |param name: @semantic_version
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    val actions = ri.parse(prog).head
+    actions.parameters.size should be(1)
+    val p = actions.parameters.head
+    p.getName should be("name")
+    p.getDefaultValue should be("432.678.980")
+    p.isRequired should be(false)
+  }
+
+  it should "not allow invalid default parameters" in {
+    val prog =
+      """
+        |@description "Invalid default parameter"
+        |editor InvalidDefaultParameter
+        |
+        |@default "not-a-version"
+        |param name: @semantic_version
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    an[InvalidRugParameterDefaultValue] should be thrownBy (ri.parse(prog))
+  }
+
+  it should "allow valid default value from allowed parameter values list" in {
+    val prog =
+      """
+        |@description "Invalid default parameter"
+        |editor InvalidDefaultParameter
+        |
+        |@default "valid"
+        |param name: ["a", "valid", "list"]
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    val actions = ri.parse(prog).head
+    actions.parameters.size should be(1)
+    val p = actions.parameters.head
+    p.getName should be("name")
+    p.getAllowedValues.size should be(3)
+    p.getDefaultValue should be("valid")
+    p.isRequired should be(false)
+  }
+
+  it should "not allow an default value not in allowed parameter values list" in {
+    val prog =
+      """
+        |@description "Invalid default parameter"
+        |editor InvalidDefaultParameter
+        |
+        |@default "not-in-list"
+        |param name: ["a", "valid", "list"]
+        |
+        |with File f
+        | when isJava;
+        |
+        |do
+        | append "a" name;
+      """.stripMargin
+    an[InvalidRugParameterDefaultValue] should be thrownBy (ri.parse(prog))
   }
 
   it should "handle double do arg" in pendingUntilFixed {

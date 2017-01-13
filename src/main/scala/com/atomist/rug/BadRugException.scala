@@ -63,5 +63,8 @@ class InvalidRugUsesException(op: String, msg: String, val uses: String)
 class InvalidRugParameterPatternException(msg: String)
    extends BadRugException(msg)
 
+class InvalidRugParameterDefaultValue(msg: String)
+  extends BadRugException(msg)
+
 class RugJavaScriptException(msg: String, rootCause: ScriptException)
    extends BadRugException(msg,rootCause)

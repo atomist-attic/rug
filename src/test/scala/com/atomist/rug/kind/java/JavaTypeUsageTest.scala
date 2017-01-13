@@ -129,7 +129,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using JavaScript" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
@@ -148,7 +148,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using path in predicate" in pendingUntilFixed {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
@@ -166,7 +166,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using default predicates" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource
@@ -181,7 +181,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using function" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -196,7 +196,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using function with JavaScript argument" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j when { j.lineCount() < 1000 }
@@ -211,7 +211,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class going straight to class without enclosing JavaSource" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -225,7 +225,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove annotation from class" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -239,6 +239,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = result.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
+    f.content should include("import com.foo.FooBar;")
     f.content shouldNot include("@FooBar")
   }
 
@@ -278,7 +279,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "repackage class and verify name and path" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -299,7 +300,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "repackage class and verify explicitly importing users are updated" in pendingUntilFixed {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c when name = "Dog"
@@ -323,7 +324,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "rename class and verify name" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -590,7 +591,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "allow access to project" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -598,71 +599,71 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |return c.parent().parent().javaFileCount() < 100
         |}
         |do
-        |  addAnnotation "com.someone" "Foobar"
+        |  addAnnotation "com.someone" "FooBar"
       """.stripMargin
 
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.someone.Foobar;")
-    f.content should include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content should include("@FooBar")
   }
 
   it should "annotate constructor" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
         |with JavaType c
         |with constructor ctor when { ctor.parametersSize() == 1 }
         |do
-        |  addAnnotation "com.someone" "Foobar"
+        |  addAnnotation "com.someone" "FooBar"
       """.stripMargin
 
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.someone.Foobar;")
-    f.content should include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content should include("@FooBar")
   }
 
   it should "annotate method" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
         |with JavaType c
         |with method m when { m.name().contains("bark") }
         |do
-        |  addAnnotation "com.someone" "Foobar"
+        |  addAnnotation "com.someone" "FooBar"
       """.stripMargin
 
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.someone.Foobar;")
-    f.content should include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content should include("@FooBar")
   }
 
   it should "remove annotation from method" in {
     val program =
       """
-        |@description "I add and remove Foobar annotations"
+        |@description "I add and remove FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
         |with JavaType c
         |with method m when { m.name().contains("bark") }
         |begin
-        |  do addAnnotation "com.someone" "Foobar"
-        |  do removeAnnotation "com.someone" "Foobar"
+        |  do addAnnotation "com.someone" "FooBar"
+        |  do removeAnnotation "com.someone" "FooBar"
         |end
       """.stripMargin
 
@@ -670,43 +671,43 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content shouldNot include("import com.someone.Foobar;")
-    f.content shouldNot include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content shouldNot include("@FooBar")
   }
 
   it should "annotate field" in {
     val program =
       """
-        |@description "I add Foobar annotations"
+        |@description "I add FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
         |with JavaType c
         |with field f when { f.name().contains("Field") && f.parent().name().contains("Dog") }
         |do
-        |  addAnnotation "com.someone" "Foobar"
+        |  addAnnotation "com.someone" "FooBar"
       """.stripMargin
 
     val r = executeJava(program,"editors/ClassAnnotated.rug")
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.someone.Foobar;")
-    f.content should include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content should include("@FooBar")
   }
 
   it should "remove annotation from field" in {
     val program =
       """
-        |@description "I add and remove Foobar annotations"
+        |@description "I add and remove FooBar annotations"
         |editor ClassAnnotated
         |
         |with JavaSource j
         |with JavaType c
         |with field f when { f.name().contains("Field") && f.parent().name().contains("Dog") }
         |begin
-        |  do addAnnotation "com.someone" "Foobar"
-        |  do removeAnnotation "com.someone" "Foobar"
+        |  do addAnnotation "com.someone" "FooBar"
+        |  do removeAnnotation "com.someone" "FooBar"
         |end
       """.stripMargin
 
@@ -714,7 +715,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content shouldNot include("import com.someone.Foobar;")
-    f.content shouldNot include("@Foobar")
+    f.content should include("import com.someone.FooBar;")
+    f.content shouldNot include("@FooBar")
   }
 }

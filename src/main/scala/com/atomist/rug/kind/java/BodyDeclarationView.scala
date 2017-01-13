@@ -73,7 +73,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
                       description = "The annotation to remove")
                     annotation: String): Unit = {
     JavaTypeType.annotationRemovedFrom(currentBackingObject, annotation)
-    removeImport(s"$pkg.$annotation")
+    // removeImport(s"$pkg.$annotation") TODO Check first if no other member is annotated with same annotation
   }
 
   /**

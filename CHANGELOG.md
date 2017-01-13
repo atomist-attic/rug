@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Parameter validation regex `@version_range`
 
+-   ScriptExceptions during initial eval of JavaScript now include filename
+
 ### Changed
 
 -   TypeScript/JavaScript should now "export" instances of Rugs inline with CommonJS standard.
@@ -25,7 +27,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     https://github.com/atomist/rug/issues/156
 
 -   Generation of Rug types documentation
-    
+
+-   minLength and maxLength now default to -1 as per Rug DSL
+    https://github.com/atomist/rug/issues/169
+
 ## [0.9.0] - 2017-01-09
 
 [0.9.0]: https://github.com/atomist/rug/compare/0.8.0...0.9.0

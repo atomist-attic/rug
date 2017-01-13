@@ -17,19 +17,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
--   TypeScript/JavaScript should now "export" instances of Rugs inline with CommonJS standard.
-    Hopefully not a breaking change as there is limited support for automatically exporting legacy ones.
-    
+-   TypeScript/JavaScript should now "export" instances of Rugs inline
+    with CommonJS standard.  Hopefully not a breaking change as there
+    is limited support for automatically exporting legacy ones.
+
 ### Fixed
 
--   Comments are removed from JS files as they are 'required', and relative imports now work correctly
-    when 'export' is used from TS or vars are added to the global exports var
+-   Comments are removed from JS files as they are 'required', and
+    relative imports now work correctly when 'export' is used from TS
+    or vars are added to the global exports var
     https://github.com/atomist/rug/issues/156
 
 -   Generation of Rug types documentation
 
 -   minLength and maxLength now default to -1 as per Rug DSL
     https://github.com/atomist/rug/issues/169
+
+-   Allow Java annotations with properties,
+    https://github.com/atomist/rug/issues/164
 
 ## [0.9.0] - 2017-01-09
 

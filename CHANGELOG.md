@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Default parameter values are now validated
     https://github.com/atomist/rug/issues/168
 
+-   Output parameter name when pattern fails to validate
+    https://github.com/atomist/rug/issues/58
+
 ## [0.9.0] - 2017-01-09
 
 [0.9.0]: https://github.com/atomist/rug/compare/0.8.0...0.9.0

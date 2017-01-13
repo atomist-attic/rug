@@ -14,7 +14,7 @@ object JavaScriptInvokingProjectOperationTest {
        |import {File} from '@atomist/rug/model/Core'
        |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
        |
-           |class SimpleEditor implements ProjectEditor {
+       |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
        |    description: string = "A nice little editor"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]

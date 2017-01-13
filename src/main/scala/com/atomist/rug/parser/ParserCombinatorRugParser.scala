@@ -29,7 +29,6 @@ class ParserCombinatorRugParser(
     })
 
   private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
-    case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter pattern must contain anchors: $s")
     case p: String => RegexParameterPattern(p)
     case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
   }
@@ -43,6 +42,11 @@ class ParserCombinatorRugParser(
   case class AllowedValuesParameterPattern(allowedValues: Seq[String]) extends ParameterPattern
 
   case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern) {
+    pattern match {
+      case RegexParameterPattern(s) if !s.startsWith("^") || !s.endsWith("$") =>
+        throw new InvalidRugParameterPatternException(s"Parameter $name validation pattern must contain anchors: $s")
+      case _ =>
+    }
     annotations foreach { a => a match {
       case d if d.name == "default" =>
         d.value match {
@@ -52,12 +56,13 @@ class ParserCombinatorRugParser(
               v match {
                 case paramRegex(_*) =>
                 case _ =>
-                  throw new InvalidRugParameterDefaultValue(s"parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
+                  throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
             }
             case AllowedValuesParameterPattern(values) =>
-              if (!values.toSet.contains(v)) throw new InvalidRugParameterDefaultValue(s"parameter $name default value ($v) is not amongst its allowed values: $values")
+              if (!values.toSet.contains(v))
+                throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) is not amongst its allowed values: $values")
           }
-          case x => throw new InvalidRugAnnotationValueException(s"invalid default parameter value: $x", a)
+          case x => throw new InvalidRugAnnotationValueException(s"Invalid default parameter value: $x", a)
         }
       case _ =>
       }

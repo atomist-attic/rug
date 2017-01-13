@@ -100,7 +100,9 @@ abstract class JavaScriptInvokingProjectOperation(
       case (_, _details: AnyRef) =>
         val details = _details.asInstanceOf[ScriptObjectMirror]
 
-        val p = Parameter(details.get("name").asInstanceOf[String], details.get("pattern").asInstanceOf[String])
+        val pName = details.get("name").asInstanceOf[String]
+        val pPattern = details.get("pattern").asInstanceOf[String]
+        val p = Parameter(pName, pPattern)
         p.setDisplayName(details.get("displayName").asInstanceOf[String])
 
         details.get("maxLength") match {
@@ -126,13 +128,14 @@ abstract class JavaScriptInvokingProjectOperation(
 
         p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
         p.describedAs(details.get("description").asInstanceOf[String])
-        details.get("pattern").asInstanceOf[String] match {
+        pPattern match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
             case Left(_) =>
-              throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
+              throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern for parameter $pName: $s")
             case Right(pat) => p.setPattern(pat)
           }
-          case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter $name does not contain anchors: $s")
+          case s: String if !s.startsWith("^") || !s.endsWith("$") =>
+            throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
           case s: String => p.setPattern(s)
           case _ =>
         }

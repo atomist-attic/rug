@@ -35,6 +35,25 @@ object TypeScriptRugEditorTest {
       |var editor = new SimpleEditor()
     """.stripMargin
 
+  val SimpleEditorWithBasicParameter =
+    s"""
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class SimpleEditor implements ProjectEditor {
+      |    name: string = "Simple"
+      |    description: string = "My simple editor"
+      |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "$ContentPattern"}]
+      |
+      |    edit(project: Project):Result {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |        return new Result(Status.Success, "")
+      |    }
+      |}
+      |var editor = new SimpleEditor()
+    """.stripMargin
+
   val SimpleLetStyleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core'
@@ -419,7 +438,17 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.getDisplayName should be("content")
     p.getPattern should be(ContentPattern)
     p.getMaxLength should be(100)
+    p.getMinLength should be(-1)
     p.isDisplayable should be(false)
+  }
+
+  it should "default min/max length to -1 if not set" in {
+    val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+      SimpleEditorWithBasicParameter))
+    ed.parameters.size should be(1)
+    val p = ed.parameters.head
+    p.getMinLength should be(-1)
+    p.getMaxLength should be(-1)
   }
 
   it should "find description" in {

@@ -102,8 +102,16 @@ abstract class JavaScriptInvokingProjectOperation(
 
         val p = Parameter(details.get("name").asInstanceOf[String], details.get("pattern").asInstanceOf[String])
         p.setDisplayName(details.get("displayName").asInstanceOf[String])
-        p.setMaxLength(details.get("maxLength").asInstanceOf[Int])
-        p.setMinLength(details.get("minLength").asInstanceOf[Int])
+
+        details.get("maxLength") match {
+          case x: AnyRef => p.setMaxLength(x.asInstanceOf[Int])
+          case _ => p.setMaxLength(-1)
+        }
+        details.get("minLength") match {
+          case x: AnyRef => p.setMinLength(x.asInstanceOf[Int])
+          case _ => p.setMinLength(-1)
+        }
+
         p.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
         val disp = details.get("displayable")
         p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
@@ -120,7 +128,7 @@ abstract class JavaScriptInvokingProjectOperation(
         p.describedAs(details.get("description").asInstanceOf[String])
         details.get("pattern").asInstanceOf[String] match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
-            case Left(sourceOfValidIdentifiers) =>
+            case Left(_) =>
               throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
             case Right(pat) => p.setPattern(pat)
           }

@@ -1,5 +1,7 @@
 package com.atomist.rug
 
+import javax.script.ScriptException
+
 import com.atomist.rug.parser.Annotation
 import com.atomist.util.scalaparsing.ErrorInfo
 import com.atomist.source.FileArtifact
@@ -60,3 +62,6 @@ class InvalidRugUsesException(op: String, msg: String, val uses: String)
 
 class InvalidRugParameterPatternException(msg: String)
    extends BadRugException(msg)
+
+class RugJavaScriptException(msg: String, rootCause: ScriptException)
+   extends BadRugException(msg,rootCause)

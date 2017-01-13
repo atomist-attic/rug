@@ -222,6 +222,26 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     annotateClass(program)
   }
 
+  it should "add an annotation with properties to class" in {
+    val program =
+      """
+        |@description "I add ExtendWith() annotations"
+        |editor ClassAnnotated
+        |
+        |with JavaType c
+        |begin
+        | do addAnnotation "org.junit.jupiter.api.extension" "ExtendWith(value = SpringExtension.class)"
+        |end
+      """.stripMargin
+
+    val result = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = result.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content should include("import org.junit.jupiter.api.extension.ExtendWith;")
+    f.content should include("@ExtendWith(value = SpringExtension.class)")
+  }
+
   it should "remove annotation from class" in {
     val program =
       """

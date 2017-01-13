@@ -62,7 +62,10 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
                       description = "The annotation to add")
                     annotation: String): Unit = {
     JavaTypeType.annotationAddedTo(currentBackingObject, annotation)
-    addImport(s"$pkg.$annotation")
+    val annotationName: String =
+      if (annotation.contains("(")) annotation.substring(0, annotation.indexOf('('))
+      else annotation
+    addImport(s"$pkg.$annotationName")
   }
 
   @ExportFunction(readOnly = false,

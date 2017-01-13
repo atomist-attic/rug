@@ -163,8 +163,8 @@ object TypeScriptRugEditorTest {
        |    description: string = "A nice little editor"
        |    tags: string[] = ["java", "maven"]
        |    parameters: Parameter[] = [
-       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders", displayable: false},
-       |        {name: "num", description: "some num", displayName: "num", pattern: "^[\\d]+$$", maxLength: 100, default: 10}
+       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders is ?", displayable: false},
+       |        {name: "num", description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100, default: "10"}
        |    ]
        |
        |    edit(project: Project, {content, num }: {content: string, num: number}): Result {
@@ -501,7 +501,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.description should be("Content")
     p.getDisplayName should be("content")
     p.getPattern should be(ContentPattern)
-    p.getDefaultValue should be("Anders")
+    p.getDefaultValue should be("Anders is ?")
     p.getMaxLength should be(100)
   }
 

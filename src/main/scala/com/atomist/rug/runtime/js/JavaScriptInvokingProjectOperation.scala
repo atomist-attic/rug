@@ -1,9 +1,9 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{Parameter, Tag}
+import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
-import com.atomist.rug.InvalidRugParameterPatternException
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
@@ -12,7 +12,7 @@ import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -128,6 +128,7 @@ abstract class JavaScriptInvokingProjectOperation(
 
         p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
         p.describedAs(details.get("description").asInstanceOf[String])
+
         pPattern match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
             case Left(_) =>
@@ -137,9 +138,26 @@ abstract class JavaScriptInvokingProjectOperation(
           case s: String if !s.startsWith("^") || !s.endsWith("$") =>
             throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
           case s: String => p.setPattern(s)
-          case _ =>
+          case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
         }
-        // p.setAllowedValues()
+
+        val avs = details.get("allowed_values").asInstanceOf[ScriptObjectMirror]
+        val allowedValues: Seq[String] =
+          if (avs == null || avs.asScala.isEmpty) Seq.empty
+          else if (avs.isArray) avs.values.toArray.map(av => av.toString).toSeq
+          else Seq.empty
+        p.setAllowedValues(allowedValues.map(av => AllowedValue(av, av)))
+
+        if (p.hasDefaultValue) {
+          val paramRegex = p.getPattern.r
+          val defVal = p.getDefaultValue
+          defVal match {
+            case paramRegex(_*) =>
+            case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) does not match validation pattern: ${p.getPattern}")
+          }
+          if (allowedValues.size > 0 && !allowedValues.toSet.contains(defVal))
+            throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) is not among allowed values: $allowedValues")
+        }
         p
     }
     values.toSeq

@@ -91,10 +91,10 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
 
   def getPattern: String = pattern
 
-    def setPattern(pattern: String): this.type = {
-      this.pattern = pattern
-      this
-    }
+  def setPattern(pattern: String): this.type = {
+    this.pattern = pattern
+    this
+  }
 
   def getValidInputDescription = validInputDescription
 

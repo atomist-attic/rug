@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 object JavaScriptInvokingProjectOperationTest {
 
-  val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
+  val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -27,7 +27,7 @@ object JavaScriptInvokingProjectOperationTest {
        |var editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters =
+  val SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
@@ -47,7 +47,7 @@ object JavaScriptInvokingProjectOperationTest {
        |var reviewer = new SimpleReviewer()
     """.stripMargin
 
-  val SimpleEditorWithBrokenParameterPattern =
+  val SimpleEditorWithBrokenParameterPattern: String =
       s"""
          |import {Project} from '@atomist/rug/model/Core'
          |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -68,7 +68,7 @@ object JavaScriptInvokingProjectOperationTest {
          |var editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleReviewerWithBrokenParameterPattern =
+  val SimpleReviewerWithBrokenParameterPattern: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
@@ -88,7 +88,7 @@ object JavaScriptInvokingProjectOperationTest {
        |var reviewer = new SimpleReviewer()
     """.stripMargin
 
-  val SimpleEditorWithInvalidDefaultParameterValuePattern =
+  val SimpleEditorWithInvalidDefaultParameterValuePattern: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -116,7 +116,7 @@ object JavaScriptInvokingProjectOperationTest {
        |var editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleEditorWithValidDefaultParameterValueFromList =
+  val SimpleEditorWithValidDefaultParameterValueFromList: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -145,7 +145,7 @@ object JavaScriptInvokingProjectOperationTest {
        |var editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleEditorWithInvalidDefaultParameterValueList =
+  val SimpleEditorWithInvalidDefaultParameterValueList: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'

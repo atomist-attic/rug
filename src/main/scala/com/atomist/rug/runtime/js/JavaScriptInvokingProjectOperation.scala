@@ -119,11 +119,6 @@ abstract class JavaScriptInvokingProjectOperation(
         p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
         p.setRequired(details.get("required").asInstanceOf[Boolean])
 
-        details.get("default") match {
-          case x: String => p.setDefaultValue(x.toString)
-          case _ =>
-        }
-
         p.addTags(readTagsFromMetadata(details))
 
         p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
@@ -142,26 +137,27 @@ abstract class JavaScriptInvokingProjectOperation(
         }
 
         val avs = details.get("allowed_values").asInstanceOf[ScriptObjectMirror]
-        val allowedValues: Seq[String] =
-          if (avs == null || avs.asScala.isEmpty) Seq.empty
-          else if (avs.isArray) avs.values.toArray.map(av => av.toString).toSeq
-          else Seq.empty
+        val allowedValues: Seq[String] = avs match {
+          case null => Seq.empty
+          case x if x.asScala.isEmpty => Seq.empty
+          case x if x.isArray => x.values.toArray.map(_.toString).toSeq
+          case _ => Seq.empty
+        }
         p.setAllowedValues(allowedValues.map(av => AllowedValue(av, av)))
 
-        if (p.hasDefaultValue) {
-          val paramRegex = p.getPattern.r
-          val defVal = p.getDefaultValue
-          defVal match {
-            case paramRegex(_*) =>
-            case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) does not match validation pattern: ${p.getPattern}")
-          }
-          if (allowedValues.size > 0 && !allowedValues.toSet.contains(defVal))
-            throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) is not among allowed values: $allowedValues")
+        details.get("default") match {
+          case x: String =>
+            if (!p.isValidValue(x))
+              throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $p")
+            p.setDefaultValue(x)
+          case _ =>
         }
+
         p
     }
     values.toSeq
   }
+
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
     *

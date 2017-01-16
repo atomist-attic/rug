@@ -49,31 +49,6 @@ class ParserCombinatorRugParser(
         throw new InvalidRugParameterPatternException(s"Parameter $name validation pattern must contain anchors: $s")
       case _ =>
     }
-
-    annotations.find(a => a.name == "default") match {
-      case Some(a) => checkDefault(a, pattern)
-      case _ =>
-    }
-
-    private def checkDefault(a: Annotation, pattern: ParameterPattern): Unit = a.value match {
-      case Some(v: String) => checkDefaultValue(v, pattern)
-      case Some(x) => throw new InvalidRugAnnotationValueException(s"Parameter $name has invalid default value: $x", a)
-      case None =>
-    }
-
-    private def checkDefaultValue(v: String, pattern: ParameterPattern): Unit = pattern match {
-      case RegexParameterPattern(paramPattern) => checkDefaultAgainstRegex(v, paramPattern.r)
-      case AllowedValuesParameterPattern(values) => checkIfDefaultValueIsAllowed(v, values)
-    }
-
-    private def checkDefaultAgainstRegex(v: String, regex: Regex): Unit = v match {
-      case regex(_*) =>
-      case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
-    }
-
-    private def checkIfDefaultValueIsAllowed(v: String, allowed: Seq[String]): Unit =
-      if (!allowed.contains(v))
-        throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) is not amongst its allowed values: $allowed")
   }
 
   private def parameter: Parser[ParameterDef] = rep(annotation) ~ ParameterToken.r ~
@@ -179,6 +154,9 @@ class ParserCombinatorRugParser(
         case Annotation(DisplayNameAnnotationAttribute, Some(name: String)) => parm = parm.setDisplayName(name)
         case ann => throw new InvalidRugAnnotationValueException(opName, ann)
       }
+      if (parm.hasDefaultValue)
+        if (!parm.isValidValue(parm.getDefaultValue))
+          throw new InvalidRugParameterDefaultValue(s"Parameter ${parm.name} default value (${parm.getDefaultValue}) is not valid: $parm")
       parm
     }
   }

@@ -130,7 +130,8 @@ object JavaScriptInvokingProjectOperationTest {
        |      {
        |        name: "content",
        |        description: "Content",
-       |        pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$",
+       |        pattern: "@url",
+       |        allowed_values: [ "http://a.b.c", "http://g.co", "ftp://f.co" ],
        |        default: "http://g.co",
        |        maxLength: 100
        |      }
@@ -158,7 +159,8 @@ object JavaScriptInvokingProjectOperationTest {
        |      {
        |        name: "content",
        |        description: "Content",
-       |        pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$",
+       |        pattern: "@url",
+       |        allowed_values: [ "http://a.b.c", "http://g.co", "ftp://f.co" ],
        |        default: "http://g.com",
        |        maxLength: 100
        |      }
@@ -203,11 +205,11 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "run simple editor compiled from TypeScript and validate the default from an allowed values regex correctly" in {
+  it should "run simple editor compiled from TypeScript and validate the default from allowed values correctly" in {
     invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorWithValidDefaultParameterValueFromList))
   }
 
-  it should "run simple editor and throw an exception for default parameter value not in alternating regex" in {
+  it should "run simple editor and throw an exception for default parameter value not in list" in {
     assertThrows[InvalidRugParameterDefaultValue] {
       invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorWithInvalidDefaultParameterValueList))
     }

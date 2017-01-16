@@ -45,15 +45,15 @@ class ParameterTest extends FlatSpec with Matchers {
   }
 
   it should "reject a param that doesn't match anchored regexp" in {
-    shouldReject(InputParam, Seq("FavoriteColour"))
+    shouldReject(Parameter("foo","""^[a-z][\w]*$"""), Seq("FavoriteColour"))
   }
 
   it should "don't reject parameter that matches a stricter pattern" in {
-    shouldAccept(InputParam, Seq("eColour"))
+    shouldAccept(InputParamStrict, Seq("eColour"))
   }
 
   it should "reject a parameter that doesn't match the pattern" in {
-    shouldReject(InputParam, Seq("FavoriteColour"))
+    shouldReject(InputParamStrict, Seq("FavoriteColour"))
   }
 
   private def shouldAccept(p: Parameter, values: Seq[String]): Unit = {

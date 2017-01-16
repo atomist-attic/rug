@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{Parameter, Tag}
+import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
@@ -119,6 +119,16 @@ abstract class JavaScriptInvokingProjectOperation(
         p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
         p.setRequired(details.get("required").asInstanceOf[Boolean])
 
+        details.get("default") match {
+          case x: String => p.setDefaultValue(x.toString)
+          case _ =>
+        }
+
+        p.addTags(readTagsFromMetadata(details))
+
+        p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
+        p.describedAs(details.get("description").asInstanceOf[String])
+
         pPattern match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
             case Left(_) =>
@@ -130,22 +140,24 @@ abstract class JavaScriptInvokingProjectOperation(
           case s: String => p.setPattern(s)
           case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
         }
-        val paramRegex = p.getPattern.r
 
-        details.get("default") match {
-          case v: String => v match {
-              case paramRegex(_*) =>
-              case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($v) does not match validation pattern: ${p.getPattern}")
-            }
-            p.setDefaultValue(v)
-          case _ =>
+        val avs = details.get("allowed_values").asInstanceOf[ScriptObjectMirror]
+        val allowedValues: Seq[String] =
+          if (avs == null || avs.asScala.isEmpty) Seq.empty
+          else if (avs.isArray) avs.values.toArray.map(av => av.toString).toSeq
+          else Seq.empty
+        p.setAllowedValues(allowedValues.map(av => AllowedValue(av, av)))
+
+        if (p.hasDefaultValue) {
+          val paramRegex = p.getPattern.r
+          val defVal = p.getDefaultValue
+          defVal match {
+            case paramRegex(_*) =>
+            case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) does not match validation pattern: ${p.getPattern}")
+          }
+          if (allowedValues.size > 0 && !allowedValues.toSet.contains(defVal))
+            throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($defVal) is not among allowed values: $allowedValues")
         }
-
-        p.addTags(readTagsFromMetadata(details))
-
-        p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
-        p.describedAs(details.get("description").asInstanceOf[String])
-
         p
     }
     values.toSeq

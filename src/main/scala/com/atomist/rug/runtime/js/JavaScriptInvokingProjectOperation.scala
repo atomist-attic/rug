@@ -136,15 +136,6 @@ abstract class JavaScriptInvokingProjectOperation(
           case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
         }
 
-        val avs = details.get("allowed_values").asInstanceOf[ScriptObjectMirror]
-        val allowedValues: Seq[String] = avs match {
-          case null => Seq.empty
-          case x if x.asScala.isEmpty => Seq.empty
-          case x if x.isArray => x.values.toArray.map(_.toString).toSeq
-          case _ => Seq.empty
-        }
-        p.setAllowedValues(allowedValues.map(av => AllowedValue(av, av)))
-
         details.get("default") match {
           case x: String =>
             if (!p.isValidValue(x))

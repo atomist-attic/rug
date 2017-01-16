@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
 
+### Added
+
+-   Support for a new TS (JS) Handler programming model as per
+    https://github.com/atomist/rug/issues/105
+    
+### Changed
+
+-   Core.ts is generated and compiled on-the-fly during unit-testing so that
+    the build is not dependent on network or later maven phases until deployment
+
+
 ## [0.10.0]
 
 [0.10.0]: https://github.com/atomist/rug/compare/0.9.0...0.10.0

@@ -118,24 +118,6 @@ class TypeScriptInterfaceGenerator(
 
   val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
-//  DO NOT DELETE
-//  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
-//    val methods = allTypes.map(t => t.name -> allMethods(t)).toMap
-//    val duplicateMethods = methods.values.flatten.groupBy(identity).filter(_ match {
-//      case (_, lst) => lst.size > 1
-//    }).keys.toSeq.sortWith(_.name <= _.name)
-//
-//    val parent = if (duplicateMethods.isEmpty) None else Some(
-//      InterfaceType(ParentInterface, "TypeScript superinterface", duplicateMethods))
-//
-//    parent.toList ::: allTypes.map(t => {
-//      val allMethods = methods.getOrElse(t.name, Nil)
-//      val uniqueMethods = allMethods diff duplicateMethods
-//      if (allMethods.size == uniqueMethods.size) InterfaceType(t.name, t.description, allMethods)
-//      else InterfaceType(t.name, t.description, uniqueMethods, ParentInterface)
-//    }).toList
-//  }
-
   private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
     allTypes.map(t => InterfaceType(t.name, t.description, allMethods(t)))
 
@@ -203,15 +185,6 @@ class TypeScriptInterfaceGenerator(
     val publishedTypeNames = publishedTypes.map(_.name).toSet
     (types -- publishedTypeNames).toSeq.sorted
   }
-
-//  private def findUnpublishedTypes1(publishedTypes: Seq[Typed]): Seq[Typed] = {
-//    val allOperations = publishedTypes.map(_.typeInformation).collect {
-//      case st: StaticTypeInformation => st.operations
-//    }.flatten
-//    val types = allOperations.map(op => op.definedOn).toSet
-//    val publishedTypeNames = publishedTypes.map(_.name).toSet
-//    (types -- publishedTypes).toSeq.sorted
-//  }
 
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val createdFile = emitInterfaces(poa)

@@ -35,7 +35,6 @@ object JavaScriptOperationFinder {
     */
   def fromJavaScriptArchive(rugAs: ArtifactSource,
                             context: JavaScriptContext = null): Seq[ProjectOperation] = {
-
     val jsc: JavaScriptContext =
       if (context == null)
         new JavaScriptContext()
@@ -43,8 +42,7 @@ object JavaScriptOperationFinder {
         context
 
     jsc.load(rugAs)
-    val operations = operationsFromVars(rugAs, jsc)
-    operations
+    operationsFromVars(rugAs, jsc)
   }
 
 

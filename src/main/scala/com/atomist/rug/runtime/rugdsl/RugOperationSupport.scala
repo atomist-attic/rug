@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 
 object RugOperationSupport {
 
-  val YmlFormat = DateTimeFormatter.ofPattern("MMM d yyyy")
+  val YmlFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
 
   // May have been passed in via the infrastructure but couldn't be declared in Rug: Suppress
   // so it doesn't upset binding into JavaScript

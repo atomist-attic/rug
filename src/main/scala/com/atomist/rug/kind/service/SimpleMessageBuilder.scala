@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.service
 
+import java.util
 import java.util.Collections
 
 import com.atomist.tree.TreeNode
@@ -27,7 +28,7 @@ case class ImmutableMessage(
                              node: TreeNode = null,
                              message: String = null,
                              address: String = null,
-                             actions: java.util.List[Action] = Collections.emptyList())
+                             actions: java.util.List[Action] = new util.ArrayList[Action]())
   extends Message {
 
   // We use null for interop and JSON

@@ -130,16 +130,16 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     def getFile(s: String): String = {
       val file = artifacts.findFile(getPath + s)
       if (file.isEmpty) return null
+      //remove these source-map comments because they seem to be breaking nashorn :/
+      val withoutComments = commentPattern.matcher(file.get.content).replaceAll("")
       if(atomistConfig.isAtomistSource(file.get)){
-        //remove these source-map comments because they seem to be breaking nashorn :/
-        val withoutComments = commentPattern.matcher(file.get.content).replaceAll("")
         //add export for those vars without them. TODO should be removed at some point once all have moved over!
         val js = new StringBuilder(withoutComments)
         append(varPattern, withoutComments, js)
         append(letPattern, withoutComments, js)
         js.toString()
       }else{
-        file.get.content
+        withoutComments
       }
     }
 

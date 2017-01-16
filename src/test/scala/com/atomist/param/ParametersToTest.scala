@@ -2,7 +2,7 @@ package com.atomist.param
 
 object ParametersToTest {
 
-  val StringParam = Parameter("name")
+  val StringParam = Parameter("name", "^.*$")
 
   val AgeParam = Parameter("age", "^\\d+$")
 
@@ -16,9 +16,8 @@ object ParametersToTest {
     addParameter(ParamStartingWithX)
   }
 
-  val AllowedValuesParam = Parameter("allowed_value")
-    .setMinLength(5)
+  val AllowedValuesParam = Parameter("test_param", "^(?:foo|something|normal_val|bar)$")
+    .setMinLength(3)
     .setMaxLength(10)
-    .withAllowedValue("foo", "Foo")
-    .withAllowedValue("bar", "Bar")
+    .setDefaultValue("something")
 }

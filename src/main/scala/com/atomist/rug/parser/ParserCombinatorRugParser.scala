@@ -1,6 +1,6 @@
 package com.atomist.rug.parser
 
-import com.atomist.param.{AllowedValue, Parameter, Tag}
+import com.atomist.param.{Parameter, Tag}
 import com.atomist.rug._
 import com.atomist.util.scalaparsing.ScriptBlock
 import com.atomist.source.FileArtifact
@@ -30,22 +30,17 @@ class ParserCombinatorRugParser(
       case s: String => s
     })
 
-  private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
-    case p: String => RegexParameterPattern(p)
-    case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
+  private def paramPattern: Parser[ParameterPattern] = regexParamPattern ^^ {
+    case p: String => ParameterPattern(p)
   }
 
   protected override def parameterName: Parser[String] = identifierRef(ReservedWordsToAvoidInBody, camelCaseIdentifier) ^^ (id => id.name)
 
-  sealed trait ParameterPattern
-
-  case class RegexParameterPattern(pattern: String) extends ParameterPattern
-
-  case class AllowedValuesParameterPattern(allowedValues: Seq[String]) extends ParameterPattern
+  case class ParameterPattern(pattern: String)
 
   case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern) {
     pattern match {
-      case RegexParameterPattern(s) if !s.startsWith("^") || !s.endsWith("$") =>
+      case ParameterPattern(s) if !s.startsWith("^") || !s.endsWith("$") =>
         throw new InvalidRugParameterPatternException(s"Parameter $name validation pattern must contain anchors: $s")
       case _ =>
     }
@@ -61,19 +56,9 @@ class ParserCombinatorRugParser(
       case None =>
     }
 
-    private def checkDefaultValue(v: String, pattern: ParameterPattern): Unit = pattern match {
-      case RegexParameterPattern(paramPattern) => checkDefaultAgainstRegex(v, paramPattern.r)
-      case AllowedValuesParameterPattern(values) => checkIfDefaultValueIsAllowed(v, values)
-    }
-
-    private def checkDefaultAgainstRegex(v: String, regex: Regex): Unit = v match {
-      case regex(_*) =>
-      case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
-    }
-
-    private def checkIfDefaultValueIsAllowed(v: String, allowed: Seq[String]): Unit =
-      if (!allowed.contains(v))
-        throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) is not amongst its allowed values: $allowed")
+    private def checkDefaultValue(v: String, pattern: ParameterPattern): Unit =
+      if (pattern.pattern.r.findAllMatchIn(v).isEmpty)
+        throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: ${pattern.pattern}")
   }
 
   private def parameter: Parser[ParameterDef] = rep(annotation) ~ ParameterToken.r ~
@@ -161,10 +146,7 @@ class ParserCombinatorRugParser(
   private def paramDefsToParameters(opName: String, parameterDefs: Seq[ParameterDef]): Seq[Parameter] = {
     for (pd <- parameterDefs) yield {
       var parm = pd.pattern match {
-        case rp: RegexParameterPattern => Parameter(pd.name, rp.pattern)
-        case avp: AllowedValuesParameterPattern => new Parameter(pd.name).setAllowedValues(
-          avp.allowedValues.map(av => AllowedValue(av, av))
-        )
+        case rp: ParameterPattern => Parameter(pd.name, rp.pattern)
       }
       for (annotation <- pd.annotations) annotation match {
         case Annotation(OptionalAnnotationAttribute, None) => parm = parm.setRequired(false)

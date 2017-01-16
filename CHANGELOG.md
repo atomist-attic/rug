@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Output parameter name when pattern fails to validate
     https://github.com/atomist/rug/issues/58
 
+### Removed
+
+-   Parameter value validation no longer supports a list of allowed
+    values, instead use a regular expression with alternation
+
 ## [0.9.0] - 2017-01-09
 
 [0.9.0]: https://github.com/atomist/rug/compare/0.8.0...0.9.0

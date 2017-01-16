@@ -270,13 +270,13 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     step.args.head.isInstanceOf[WrappedFunctionArg] should be(true)
   }
 
-  it should "allow valid allowed parameter values list" in {
+  it should "allow valid allowed parameter regex" in {
     val prog =
       """
         |@description "Invalid default parameter"
         |editor InvalidDefaultParameter
         |
-        |param name: ["a", "valid", "list"]
+        |param name: ^(?:a|valid|list)$
         |
         |with File f
         | when isJava;
@@ -288,7 +288,6 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getAllowedValues.size should be(3)
     p.isRequired should be(true)
   }
 
@@ -350,14 +349,14 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     an[InvalidRugParameterDefaultValue] should be thrownBy (ri.parse(prog))
   }
 
-  it should "allow valid default value from allowed parameter values list" in {
+  it should "allow valid default value from allowed parameter regex" in {
     val prog =
       """
         |@description "Invalid default parameter"
         |editor InvalidDefaultParameter
         |
         |@default "valid"
-        |param name: ["a", "valid", "list"]
+        |param name: ^(?:a|valid|list)$
         |
         |with File f
         | when isJava;
@@ -369,19 +368,18 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     actions.parameters.size should be(1)
     val p = actions.parameters.head
     p.getName should be("name")
-    p.getAllowedValues.size should be(3)
     p.getDefaultValue should be("valid")
     p.isRequired should be(false)
   }
 
-  it should "not allow an default value not in allowed parameter values list" in {
+  it should "not allow an default value not in allowed parameter regex" in {
     val prog =
       """
         |@description "Invalid default parameter"
         |editor InvalidDefaultParameter
         |
         |@default "not-in-list"
-        |param name: ["a", "valid", "list"]
+        |param name: ^(?:a|valid|list)$
         |
         |with File f
         | when isJava;

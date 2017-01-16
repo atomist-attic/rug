@@ -58,9 +58,6 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
   @JsonProperty("display_name")
   private var displayName: String = _
 
-  @JsonProperty("allowed_values")
-  private val allowedValues = new ListBuffer[AllowedValue]
-
   def getName = name
 
   def getDescription = description
@@ -150,29 +147,10 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     this
   }
 
-  def getAllowedValues = allowedValues.filterNot(_ == null)
-
-  def setAllowedValues(allowedValues: Seq[AllowedValue]): this.type = {
-    this.allowedValues.clear()
-    this.allowedValues ++= allowedValues
-    this
-  }
-
-  def withAllowedValue(allowedValue: AllowedValue): this.type = {
-    allowedValues += allowedValue
-    this
-  }
-
-  def withAllowedValue(name: String, displayName: String): this.type = {
-    withAllowedValue(AllowedValue(name, displayName))
-    this
-  }
-
   def isValidValue(obj: Any) = obj match {
-    case s: String => allowedValues.exists(av => av.name.equals(s)) ||
-      ((minLength < 0 || s.length >= minLength) &&
+    case s: String => (minLength < 0 || s.length >= minLength) &&
         (maxLength < 0 || s.length <= maxLength) &&
-        pattern.r.findAllMatchIn(s).nonEmpty)
+        pattern.r.findAllMatchIn(s).nonEmpty
     case _ => false
   }
 
@@ -180,12 +158,9 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     s"defaultValue='$defaultValue', defaultRef='$defaultRef', pattern='$pattern', " +
     s"validInputDescription='$validInputDescription', required=$required, " +
     s"displayable=$displayable, tags=$tags, maxLength=$maxLength, minLength=$minLength, " +
-    s"displayName='$displayName', allowedValues=$allowedValues}"
+    s"displayName='$displayName'}"
 }
 
 object Parameter {
-
-  def apply(name: String): Parameter = new Parameter(name)
-
   def apply(name: String, pattern: String) = new Parameter(name).setPattern(pattern)
 }

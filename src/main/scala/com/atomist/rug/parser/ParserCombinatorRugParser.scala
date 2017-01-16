@@ -5,6 +5,8 @@ import com.atomist.rug._
 import com.atomist.util.scalaparsing.ScriptBlock
 import com.atomist.source.FileArtifact
 
+import scala.util.matching.Regex
+
 /**
   * Use Scala parser combinator to Parse Rug scripts.
   */
@@ -47,26 +49,31 @@ class ParserCombinatorRugParser(
         throw new InvalidRugParameterPatternException(s"Parameter $name validation pattern must contain anchors: $s")
       case _ =>
     }
-    annotations foreach { a => a match {
-      case d if d.name == "default" =>
-        d.value match {
-          case Some(v: String) => pattern match {
-            case RegexParameterPattern(paramPattern) =>
-              val paramRegex = paramPattern.r
-              v match {
-                case paramRegex(_*) =>
-                case _ =>
-                  throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
-            }
-            case AllowedValuesParameterPattern(values) =>
-              if (!values.toSet.contains(v))
-                throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) is not amongst its allowed values: $values")
-          }
-          case x => throw new InvalidRugAnnotationValueException(s"Invalid default parameter value: $x", a)
-        }
+
+    annotations.find(a => a.name == "default") match {
+      case Some(a) => checkDefault(a, pattern)
       case _ =>
-      }
     }
+
+    private def checkDefault(a: Annotation, pattern: ParameterPattern): Unit = a.value match {
+      case Some(v: String) => checkDefaultValue(v, pattern)
+      case Some(x) => throw new InvalidRugAnnotationValueException(s"Parameter $name has invalid default value: $x", a)
+      case None =>
+    }
+
+    private def checkDefaultValue(v: String, pattern: ParameterPattern): Unit = pattern match {
+      case RegexParameterPattern(paramPattern) => checkDefaultAgainstRegex(v, paramPattern.r)
+      case AllowedValuesParameterPattern(values) => checkIfDefaultValueIsAllowed(v, values)
+    }
+
+    private def checkDefaultAgainstRegex(v: String, regex: Regex): Unit = v match {
+      case regex(_*) =>
+      case _ => throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) does not satisfy its validation regular expression: $paramPattern")
+    }
+
+    private def checkIfDefaultValueIsAllowed(v: String, allowed: Seq[String]): Unit =
+      if (!allowed.contains(v))
+        throw new InvalidRugParameterDefaultValue(s"Parameter $name default value ($v) is not amongst its allowed values: $allowed")
   }
 
   private def parameter: Parser[ParameterDef] = rep(annotation) ~ ParameterToken.r ~

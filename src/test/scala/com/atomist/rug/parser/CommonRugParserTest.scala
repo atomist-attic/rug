@@ -453,7 +453,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
     val parsed = ri.parse(prog).head
     parsed.parameters.size should be(1)
-    parsed.parameters.head.getAllowedValues.map(_.name).toList should equal(Seq("yes", "no"))
+    parsed.parameters.head.getAllowedValues.map(_.value).toList should equal(Seq("yes", "no"))
   }
 
   it should "accept local arguments for run operation" in {

@@ -19,8 +19,7 @@ object ParametersToTest {
   }
 
   val AllowedValuesParam = Parameter("allowed_value")
-    .setMinLength(5)
-    .setMaxLength(10)
     .withAllowedValue("foo", "Foo")
     .withAllowedValue("bar", "Bar")
+    .withAllowedValue("normal_val", "Normal")
 }

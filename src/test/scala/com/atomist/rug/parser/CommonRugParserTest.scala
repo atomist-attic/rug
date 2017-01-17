@@ -51,18 +51,6 @@ object CommonRugParserTest {
        | append what
       """.stripMargin
 
-  val ParamWithMinAndMax =
-    s"""
-       |editor Triplet
-       |
-       | @minLength 6
-       | @maxLength 32
-       | @default "com.foo"
-       |param javaThing: @java_class
-       |
-       |Foobar
-      """.stripMargin
-
   val InvokeOtherOperationWithSingleParameter: String =
     s"""
        |editor Triplet
@@ -432,28 +420,25 @@ class CommonRugParserTest extends FlatSpec with Matchers {
   }
 
   it should "expose parameter min and max values" in {
-    val prog = ParamWithMinAndMax
-
-    val parsed = ri.parse(prog).head
-    parsed.parameters.size should be(1)
-    parsed.parameters.head.getMinLength should be(6)
-    parsed.parameters.head.getMaxLength should be(32)
-    parsed.parameters.head.getDefaultValue should equal("com.foo")
-  }
-
-  it should "expose parameter bounds" in {
+    val name = "AnActualValidClassName"
     val prog =
       s"""
          |editor Triplet
          |
-         |param javaThing: [ "yes","no" ]
+         |@minLength 6
+         |@maxLength 32
+         |@default "$name"
+         |param java_thing: @java_class
          |
-         |Foobar
+       |Foobar
       """.stripMargin
 
     val parsed = ri.parse(prog).head
     parsed.parameters.size should be(1)
-    parsed.parameters.head.getAllowedValues.map(_.name).toList should equal(Seq("yes", "no"))
+    val p = parsed.parameters.head
+    p.getMinLength should be(6)
+    p.getMaxLength should be(32)
+    p.getDefaultValue should be(name)
   }
 
   it should "accept local arguments for run operation" in {

@@ -4,11 +4,13 @@ object ParametersToTest {
 
   val StringParam = Parameter("name")
 
-  val AgeParam = Parameter("age", "^\\d+$")
+  val AgeParam = Parameter("age", "[0-9]+")
 
   val InputParam = Parameter("input_param", """^[a-z]\w*$""")
 
-  val ParamStartingWithX = Parameter("mystery", "^x.*$")
+  val InputParamStrict = Parameter("input_param", """^[a-z][\w]*$""")
+
+  val ParamStartingWithX = Parameter("mystery", "x.*")
 
   val ParameterizedToTest = new ParameterizedSupport {
     addParameter(StringParam)
@@ -17,8 +19,7 @@ object ParametersToTest {
   }
 
   val AllowedValuesParam = Parameter("allowed_value")
-    .setMinLength(5)
-    .setMaxLength(10)
     .withAllowedValue("foo", "Foo")
     .withAllowedValue("bar", "Bar")
+    .withAllowedValue("normal_val", "Normal")
 }

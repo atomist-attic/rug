@@ -5,6 +5,8 @@ import com.atomist.rug._
 import com.atomist.util.scalaparsing.ScriptBlock
 import com.atomist.source.FileArtifact
 
+import scala.util.matching.Regex
+
 /**
   * Use Scala parser combinator to Parse Rug scripts.
   */
@@ -28,10 +30,8 @@ class ParserCombinatorRugParser(
       case s: String => s
     })
 
-  private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
-    case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter pattern must contain anchors: $s")
+  private def paramPattern: Parser[ParameterPattern] = regexParamPattern ^^ {
     case p: String => RegexParameterPattern(p)
-    case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
   }
 
   protected override def parameterName: Parser[String] = identifierRef(ReservedWordsToAvoidInBody, camelCaseIdentifier) ^^ (id => id.name)
@@ -42,7 +42,13 @@ class ParserCombinatorRugParser(
 
   case class AllowedValuesParameterPattern(allowedValues: Seq[String]) extends ParameterPattern
 
-  case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern)
+  case class ParameterDef(name: String, annotations: Seq[Annotation], pattern: ParameterPattern) {
+    pattern match {
+      case RegexParameterPattern(s) if !s.startsWith("^") || !s.endsWith("$") =>
+        throw new InvalidRugParameterPatternException(s"Parameter $name validation pattern must contain anchors: $s")
+      case _ =>
+    }
+  }
 
   private def parameter: Parser[ParameterDef] = rep(annotation) ~ ParameterToken.r ~
     parameterName ~ ColonToken ~ paramPattern ^^ {
@@ -147,6 +153,9 @@ class ParserCombinatorRugParser(
         case Annotation(DisplayNameAnnotationAttribute, Some(name: String)) => parm = parm.setDisplayName(name)
         case ann => throw new InvalidRugAnnotationValueException(opName, ann)
       }
+      if (parm.hasDefaultValue)
+        if (!parm.isValidValue(parm.getDefaultValue))
+          throw new InvalidRugParameterDefaultValue(s"Parameter ${parm.name} default value (${parm.getDefaultValue}) is not valid: $parm")
       parm
     }
   }

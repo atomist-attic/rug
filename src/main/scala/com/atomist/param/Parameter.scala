@@ -61,9 +61,9 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
   @JsonProperty("allowed_values")
   private val allowedValues = new ListBuffer[AllowedValue]
 
-  def getName = name
+  def getName: String = name
 
-  def getDescription = description
+  def getDescription: String = description
 
   @JsonSetter
   def describedAs(description: String): this.type = {
@@ -71,18 +71,18 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     this
   }
 
-  def getDefaultValue = defaultValue
+  def getDefaultValue: String = defaultValue
 
-  def hasDefaultValue = defaultValue != null && !"".equals(defaultValue)
+  def hasDefaultValue: Boolean = defaultValue != null && !"".equals(defaultValue)
 
   def setDefaultValue(defaultValue: String): this.type = {
     this.defaultValue = defaultValue
     this
   }
 
-  def getDefaultRef = defaultRef
+  def getDefaultRef: String = defaultRef
 
-  def hasDefaultRef = defaultRef != null && !"".equals(defaultRef)
+  def hasDefaultRef: Boolean = defaultRef != null && !"".equals(defaultRef)
 
   def setDefaultRef(defaultRef: String): this.type = {
     this.defaultRef = defaultRef
@@ -91,19 +91,19 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
 
   def getPattern: String = pattern
 
-    def setPattern(pattern: String): this.type = {
-      this.pattern = pattern
-      this
-    }
+  def setPattern(pattern: String): this.type = {
+    this.pattern = pattern
+    this
+  }
 
-  def getValidInputDescription = validInputDescription
+  def getValidInputDescription: String = validInputDescription
 
   def setValidInputDescription(validInputDescription: String): this.type = {
     this.validInputDescription = validInputDescription
     this
   }
 
-  def isRequired = required
+  def isRequired: Boolean = required
 
   def setRequired(required: Boolean): this.type = {
     this.required = required
@@ -117,7 +117,7 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     this
   }
 
-  def getTags = tags.filterNot(_ == null)
+  def getTags: ListBuffer[Tag] = tags.filterNot(_ == null)
 
   def tagWith(tag: Tag): this.type = {
     tags += tag
@@ -150,7 +150,7 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     this
   }
 
-  def getAllowedValues = allowedValues.filterNot(_ == null)
+  def getAllowedValues: ListBuffer[AllowedValue] = allowedValues.filterNot(_ == null)
 
   def setAllowedValues(allowedValues: Seq[AllowedValue]): this.type = {
     this.allowedValues.clear()
@@ -168,9 +168,21 @@ class Parameter @JsonCreator()(@JsonProperty("name") val name: String) {
     this
   }
 
-  def isValidValue(obj: Any) = obj match {
-    case s: String => allowedValues.exists(av => av.name.equals(s)) ||
-      ((minLength < 0 || s.length >= minLength) &&
+  /** If obj is a String:
+    * -  If there are allowedValues, return true if value is in the list of allowedValues
+    * -  If allowedValues is empty, return true if value meets the minimum and maximum
+    *    length requirements and it satisfies the parameter validation regular
+    *    expression.
+    * Otherwise return false.
+    * If obj is not a String, return false.
+    *
+    * @param obj value to be checked
+    * @return true is the obj is a valid value, false otherwise.
+    */
+  def isValidValue(obj: Any): Boolean = obj match {
+    case s: String =>
+      if (allowedValues.size > 0) allowedValues.exists(_.value == s)
+      else ((minLength < 0 || s.length >= minLength) &&
         (maxLength < 0 || s.length <= maxLength) &&
         pattern.r.findAllMatchIn(s).nonEmpty)
     case _ => false
@@ -187,5 +199,5 @@ object Parameter {
 
   def apply(name: String): Parameter = new Parameter(name)
 
-  def apply(name: String, pattern: String) = new Parameter(name).setPattern(pattern)
+  def apply(name: String, pattern: String): Parameter = new Parameter(name).setPattern(pattern)
 }

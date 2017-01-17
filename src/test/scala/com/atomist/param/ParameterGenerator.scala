@@ -17,9 +17,7 @@ object ParameterGenerator {
   def validValueFor(p: Parameter, minLength: Int): ParameterValue = p.hasDefaultValue match {
     case true => SimpleParameterValue(p.getName, p.getDefaultValue)
     case false =>
-      // Generex seems to assume anchors and treat explicit regex anchors (^,$) literally
-      // when generating strings, so strip them off before sending to Generex
-      val generex = new Generex(p.getPattern.stripPrefix("^").stripSuffix("$"))
+      val generex = new Generex(p.getPattern)
       val generated = generex.random(minLength)
       SimpleParameterValue(p.getName, generated)
   }

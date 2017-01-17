@@ -1,9 +1,9 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{Parameter, Tag}
+import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
-import com.atomist.rug.InvalidRugParameterPatternException
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
@@ -12,7 +12,7 @@ import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -100,7 +100,9 @@ abstract class JavaScriptInvokingProjectOperation(
       case (_, _details: AnyRef) =>
         val details = _details.asInstanceOf[ScriptObjectMirror]
 
-        val p = Parameter(details.get("name").asInstanceOf[String], details.get("pattern").asInstanceOf[String])
+        val pName = details.get("name").asInstanceOf[String]
+        val pPattern = details.get("pattern").asInstanceOf[String]
+        val p = Parameter(pName, pPattern)
         p.setDisplayName(details.get("displayName").asInstanceOf[String])
 
         details.get("maxLength") match {
@@ -117,30 +119,36 @@ abstract class JavaScriptInvokingProjectOperation(
         p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
         p.setRequired(details.get("required").asInstanceOf[Boolean])
 
-        details.get("default") match {
-          case x: String => p.setDefaultValue(x.toString)
-          case _ =>
-        }
-
         p.addTags(readTagsFromMetadata(details))
 
         p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
         p.describedAs(details.get("description").asInstanceOf[String])
-        details.get("pattern").asInstanceOf[String] match {
+
+        pPattern match {
           case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
             case Left(_) =>
-              throw new InvalidRugParameterPatternException(s"Unable to recognized predefined validation pattern: $s")
+              throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern for parameter $pName: $s")
             case Right(pat) => p.setPattern(pat)
           }
-          case s: String if !s.startsWith("^") || !s.endsWith("$") => throw new InvalidRugParameterPatternException(s"Parameter $name does not contain anchors: $s")
+          case s: String if !s.startsWith("^") || !s.endsWith("$") =>
+            throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
           case s: String => p.setPattern(s)
+          case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
+        }
+
+        details.get("default") match {
+          case x: String =>
+            if (!p.isValidValue(x))
+              throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $p")
+            p.setDefaultValue(x)
           case _ =>
         }
-        // p.setAllowedValues()
+
         p
     }
     values.toSeq
   }
+
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
     *

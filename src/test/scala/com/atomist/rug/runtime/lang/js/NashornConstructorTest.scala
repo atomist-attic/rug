@@ -15,7 +15,7 @@ object NashornConstructorTest {
       |    function SimpleEditor() {
       |        this.name = "Simple";
       |        this.description = "My simple editor";
-      |        this.parameters = [{"name": "content", "description": "desc"}]
+      |        this.parameters = [{"name": "content", "description": "desc", "pattern": "@any"}]
       |    }
       |    SimpleEditor.prototype.edit = function (project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");

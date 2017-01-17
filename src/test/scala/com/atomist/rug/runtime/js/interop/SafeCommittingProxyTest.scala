@@ -1,12 +1,14 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util.Collections
+
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{FileMutableView, FileType}
 import com.atomist.rug.spi.{Command, CommandRegistry}
 import com.atomist.source.StringFileArtifact
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.AbstractJSObject
-import org.scalatest.{FlatSpec, FunSuite, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 
 class SafeCommittingProxyTest extends FlatSpec with Matchers {
 
@@ -64,7 +66,7 @@ class FakeCommandRegistry(fakeCommand: FakeCommand = new FakeCommand) extends Co
 }
 
 class FakeCommand extends Command[FileMutableView] {
-  override def nodeTypes = Set("file")
+  override def nodeTypes = Collections.singleton("file")
 
   override def name: String = "execute"
 

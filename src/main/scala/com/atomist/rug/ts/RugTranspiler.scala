@@ -1,5 +1,7 @@
 package com.atomist.rug.ts
 
+import java.util.Collections
+
 import com.atomist.param.Parameter
 import com.atomist.rug.compiler.Compiler
 import com.atomist.rug.parser._
@@ -20,7 +22,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   override def name = "Rug Transpiler"
 
-  override def extensions =  Seq("rug")
+  override def extensions =  Collections.singleton("rug")
 
   // Make sure the transpiler gets loaded first
   override def order: Int = Integer.MIN_VALUE

@@ -30,8 +30,6 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
     case FalseToken => false
   }
 
-  def stringArray: Parser[Seq[String]] = "[" ~> repsep(literalString, CommaToken) <~ "]"
-
   def literalValue: Parser[Any] =  literalString | literalInt | literalDouble | literalBoolean
 
   def preposition: Parser[String] = oneOf(Prepositions)

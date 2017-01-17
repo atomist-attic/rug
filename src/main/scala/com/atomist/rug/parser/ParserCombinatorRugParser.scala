@@ -30,9 +30,8 @@ class ParserCombinatorRugParser(
       case s: String => s
     })
 
-  private def paramPattern: Parser[ParameterPattern] = (stringArray | regexParamPattern) ^^ {
+  private def paramPattern: Parser[ParameterPattern] = regexParamPattern ^^ {
     case p: String => RegexParameterPattern(p)
-    case values: Seq[String @unchecked] => AllowedValuesParameterPattern(values)
   }
 
   protected override def parameterName: Parser[String] = identifierRef(ReservedWordsToAvoidInBody, camelCaseIdentifier) ^^ (id => id.name)

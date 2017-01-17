@@ -441,21 +441,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     p.getDefaultValue should be(name)
   }
 
-  it should "expose parameter bounds" in {
-    val prog =
-      s"""
-         |editor Triplet
-         |
-         |param javaThing: [ "yes","no" ]
-         |
-         |Foobar
-      """.stripMargin
-
-    val parsed = ri.parse(prog).head
-    parsed.parameters.size should be(1)
-    parsed.parameters.head.getAllowedValues.map(_.value).toList should equal(Seq("yes", "no"))
-  }
-
   it should "accept local arguments for run operation" in {
     val prog =
       s"""

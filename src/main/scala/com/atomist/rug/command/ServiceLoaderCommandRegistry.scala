@@ -7,6 +7,7 @@ import com.atomist.rug.spi.{Command, CommandRegistry}
 import com.atomist.tree.TreeNode
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.collection.JavaConversions
 import scala.collection.JavaConverters._
 
 class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
@@ -23,7 +24,7 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
 
   override def findByNodeAndName(treeNode: TreeNode, name: String): Option[Command[TreeNode]] = {
     val nodeTypes = treeNode.nodeType
-    val candidates = commands.filter(c => c.name == name && c.nodeTypes.exists(t => nodeTypes.contains(t)))
+    val candidates = commands.filter(c => c.name == name && JavaConversions.asScalaSet(c.nodeTypes).exists(t => nodeTypes.contains(t)))
     candidates.length match {
       case 1 => Option(candidates.head)
       case 0 => None

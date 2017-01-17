@@ -1,5 +1,7 @@
 package com.atomist.rug.spi
 
+import java.util.Set
+
 import com.atomist.tree.TreeNode
 
 /**

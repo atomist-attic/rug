@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   ScriptExceptions during initial eval of JavaScript now include filename
 
+-   EveryPom type curtesy of justinedelson
+
 ### Changed
 
 -   TypeScript/JavaScript should now "export" instances of Rugs inline

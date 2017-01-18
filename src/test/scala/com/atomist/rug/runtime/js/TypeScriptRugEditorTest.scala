@@ -19,20 +19,20 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorWithoutParameters =
     """
-      |import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
+      |import {Project} from '@atomist/rug/model/Core';
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor';
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation';
       |
       |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple"
-      |    description: string = "My simple editor"
-      |    edit(project: Project):Result {
+      |    name: string = "Simple";
+      |    description: string = "My simple editor";
+      |    edit(project: Project): Result {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |         `Edited Project now containing ${project.fileCount()} files: \n`);
       |    }
       |}
-      |var editor = new SimpleEditor()
+      |export let editor = new SimpleEditor();
     """.stripMargin
 
   val SimpleEditorWithBasicParameter =
@@ -51,7 +51,7 @@ object TypeScriptRugEditorTest {
       |        return new Result(Status.Success, "")
       |    }
       |}
-      |var editor = new SimpleEditor()
+      |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleLetStyleEditorWithoutParameters =
@@ -60,7 +60,7 @@ object TypeScriptRugEditorTest {
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
-      |let editor: ProjectEditor  = {
+      |export let editor: ProjectEditor  = {
       |    name: "Simple",
       |    description: "My simple editor",
       |    edit(project: Project):Result {
@@ -87,7 +87,7 @@ object TypeScriptRugEditorTest {
       |    }
       |}
       |
-      |var editor = new SimpleEditor()
+      |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditor =
@@ -105,7 +105,7 @@ object TypeScriptRugEditorTest {
       |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
-      |var editor = new SimpleEditor()
+      |export let editor = new SimpleEditor()
 
     """.stripMargin
 
@@ -128,7 +128,7 @@ object TypeScriptRugEditorTest {
        |        );
        |    }
        |  }
-       |var editor = new SimpleEditor()
+       |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleGenerator =
@@ -141,12 +141,16 @@ object TypeScriptRugEditorTest {
       |class SimpleGenerator implements ProjectGenerator{
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
-      |     populate(project: Project, projectName: string) {
+      |     populate(project: Project, project_name: string, {content} : {content: string}) {
+      |        let len: number = content.length;
+      |        if(project_name != "woot"){
+      |           throw Error(`Project name should be woot, but was ${project_name}`)
+      |        }
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
-      |var gen = new SimpleGenerator()
+      |export let gen = new SimpleGenerator()
     """.stripMargin
 
   val SimpleEditorTaggedAndMeta =
@@ -172,7 +176,7 @@ object TypeScriptRugEditorTest {
        |      `Edited Project now containing $${project.fileCount()} files: \n`);
        |    }
        |  }
-       |var myeditor = new SimpleEditor()
+       |export let myeditor = new SimpleEditor()
     """.stripMargin
 
     val SimpleTsUtil =
@@ -205,7 +209,7 @@ object TypeScriptRugEditorTest {
       |    }
       |}
       |
-      |export var editor = new SimpleEditor()
+      |export let editor = new SimpleEditor()
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
@@ -247,7 +251,7 @@ object TypeScriptRugEditorTest {
         |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
         |    }
         |  }
-        |  var editor = new ConstructedEditor()
+        |  export let editor = new ConstructedEditor()
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
@@ -286,7 +290,7 @@ object TypeScriptRugEditorTest {
       |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
-      |  var editor = new ConstructedEditor()
+      |  export let editor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWith: String =
@@ -325,7 +329,7 @@ object TypeScriptRugEditorTest {
       |    }
       |  }
       |
-      |  var editor = new ConstructedEditor()
+      |  export let editor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
@@ -363,7 +367,7 @@ object TypeScriptRugEditorTest {
       |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
-      |  var editor = new ConstructedEditor()
+      |  export let editor = new ConstructedEditor()
       | """.stripMargin
 
 }
@@ -380,6 +384,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleLetStyleEditorWithoutParameters))
   }
 
+  it should "invoke a generator and pass in parameters" in {
+    invokeAndVerifySimpleGenerator(StringFileArtifact(s".atomist/editors/SimpleGenerator.ts", SimpleGenerator))
+  }
 
   it should "run simple editor twice and see no change the second time" in {
     invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
@@ -514,6 +521,18 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       //sm.comment.contains("OK") should be(true)
         sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
     }
+    jsed
+  }
+  private def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectGenerator = {
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectGenerator]
+    jsed.name should be("SimpleGenerator")
+    jsed.setContext(others)
+
+    val prj = jsed.generate(SimpleProjectOperationArguments("", Map("project_name" -> "woot","content" -> "Anders Hjelsberg is God")))
+
+
     jsed
   }
 

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
 
+### Fixed
+
+-   TS generators are now passed project name as second argument as per TS contract
+
 ### Changed
 
 -   **BREAKING** CustomizingProjectGenerator was removed from ProjectGenerator.ts 

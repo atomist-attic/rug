@@ -31,7 +31,7 @@ class JavaScriptInvokingProjectGenerator(
     val tr = time {
       val pmv = new ProjectMutableView(rugAs, startProject, atomistConfig = DefaultAtomistConfig, context)
 
-      val result = invokeMemberWithParameters("populate", wrapProject(pmv), poa)
+      val result = invokeMemberWithParameters("populate", wrapProject(pmv), poa.parameterValueMap("project_name").getValue, poa)
 
       pmv.currentBackingObject
     }

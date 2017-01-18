@@ -1,8 +1,10 @@
 package com.atomist.rug.kind.pom
 
+import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.EmptyArtifactSource
+import com.atomist.source.file.FileSystemArtifactSource
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
 class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach {
@@ -32,7 +34,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
   }
 
-  "PomMutableView" should "get the project group id" in {
+  it should "get the project group id" in {
     testConditions(validPomUut, validPomUut.groupId, "atomist")
   }
 
@@ -132,7 +134,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   val shouldNotBeDirty = false
 
   it should "update groupId" in {
-
     val originalValue = "atomist"
     testConditions(validPomUut, validPomUut.groupId, originalValue, shouldNotBeDirty)
 
@@ -143,7 +144,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update artifactId" in {
-
     val originalValue = "test1"
     testConditions(validPomUut, validPomUut.artifactId, originalValue, shouldNotBeDirty)
 
@@ -154,7 +154,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update version" in {
-
     val originalValue = "0.0.1"
     testConditions(validPomUut, validPomUut.version, originalValue, shouldNotBeDirty)
 
@@ -165,7 +164,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update packaging" in {
-
     val originalValue = "jar"
     testConditions(validPomUut, validPomUut.packaging, originalValue, shouldNotBeDirty)
 
@@ -186,7 +184,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update description" in {
-
     val originalValue = "$description"
     testConditions(validPomUut, validPomUut.description, originalValue, shouldNotBeDirty)
 
@@ -209,7 +206,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "not update parent groupId when parent section is not present" in {
-
     val originalParentGroup = ""
     val originalParentArtifactId = ""
     val originalParentVersion = ""
@@ -226,7 +222,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update existing parent artifactId" in {
-
     val (originalParentGroupId: String, _, originalParentVersion: String) = assertParentBlockInitialState
 
     val newParentArtifactId = "bowling-ball"
@@ -238,7 +233,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "update existing parent version" in {
-
     val (originalParentGroupId: String, originalParentArtifactId: String, _) = assertParentBlockInitialState
 
     val newParentVersion = "1.0.1"
@@ -250,7 +244,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "replace existing parent block" in {
-
     assertParentBlockInitialState
 
     val newParentGroupId = "bowling-team"
@@ -295,7 +288,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "add a new project property" in {
-
     validPomUut.contains("/project/properties/my.new.property") should be (false)
     validPomUut.dirty should be (false)
 
@@ -343,7 +335,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "add a dependency" in {
-
     val dependencyArtifactId = "atomist-artifact"
     val dependencyGroupId = "com.atomist"
 
@@ -357,7 +348,6 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
   }
 
   it should "not add a further dependency if the dependency already exists" in {
-
     val dependencyArtifactId = "spring-boot-starter-web"
     val dependencyGroupId = "org.springframework.boot"
 

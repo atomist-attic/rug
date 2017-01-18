@@ -1,10 +1,12 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
+import com.atomist.source.file.FileSystemArtifactSource
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -70,6 +72,13 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "merge" is pending
+
+  it should "get simple project name with file system backed artifact" in {
+    val as = ParsingTargets.NewStartSpringIoProject
+    as.isInstanceOf[FileSystemArtifactSource] should be (true)
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as)
+    pmv.name should equal("demo")
+  }
 
   it should "handle path and content replace" in {
     val project = JavaTypeUsageTest.NewSpringBootProject

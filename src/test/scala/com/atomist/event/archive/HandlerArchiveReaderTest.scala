@@ -5,6 +5,7 @@ import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.ConsoleMessageBuilder
+import com.atomist.rug.runtime.js.interop.NamedJavaScriptEventHandlerTest
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.PathExpression
@@ -54,6 +55,14 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     handlers.size should be(2)
     handlers.exists(h => h.rootNodeName == "issue") should be(true)
     handlers.exists(h => h.rootNodeName == "commit") should be(true)
+  }
+
+  it should "parse single new-style handler" in {
+    val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
+    val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram)), None, Nil,
+      new ConsoleMessageBuilder("XX", null))
+    handlers.size should be(1)
+    handlers.head.rootNodeName should be("issue")
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

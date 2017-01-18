@@ -38,5 +38,4 @@ class PathExpressionEngine extends ExpressionEngine {
     //println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
     nodesToApplyNextStepTo
   }
-
 }

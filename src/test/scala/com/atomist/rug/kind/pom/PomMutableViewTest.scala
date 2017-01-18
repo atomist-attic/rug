@@ -227,7 +227,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   it should "update existing parent artifactId" in {
 
-    val (originalParentGroupId: String, originalParentArtifactId: String, originalParentVersion: String) = assertParentBlockInitialState
+    val (originalParentGroupId: String, _, originalParentVersion: String) = assertParentBlockInitialState
 
     val newParentArtifactId = "bowling-ball"
     validPomUut.setParentArtifactId(newParentArtifactId)

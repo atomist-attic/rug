@@ -57,8 +57,6 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
-    val filename = "thing.yml"
-
     val newName = "Foo"
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
 

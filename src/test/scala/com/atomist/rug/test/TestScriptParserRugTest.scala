@@ -419,4 +419,43 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val myTest = parsed.head
     myTest.givenInvocations.size should be(2)
   }
+
+  it should "allow a single MAJOR reviewer result in the then clause" in {
+    val prog =
+      """scenario This Reviewer should return a major problem with the indicated message
+        |
+        |given
+        |  test.txt = "foo"
+        |
+        |when
+        |  MajorProblemOnlyReviewer
+        |
+        |then
+        |  numberOfResults 1
+        |  and resultContains 0 "MAJOR" "Expected Message"
+        """.stripMargin
+
+    val parsed = parser.parse(StringFileArtifact("SingleReviewerTest.rt", prog))
+    parsed.head.outcome.assertions.size should be(2)
+  }
+
+  it should "allow a MAJOR and POLISH reviewer result in the then clause" in {
+    val prog =
+      """scenario This Reviewer should return a major and polish problem with the indicated message
+        |
+        |given
+        |  test.txt = "foo"
+        |
+        |when
+        |  MajorProblemOnlyReviewer
+        |
+        |then
+        |  numberOfResults 2
+        |    and resultContains 0 "MAJOR" "Expected Message"
+        |    and resultContains 1 "POLISH" "ANOTHER Expected Message"
+      """.stripMargin
+
+    val parsed = parser.parse(StringFileArtifact("SingleReviewerTest.rt", prog))
+    parsed.head.outcome.assertions.size should be(3)
+  }
 }

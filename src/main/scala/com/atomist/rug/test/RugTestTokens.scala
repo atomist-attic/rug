@@ -32,6 +32,10 @@ object RugTestTokens extends CommonRugTokens {
 
   val FilesUnderToken = "files under"
 
+  val MajorProblem = "MajorProblem"
+
+  val MinorProblem = "MinorProblem"
+
   val KeywordsToAvoidInBody = CommonReservedWords ++
     Set(ScenarioToken,
       GivenToken, ThenToken, NoChangeToken, WhenToken)

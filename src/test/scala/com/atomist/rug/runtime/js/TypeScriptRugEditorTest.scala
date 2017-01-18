@@ -26,10 +26,10 @@ object TypeScriptRugEditorTest {
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
-      |    edit(project: Project):Result {
+      |    edit(project: Project): void {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |
+      |        // `Edited Project now containing ${project.fileCount()} files: \n`
       |    }
       |}
       |var editor = new SimpleEditor()
@@ -39,16 +39,15 @@ object TypeScriptRugEditorTest {
     s"""
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "$ContentPattern"}]
       |
-      |    edit(project: Project):Result {
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success, "")
+      |    edit(project: Project)  {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
       |}
       |var editor = new SimpleEditor()
@@ -63,10 +62,10 @@ object TypeScriptRugEditorTest {
       |let editor: ProjectEditor  = {
       |    name: "Simple",
       |    description: "My simple editor",
-      |    edit(project: Project):Result {
+      |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |
+      |        // `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
     """.stripMargin
@@ -101,8 +100,6 @@ object TypeScriptRugEditorTest {
       |    description: string = "My simple editor"
       |    edit(project: Project) {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
       |var editor = new SimpleEditor()
@@ -123,9 +120,6 @@ object TypeScriptRugEditorTest {
        |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]}]
        |    edit(project: Project, {content} : {content: string}) {
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
-       |      return new Result(Status.Success,
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |        );
        |    }
        |  }
        |var editor = new SimpleEditor()
@@ -138,13 +132,14 @@ object TypeScriptRugEditorTest {
       |import {Status,Result} from '@atomist/rug/operations/RugOperation'
       |
       |
-      |class SimpleGenerator implements ProjectGenerator{
+      |class SimpleGenerator implements ProjectGenerator {
+      |
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
+      |
       |     populate(project: Project, projectName: string) {
       |        project.copyEditorBackingFilesPreservingPath("")
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
       |}
       |var gen = new SimpleGenerator()
@@ -167,10 +162,8 @@ object TypeScriptRugEditorTest {
        |        {name: "num", description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100, default: "10"}
        |    ]
        |
-       |    edit(project: Project, {content, num }: {content: string, num: number}): Result {
-       |      project.addFile("src/from/typescript", content);
-       |      return new Result(Status.Success,
-       |      `Edited Project now containing $${project.fileCount()} files: \n`);
+       |    edit(project: Project, {content, num }: {content: string, num: number}) {
+       |      project.addFile("src/from/typescript", content)
        |    }
        |  }
        |var myeditor = new SimpleEditor()
@@ -321,8 +314,8 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return new Result(Status.Success,
-      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |
+      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       |
@@ -360,8 +353,8 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return new Result(Status.Success,
-      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |
+      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       |  var editor = new ConstructedEditor()

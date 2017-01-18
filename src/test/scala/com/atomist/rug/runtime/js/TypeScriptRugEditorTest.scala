@@ -142,7 +142,6 @@ object TypeScriptRugEditorTest {
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
       |     populate(project: Project, projectName: string) {
-      |        project.copyEditorBackingFilesPreservingPath("")
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }

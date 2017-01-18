@@ -64,7 +64,7 @@ package object ElmModel {
 
     private var _exposing = initialExposing
 
-    override def nodeType: Set[String] = Set(Typed.typeClassToTypeName(classOf[ElmModuleType]))
+    addType(Typed.typeClassToTypeName(classOf[ElmModuleType]))
 
     def exposing: Exposing = _exposing
 

@@ -49,7 +49,7 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
 
   override def nodeName: String = of.nodeName
 
-  override def nodeType: Set[String] = of.nodeType
+  addTypes(of.nodeType)
 
   override def value: String = of.value
 

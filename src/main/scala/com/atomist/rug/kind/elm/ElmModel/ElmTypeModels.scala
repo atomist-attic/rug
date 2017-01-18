@@ -53,12 +53,11 @@ object ElmTypeModels {
 
     appendFields(initialFields)
 
-    override def nodeType: Set[String] = Set(ElmModuleType.RecordTypeAlias)
+    addType(ElmModuleType.RecordTypeAlias)
 
     def fields: Seq[ElmRecordFieldType] = _fields
 
     def add(name: String, typ: String): Unit = {
-      val oldValue = value
       val newRecordAsString = s"$name : $typ"
       val newRecord =
         ElmParserCombinator.parseProduction(

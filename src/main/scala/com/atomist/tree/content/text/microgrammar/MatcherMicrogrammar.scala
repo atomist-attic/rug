@@ -79,5 +79,5 @@ private class MicrogrammarField(name: String,
   extends SimpleMutableContainerTreeNode(
     name: String, fields, startPosition, endPosition) {
 
-  override val nodeType = Set(typ)
+  addType(typ)
 }

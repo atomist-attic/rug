@@ -69,7 +69,7 @@ class ScalarValueView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  override def nodeType:Set[String] = currentBackingObject.nodeType
+  addTypes(currentBackingObject.nodeType)
 
   override def nodeName: String = originalBackingObject.nodeName
 

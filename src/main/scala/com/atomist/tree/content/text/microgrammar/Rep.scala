@@ -69,7 +69,7 @@ private case class EmptyContainerTreeNode(name: String, pos: InputPosition)
 
   override def endPosition: InputPosition = startPosition
 
-  override def nodeType: Set[String] = Set("empty")
+  addType("empty")
 
   override def value: String = ""
 }

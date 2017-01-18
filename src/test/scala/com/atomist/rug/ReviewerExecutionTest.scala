@@ -31,6 +31,17 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
        |minorProblem "$comment";
        """.stripMargin
 
+  def alwaysGripeAndComplain(comment: String, comment2: String) =
+    s"""
+       |@description "Find all EJBs"
+       |reviewer AlwaysGripeAndComplain
+       |
+       |with Project p begin
+       |  do majorProblem "$comment"
+       |  do minorProblem "$comment2"
+       |end
+       """.stripMargin
+
   val combined =
     """
       |reviewer Combined
@@ -83,11 +94,28 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
     rr.comments(1).severity should equal(POLISH)
   }
 
+  it should "execute a reviewer with more than one comment" in {
+    val as: ArtifactSource = new SimpleFileBasedArtifactSource("",
+      StringFileArtifact("Thing.java",
+        """
+          |import javax.ejb.*;
+          |public class Thing {}
+        """.stripMargin))
+    val comment = "EJB Alert! EJB Alert!"
+    val comment2 = "Needs Juergenization"
+    val prog = alwaysGripeAndComplain(comment, comment2)
+    val rr = review(as, prog)
+    rr.comments.size should be(2)
+    rr.comments.head.comment should equal(comment)
+    rr.comments.head.severity should equal(MAJOR)
+    rr.comments(1).comment should equal(comment2)
+    rr.comments(1).severity should equal(POLISH)
+  }
+
   private def review(as: ArtifactSource, prog: String): ReviewResult = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
     val pe = eds.head.asInstanceOf[ProjectReviewer]
     pe.review(as, SimpleProjectOperationArguments.Empty)
   }
-
 }

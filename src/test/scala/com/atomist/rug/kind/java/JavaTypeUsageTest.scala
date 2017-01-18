@@ -21,7 +21,8 @@ object JavaTypeUsageTest extends Matchers {
     Seq(
       StringFileArtifact("pom.xml", "<maven></maven"),
       StringFileArtifact("/src/main/java/Dog.java",
-        """class Dog {
+        """import java.util.Set;
+          |class Dog {
           |
           |   private String stringField;
           |
@@ -405,6 +406,25 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     f.content.lines.size should be > 0
     f.content shouldNot include("import java.util.List")
+  }
+
+  it should "remove an import" in {
+    val program =
+      """
+        |editor ClassAnnotated
+        |
+        |with JavaSource j
+        |with JavaType c
+        |begin
+        |  do removeImport 'java.util.Set'
+        |end
+      """.stripMargin
+
+    val r = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = r.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("import java.util.Set")
   }
 
   it should "not add import for annotation added to class in same package" in pendingUntilFixed {

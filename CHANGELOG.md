@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
+
+## [0.10.0]
+
+[0.10.0]: https://github.com/atomist/rug/compare/0.9.0...0.10.0
 
 ### Added
 
 -   Parameter validation regex `@version_range`
 
 -   ScriptExceptions during initial eval of JavaScript now include filename
+
+-   EveryPom type curtesy of @justinedelson
 
 ### Changed
 

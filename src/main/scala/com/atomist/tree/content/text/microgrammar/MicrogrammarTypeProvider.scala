@@ -22,7 +22,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   override def description: String = s"Microgrammar type for [$name]"
 
   /**
-    * Microgrammarsars can only be resolved from under files
+    * Microgrammars can only be resolved from under files
     * @return set of node types this can resolve from. File type only
     */
   override def resolvesFromNodeTypes: Set[String] = Set(Typed.typeClassToTypeName(classOf[FileType]))

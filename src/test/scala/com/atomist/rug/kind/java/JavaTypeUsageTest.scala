@@ -21,8 +21,16 @@ object JavaTypeUsageTest extends Matchers {
     Seq(
       StringFileArtifact("pom.xml", "<maven></maven"),
       StringFileArtifact("/src/main/java/Dog.java",
-        """class Dog {
+        """
+          |import java.util.Set;
+          |import com.foo.Bar;
+          |import com.someone.ComFooBar;
+          |import com.someone.FooBar;
           |
+          |@Bar
+          |class Dog {
+          |
+          |   @ComFooBar
           |   private String stringField;
           |
           |   public Dog() {}
@@ -31,9 +39,9 @@ object JavaTypeUsageTest extends Matchers {
           |     this.stringField = stringField;
           |   }
           |
+          |   @FooBar
           |   public void bark() {
           |   }
-          |
           |}""".stripMargin)
     )
   )
@@ -245,13 +253,12 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove annotation from class" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add Bar annotations"
         |editor ClassAnnotated
         |
         |with JavaType c
         |begin
-        | do addAnnotation { "com.foo" } "FooBar"
-        | do removeAnnotation { "com.foo" } "FooBar"
+        | do removeAnnotation { "com.foo" } "Bar"
         |end
       """.stripMargin
 
@@ -259,8 +266,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = result.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.foo.FooBar;")
-    f.content shouldNot include("@FooBar")
+    f.content should include("import com.foo.Bar;")
+    f.content shouldNot include("@Bar")
   }
 
   val dog = StringFileArtifact(
@@ -405,6 +412,25 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     f.content.lines.size should be > 0
     f.content shouldNot include("import java.util.List")
+  }
+
+  it should "remove an import" in {
+    val program =
+      """
+        |editor ClassAnnotated
+        |
+        |with JavaSource j
+        |with JavaType c
+        |begin
+        |  do removeImport 'java.util.Set'
+        |end
+      """.stripMargin
+
+    val r = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = r.findFile("src/main/java/Dog.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("import java.util.Set")
   }
 
   it should "not add import for annotation added to class in same package" in pendingUntilFixed {
@@ -682,7 +708,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |with JavaType c
         |with method m when { m.name().contains("bark") }
         |begin
-        |  do addAnnotation "com.someone" "FooBar"
         |  do removeAnnotation "com.someone" "FooBar"
         |end
       """.stripMargin
@@ -726,8 +751,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |with JavaType c
         |with field f when { f.name().contains("Field") && f.parent().name().contains("Dog") }
         |begin
-        |  do addAnnotation "com.someone" "FooBar"
-        |  do removeAnnotation "com.someone" "FooBar"
+        |  do removeAnnotation "com.someone" "ComFooBar"
         |end
       """.stripMargin
 
@@ -735,7 +759,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val f = r.findFile("src/main/java/Dog.java").get
 
     f.content.lines.size should be > 0
-    f.content should include("import com.someone.FooBar;")
-    f.content shouldNot include("@FooBar")
+    f.content should include("import com.someone.ComFooBar;")
+    f.content shouldNot include("@ComFooBar")
   }
 }

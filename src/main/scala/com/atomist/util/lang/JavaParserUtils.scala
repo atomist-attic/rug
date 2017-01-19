@@ -1,11 +1,10 @@
 package com.atomist.util.lang
 
 import com.github.javaparser.ASTHelper
-import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
-import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType, VoidType, PrimitiveType => JavaParserPrimitiveType}
+import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType}
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr._
-import com.github.javaparser.ast.stmt.{BlockStmt, ReturnStmt, Statement, ThrowStmt}
+import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
 
 import scala.collection.JavaConverters._
 
@@ -123,7 +122,7 @@ object JavaParserUtils {
     fqns.foreach(fqn => {
       val importDefinition = cu.getImports.asScala.find(_.toString contains fqn)
       if (importDefinition.isDefined) {
-        cu.getImports.remove(new ImportDeclaration(new NameExpr(fqn), false, false))
+        cu.getImports.remove(importDefinition.get)
       }
     })
   }

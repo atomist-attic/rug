@@ -22,7 +22,6 @@ case class ErrorInfo(
   override def toString: String =
     s"$filePath:$line:$col: $message\n$showLine"
 
-  // TODO could pass in Scala Position and use longString
   private def showLine = {
     if (line < 1 || col < 1)
       s"Cannot show line: Position ($line/$col) is invalid"

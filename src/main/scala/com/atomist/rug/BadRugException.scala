@@ -20,7 +20,7 @@ class BadRugSyntaxException(
                              rootCause: Throwable = null)
   extends BadRugException(info.message, rootCause) {
 
-  override def getMessage = info.toString
+  override def getMessage: String = info.toString
 
   override def toString: String =
     info.toString

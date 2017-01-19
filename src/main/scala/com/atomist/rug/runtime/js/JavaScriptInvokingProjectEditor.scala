@@ -13,16 +13,14 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * ProjectEditor implementation that invokes a JavaScript function.
   */
 class JavaScriptInvokingProjectEditor(
-                                   jsc: JavaScriptContext,
-                                   jsVar: ScriptObjectMirror,
-                                   rugAs: ArtifactSource
-                                 )
+                                       jsc: JavaScriptContext,
+                                       jsVar: ScriptObjectMirror,
+                                       rugAs: ArtifactSource
+                                     )
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectEditorSupport {
 
   override val name: String = jsVar.getMember("name").asInstanceOf[String]
-
-  override def impacts: Set[Impact] = Impacts.UnknownImpacts
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 
@@ -45,7 +43,7 @@ class JavaScriptInvokingProjectEditor(
           NoModificationNeeded("OK")
         }
         else {
-          SuccessfulModification(pmv.currentBackingObject, impacts, "OK")
+          SuccessfulModification(pmv.currentBackingObject, "OK")
         }
       }
       catch {

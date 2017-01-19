@@ -35,10 +35,6 @@ class RugDrivenProjectEditor(
           pre.predicateOrReviewerName)
     })
 
-  override def impacts: Set[Impact] = {
-    Set[Impact](CodeImpact)
-  }
-
   override def applicability(artifactSource: ArtifactSource): Applicability = {
     program.preconditions
       .map(pre => Applicability(evaluateCondition(pre, artifactSource), ""))
@@ -86,7 +82,7 @@ class RugDrivenProjectEditor(
           NoModificationNeeded(
             program.successBlock.map(m => m.message).getOrElse("OK"))
         } else
-          SuccessfulModification(currentProjectState.currentBackingObject, impacts,
+          SuccessfulModification(currentProjectState.currentBackingObject,
             program.successBlock.map(m => m.message).getOrElse("OK"))
       } catch {
         case f: InstantEditorFailureException =>

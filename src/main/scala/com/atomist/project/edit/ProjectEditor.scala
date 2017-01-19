@@ -11,12 +11,6 @@ import com.atomist.source.ArtifactSource
 trait ProjectEditor extends ProjectDelta {
 
   /**
-    * The expected impact of this editor. It may vary between applications,
-    * hence an Impact object will be returned in a SuccessfulModification
-    */
-  def impacts: Set[Impact]
-
-  /**
     * Attempt to create a new ArtifactSource based on applying this editor to the given one.
     *
     * @param as existing sources

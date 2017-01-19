@@ -23,14 +23,12 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
 
   private val configExtractor = new ExtractApplicationProperties(source = ApplicationPropertiesFilePath)
 
-  override val impacts: Set[Impact] = Set(ConfigImpact)
-
   override def modify(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
     as.findFile(ApplicationPropertiesFilePath).map(f => {
       val config = configExtractor(f)
       val applicationYml: FileArtifact = StringFileArtifact(ApplicationYmlPath, toYmlString(config))
       val result = as + applicationYml - ApplicationPropertiesFilePath
-      SuccessfulModification(result, impacts, name)
+      SuccessfulModification(result, name)
     }).getOrElse(FailedModificationAttempt(s"Did not find application.properties file at $ApplicationPropertiesFilePath in ${as.id}"))
   }
 

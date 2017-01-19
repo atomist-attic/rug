@@ -388,10 +388,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
     override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
-      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")), Set(), "")
+      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")), "")
     }
 
-    override def impacts: Set[Impact] = Set()
     override def applicability(as: ArtifactSource): Applicability = Applicability.OK
     override def name: String = "other"
     override def description: String = name

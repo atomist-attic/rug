@@ -100,10 +100,8 @@ class TypeDoc(
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val createdFile = createFile(poa)
     val r = as + createdFile
-    SuccessfulModification(r, impacts, "OK")
+    SuccessfulModification(r, "OK")
   }
-
-  override def impacts: Set[Impact] = Set(ReadmeImpact)
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 

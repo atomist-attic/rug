@@ -34,11 +34,8 @@ object ApplicationYmlKeyAddingEditor extends ProjectEditorSupport {
     val result = appendToFile(as, yamlFile, stringifiedYamlEntries)
     SuccessfulModification(
       result,
-      impacts,
       "Added keys to yaml file")
   }
-
-  override def impacts: Set[Impact] = Set(ConfigImpact)
 
   /**
     * We can apply to anything. If a YML file doesn't exist, we'll create one.

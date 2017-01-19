@@ -28,14 +28,12 @@ class ProjectEditorTest extends FlatSpec with Matchers {
     addParameter(Parameter("class", ParameterValidationPatterns.JavaClass))
 
     override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
-      SuccessfulModification(as, impacts(), "Done")
+      SuccessfulModification(as, "Done")
     }
-
-    override def impacts(): Set[Impact] = Set()
 
     override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 
-    override def description(): String = ""
+    override def description: String = ""
 
     override def name(): String = ""
   }

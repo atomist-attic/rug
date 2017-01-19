@@ -55,7 +55,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     * Run the given test programs
     *
     * @param testPrograms test programs
-    * @param testResources backing archive for thetests
+    * @param testResources backing archive for the tests
     * @param context known project operations. What we're testing
     * @param namespace current namespace for use in name resolution
     * @return a test report

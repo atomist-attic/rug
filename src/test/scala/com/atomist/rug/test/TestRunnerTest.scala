@@ -1,6 +1,8 @@
 package com.atomist.rug.test
 
+import com.atomist.project.ProjectOperation
 import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.parser.ParserCombinatorRugParser
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -32,6 +34,40 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), Nil)
     executedTests.tests.size should be(1)
     executedTests.tests.head.passed should be(false)
+  }
+
+  it should "test a generator" in {
+    val generator = StringFileArtifact(".atomist/editors/OneFileGenerator.rug",
+    """generator OneFileGenerator
+      |
+      |with Project p
+      |   do eval { print("I am so happy") }
+    """.stripMargin)
+    val theOneFile = StringFileArtifact("happy.txt", "Joy Joy")
+    val rugArchive = SimpleFileBasedArtifactSource(theOneFile, generator)
+    val parsedGenerator: Seq[ProjectOperation] = new DefaultRugPipeline().create(rugArchive, None)
+
+    val generatorTest = StringFileArtifact(".atomist/tests/OneFileGenerator.rt",
+      """scenario SomethingIsGenerated
+        |
+        |given
+        |  OneFileGenerator
+        |
+        |then
+        |  fileExists "happy.txt"
+      """.stripMargin)
+
+    val parsedTest = RugTestParser.parse(generatorTest)
+    val executedTests = testRunner.run(parsedTest, rugArchive, parsedGenerator)
+
+
+    executedTests.tests.size should be(1)
+    val testResult = executedTests.tests.head
+    if (!testResult.passed) {
+       println(testResult.toString)
+    }
+    testResult.passed should be(true)
+
   }
 
   it should "pass with passing editor and file created inline" in {

@@ -42,6 +42,8 @@ object RugParser extends CommonRugTokens {
 
   val EditorToken = "editor"
 
+  val GeneratorToken = "generator"
+
   val ReviewerToken = "reviewer"
 
   val PredicateToken = "predicate"

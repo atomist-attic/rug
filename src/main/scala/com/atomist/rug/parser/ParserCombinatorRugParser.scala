@@ -65,6 +65,8 @@ class ParserCombinatorRugParser(
 
   object Predicate extends Op
 
+  object Generator extends Op
+
   case class OperationSpec(
                             op: Op,
                             name: String,
@@ -82,6 +84,7 @@ class ParserCombinatorRugParser(
           case PredicateToken => Predicate
           case ReviewerToken => Reviewer
           case ExecutorToken => Executor
+          case GeneratorToken => Generator
         }
         var ed = OperationSpec(o, name, Nil, name, None, imports)
         for (annotation <- annotations) annotation match {
@@ -176,6 +179,18 @@ class ParserCombinatorRugParser(
           compBlock, actions)
     }
 
+  private def rugGenerator: Parser[RugEditor] =
+    operationSpec(GeneratorToken) ~
+      rep(precondition) ~ opt(postcondition) ~
+      rep(parameter) ~ rep(letStatement) ~
+      opActions ^^ {
+      case opSpec ~ preconditions ~ postcondition ~ params ~ compBlock ~ actions =>
+        RugEditor(opSpec.name, opSpec.publishedName, opSpec.tags, opSpec.description, opSpec.imports,
+          preconditions, postcondition,
+          paramDefsToParameters(opSpec.name, params),
+          compBlock, actions)
+    }
+
   private def rugReviewer: Parser[RugReviewer] =
     operationSpec(ReviewerToken) ~
       rep(parameter) ~ rep(letStatement) ~
@@ -247,7 +262,10 @@ class ParserCombinatorRugParser(
           compBlock, actions)
     }
 
-  protected def rugProgram: Parser[RugProgram] = rugPredicate | rugEditor | rugReviewer | rugExecutor
+  protected def rugProgram: Parser[RugProgram] = (rugPredicate | rugEditor | rugReviewer | rugExecutor | rugGenerator | "\\w+".r) ^^ {
+    case s: String => throw new BadRugException(s"Expected one of: ${Seq(PredicateToken, EditorToken, ReviewerToken, ExecutorToken, GeneratorToken).mkString(", ")}, but found [$s]") {}
+    case p: RugProgram => p
+  }
 
   private def rugPrograms: Parser[Seq[RugProgram]] = phrase(rep1(rugProgram))
 

@@ -41,7 +41,7 @@ object RugTestParser
 
   private def fileSpec: Parser[FileSpec] = inlineFile | loadedFile | filesUnder | archiveRoot | emptyArchive
 
-  private def givenFiles: Parser[GivenFiles] = GivenToken.r ~> rep1(fileSpec) ^^ (f => GivenFiles(f))
+  private def givenFiles: Parser[GivenFiles] = GivenToken.r ~> rep(fileSpec) ^^ (f => GivenFiles(f))
 
   private def givenOperations: Parser[Seq[RunOtherOperation]] = rep(runOtherOperation)
 

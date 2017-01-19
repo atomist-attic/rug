@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+-   TypeScript editors now return void. Use the new `ProjectMutableView` `describeChange` method to 
+    add any comments about the working of your editor.
+
+
 [Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
 
 ## [0.10.0]

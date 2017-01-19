@@ -77,7 +77,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TreeNode>(project, "//File()/method()/type()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.value() + "x")
+      |        n.update(n.value() + "_x")
       |      })
       |    }
       |  }
@@ -102,7 +102,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.type.value() + "x")
+      |        n.update(n.type().value() + "_x")
       |      })
       |    }
       |  }
@@ -127,19 +127,19 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        //sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
+        sm.result.allFiles.exists(f => f.content.contains("_x"))
     }
     jsed
   }
 
-  it should "navigate nested using property" in pendingUntilFixed {
+  it should "navigate nested using property" in {
     val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingProperty)))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-      //sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
+        sm.result.allFiles.exists(f => f.content.contains("_x"))
     }
     jsed
   }

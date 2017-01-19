@@ -3,7 +3,8 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.content.text.microgrammar.MicrogrammarNode
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
 
@@ -13,8 +14,8 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
-  * @param types  Rug types we are fronting. This is a union type.
-  * @param node node we are fronting
+  * @param types Rug types we are fronting. This is a union type.
+  * @param node  node we are fronting
   */
 class SafeCommittingProxy(types: Set[Typed],
                           val node: TreeNode,
@@ -37,16 +38,23 @@ class SafeCommittingProxy(types: Set[Typed],
         op => name.equals(op.name))
 
       if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-            throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found ${possibleOps}")
+        if (node.nodeType.contains(MicrogrammarNode.MicrogrammarNodeType)) {
+          // Navigation on a node
+          new FixedReturnProxy(name, node)
+        }
+        else
+          throw new RugRuntimeException(null,
+            s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found ${possibleOps}")
       }
-      new MethodInvocationProxy(name, possibleOps)
+      else
+        new MethodInvocationProxy(name, possibleOps)
 
     case _ =>
       // No static type information
       throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
   }
 
+  // Nashorn proxy for a method invocation that delegates using reflection
   private class MethodInvocationProxy(name: String, possibleOps: Seq[TypeOperation])
     extends AbstractJSObject {
 
@@ -81,6 +89,24 @@ class SafeCommittingProxy(types: Set[Typed],
       }
     }
   }
+
+  // Nashorn proxy for a method invocation that retrieves tree node
+  private class FixedReturnProxy(name: String, node: TreeNode)
+    extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      val r = node match {
+        case ctn: ContainerTreeNode =>
+          ctn.childrenNamed(name)
+      }
+      //println(s"Calling $name")
+      // TODO consider collection returns
+      node
+    }
+  }
+
 }
 
 private object SafeCommittingProxy {
@@ -95,6 +121,7 @@ private object SafeCommittingProxy {
 
 /**
   * Return a type that exposes all the operations on the given set of types
+  *
   * @param types set of types to expose
   */
 private case class UnionType(types: Set[Typed]) extends Typed {

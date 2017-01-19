@@ -38,6 +38,12 @@ function main() {
         fi
     fi
 
+
+    if ! $mvn test -Dmaven.javadoc.skip=true; then
+        err "tests failed"
+        return 1
+    fi
+
     if ! $mvn scoverage:report -Dmaven.javadoc.skip=true; then
         err "failed to generated test coverage report, continuing"
     fi

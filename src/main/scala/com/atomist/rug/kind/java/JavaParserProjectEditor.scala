@@ -24,8 +24,6 @@ abstract class JavaParserProjectEditor(val name: String,
   private val extractJavaFiles: ArtifactSource => Seq[FileArtifact] =
     a => JavaFilesExtractor(a / javaSourcePath).asScala
 
-  override def impacts: Set[Impact] = Set(CodeImpact)
-
   final override def applicability(as: ArtifactSource): Applicability = {
     Applicability(JavaAssertions.isJava(as), "IsJava")
   }
@@ -55,8 +53,7 @@ abstract class JavaParserProjectEditor(val name: String,
       val result = as ✎ fe
 
       result.allFiles.filter(_.name.endsWith("java")).foreach(f => logger.debug(s"${f.path}\n${f.content}\n"))
-
-      SuccessfulModification(result, impacts, s"$name success")
+      SuccessfulModification(result)
     }
   }
 

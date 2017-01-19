@@ -86,8 +86,7 @@ case class RugEditor(
                       postcondition: Option[Condition],
                       parameters: Seq[Parameter],
                       computations: Seq[Computation],
-                      actions: Seq[Action],
-                      successBlock: Option[SuccessBlock]
+                      actions: Seq[Action]
                     )
   extends CanInvokeProjectOperation
 

@@ -26,10 +26,8 @@ object TypeScriptRugEditorTest {
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple";
       |    description: string = "My simple editor";
-      |    edit(project: Project): Result {
+      |    edit(project: Project): void {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`);
       |    }
       |}
       |export let editor = new SimpleEditor();
@@ -39,16 +37,15 @@ object TypeScriptRugEditorTest {
     s"""
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "$ContentPattern"}]
       |
-      |    edit(project: Project):Result {
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success, "")
+      |    edit(project: Project)  {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
       |}
       |export let editor = new SimpleEditor()
@@ -63,10 +60,10 @@ object TypeScriptRugEditorTest {
       |export let editor: ProjectEditor  = {
       |    name: "Simple",
       |    description: "My simple editor",
-      |    edit(project: Project):Result {
+      |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |
+      |        // `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
     """.stripMargin
@@ -101,8 +98,6 @@ object TypeScriptRugEditorTest {
       |    description: string = "My simple editor"
       |    edit(project: Project) {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
       |export let editor = new SimpleEditor()
@@ -123,9 +118,6 @@ object TypeScriptRugEditorTest {
        |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]}]
        |    edit(project: Project, {content} : {content: string}) {
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
-       |      return new Result(Status.Success,
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |        );
        |    }
        |  }
        |export let editor = new SimpleEditor()
@@ -168,10 +160,8 @@ object TypeScriptRugEditorTest {
        |        {name: "num", description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100, default: "10"}
        |    ]
        |
-       |    edit(project: Project, {content, num }: {content: string, num: number}): Result {
-       |      project.addFile("src/from/typescript", content);
-       |      return new Result(Status.Success,
-       |      `Edited Project now containing $${project.fileCount()} files: \n`);
+       |    edit(project: Project, {content, num }: {content: string, num: number}) {
+       |      project.addFile("src/from/typescript", content)
        |    }
        |  }
        |export let myeditor = new SimpleEditor()
@@ -217,7 +207,7 @@ object TypeScriptRugEditorTest {
         |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |import {Match} from '@atomist/rug/tree/PathExpression'
         |import {File} from '@atomist/rug/model/Core'
-        |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+        |import {Parameter} from '@atomist/rug/operations/RugOperation'
         |
         |class PomFile extends PathExpression<Project,File> {
         |
@@ -245,7 +235,7 @@ object TypeScriptRugEditorTest {
         |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
         |        for (let f of project.files())
         |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-        |        return new Result(Status.Success,
+        |        project.describeChange(
         |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
         |    }
         |  }
@@ -322,8 +312,8 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return new Result(Status.Success,
-      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |
+      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       |
@@ -361,8 +351,8 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return new Result(Status.Success,
-      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |
+      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       |  export let editor = new ConstructedEditor()
@@ -400,10 +390,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
     override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
-      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")), Set(), "")
+      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
     }
 
-    override def impacts: Set[Impact] = Set()
     override def applicability(as: ArtifactSource): Applicability = Applicability.OK
     override def name: String = "other"
     override def description: String = name
@@ -462,19 +451,20 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "have the PathExpressionEngine injected" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed, _) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpression))
     ed.description should be ("A nice little editor")
   }
 
   it should "have the PathExpressionEngine injected and use an object path expression" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed,sm) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionObject))
     ed.description should be ("A nice little editor")
+    sm.changeLogEntries.size should be (1)
   }
 
   it should "have the PathExpressionEngine injected using PathExpressionEngine.with" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed, _) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionUsingWith))
     ed.description should be ("A nice little editor")
   }
@@ -509,7 +499,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.getMaxLength should be(100)
   }
 
-  private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptInvokingProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TestUtils.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
@@ -518,8 +508,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
       //sm.comment.contains("OK") should be(true)
         sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
+        (jsed, sm)
     }
-    jsed
   }
   private def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectGenerator = {
     val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))

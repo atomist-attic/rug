@@ -23,7 +23,7 @@ class PropertiesUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case success: SuccessfulModification => logger.debug("" + success.impacts)
+      case success: SuccessfulModification =>
     }
   }
 

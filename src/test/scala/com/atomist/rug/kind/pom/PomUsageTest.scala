@@ -37,7 +37,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case success: SuccessfulModification => logger.debug("" + success.impacts)
+      case success: SuccessfulModification =>
     }
   }
 
@@ -51,7 +51,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case success: SuccessfulModification => logger.debug("" + success.impacts)
+      case success: SuccessfulModification =>
     }
   }
 

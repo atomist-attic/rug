@@ -216,10 +216,8 @@ class TypeScriptInterfaceGenerator(
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
     val createdFile = emitInterfaces(poa)
     val r = as + createdFile
-    SuccessfulModification(r, impacts, "OK")
+    SuccessfulModification(r)
   }
-
-  override def impacts: Set[Impact] = Set(ReadmeImpact)
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 

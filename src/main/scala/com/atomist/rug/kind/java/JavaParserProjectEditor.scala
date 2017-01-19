@@ -53,7 +53,6 @@ abstract class JavaParserProjectEditor(val name: String,
       val result = as ✎ fe
 
       result.allFiles.filter(_.name.endsWith("java")).foreach(f => logger.debug(s"${f.path}\n${f.content}\n"))
-
       SuccessfulModification(result, s"$name success")
     }
   }

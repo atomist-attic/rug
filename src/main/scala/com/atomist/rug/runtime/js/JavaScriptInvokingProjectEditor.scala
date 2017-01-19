@@ -43,7 +43,7 @@ class JavaScriptInvokingProjectEditor(
           NoModificationNeeded("OK")
         }
         else {
-          SuccessfulModification(pmv.currentBackingObject, "OK")
+          SuccessfulModification(pmv.currentBackingObject, "OK", pmv.changeLogEntries)
         }
       }
       catch {

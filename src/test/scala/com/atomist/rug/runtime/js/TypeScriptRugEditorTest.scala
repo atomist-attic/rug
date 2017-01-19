@@ -209,7 +209,7 @@ object TypeScriptRugEditorTest {
         |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |import {Match} from '@atomist/rug/tree/PathExpression'
         |import {File} from '@atomist/rug/model/Core'
-        |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+        |import {Parameter} from '@atomist/rug/operations/RugOperation'
         |
         |class PomFile extends PathExpression<Project,File> {
         |
@@ -449,20 +449,20 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "have the PathExpressionEngine injected" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed, _) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpression))
     ed.description should be ("A nice little editor")
   }
 
   it should "have the PathExpressionEngine injected and use an object path expression" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed,sm) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionObject))
     ed.description should be ("A nice little editor")
-
+    sm.changeLogEntries.size should be (1)
   }
 
   it should "have the PathExpressionEngine injected using PathExpressionEngine.with" in {
-    val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
+    val (ed, _) = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionUsingWith))
     ed.description should be ("A nice little editor")
   }
@@ -497,7 +497,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.getMaxLength should be(100)
   }
 
-  private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptInvokingProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TestUtils.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
@@ -506,8 +506,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
       //sm.comment.contains("OK") should be(true)
         sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
+        (jsed, sm)
     }
-    jsed
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {

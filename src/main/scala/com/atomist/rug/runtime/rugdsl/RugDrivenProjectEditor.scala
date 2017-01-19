@@ -80,10 +80,10 @@ class RugDrivenProjectEditor(
 
         if (currentProjectState.currentBackingObject == as) {
           NoModificationNeeded(
-            program.successBlock.map(m => m.message).getOrElse("OK"))
+            "OK")
         } else
           SuccessfulModification(currentProjectState.currentBackingObject,
-            program.successBlock.map(m => m.message).getOrElse("OK"), currentProjectState.changeLogEntries)
+            "OK", currentProjectState.changeLogEntries)
       } catch {
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)

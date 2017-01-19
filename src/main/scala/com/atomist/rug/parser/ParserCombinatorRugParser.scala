@@ -126,8 +126,6 @@ class ParserCombinatorRugParser(
 
   private def compoundDoStep: Parser[Seq[DoStep]] = BeginToken ~> rep1(simpleWithDoStep) <~ EndToken
 
-  private def successBlock: Parser[SuccessBlock] = SuccessToken ~> literalString ^^ (message => SuccessBlock(message))
-
   private def precondition: Parser[Condition] = PreconditionToken ~> capitalizedIdentifier ^^ (name => Condition(name))
 
   private def postcondition: Parser[Condition] = PostconditionToken ~> capitalizedIdentifier ^^ (name => Condition(name))
@@ -170,12 +168,12 @@ class ParserCombinatorRugParser(
     operationSpec(EditorToken) ~
       rep(precondition) ~ opt(postcondition) ~
       rep(parameter) ~ rep(letStatement) ~
-      opActions ~ opt(successBlock) ^^ {
-      case opSpec ~ preconditions ~ postcondition ~ params ~ compBlock ~ actions ~ success =>
+      opActions ^^ {
+      case opSpec ~ preconditions ~ postcondition ~ params ~ compBlock ~ actions =>
         RugEditor(opSpec.name, opSpec.publishedName, opSpec.tags, opSpec.description, opSpec.imports,
           preconditions, postcondition,
           paramDefsToParameters(opSpec.name, params),
-          compBlock, actions, success)
+          compBlock, actions)
     }
 
   private def rugReviewer: Parser[RugReviewer] =

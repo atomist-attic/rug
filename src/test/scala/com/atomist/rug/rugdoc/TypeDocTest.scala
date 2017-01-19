@@ -12,7 +12,7 @@ class TypeDocTest extends FlatSpec with Matchers {
 
   it should "generate type doc" in {
     val td = new TypeDoc()
-    val output = td.generate(SimpleProjectOperationArguments.Empty)
+    val output = td.generate("", SimpleProjectOperationArguments.Empty)
     output.allFiles.size should be(1)
     val d = output.allFiles.head
     d.contentLength should be > (100000)

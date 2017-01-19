@@ -26,11 +26,12 @@ class JavaScriptInvokingProjectGenerator(
   override val name: String = jsVar.getMember("name").asInstanceOf[String]
 
   @throws(classOf[InvalidParametersException])
-  override def generate(poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
     validateParameters(poa)
     val tr = time {
-      val pmv = new ProjectMutableView(rugAs, startProject, atomistConfig = DefaultAtomistConfig, context)
-      invokeMemberWithParameters("populate", wrapProject(pmv), poa.parameterValueMap("project_name").getValue, poa)
+      val project = new EmptyArtifactSource(projectName) + startProject
+      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, context)
+      invokeMemberWithParameters("populate", wrapProject(pmv), poa)
       pmv.currentBackingObject
     }
     logger.debug(s"$name modifyInternal took ${tr._2}ms")

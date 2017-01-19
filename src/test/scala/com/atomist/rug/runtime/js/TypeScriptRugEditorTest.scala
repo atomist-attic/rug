@@ -140,10 +140,10 @@ object TypeScriptRugEditorTest {
       |class SimpleGenerator implements ProjectGenerator{
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
-      |     populate(project: Project, project_name: string, {content} : {content: string}) {
+      |     populate(project: Project, {content} : {content: string}) {
       |        let len: number = content.length;
-      |        if(project_name != "woot"){
-      |           throw Error(`Project name should be woot, but was ${project_name}`)
+      |        if(project.name() != "woot"){
+      |           throw Error(`Project name should be woot, but was ${project.name()}`)
       |        }
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
@@ -528,8 +528,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed.name should be("SimpleGenerator")
     jsed.setContext(others)
 
-    val prj = jsed.generate(SimpleProjectOperationArguments("", Map("project_name" -> "woot","content" -> "Anders Hjelsberg is God")))
-
+    val prj = jsed.generate("woot", SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God")))
+    prj.id.name should be("woot")
 
     jsed
   }

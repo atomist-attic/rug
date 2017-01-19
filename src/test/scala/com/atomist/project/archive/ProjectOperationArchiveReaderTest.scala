@@ -150,9 +150,10 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.generators.size should be(1)
     ops.generators.head.parameters.size should be(0)
-    val result = ops.generators.head.generate(
-      SimpleProjectOperationArguments("", Map("project_name" -> "woot", "content" -> "woot")))
+    val result = ops.generators.head.generate("woot",
+      SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
+    result.id.name should be("woot")
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
     result.findFile(f2.path).get.content.equals(f2.content) should be(true)
 
@@ -213,8 +214,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.generators.size should be(1)
     ops.generators.head.parameters.size should be(0)
-    val result = ops.generators.head.generate(
-      SimpleProjectOperationArguments("", Map("project_name" -> "woot", "content" -> "woot")))
+    val result = ops.generators.head.generate("woot",
+      SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
     result.findFile(f2.path).get.content.equals(f2.content) should be(true)

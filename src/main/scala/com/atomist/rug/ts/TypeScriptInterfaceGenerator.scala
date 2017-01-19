@@ -21,7 +21,7 @@ object TypeScriptInterfaceGenerator extends App {
   val target = if (args.length < 1) "target/classes/@atomist/rug/model/Core.ts" else args.head
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate(SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "Core.ts")))
+  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "Core.ts")))
   Utils.withCloseable(new PrintWriter(target))(_.write(output.allFiles.head.content))
   println(s"Written to $target")
 }
@@ -100,7 +100,7 @@ class TypeScriptInterfaceGenerator(
     setDefaultValue(DefaultFilename))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
-  override def generate(poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = emitInterfaces(poa)
     // println(s"The content of ${createdFile.path} is\n${createdFile.content}")
     new SimpleFileBasedArtifactSource("Rug user model", createdFile)

@@ -44,7 +44,7 @@ class TypeDoc(
     setDefaultValue(DefaultDocName))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
-  override def generate(poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
     val createdFile = createFile(poa)
     val output = StringFileArtifact(DefaultDocName, createdFile.content)
     new SimpleFileBasedArtifactSource("RugDocs", output)

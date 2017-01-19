@@ -34,7 +34,7 @@ object ApplicationYmlKeyAddingEditor extends ProjectEditorSupport {
     val result = appendToFile(as, yamlFile, stringifiedYamlEntries)
     SuccessfulModification(
       result,
-      "Added keys to yaml file")
+      Seq("Added keys to yaml file"))
   }
 
   /**

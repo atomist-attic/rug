@@ -83,7 +83,7 @@ class RugDrivenProjectEditor(
             "OK")
         } else
           SuccessfulModification(currentProjectState.currentBackingObject,
-            "OK", currentProjectState.changeLogEntries)
+            currentProjectState.changeLogEntries)
       } catch {
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)

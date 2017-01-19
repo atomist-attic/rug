@@ -28,7 +28,7 @@ object ApplicationPropertiesToApplicationYmlEditor extends ProjectEditor with La
       val config = configExtractor(f)
       val applicationYml: FileArtifact = StringFileArtifact(ApplicationYmlPath, toYmlString(config))
       val result = as + applicationYml - ApplicationPropertiesFilePath
-      SuccessfulModification(result, name)
+      SuccessfulModification(result)
     }).getOrElse(FailedModificationAttempt(s"Did not find application.properties file at $ApplicationPropertiesFilePath in ${as.id}"))
   }
 

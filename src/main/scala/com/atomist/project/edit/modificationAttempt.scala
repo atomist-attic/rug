@@ -15,14 +15,12 @@ sealed trait ModificationAttempt
   * @param result resulting ArtifactSource containing the changes.
   * There must have been changed files. Otherwise,
   * NoModificationNeeded or FailedModificationAttempt should have been returned.
-  * @param comment comments on what was done
   */
 // TODO list files changed? - This could be more efficient in many cases
 // Although this makes compounding harder. We could include Deltas as well.
 // We could also add methods to make delta history must more efficient in ArtifactSource e.g. on + etc.
 case class SuccessfulModification(
                                    result: ArtifactSource,
-                                   comment: String,
                                    changeLogEntries: Seq[ChangeLogEntry] = Nil
                                  )
   extends ModificationAttempt

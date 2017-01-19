@@ -42,7 +42,7 @@ class ProjectMutableView(
                           projectOperations: Seq[ProjectOperation] = Nil,
                           ctx: UserModelContext = LocalAtomistFacade)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
-    with ChangeLogging {
+    with ChangeLogging[ArtifactSource] {
 
   // We need this, rather than merely a default, for Java subclasses
   def this(rugAs: ArtifactSource, originalBackingObject: ArtifactSource) =

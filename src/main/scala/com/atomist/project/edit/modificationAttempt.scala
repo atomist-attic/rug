@@ -1,7 +1,6 @@
 package com.atomist.project.edit
 
-import com.atomist.rug.kind.core.ChangeLogging
-import com.atomist.rug.kind.core.ChangeLogging.ChangeLogEntry
+import com.atomist.rug.kind.core.ChangeLogEntry
 import com.atomist.source.ArtifactSource
 
 /**
@@ -21,7 +20,7 @@ sealed trait ModificationAttempt
 // We could also add methods to make delta history must more efficient in ArtifactSource e.g. on + etc.
 case class SuccessfulModification(
                                    result: ArtifactSource,
-                                   changeLogEntries: Seq[ChangeLogEntry] = Nil
+                                   changeLogEntries: Seq[ChangeLogEntry[ArtifactSource]] = Nil
                                  )
   extends ModificationAttempt
 

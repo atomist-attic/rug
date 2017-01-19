@@ -6,6 +6,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.edit._
 import com.atomist.project.edit.ProjectEditorSupport
 import com.atomist.project.edit.ProjectEditorUtils._
+import com.atomist.rug.kind.core.ChangeLogEntry
 import com.atomist.source.ArtifactSource
 import com.atomist.util.yml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
 
@@ -34,7 +35,7 @@ object ApplicationYmlKeyAddingEditor extends ProjectEditorSupport {
     val result = appendToFile(as, yamlFile, stringifiedYamlEntries)
     SuccessfulModification(
       result,
-      Seq("Added keys to yaml file"))
+      Seq(ChangeLogEntry("Added keys to yaml file", result)))
   }
 
   /**

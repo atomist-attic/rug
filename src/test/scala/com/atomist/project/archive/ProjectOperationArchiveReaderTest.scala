@@ -4,6 +4,7 @@ import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.{Import, TestUtils}
 import com.atomist.rug.exec.FakeServiceSource
 import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
+import com.atomist.rug.runtime.js.interop.NamedJavaScriptEventHandlerTest
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.source.{SimpleDirectoryArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -169,12 +170,12 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
 
 
-    val rugAs = TestUtils.addUserModel(SimpleFileBasedArtifactSource(
+    val rugAs = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleEditor.js",
         NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
-    ))
+    ) + TestUtils.user_model
 
 
 
@@ -216,6 +217,32 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     ops.generators.head.parameters.size should be(0)
     val result = ops.generators.head.generate("woot",
       SimpleProjectOperationArguments("", Map("content" -> "woot")))
+    // Should preserve content from the backing archive
+    result.findFile(f1.path).get.content.equals(f1.content) should be(true)
+    result.findFile(f2.path).get.content.equals(f2.content) should be(true)
+
+    // Should contain new contain
+    result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+  }
+
+  it should "ignore unbound handler in the new style" in {
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val f1 = StringFileArtifact("package.json", "{}")
+    val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
+
+
+    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
+        TypeScriptRugEditorTest.SimpleGenerator),
+      f1,
+      f2,
+      NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram,
+      NamedJavaScriptEventHandlerTest.issuesStuff
+    ))
+    val ops = apc.findOperations(rugAs, None, Nil)
+    ops.generators.size should be(1)
+    ops.generators.head.parameters.size should be(0)
+    val result = ops.generators.head.generate("woot", SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
     result.findFile(f2.path).get.content.equals(f2.content) should be(true)

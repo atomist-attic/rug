@@ -9,7 +9,7 @@ import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
 import com.atomist.rug.runtime.js.interop.{ContextMatch, jsPathExpressionEngine}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
-import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpressionParser}
+import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpression, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 class JavaScriptEventHandler(
@@ -27,7 +27,7 @@ class JavaScriptEventHandler(
 
   override def description: String = name
 
-  val pathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
+  val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
   override val rootNodeName: String = pathExpression.locationSteps.head.test match {
     case nnt: NamedNodeTest => nnt.name
@@ -36,7 +36,7 @@ class JavaScriptEventHandler(
 
   import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
 
-  private def nodePreparer(hc: HandlerContext): NodePreparer = {
+  protected def nodePreparer(hc: HandlerContext): NodePreparer = {
     case mca: ModelContextAware =>
       mca.setContext(hc)
       mca
@@ -53,29 +53,20 @@ class JavaScriptEventHandler(
     val root = new SimpleMutableContainerTreeNode("root", Seq(targetNode), null, null)
     pexe.ee.evaluate(root, pathExpression, DefaultTypeRegistry, Some(np)) match {
       case Right(Nil) =>
-        println("Nothing to do: No nodes found")
       case Right(matches) =>
         val cm = ContextMatch(
           targetNode,
-          //matches.map(m => m.asInstanceOf[Object]).asJava,
           pexe.wrap(matches),
           s2,
           teamId = e.teamId)
         invokeHandlerFunction(e, cm)
-      //as.persist()
       case Left(failure) =>
         throw new RugRuntimeException(pathExpressionStr,
           s"Error evaluating path expression $pathExpression: [$failure]")
     }
   }
 
-  protected def invokeHandlerFunction(e: SystemEvent, cm: ContextMatch): Unit = {
-    //val context = new ResultsMutableView(rugAs, hc.servicesMutableView, as)
-    val args = Seq(cm)
-
-    // Signature is
-    // on<R,N>(pathExpression: string, handler: (m: ContextMatch<R,N>) => void): void
-
-      handlerFunction.call("apply", args:_*)
+  protected def invokeHandlerFunction(e: SystemEvent, cm: ContextMatch): Object = {
+    handlerFunction.call("apply", cm)
   }
 }

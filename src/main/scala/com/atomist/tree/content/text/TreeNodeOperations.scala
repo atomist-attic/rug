@@ -7,7 +7,7 @@ import org.springframework.util.ReflectionUtils
 import scala.collection.mutable.ListBuffer
 
 /**
-  * Pperations on TreeNodes such as tree pruning.
+  * Operations on TreeNodes such as tree pruning.
   */
 object TreeNodeOperations {
 

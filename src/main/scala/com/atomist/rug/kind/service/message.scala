@@ -1,8 +1,6 @@
 package com.atomist.rug.kind.service
 
-import java.util
-
-import com.atomist.param.{ParameterValue, SimpleParameterValue}
+import com.atomist.param.{ParameterValue}
 import com.atomist.tree.TreeNode
 
 /**

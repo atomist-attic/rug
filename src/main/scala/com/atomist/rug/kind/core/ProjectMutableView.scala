@@ -1,6 +1,5 @@
 package com.atomist.rug.kind.core
 
-import java.util
 import java.util.{Collections, Objects}
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -42,11 +41,12 @@ class ProjectMutableView(
                           atomistConfig: AtomistConfig,
                           projectOperations: Seq[ProjectOperation] = Nil,
                           ctx: UserModelContext = LocalAtomistFacade)
-  extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null) {
+  extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
+    with ChangeLogging {
 
   // We need this, rather than merely a default, for Java subclasses
   def this(rugAs: ArtifactSource, originalBackingObject: ArtifactSource) =
-      this(rugAs, originalBackingObject, DefaultAtomistConfig)
+    this(rugAs, originalBackingObject, DefaultAtomistConfig)
 
   import ProjectMutableView._
 
@@ -58,10 +58,10 @@ class ProjectMutableView(
   private lazy val mergeTool =
     new CombinedMergeToolCreator(MergeToolCreators: _*).createMergeTool(templateContent)
 
-  val TypeName: String = Typed.typeToTypeName(classOf[ProjectMutableView])
+  private val typeName: String = Typed.typeToTypeName(classOf[ProjectMutableView])
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
-    case TypeName =>
+    case `typeName` =>
       // Special case. We don't want a "project" directory to confuse us
       Seq(this)
     case _ => kids(fieldName, this)
@@ -164,8 +164,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter file filter
-    * @param regexp regexp
+    * @param filter      file filter
+    * @param regexp      regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -211,7 +211,7 @@ class ProjectMutableView(
               content: String): Unit = {
     val desiredContent = content.replace("\\n", Properties.lineSeparator)
     val exactSameFileIsAlreadyThere = currentBackingObject.findFile(path).exists(_.content == desiredContent)
-    if(!exactSameFileIsAlreadyThere) {
+    if (!exactSameFileIsAlreadyThere) {
       updateTo(currentBackingObject + StringFileArtifact(path, desiredContent))
     }
   }
@@ -349,7 +349,8 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
-    description = """Merge templates from the specified directory in the backing archive,
+    description =
+      """Merge templates from the specified directory in the backing archive,
 under /.atomist/templates, to the given output path in the project being
 edited.""")
   def mergeTemplates(@ExportFunctionParameterDescription(name = "templatesPath",
@@ -431,10 +432,11 @@ edited.""")
     editWith(editorName, m)
   }
 
-  @ExportFunction(readOnly = true, description="Return a new Project View based on the original backing object (normally the .atomist/ directory)")
-  def backingArchiveProject(): ProjectMutableView ={
-    new ProjectMutableView(EmptyArtifactSource.apply(),rugAs,atomistConfig,projectOperations)
+  @ExportFunction(readOnly = true, description = "Return a new Project View based on the original backing object (normally the .atomist/ directory)")
+  def backingArchiveProject(): ProjectMutableView = {
+    new ProjectMutableView(EmptyArtifactSource.apply(), rugAs, atomistConfig, projectOperations)
   }
+
   /**
     * Convenient method to apply an editor.
     */
@@ -448,6 +450,7 @@ edited.""")
         throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
     }
   }
+
   @ExportFunction(readOnly = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context = new ProjectContext(ctx)
@@ -456,7 +459,7 @@ edited.""")
 
 class ProjectContext(ctx: UserModelContext) extends UserServices {
 
-  override def pathExpressionEngine() : jsPathExpressionEngine = {
+  override def pathExpressionEngine(): jsPathExpressionEngine = {
     ctx.registry("PathExpressionEngine").asInstanceOf[jsPathExpressionEngine]
   }
 }

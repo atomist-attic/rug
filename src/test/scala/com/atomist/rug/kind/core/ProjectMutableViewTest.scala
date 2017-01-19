@@ -112,6 +112,21 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.currentBackingObject.findFile(newContentDir + "/" + static1.path).get.content should equal(static1.content)
     pmv.currentBackingObject.findFile(expectedPath).get.content should equal(FirstExpected)
     pmv.dirty should be(true)
+    pmv.changeLogEntries should be (empty)
+    pmv.changeCount should be(1)
+  }
+
+  it should "add two entries to change log" in {
+    val outputAs = EmptyArtifactSource("")
+    val pmv = new ProjectMutableView(backingTemplates, outputAs)
+    pmv.addFile("src/main/whitespace", "      \t\n    \t")
+    pmv.describeChange("Added valid program in Whitespace(tm) programming language")
+    pmv.addFile("src/main/emoji", "\uD83E\uDD17")
+    pmv.describeChange("Added valid program in emoji programming language, which will be exclusively " +
+      "used by everyone born after 2005")
+    pmv.dirty should be(true)
+    pmv.changeLogEntries.size should be (2)
+    pmv.changeCount should be(2)
   }
 
   it should "count files in a directory" in {
@@ -121,6 +136,9 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), asToEdit)
     pmv.countFilesInDirectory("src") should be(1)
     pmv.countFilesInDirectory("xxx") should be(0)
+    pmv.changeCount should be (0)
+    pmv.dirty should be (false)
+    pmv.changeLogEntries.isEmpty should be (true)
   }
 
   it should "copy files under dir preserving path" in {

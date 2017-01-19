@@ -1,12 +1,14 @@
 package com.atomist.rug.spi
 
+import com.atomist.rug.kind.core.ChangeCounting
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.tree.TreeNode
 
 import scala.collection.mutable.ListBuffer
 
 abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableView[_])
-  extends CommonViewOperations[T] {
+  extends CommonViewOperations[T]
+    with ChangeCounting {
 
   private var _currentBackingObject: T = originalBackingObject
 
@@ -14,19 +16,21 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
 
   private val updaters: ListBuffer[Updater[T]] = new ListBuffer()
 
-  private var _dirty: Boolean = false
-
   override def currentBackingObject: T = _currentBackingObject
 
-  override def dirty: Boolean = _dirty
-
   def previousBackingObject: T = _previousBackingObject
+
+  private var _changeCount: Int = 0
+
+  override def changeCount: Int = _changeCount
+
+  override def dirty: Boolean = changeCount > 0
 
   /**
     * Subclasses can call this to update the state of this object.
     */
   override def updateTo(newBackingObject: T): Unit = {
-    _dirty = true
+    _changeCount += 1
     _previousBackingObject = _currentBackingObject
     _currentBackingObject = newBackingObject
     if (parent != null)

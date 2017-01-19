@@ -237,7 +237,7 @@ object TypeScriptRugEditorTest {
         |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
         |        for (let f of project.files())
         |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-        |        return new Result(Status.Success,
+        |        project.describeChange(
         |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
         |    }
         |  }
@@ -374,7 +374,6 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleLetStyleEditorWithoutParameters))
   }
 
-
   it should "run simple editor twice and see no change the second time" in {
     invokeAndVerifyIdempotentSimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))
   }
@@ -460,6 +459,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val ed = invokeAndVerifyConstructed(StringFileArtifact(s".atomist/editors/ConstructedEditor.ts",
       EditorInjectedWithPathExpressionObject))
     ed.description should be ("A nice little editor")
+
   }
 
   it should "have the PathExpressionEngine injected using PathExpressionEngine.with" in {

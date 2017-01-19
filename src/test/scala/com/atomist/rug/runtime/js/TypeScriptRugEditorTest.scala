@@ -72,15 +72,12 @@ object TypeScriptRugEditorTest {
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
-      |    edit(project: Project):Result {
+      |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
       |
@@ -182,18 +179,16 @@ object TypeScriptRugEditorTest {
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |import {Bar} from './Foo'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
-      |    edit(project: Project):Result {
+      |    edit(project: Project) {
       |        let bar: Bar = new Bar();
       |        bar.doWork()
-      |        return new Result(Status.Success,
-      |         `Edited Project now containing ${project.fileCount()} files: \n`)
+      |        project.describeChange(`Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
       |
@@ -274,8 +269,6 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
-      |        return new Result(Status.Success,
-      |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
       |  export let editor = new ConstructedEditor()

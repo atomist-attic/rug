@@ -232,7 +232,6 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       if(reduced3 != "thedoglazytheoverjumpsfoxthedoeswhy"){
       |          throw new Error("Reduced right should be: phrase:thedoglazytheoverjumpsfoxthedoeswhy, was: " + reduced3)
       |       }
-      |       return new Result(Status.Success, "")
       |    }
       |  }
       |  var editor = new ConstructedEditor()

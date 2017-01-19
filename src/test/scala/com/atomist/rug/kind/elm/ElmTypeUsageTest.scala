@@ -51,7 +51,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |import {Project,ElmModule} from '@atomist/rug/model/Core'
         |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |
-        |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+        |import {Parameter} from '@atomist/rug/operations/RugOperation'
         |
         |let params: Parameter[] = $params
         |
@@ -62,9 +62,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    description: string = "Renames an Elm module"
         |    parameters: Parameter[] = params
         |
-        |
-        |    edit(project: Project, {old_name, new_name }: {old_name: string, new_name: string}): Result {
-        |
+        |    edit(project: Project, {old_name, new_name }: {old_name: string, new_name: string}) {
         |        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |        let allModules: ElmModule[] =
         |             eng.children<ElmModule>(project, "ElmModule")
@@ -81,7 +79,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |             em.updateImport(old_name, new_name)
         |           }
         |        }
-        |        return new Result(Status.Success, "OK")
         |    }
         |}
         |

@@ -13,13 +13,12 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers with Lazy
       """
         |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
         |import {Project} from '@atomist/rug/model/Core'
-        |import {Result,Status} from '@atomist/rug/operations/RugOperation'
         |
         |class TestEditor implements ProjectEditor {
         |    name: string = "TestEditor"
         |    description: string = "Nothing special"
         |    edit(p: Project) {
-        |       return new Result(Status.Success, "Boom!");
+        |       // Do nothing
         |    }
         |}
       """.stripMargin))

@@ -48,7 +48,6 @@ object ElmTypeScriptEditorTestResources {
 
   val ReleaseEditor: String =
     """
-      |import {Status, Result} from "@atomist/rug/operations/RugOperation"
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
@@ -58,7 +57,7 @@ object ElmTypeScriptEditorTestResources {
       |    name: string = "Release"
       |    description: string  ="Release editor"
       |
-      |    edit(project: Project): Result {
+      |    edit(project: Project) {
       |
       |    let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
@@ -74,7 +73,6 @@ object ElmTypeScriptEditorTestResources {
       |     }
       |
       |     var readme = project.files();
-      |     return new Result(Status.Success, "yay woo");
       |  }
       |
       |}

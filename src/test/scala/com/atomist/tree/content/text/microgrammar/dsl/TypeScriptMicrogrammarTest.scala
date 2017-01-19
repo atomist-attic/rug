@@ -16,7 +16,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -29,7 +28,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
       |        n.update('Foo bar')
       |      })
-      |      return new Result(Status.Success, `OK`)
       |    }
       |  }
       |  var editor = new MgEditor()
@@ -41,7 +39,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -56,7 +54,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
       |        n.update('Foo bar')
       |      })
-      |      return new Result(Status.Success, `OK`)
       |    }
       |  }
       |  var editor = new MgEditor()
@@ -68,7 +65,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -82,7 +79,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
       |        n.update(n.value() + "x")
       |      })
-      |      return new Result(Status.Success, `OK`)
       |    }
       |  }
       |  var editor = new MgEditor()
@@ -94,7 +90,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -108,7 +104,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
       |        n.update(n.type.value() + "x")
       |      })
-      |      return new Result(Status.Success, `OK`)
       |    }
       |  }
       |  var editor = new MgEditor()

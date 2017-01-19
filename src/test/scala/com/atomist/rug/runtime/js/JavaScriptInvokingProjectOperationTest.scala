@@ -12,16 +12,13 @@ object JavaScriptInvokingProjectOperationTest {
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
        |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
        |    description: string = "A nice little editor"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    edit(project: Project, {content} : {content: string}) {
-       |      return new Result(Status.Success,
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |        );
        |    }
        |  }
        |var editor = new SimpleEditor()
@@ -60,7 +57,7 @@ object JavaScriptInvokingProjectOperationTest {
          |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
          |
          |    edit(project: Project, {content} : {content: string}) {
-         |      return new Result(Status.Success,
+         |      project.describeChange(
          |        `Edited Project now containing $${project.fileCount()} files: \n`
          |        );
          |    }
@@ -93,7 +90,7 @@ object JavaScriptInvokingProjectOperationTest {
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
        |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
@@ -108,9 +105,7 @@ object JavaScriptInvokingProjectOperationTest {
        |      }
        |    ]
        |    edit(project: Project, {content} : {content: string}) {
-       |      return new Result(Status.Success,
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |      );
+       |      // Do nothing
        |    }
        |  }
        |var editor = new SimpleEditor()
@@ -136,9 +131,9 @@ object JavaScriptInvokingProjectOperationTest {
        |      }
        |    ]
        |    edit(project: Project, {content} : {content: string}) {
-       |      return new Result(Status.Success,
+       |      project.describeChange(
        |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |      );
+       |      )
        |    }
        |  }
        |var editor = new SimpleEditor()
@@ -149,7 +144,7 @@ object JavaScriptInvokingProjectOperationTest {
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
        |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
@@ -164,9 +159,7 @@ object JavaScriptInvokingProjectOperationTest {
        |      }
        |    ]
        |    edit(project: Project, {content} : {content: string}) {
-       |      return new Result(Status.Success,
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
-       |      );
+       |      // empty
        |    }
        |  }
        |var editor = new SimpleEditor()

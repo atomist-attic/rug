@@ -645,6 +645,24 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.publishedName should be(Some(publishedName))
   }
 
+  it should "parse generator on operation with name override" in {
+    val publishedName = "FooBar666"
+    val prog =
+      s"""
+         |@description '100% JavaScript free'
+         |generator $publishedName
+         |
+         |with File f
+         | when isJava = "thing"
+         |
+         |do
+         | append "foobar"
+      """.stripMargin
+
+    val parsed = ri.parse(prog).head
+    parsed.publishedName should be(Some(publishedName))
+  }
+
   it should "pick up multiple @tags annotations on operation with name override" in {
     val publishedName = "FooBar666"
     val prog =

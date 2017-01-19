@@ -79,12 +79,6 @@ object RugParser extends CommonRugTokens {
 
   val OnNoChangeToken = "onNoChange"
 
-  /**
-    * Used to indicate to indicate that an editor or reviewer should be exposed
-    * directly to users
-    */
-  val GeneratorAnnotation = "generator"
-
   val TagAnnotation = "tag"
 
   val OptionalAnnotationAttribute = "optional"

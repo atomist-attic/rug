@@ -31,8 +31,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   val Generator = StringFileArtifact(atomistConfig.editorsRoot + "/Published.rug",
     """
-      |@generator
-      |editor Published
+      |generator Published
       |
       |First
     """.stripMargin

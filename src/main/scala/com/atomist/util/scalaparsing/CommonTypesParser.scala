@@ -2,12 +2,13 @@ package com.atomist.util.scalaparsing
 
 import com.atomist.tree.content.text._
 import com.atomist.rug.parser.RugParser._
-import com.atomist.rug.{BadRugSyntaxException, RugRuntimeException}
+import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.util.{Visitable, Visitor}
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.matching.Regex
 import scala.util.parsing.combinator.JavaTokenParsers
 import scala.util.parsing.input.{CharSequenceReader, OffsetPosition, Positional}
 
@@ -28,10 +29,14 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
   val HashLineComment = """\#.*[\n|\r\n]"""
 
   /** White space honoring C style block comments and Python style # line comments */
-  val CBlockCommentAndHashLineCommentWhitespace = ("""(\s|""" + HashLineComment + "|" + CComment + ")+").r
+  val CBlockCommentAndHashLineCommentWhitespace: Regex = ("""(\s|""" + HashLineComment + "|" + CComment + ")+").r
 
   // NB: This does not correctly preserve positions
-  def doubleQuotedString: Parser[String] = stringLiteral ^^ (s => s.substring(1).dropRight(1).replace("""\\""", """\"""))
+  def doubleQuotedString: Parser[String] = (stringLiteral | ("\"" ~ "[^\"]+".r ~ "\"")) ^^ {
+    case s : String => s.substring(1).dropRight(1).replace("""\\""", """\""")
+    case _ ~ illFormedString ~ _ => throw new BadRugException(
+      s"It looks like you're trying to use a string, but [$illFormedString] is not a valid Java String") {}
+  }
 
   // Taken from Scala superclass
   def doubleQuotedStringContent: Parser[String] = """([^"\p{Cntrl}\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*+""".r

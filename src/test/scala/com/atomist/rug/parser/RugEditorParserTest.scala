@@ -34,6 +34,23 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     ri.parse(prog).head
   }
 
+  it should "parse editor with invalid escape character in a string" in {
+    val evilEd =
+      """
+        |editor UpdateCopyright
+        |
+        |with File f
+        |  do regexpReplace " \d\d\d\d "  newCopyright
+      """.stripMargin
+    try {
+      ri.parse(evilEd)
+      fail
+    }
+    catch {
+      case micturation: BadRugException => micturation.getMessage.contains("not a valid Java String")
+    }
+  }
+
   it should "handle JavaScript expression in file filter" in {
     val prog =
       """
@@ -795,44 +812,44 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
   // TODO this can cause the parser to hang. Should investigate
 
-//  it should "handle problematic path expression" in {
-//    val prog =
-//      """
-//        |editor NewStaticPage
-//        |
-//        |SwitchProjectName
-//        |SetRepository
-//        |SetSummary
-//        |
-//        |editor SetSummary
-//        |
-//        |let descriptionField = $(/*[@name='elm-package.json']/Json()/summary)
-//        |
-//        |with descriptionField
-//        |  do setValue description
-//        |
-//        |
-//        |editor SetRepository
-//        |
-//        |param org: @group_id
-//        |param project_name: @project_name
-//        |
-//        |let repositoryField = 'x'
-//        |
-//        |with repositoryField
-//        |  do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
-//        |
-//        |editor SwitchProjectName
-//        |
-//        |	@description "Name of the new project"
-//        |	@displayName "Name"
-//        |	param project_name: @project_name
-//        |
-//        |  with File do append 'x'
-//        |
-//      """.stripMargin
-//    ri.parse(prog)
-//  }
+  //  it should "handle problematic path expression" in {
+  //    val prog =
+  //      """
+  //        |editor NewStaticPage
+  //        |
+  //        |SwitchProjectName
+  //        |SetRepository
+  //        |SetSummary
+  //        |
+  //        |editor SetSummary
+  //        |
+  //        |let descriptionField = $(/*[@name='elm-package.json']/Json()/summary)
+  //        |
+  //        |with descriptionField
+  //        |  do setValue description
+  //        |
+  //        |
+  //        |editor SetRepository
+  //        |
+  //        |param org: @group_id
+  //        |param project_name: @project_name
+  //        |
+  //        |let repositoryField = 'x'
+  //        |
+  //        |with repositoryField
+  //        |  do setValue { "https://github.com/" + org + "/" + project_name.toLowerCase() + ".git" }
+  //        |
+  //        |editor SwitchProjectName
+  //        |
+  //        |	@description "Name of the new project"
+  //        |	@displayName "Name"
+  //        |	param project_name: @project_name
+  //        |
+  //        |  with File do append 'x'
+  //        |
+  //      """.stripMargin
+  //    ri.parse(prog)
+  //  }
 
 
 }

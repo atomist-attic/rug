@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   **BREAKING** CustomizingProjectGenerator was removed from ProjectGenerator.ts 
     as it's no longer required, and it's thought that it's not being used at all yet.
 
+-   **BREAKING** signature of TypeScript ProjectGenerator.populate() changed: parameter
+    `projectName` got removed. Name of the generated project can be obtained via `project.name()`.
+
 ## [0.10.0]
 
 [0.10.0]: https://github.com/atomist/rug/compare/0.9.0...0.10.0

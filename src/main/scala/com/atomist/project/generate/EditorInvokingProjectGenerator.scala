@@ -5,8 +5,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.UndefinedProjectNameParameterException
-import com.atomist.source.{ArtifactSource, ArtifactSourceCreationException}
+import com.atomist.source.{ArtifactSource, ArtifactSourceCreationException, EmptyArtifactSource}
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -31,9 +30,9 @@ class EditorInvokingProjectGenerator(val name: String,
   override def description: String = editor.description
 
   @throws(classOf[InvalidParametersException])
-  override def generate(poa: ProjectOperationArguments): ArtifactSource = {
-    ensureMandatoryProjectNameParameter(poa)
-    editor.modify(startProject, poa) match {
+  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
+    val project = new EmptyArtifactSource(projectName) + startProject
+    editor.modify(project, poa) match {
       case sm: SuccessfulModification =>
         sm.result
       case nmn: NoModificationNeeded =>
@@ -44,13 +43,4 @@ class EditorInvokingProjectGenerator(val name: String,
     }
   }
 
-  private def ensureMandatoryProjectNameParameter(poa: ProjectOperationArguments): Unit = {
-    val mandatoryDefaultProjectNameParameter = "project_name"
-
-    if (!poa.parameterValueMap.contains(mandatoryDefaultProjectNameParameter))
-      throw new UndefinedProjectNameParameterException(name,
-        s"'project_name' parameter is mandatory for generators but not present " +
-          s"Known parameters are [${poa.parameterValueMap.keys.mkString(",")}]",
-        name)
-  }
 }

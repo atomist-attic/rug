@@ -64,7 +64,7 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
         rugArchive)
 
     val freshArtifactSource =
-      gen.generate(
+      gen.generate("",
         SimpleProjectOperationArguments(
           "wut",
           parameters))

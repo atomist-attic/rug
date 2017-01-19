@@ -11,7 +11,7 @@ object TypeScriptInterfaceGen extends App {
 
   val td = new TypeScriptInterfaceGenerator()
   // Make it puts the generated files where our compiler will look for them
-  val output = td.generate(SimpleProjectOperationArguments("",
+  val output = td.generate("", SimpleProjectOperationArguments("",
     Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
   val d = output.allFiles.head
   // println(d.content)

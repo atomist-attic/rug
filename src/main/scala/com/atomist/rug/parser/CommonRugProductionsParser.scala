@@ -17,7 +17,7 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
 
   private def qualifiedOperation: Parser[String] = """^([a-z][a-zA-Z-_$\d]*\.)*[A-Z][a-zA-Z_$\d]*""".r
 
-  protected def uses: Parser[Import] = usesToken ~> qualifiedOperation ^^ (fqn => Import(fqn))
+  protected def uses: Parser[Import] = UsesToken ~> qualifiedOperation ^^ (fqn => Import(fqn))
 
   def literalString: Parser[String] = tripleQuotedString | doubleQuotedString | singleQuotedString
 
@@ -61,7 +61,7 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
   }
 
   protected def letStatement: Parser[Computation] =
-    letToken ~> parameterName ~ EqualsToken ~ (pathExpressionBlock | grammarBlock | evaluation) ^^ {
+    LetToken ~> parameterName ~ EqualsToken ~ (pathExpressionBlock | grammarBlock | evaluation) ^^ {
       case name ~ _ ~ te => Computation(name, te)
     }
 
@@ -93,10 +93,6 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
     selectionAlias ~ whenCondition <~ opt(terminator) ^^ {
       case w ~ p => Selection(w._1, w._3, w._2, p)
     }
-
-  private def fromSelection: Parser[Selection] = fromToken ~> selection
-
-  private def defaultValue: Parser[ToEvaluate] = evaluationNonFunctionCall
 
   protected def functionArg: Parser[FunctionArg] =
     opt(preposition) ~> opt(identifierRef <~ EqualsToken) ~ (evaluationNonFunctionCall | bracketedEvaluation) ^^ {

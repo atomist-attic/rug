@@ -13,31 +13,17 @@ trait CommonRugTokens {
 
   val TrueToken = "true"
 
-  protected val trueToken = TrueToken.r
-
   val FalseToken = "false"
-
-  protected val falseToken = FalseToken.r
 
   val UsesToken = "uses"
 
-  protected val usesToken = UsesToken.r
-
   val LetToken = "let"
-
-  val FromToken = "from"
-
-  val fromToken = FromToken.r
 
   val ReturnToken = "return"
 
-  val returnToken = ReturnToken.r
-
-  protected val letToken = LetToken.r
-
   val DefaultToken = "default"
 
-  val defaultToken = DefaultToken.r
+  val FromToken = "from"
 
   val CommonReservedWords = Set(
     UsesToken,

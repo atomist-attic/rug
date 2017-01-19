@@ -1,6 +1,5 @@
 package com.atomist.rug.kind.core
 
-import java.util
 import java.util.{Collections, Objects}
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -211,7 +210,7 @@ class ProjectMutableView(
               content: String): Unit = {
     val desiredContent = content.replace("\\n", Properties.lineSeparator)
     val exactSameFileIsAlreadyThere = currentBackingObject.findFile(path).exists(_.content == desiredContent)
-    if(!exactSameFileIsAlreadyThere) {
+    if (!exactSameFileIsAlreadyThere) {
       updateTo(currentBackingObject + StringFileArtifact(path, desiredContent))
     }
   }

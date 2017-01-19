@@ -30,9 +30,7 @@ class JavaScriptInvokingProjectGenerator(
     validateParameters(poa)
     val tr = time {
       val pmv = new ProjectMutableView(rugAs, startProject, atomistConfig = DefaultAtomistConfig, context)
-
-      val result = invokeMemberWithParameters("populate", wrapProject(pmv), poa.parameterValueMap("project_name").getValue, poa)
-
+      invokeMemberWithParameters("populate", wrapProject(pmv), poa.parameterValueMap("project_name").getValue, poa)
       pmv.currentBackingObject
     }
     logger.debug(s"$name modifyInternal took ${tr._2}ms")

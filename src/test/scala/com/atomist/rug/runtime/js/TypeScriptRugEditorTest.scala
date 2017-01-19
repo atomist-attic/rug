@@ -137,7 +137,6 @@ object TypeScriptRugEditorTest {
       |import {Project} from '@atomist/rug/model/Core'
       |import {Status,Result} from '@atomist/rug/operations/RugOperation'
       |
-      |
       |class SimpleGenerator implements ProjectGenerator{
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
@@ -147,7 +146,6 @@ object TypeScriptRugEditorTest {
       |           throw Error(`Project name should be woot, but was ${project_name}`)
       |        }
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new Result(Status.Success, `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
       |export let gen = new SimpleGenerator()

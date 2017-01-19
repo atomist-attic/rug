@@ -185,7 +185,9 @@ class ParserCombinatorRugParser(
       rep(parameter) ~ rep(letStatement) ~
       opActions ^^ {
       case opSpec ~ preconditions ~ postcondition ~ params ~ compBlock ~ actions =>
-        RugEditor(opSpec.name, opSpec.publishedName, opSpec.tags, opSpec.description, opSpec.imports,
+        RugEditor(opSpec.name,
+          opSpec.publishedName.orElse(Some(opSpec.name)),   // the secret "i am a generator" clue
+          opSpec.tags, opSpec.description, opSpec.imports,
           preconditions, postcondition,
           paramDefsToParameters(opSpec.name, params),
           compBlock, actions)
@@ -262,10 +264,7 @@ class ParserCombinatorRugParser(
           compBlock, actions)
     }
 
-  protected def rugProgram: Parser[RugProgram] = (rugPredicate | rugEditor | rugReviewer | rugExecutor | rugGenerator | "\\w+".r) ^^ {
-    case s: String => throw new BadRugException(s"Expected one of: ${Seq(PredicateToken, EditorToken, ReviewerToken, ExecutorToken, GeneratorToken).mkString(", ")}, but found [$s]") {}
-    case p: RugProgram => p
-  }
+  protected def rugProgram: Parser[RugProgram] = rugPredicate | rugEditor | rugReviewer | rugExecutor | rugGenerator
 
   private def rugPrograms: Parser[Seq[RugProgram]] = phrase(rep1(rugProgram))
 

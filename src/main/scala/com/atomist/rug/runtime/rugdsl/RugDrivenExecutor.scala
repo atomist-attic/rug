@@ -27,7 +27,7 @@ class RugDrivenExecutor(
     val context = new ServicesMutableView(rugAs, services)
 
     val reviewContext = new ReviewContext
-    val identifierMap = buildIdentifierMap(rugAs, context, null, poa)
+    val identifierMap = buildIdentifierMap(context, poa)
 
     program.actions match {
       case Seq(sba: ScriptBlockAction) =>
@@ -35,7 +35,7 @@ class RugDrivenExecutor(
       case actions =>
         actions.foreach {
           case wb: With =>
-            val idm = buildIdentifierMap(rugAs, context, null, poa)
+            val idm = buildIdentifierMap(context, poa)
             executedSelectedBlock(
               rugAs, wb, null, reviewContext, context, poa, identifierMap = idm)
         }

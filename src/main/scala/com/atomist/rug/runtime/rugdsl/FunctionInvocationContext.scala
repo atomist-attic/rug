@@ -16,10 +16,6 @@ trait FunctionInvocationContext[T] {
 
   def functionInvocation: FunctionInvocation
 
-  /**
-    * Target artifact source.
-    */
-  def artifactSource: ArtifactSource
 
   def args: ProjectOperationArguments
 
@@ -70,7 +66,7 @@ case class SimpleFunctionInvocationContext[T <: Object](
                                                          targetAlias: String,
                                                          functionInvocation: FunctionInvocation,
                                                          target: T,
-                                                         artifactSource: ArtifactSource,
+                                                         deprecated: ArtifactSource,
                                                          reviewContext: ReviewContext,
                                                          identifierMap: Map[String, Object],
                                                          args: ProjectOperationArguments = SimpleProjectOperationArguments.Empty,

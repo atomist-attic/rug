@@ -1,6 +1,7 @@
 package com.atomist.rug.test
 
 import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.ProjectOperationArchiveReader
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.parser.ParserCombinatorRugParser
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -45,7 +46,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     """.stripMargin)
     val theOneFile = StringFileArtifact("happy.txt", "Joy Joy")
     val rugArchive = SimpleFileBasedArtifactSource(theOneFile, generator)
-    val parsedGenerator: Seq[ProjectOperation] = new DefaultRugPipeline().create(rugArchive, None)
+    val parsedGenerator: Seq[ProjectOperation] = new ProjectOperationArchiveReader().findOperations(rugArchive, None, Nil).generators
 
     val generatorTest = StringFileArtifact(".atomist/tests/OneFileGenerator.rt",
       """scenario SomethingIsGenerated

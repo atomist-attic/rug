@@ -38,7 +38,7 @@ class RugDrivenProjectPredicate(
 
     program.actions.foreach {
       case wb: With =>
-        val idm = buildIdentifierMap(rugAs, project, as, poa)
+        val idm = buildIdentifierMap(project, poa)
         executedSelectedBlock(
           rugAs, wb, as, reviewContext, project, poa, identifierMap = idm)
       //      case sba: ScriptBlockAction =>

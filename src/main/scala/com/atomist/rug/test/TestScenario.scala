@@ -51,7 +51,7 @@ case class TestScenario(
   def identifierMap(backingArchive: ArtifactSource): Map[String, Object] = {
     val context = null
     val project = input(backingArchive)
-    buildIdentifierMap(backingArchive, context, project, args(backingArchive))
+    buildIdentifierMap(backingArchive, args)
   }
 
   /**
@@ -68,9 +68,8 @@ case class TestScenario(
     *
     * @return ProjectOperationArguments created from editor invocation
     */
-  def args(backingArchive: ArtifactSource): ProjectOperationArguments = {
-    val project = input(backingArchive)
-    parametersForOtherOperation(backingArchive, editorInvocation, SimpleProjectOperationArguments.Empty, project)
+  def args: ProjectOperationArguments = {
+    parametersForOtherOperation(editorInvocation, SimpleProjectOperationArguments.Empty)
   }
 }
 
@@ -193,7 +192,7 @@ case class PredicateAssertion(
 
   override def test(test: TestScenario, testBacking: ArtifactSource, output: ArtifactSource): TestedAssertion = {
     val pa = DefaultViewFinder
-    val result = pa.invokePredicate(EmptyArtifactSource(""), test.args(testBacking),
+    val result = pa.invokePredicate(EmptyArtifactSource(""), test.args,
       test.identifierMap(testBacking), predicate, PredicateAssertion.ProjectResultName, new ProjectAssertions(output))
     new TestedAssertion(result, this)
   }

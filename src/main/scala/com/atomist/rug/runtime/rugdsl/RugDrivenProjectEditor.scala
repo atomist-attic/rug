@@ -56,11 +56,11 @@ class RugDrivenProjectEditor(
       try {
         program.actions.foreach {
           case wb: With =>
-            val identifierMap = buildIdentifierMap(rugAs, currentProjectState, currentProjectState.currentBackingObject, poa)
+            val identifierMap = buildIdentifierMap(currentProjectState, poa)
             currentProjectState = executedSelectedBlock(rugAs, wb, currentProjectState.currentBackingObject,
               reviewContext, currentProjectState, poa, identifierMap).asInstanceOf[ProjectMutableView]
           case sba: ScriptBlockAction =>
-            val identifierMap = buildIdentifierMap(rugAs, currentProjectState, currentProjectState.currentBackingObject, poa)
+            val identifierMap = buildIdentifierMap(currentProjectState, poa)
             scriptBlockActionExecutor.execute(sba, currentProjectState, ScriptBlockActionExecutor.DEFAULT_PROJECT_ALIAS, identifierMap)
           case roo: RunOtherOperation =>
             runEditor(roo, rugAs, currentProjectState.currentBackingObject, poa) match {

@@ -463,8 +463,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
   it should "reject bogus regex in parameter" in {
     val prog =
-      s"""
-         |editor Triplet
+      s"""editor Triplet
          |
          |param nonsense: @this_is_bollocks
          |

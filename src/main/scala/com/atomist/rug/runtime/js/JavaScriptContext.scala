@@ -45,6 +45,7 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     val filtered = atomistConfig.atomistContent(rugAs)
       .filter(d => true,
         f => atomistConfig.isJsSource(f))
+
     //require all the atomist stuff
     for (f <- filtered.allFiles) {
       val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
@@ -114,7 +115,7 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     }
   }
 
-  private class ArtifactSourceBasedFolder private(var artifacts: ArtifactSource, val parent: Folder, val path: String) extends AbstractFolder(parent, path) {
+  private class ArtifactSourceBasedFolder private(val artifacts: ArtifactSource, val parent: Folder, val path: String) extends AbstractFolder(parent, path) {
 
     private val commentPattern: Pattern = Pattern.compile("^//.*$", Pattern.MULTILINE)
     //put single line vars like var x = new Blah() into exports
@@ -127,24 +128,26 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     }
 
     def getFile(s: String): String = {
-      val file = artifacts.findFile(s)
+      val file = artifacts.findFile(getPath + s)
       if (file.isEmpty) return null
-      //remove remove these source-map comments because they seem to be breaking nashorn :/
-      val withoutComments = commentPattern.matcher(file.get.content).replaceAll("")
-
-      //add export for those vars without them. TODO should be removed at some point once all have moved over!
-      val js = new StringBuilder(withoutComments)
-      append(varPattern, withoutComments, js)
-      append(letPattern, withoutComments, js)
-      js.toString()
+      if(atomistConfig.isAtomistSource(file.get)){
+        //remove these source-map comments because they seem to be breaking nashorn :/
+        val withoutComments = commentPattern.matcher(file.get.content).replaceAll("")
+        //add export for those vars without them. TODO should be removed at some point once all have moved over!
+        val js = new StringBuilder(withoutComments)
+        append(varPattern, withoutComments, js)
+        append(letPattern, withoutComments, js)
+        js.toString()
+      }else{
+        file.get.content
+      }
     }
 
     def getFolder(s: String): Folder = {
-      val dir = artifacts.findDirectory(s)
+      val dir = artifacts.findDirectory(getPath + s)
       if (dir.isEmpty) return null
-      new ArtifactSourceBasedFolder(artifacts.underPath(s), this, getPath + s + "/")
+      new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
     }
-
 
     def append(p: Pattern, str: String, sb: StringBuilder): Unit ={
       val m = p.matcher(str)

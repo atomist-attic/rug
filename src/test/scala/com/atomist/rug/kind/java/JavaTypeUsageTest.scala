@@ -131,7 +131,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 //  it should "allow project root view" in {
 //    val program =
 //      """
-//        |@description "I add Foobar annotations"
+//        |@description "I add Foobar annotation"
 //        |editor ClassAnnotated
 //        |
 //        |with java.project p when { p.fileCount() > 1 }
@@ -146,7 +146,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using JavaScript" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
@@ -165,7 +165,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using path in predicate" in pendingUntilFixed {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |# with java.project p when { p.fileCount() > 1 }
@@ -183,7 +183,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using default predicates" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource
@@ -198,7 +198,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using function" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -213,7 +213,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class using function with JavaScript argument" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j when { j.lineCount() < 1000 }
@@ -228,7 +228,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate class going straight to class without enclosing JavaSource" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -242,7 +242,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "add an annotation with properties to class" in {
     val program =
       """
-        |@description "I add ExtendWith() annotations"
+        |@description "I add ExtendWith annotation"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -262,7 +262,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove annotation from class" in {
     val program =
       """
-        |@description "I add Bar annotations"
+        |@description "I add Bar annotation"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -282,7 +282,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove one annotation only from class" in {
     val program =
       """
-        |@description "I remove RunWIth annotations"
+        |@description "I remove RunWith annotation"
         |editor ClassAnnotated
         |
         |with JavaType c when { c.name().endsWith("Tests") } begin
@@ -334,7 +334,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "repackage class and verify name and path" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I move package"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -355,7 +355,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "repackage class and verify explicitly importing users are updated" in pendingUntilFixed {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I move package"
         |editor ClassAnnotated
         |
         |with JavaType c when name = "Dog"
@@ -379,7 +379,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "rename class and verify name" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I rename class"
         |editor ClassAnnotated
         |
         |with JavaType c
@@ -496,7 +496,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val childFile = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
         |public class VeryCleverAbsquatulator extends NotRelevant {
-        |
         |}
       """.stripMargin)
 
@@ -528,7 +527,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val childFile = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
         |public final class VeryCleverAbsquatulator extends NotRelevant {
-        |
         |}
       """.stripMargin)
     val as = new SimpleFileBasedArtifactSource("", Seq(childFile, parentFile))
@@ -608,7 +606,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val impl = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
         |public class VeryCleverAbsquatulator implements Absquatulator {
-        |
         |}
       """.stripMargin)
 
@@ -665,12 +662,12 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "allow access to project" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaType c
         |when {
-        |return c.parent().parent().javaFileCount() < 100
+        |  return c.parent().parent().javaFileCount() < 100
         |}
         |do
         |  addAnnotation "com.someone" "FooBar"
@@ -687,7 +684,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate constructor" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -708,7 +705,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate method" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -729,7 +726,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove annotation from method" in {
     val program =
       """
-        |@description "I add and remove FooBar annotations"
+        |@description "I remove FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -751,7 +748,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "annotate field" in {
     val program =
       """
-        |@description "I add FooBar annotations"
+        |@description "I add FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j
@@ -772,7 +769,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   it should "remove annotation from field" in {
     val program =
       """
-        |@description "I add and remove FooBar annotations"
+        |@description "I remove FooBar annotation"
         |editor ClassAnnotated
         |
         |with JavaSource j

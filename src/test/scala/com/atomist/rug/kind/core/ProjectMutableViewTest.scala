@@ -1,5 +1,7 @@
 package com.atomist.rug.kind.core
 
+import java.util
+
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -114,6 +116,34 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.dirty should be(true)
     pmv.changeLogEntries should be (empty)
     pmv.changeCount should be(1)
+  }
+
+  // Written in response to community report of failure to preserve changes following this:
+  //  with Project p
+  //    begin
+  //  do merge 'my_template.vm' to 'my_template.output'
+  //  do copyEditorBackingFilesWithNewRelativePath sourcePath='test/' destinationPath='test_out'
+  //  end
+  it should "preserve merge after copyEditorBackingFilesWithNewRelativePath" in {
+    val outputAs = EmptyArtifactSource("")
+    val templatePath = "my_template.vm"
+    val mergeOutputPath = "my_template.output"
+    val backing = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/templates/" + templatePath, "content"),
+      StringFileArtifact("test/foo", "file content")
+    )
+    val pmv = new ProjectMutableView(backing, outputAs)
+    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
+      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
+      FirstPoa, Nil)
+    pmv.merge(templatePath, mergeOutputPath, ic)
+    pmv.currentBackingObject.totalFileCount should be(1)
+    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
+
+    pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = "test/", destinationPath = "test_out")
+    pmv.fileCount should be (2)
+    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
+    pmv.currentBackingObject.findFile("test_out/foo").get.content should equal ("file content")
   }
 
   it should "add two entries to change log" in {

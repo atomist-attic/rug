@@ -1,10 +1,8 @@
 package com.atomist.rug.kind.pom
 
-import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.EmptyArtifactSource
-import com.atomist.source.file.FileSystemArtifactSource
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
 class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach {

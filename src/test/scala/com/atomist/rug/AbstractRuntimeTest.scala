@@ -326,6 +326,30 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, Some(expected), JavaAndTemplate, rugAs, pipeline = pipeline)
   }
 
+  it should "preserve merge after copyFiles" in {
+    val outputAs = EmptyArtifactSource("")
+    val templatePath = "my_template.vm"
+    val mergeOutputPath = "my_template.output"
+    val rugAs = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/templates/" + templatePath, "content"),
+      StringFileArtifact("test/foo", "file content")
+    )
+    val program =
+      """
+        |editor TestForMergeOverwrite
+        |with Project p
+        |  begin
+        |    do merge 'my_template.vm' to 'my_template.output'
+        |    do copyEditorBackingFilesWithNewRelativePath sourcePath='test/' destinationPath='test_out'
+        |  end
+      """.stripMargin
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    val r = doModification(pas, outputAs, rugAs, SimpleProjectOperationArguments.Empty, pipeline)
+    r.totalFileCount should be (2)
+    r.findFile(mergeOutputPath).get.content should equal ("content")
+    r.findFile("test_out/foo").get.content should equal ("file content")
+  }
+
   it should "execute simple program with false comparison preventing bad changes" in {
     val goBowling =
       """

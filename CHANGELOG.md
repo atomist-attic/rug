@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+[Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
+
 ### Changed
 
--   TypeScript editors now return void. Use the new `ProjectMutableView` `describeChange` method to 
-    add any comments about the working of your editor.
-
-
-[Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
+-   TypeScript editors now return void. Use the new
+    `ProjectMutableView` `describeChange` method to add any comments
+    about the working of your editor.
 
 ### Added
 
@@ -22,19 +22,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
--   TS generators are now passed project name as second argument as per TS contract
+-   TS generators are now passed project name as second argument as
+    per TS contract
+
+-   Retain all changes from an editor
+    https://github.com/atomist/rug/issues/199
 
 ### Changed
 
--   **BREAKING** CustomizingProjectGenerator was removed from ProjectGenerator.ts 
-    as it's no longer required, and it's thought that it's not being used at all yet.
+-   **BREAKING** CustomizingProjectGenerator was removed from
+    ProjectGenerator.ts as it's no longer required, and it's thought
+    that it's not being used at all yet.
 
--   **BREAKING** signature of TypeScript ProjectGenerator.populate() changed: parameter
-    `projectName` got removed. Name of the generated project can be obtained via `project.name()`.
+-   **BREAKING** signature of TypeScript ProjectGenerator.populate()
+    changed: parameter `projectName` got removed. Name of the
+    generated project can be obtained via `project.name()`.
 
--   Core.ts is generated and compiled on-the-fly during unit-testing so that
-    the build is not dependent on network or later maven phases until deployment
-        
+-   Core.ts is generated and compiled on-the-fly during unit-testing
+    so that the build is not dependent on network or later maven
+    phases until deployment
+
 ## [0.10.0]
 
 [0.10.0]: https://github.com/atomist/rug/compare/0.9.0...0.10.0
@@ -43,7 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Parameter validation regex `@version_range`
 
--   ScriptExceptions during initial eval of JavaScript now include filename
+-   ScriptExceptions during initial eval of JavaScript now include
+    filename
 
 -   EveryPom type curtesy of @justinedelson
 

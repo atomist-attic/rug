@@ -348,6 +348,10 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     r.totalFileCount should be (2)
     r.findFile(mergeOutputPath).get.content should equal ("content")
     r.findFile("test_out/foo").get.content should equal ("file content")
+    r.cachedDeltas.size should be (3)
+    r.cachedDeltas.exists(_.path == mergeOutputPath) should be (true)
+    r.cachedDeltas.exists(_.path == "test_out") should be (true)
+    r.cachedDeltas.exists(_.path == "test_out/foo") should be (true)
   }
 
   it should "execute simple program with false comparison preventing bad changes" in {

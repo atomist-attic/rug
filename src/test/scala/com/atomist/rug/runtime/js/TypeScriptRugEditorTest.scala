@@ -126,7 +126,7 @@ object TypeScriptRugEditorTest {
       |import {Project} from '@atomist/rug/model/Core'
       |import {Status,Result} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleGenerator implements ProjectGenerator{
+      |class SimpleGenerator implements ProjectGenerator {
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
       |     populate(project: Project, {content} : {content: string}) {

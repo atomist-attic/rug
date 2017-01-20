@@ -34,11 +34,11 @@ class RugDrivenProjectReviewer(
 
     program.actions.foreach {
       case wb: With =>
-        val idm = buildIdentifierMap(rugAs, project, as, poa)
+        val idm = buildIdentifierMap(project, poa)
         executedSelectedBlock(
           rugAs, wb, as, reviewContext, project, poa, identifierMap = idm)
       case sba: ScriptBlockAction =>
-        val identifierMap = buildIdentifierMap(rugAs, project, project.currentBackingObject, poa)
+        val identifierMap = buildIdentifierMap( project, poa)
         scriptBlockActionExecutor.execute(sba, project, ScriptBlockActionExecutor.DEFAULT_SERVICES_ALIAS, identifierMap)
       case run: RunOtherOperation =>
         val rr = runReviewer(run, rugAs, as, poa)

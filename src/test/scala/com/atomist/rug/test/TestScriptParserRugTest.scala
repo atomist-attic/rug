@@ -145,7 +145,7 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val test = tp.head
     test.name should be(scenarioName)
     test.givenFiles.fileSpecs should equal(Seq(f))
-    val poa = test.args(new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/something", "a file")))
+    val poa = test.args
     poa.parameterValues.size should be >= 2
     poa.paramValue("old_class") should equal("Dog")
     poa.paramValue("new_class") should equal("Cat")

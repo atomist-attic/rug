@@ -2,6 +2,7 @@ package com.atomist.rug.test
 
 import com.atomist.project.common.{InvalidParametersException, MissingParametersException}
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils}
 
@@ -54,10 +55,10 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
   /**
     * Run the given test programs
     *
-    * @param testPrograms test programs
-    * @param testResources backing archive for thetests
-    * @param context known project operations. What we're testing
-    * @param namespace current namespace for use in name resolution
+    * @param testPrograms  test programs
+    * @param testResources backing archive for the tests
+    * @param context       known project operations. What we're testing
+    * @param namespace     current namespace for use in name resolution
     * @return a test report
     */
   def run(
@@ -73,10 +74,13 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
               s"Known operations are [${context.map(op => op.name).mkString(",")}]", EmptyTestEventLog)
         case Some(ed: ProjectEditor) =>
           executeAgainst(test, ed, testResources)
+        case Some(gen: ProjectGenerator) =>
+          executeGenerator(test, gen)
       }
     })
     TestReport(executedTests)
   }
+
 
   private def executeAgainst(test: TestScenario, ed: ProjectEditor, testResources: ArtifactSource): ExecutedTest = {
     val eventLog = new TestEventLog
@@ -88,7 +92,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
         eventLog.recordInput(input)
       }
 
-      val poa: ProjectOperationArguments = test.args(testResources)
+      val poa: ProjectOperationArguments = test.args
       eventLog.recordParameters(poa)
 
       if (test.givenInvocations.nonEmpty) {
@@ -126,6 +130,44 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
               }
           }
       }
+    }
+    catch {
+      case mp: MissingParametersException =>
+        test.outcome.assertions match {
+          case Seq(ShouldBeMissingParametersAssertion) =>
+            ExecutedTest(test.name,
+              Seq(TestedAssertion(result = true, s"Editor was missing parameters: ${mp.getMessage}")), eventLog)
+          case _ =>
+            ExecutedTest.failure(test.name, s"Editor failed due to missing parameters: ${mp.getMessage}", eventLog)
+        }
+      case ivp: InvalidParametersException =>
+        test.outcome.assertions match {
+          case Seq(ShouldBeInvalidParametersAssertion) =>
+            ExecutedTest(test.name, Seq(TestedAssertion(result = true, s"Editor had invalid parameters: ${ivp.getMessage}")), eventLog)
+          case _ =>
+            ExecutedTest.failure(test.name, s"Editor failed due to invalid parameters: ${ivp.getMessage}", eventLog)
+        }
+    }
+  }
+
+
+  private def executeGenerator(test: TestScenario, gen: ProjectGenerator): ExecutedTest = {
+    val eventLog = new TestEventLog
+    try {
+      // TODO should publish events rather than sysout
+      executionLog.log(s"Executing scenario ${test.name}...")
+
+
+      val poa: ProjectOperationArguments = test.args
+      eventLog.recordParameters(poa)
+
+      if (test.givenInvocations.nonEmpty) {
+        ??? // not implemented
+      }
+
+          println("I see a generator!")
+          val result = gen.generate(test.name, poa)
+          verifyOutput(test, null, result, eventLog) // That null thing is probably used
     }
     catch {
       case mp: MissingParametersException =>
@@ -184,6 +226,7 @@ case class TestReport(
       test.name + "diagnostics\n" +
         "\tInput: " + test.eventLog.input.map(i => ArtifactSourceUtils.prettyListFiles(i)).getOrElse("") +
         "\tOutput: " + test.eventLog.output.map(o => ArtifactSourceUtils.prettyListFiles(o)).getOrElse("")
+
     failures.map(f => testDebugOutput(f)).mkString("\n")
   }
 

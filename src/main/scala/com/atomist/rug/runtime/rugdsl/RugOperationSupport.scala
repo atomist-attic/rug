@@ -81,24 +81,22 @@ trait RugOperationSupport extends LazyLogging {
     )
   }
 
-  protected def buildIdentifierMap(rugAs: ArtifactSource,
+  protected def buildIdentifierMap(
                                    context: Object,
-                                   project: ArtifactSource,
                                    poa: ProjectOperationArguments): Map[String, Object] = {
     val idm = RugOperationSupport.poaToIdentifierMap(parameters, poa)
-    val compMap = computationsMap(rugAs, poa, project, targetAlias = "x", context, identifiersAlreadyResolved = idm)
+    val compMap = computationsMap(poa, targetAlias = "x", context, identifiersAlreadyResolved = idm)
     idm ++ compMap ++ wellKnownIdentifiers
   }
 
   /**
     * Return expanded parameters we can pass to other operations. We must include our computations.
     */
-  protected def parametersForOtherOperation(rugAs: ArtifactSource,
+  protected def parametersForOtherOperation(
                                             roo: RunOtherOperation,
-                                            poa: ProjectOperationArguments,
-                                            project: ArtifactSource) = {
+                                            poa: ProjectOperationArguments) = {
     val context = null
-    val idm = buildIdentifierMap(rugAs, context, project, poa)
+    val idm = buildIdentifierMap(context, poa)
     val params: Seq[ParameterValue] = (idm.collect {
       case (k, v) => SimpleParameterValue(k, Objects.toString(v))
     } ++ roo.args.collect {
@@ -114,9 +112,8 @@ trait RugOperationSupport extends LazyLogging {
   /**
     * Return the computed values (assignments) for this operation
     */
-  protected def computationsMap(rugAs: ArtifactSource,
+  protected def computationsMap(
                                 poa: ProjectOperationArguments,
-                                project: ArtifactSource,
                                 targetAlias: String = "p",
                                 context: Object,
                                 reviewContext: ReviewContext = null,
@@ -125,7 +122,7 @@ trait RugOperationSupport extends LazyLogging {
     var knownIdentifiers = identifiersAlreadyResolved
     computations.map {
       case Computation(name, te) =>
-        val value = evaluator.evaluate[Object, Object](te, project, reviewContext, context, targetAlias, knownIdentifiers, poa)
+        val value = evaluator.evaluate[Object, Object](te, null, reviewContext, context, targetAlias, knownIdentifiers, poa)
         knownIdentifiers += (name -> value)
         (name, value)
     }.toMap
@@ -214,7 +211,7 @@ trait RugOperationSupport extends LazyLogging {
     * Run the given editor.
     */
   protected def runEditor(roo: RunOtherOperation,
-                          rugAs: ArtifactSource,
+                          rugAs: ArtifactSource, // not used
                           as: ArtifactSource,
                           poa: ProjectOperationArguments): ModificationAttempt = {
     resolve(roo.name, namespace, operations, imports) match {
@@ -222,7 +219,7 @@ trait RugOperationSupport extends LazyLogging {
         throw new RugRuntimeException(name, s"Cannot run unknown operation: ${roo.name}", null)
       case Some(pe: ProjectEditor) =>
         try {
-          pe.modify(as, parametersForOtherOperation(rugAs, roo, poa, as))
+          pe.modify(as, parametersForOtherOperation(roo, poa))
         } catch expressFailure(roo)
       case Some(wtf) =>
         throw new RugRuntimeException(name, s"Project operation is not a ProjectEditor: ${roo.name}", null)
@@ -248,13 +245,14 @@ trait RugOperationSupport extends LazyLogging {
   }
 
   protected def runReviewer(roo: RunOtherOperation,
-                            rugAs: ArtifactSource, project: ArtifactSource,
+                            rugAs: ArtifactSource, // not used
+                            project: ArtifactSource,
                             poa: ProjectOperationArguments): ReviewResult = {
     resolve(roo.name, namespace, operations, imports) match {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown reviewer: ${roo.name}", null)
       case Some(pr: ProjectReviewer) =>
-        pr.review(project, parametersForOtherOperation(rugAs, roo, poa, project))
+        pr.review(project, parametersForOtherOperation(roo, poa))
       case Some(wtf) =>
         throw new RugRuntimeException(name, s"Project operation is not a ProjectEditor: ${roo.name}", null)
     }

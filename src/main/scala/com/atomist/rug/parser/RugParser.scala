@@ -42,6 +42,8 @@ object RugParser extends CommonRugTokens {
 
   val EditorToken = "editor"
 
+  val GeneratorToken = "generator"
+
   val ReviewerToken = "reviewer"
 
   val PredicateToken = "predicate"
@@ -76,12 +78,6 @@ object RugParser extends CommonRugTokens {
   val OnFailToken = "onFailure"
 
   val OnNoChangeToken = "onNoChange"
-
-  /**
-    * Used to indicate to indicate that an editor or reviewer should be exposed
-    * directly to users
-    */
-  val GeneratorAnnotation = "generator"
 
   val TagAnnotation = "tag"
 

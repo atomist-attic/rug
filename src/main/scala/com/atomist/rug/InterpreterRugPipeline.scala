@@ -12,6 +12,9 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
   * Build executable ProjectOperations from Rug archives
   * Rug scripts must be in .atomist/editors directory
   *
+  * If you're looking for "how do I parse these rugs" you probably want ProjectOperationArchiveReader,
+  * which calls into this and does other important stuff too
+  *
   * @param parser parser to use
   * @param compiler compiler to use
   */

@@ -65,6 +65,8 @@ class ParserCombinatorRugParser(
 
   object Predicate extends Op
 
+  object Generator extends Op
+
   case class OperationSpec(
                             op: Op,
                             name: String,
@@ -78,16 +80,19 @@ class ParserCombinatorRugParser(
     rep(annotation) ~ operationToken ~ capitalizedIdentifier ~ rep(uses) ^^ {
       case annotations ~ op ~ name ~ imports =>
         val o: Op = op match {
+          case GeneratorToken => Editor
           case EditorToken => Editor
           case PredicateToken => Predicate
           case ReviewerToken => Reviewer
           case ExecutorToken => Executor
+          case GeneratorToken => Generator
         }
         var ed = OperationSpec(o, name, Nil, name, None, imports)
         for (annotation <- annotations) annotation match {
           case Annotation(DescriptionAnnotationAttribute, Some(desc: String)) => ed = ed.copy(description = desc)
           case Annotation(TagAnnotation, Some(tag: String)) => ed = ed.copy(tags = ed.tags :+ tag)
-          case Annotation(GeneratorAnnotation, pubName: Option[String @unchecked]) =>
+          case Annotation(GeneratorToken, pubName: Option[String@unchecked]) =>
+            System.err.println(s"Generator [$name] uses old style @generator annotation. Use 'generator', rather than 'editor', keyword")
             ed = ed.copy(publishedName = Some(pubName.getOrElse(ed.name)))
           // TODO Do what we did for parameters
           // and do the resolution later, because someone thought this makes it worse, but it doesn't, printing the $op helps
@@ -116,7 +121,7 @@ class ParserCombinatorRugParser(
   private def doSteps(simpleAction: Parser[DoStep]): Parser[Seq[DoStep]] =
     (simpleAction | compoundDoStep) ^^ {
       case d: DoStep => Seq(d)
-      case dos: Seq[DoStep @unchecked] => dos
+      case dos: Seq[DoStep@unchecked] => dos
     }
 
   private def simpleWithDoStep: Parser[DoStep] = (doDoStep | withBlock(simpleWithDoStep)) ^^ {
@@ -160,9 +165,7 @@ class ParserCombinatorRugParser(
 
   protected def scriptActionBlock: Parser[ScriptBlock] = javaScriptBlock
 
-  private def opActions: Parser[Seq[Action]] =  rep1(action(simpleWithDoStep)) ^^ {
-    case actions => actions
-  }
+  private def opActions: Parser[Seq[Action]] = rep1(action(simpleWithDoStep))
 
   private def rugEditor: Parser[RugEditor] =
     operationSpec(EditorToken) ~
@@ -172,6 +175,18 @@ class ParserCombinatorRugParser(
       case opSpec ~ preconditions ~ postcondition ~ params ~ compBlock ~ actions =>
         RugEditor(opSpec.name, opSpec.publishedName, opSpec.tags, opSpec.description, opSpec.imports,
           preconditions, postcondition,
+          paramDefsToParameters(opSpec.name, params),
+          compBlock, actions)
+    }
+
+  private def rugGenerator: Parser[RugEditor] =
+    operationSpec(GeneratorToken) ~
+      opt(postcondition) ~
+      rep(parameter) ~ rep(letStatement) ~
+      opActions ^^ {
+      case opSpec ~ postcondition ~ params ~ compBlock ~ actions =>
+        RugEditor(opSpec.name, Some(opSpec.name), opSpec.tags, opSpec.description, opSpec.imports,
+          Nil, postcondition,
           paramDefsToParameters(opSpec.name, params),
           compBlock, actions)
     }
@@ -234,7 +249,7 @@ class ParserCombinatorRugParser(
 
   protected def executorActions: Parser[Seq[Action]] = (scriptActionBlock | rep1(action(simpleExecutionDoStep))) ^^ {
     case sab: ScriptBlock => Seq(ScriptBlockAction(sab))
-    case actions: Seq[Action @unchecked] => actions
+    case actions: Seq[Action@unchecked] => actions
   }
 
   private def rugExecutor: Parser[RugExecutor] =
@@ -247,7 +262,12 @@ class ParserCombinatorRugParser(
           compBlock, actions)
     }
 
-  protected def rugProgram: Parser[RugProgram] = rugPredicate | rugEditor | rugReviewer | rugExecutor
+  protected def rugProgram: Parser[RugProgram] =
+    rugPredicate |
+      rugGenerator |
+      rugEditor |
+      rugReviewer |
+      rugExecutor
 
   private def rugPrograms: Parser[Seq[RugProgram]] = phrase(rep1(rugProgram))
 

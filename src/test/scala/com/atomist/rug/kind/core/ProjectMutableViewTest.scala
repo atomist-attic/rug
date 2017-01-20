@@ -128,22 +128,33 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val outputAs = EmptyArtifactSource("")
     val templatePath = "my_template.vm"
     val mergeOutputPath = "my_template.output"
+    val copyInputFile = "foo"
+    val copyInputDir = "test"
+    val copyInputPath = s"$copyInputDir/$copyInputFile"
+    val copyOutputDir = "test_out"
+    val copyOutputPath = s"$copyOutputDir/$copyInputFile"
     val backing = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/templates/" + templatePath, "content"),
-      StringFileArtifact("test/foo", "file content")
+      StringFileArtifact(copyInputPath, "file content")
     )
     val pmv = new ProjectMutableView(backing, outputAs)
     val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
       FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
       FirstPoa, Nil)
     pmv.merge(templatePath, mergeOutputPath, ic)
-    pmv.currentBackingObject.totalFileCount should be(1)
+    pmv.currentBackingObject.totalFileCount should be (1)
+    pmv.currentBackingObject.cachedDeltas.size should be (1)
     pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
+    pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) should be (true)
 
-    pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = "test/", destinationPath = "test_out")
+    pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = copyInputDir, destinationPath = copyOutputDir)
     pmv.fileCount should be (2)
+    pmv.currentBackingObject.cachedDeltas.size should be (3)
     pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
-    pmv.currentBackingObject.findFile("test_out/foo").get.content should equal ("file content")
+    pmv.currentBackingObject.findFile(copyOutputPath).get.content should equal ("file content")
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == mergeOutputPath) should be (true)
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputDir) should be (true)
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputPath) should be (true)
   }
 
   it should "add two entries to change log" in {

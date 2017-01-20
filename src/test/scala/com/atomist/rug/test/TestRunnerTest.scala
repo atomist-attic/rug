@@ -37,13 +37,49 @@ class TestRunnerTest extends FlatSpec with Matchers {
     executedTests.tests.head.passed should be(false)
   }
 
-  it should "test a generator" in {
+  it should "test a generator with parameters" in {
     val generator = StringFileArtifact(".atomist/editors/OneFileGenerator.rug",
     """generator OneFileGenerator
       |
-      |with Project p
-      |   do eval { print("I am so happy") }
+      |param contents: ^.*$
+      |
+      |with File f
+      |   do setContent contents
     """.stripMargin)
+    val theOneFile = StringFileArtifact("happy.txt", "Joy Joy")
+    val rugArchive = SimpleFileBasedArtifactSource(theOneFile, generator)
+    val parsedGenerator: Seq[ProjectOperation] = new ProjectOperationArchiveReader().findOperations(rugArchive, None, Nil).generators
+
+    val generatorTest = StringFileArtifact(".atomist/tests/OneFileGenerator.rt",
+      """scenario SomethingIsGenerated
+        |
+        |given
+        |  OneFileGenerator contents="Maximize developer productivity through automation & comprehension"
+        |
+        |then
+        |  fileExists "happy.txt"
+        |  and fileContains "happy.txt" "automation & comprehension"
+      """.stripMargin)
+
+    val parsedTest = RugTestParser.parse(generatorTest)
+    val executedTests = testRunner.run(parsedTest, rugArchive, parsedGenerator)
+
+    executedTests.tests.size should be(1)
+    val testResult = executedTests.tests.head
+    if (!testResult.passed) {
+       println(testResult.toString)
+    }
+    testResult.passed should be(true)
+
+  }
+
+  it should "test a generator" in {
+    val generator = StringFileArtifact(".atomist/editors/OneFileGenerator.rug",
+      """generator OneFileGenerator
+        |
+        |with Project p
+        |   do eval { print("I am so happy") }
+      """.stripMargin)
     val theOneFile = StringFileArtifact("happy.txt", "Joy Joy")
     val rugArchive = SimpleFileBasedArtifactSource(theOneFile, generator)
     val parsedGenerator: Seq[ProjectOperation] = new ProjectOperationArchiveReader().findOperations(rugArchive, None, Nil).generators
@@ -64,7 +100,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
     if (!testResult.passed) {
-       println(testResult.toString)
+      println(testResult.toString)
     }
     testResult.passed should be(true)
 

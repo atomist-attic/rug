@@ -42,6 +42,17 @@ object JavaTypeUsageTest extends Matchers {
           |   @FooBar
           |   public void bark() {
           |   }
+          |}""".stripMargin),
+      StringFileArtifact("src/test/java/SpringBootJunit5ApplicationTests.java",
+        """
+          |import org.junit.runner.RunWith;
+          |import org.springframework.boot.test.context.SpringBootTest;
+          |import org.springframework.test.context.junit4.SpringRunner;
+          |import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+          |
+          |@RunWith(SpringRunner.class)
+          |@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+          |public class SpringBootJunit5ApplicationTests {
           |}""".stripMargin)
     )
   )
@@ -266,6 +277,25 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content.lines.size should be > 0
     f.content should include("import com.foo.Bar;")
     f.content shouldNot include("@Bar")
+  }
+
+  it should "remove one annotation only from class" in {
+    val program =
+      """
+        |@description "I remove RunWIth annotations"
+        |editor ClassAnnotated
+        |
+        |with JavaType c when { c.name().endsWith("Tests") } begin
+        |  do removeAnnotation "org.junit.runner" "RunWith"
+        |end
+      """.stripMargin
+
+    val result = executeJava(program, "editors/ClassAnnotated.rug")
+    val f = result.findFile("src/test/java/SpringBootJunit5ApplicationTests.java").get
+
+    f.content.lines.size should be > 0
+    f.content shouldNot include("@RunWith")
+    f.content should include("@SpringBootTest")
   }
 
   val dog = StringFileArtifact(

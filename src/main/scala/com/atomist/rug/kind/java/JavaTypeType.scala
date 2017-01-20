@@ -61,18 +61,18 @@ class JavaTypeType(evaluator: Evaluator)
 object JavaTypeType {
 
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
-    val newAnnotation = new MarkerAnnotationExpr(new NameExpr(annotationName))
-    if (!bd.getAnnotations.asScala.map(_.getName).contains(newAnnotation.getName)) {
-      bd.setAnnotations((bd.getAnnotations.asScala :+ newAnnotation).asJava)
+    val annotations = bd.getAnnotations.asScala
+    if (!annotations.exists(_.getName.getName.equals(annotationName))) {
+      bd.setAnnotations((annotations :+ new MarkerAnnotationExpr(new NameExpr(annotationName))).asJava)
       true
     } else // It's already there
       false
   }
 
   def annotationRemovedFrom(bd: BodyDeclaration, annotationName: String): Boolean = {
-    val annotation = new MarkerAnnotationExpr(new NameExpr(annotationName))
-    if (bd.getAnnotations.asScala.map(_.getName).contains(annotation.getName)) {
-      bd.setAnnotations(bd.getAnnotations.asScala.filter(_.equals(annotation.getName)).asJava)
+    val annotations = bd.getAnnotations.asScala
+    if (annotations.exists(_.getName.getName.equals(annotationName))) {
+      bd.setAnnotations(annotations.filterNot(_.getName.getName.equals(annotationName)).asJava)
       true
     } else // It's already gone
       false

@@ -110,7 +110,7 @@ trait PomMutableViewNonMutatingFunctions extends BuildViewNonMutatingFunctions {
                         groupId: String,
                         @ExportFunctionParameterDescription(name = "artifactId",
                           description = "The artifactId of the dependency you are looking to inspect")
-                        artifactId: String) =
+                        artifactId: String): String =
     getTextContentFor(s"$dependencyBaseXPath/version[../$mavenArtifactId = '$artifactId'and ../$mavenGroupId [text() = '$groupId']]")
 
   @ExportFunction(readOnly = true, description = "Return the value of a dependency's scope as specified by artifactId")
@@ -119,7 +119,7 @@ trait PomMutableViewNonMutatingFunctions extends BuildViewNonMutatingFunctions {
                       groupId: String,
                       @ExportFunctionParameterDescription(name = "artifactId",
                         description = "The artifactId of the dependency you are looking to inspect")
-                      artifactId: String) =
+                      artifactId: String): String =
     getTextContentFor(s"$dependencyBaseXPath/$scope[../$mavenArtifactId = '$artifactId'and ../$mavenGroupId [text() = '$groupId']]")
 
   @ExportFunction(readOnly = true, description = "Return whether a dependency is present as specified by artifactId and groupId")

@@ -3,7 +3,7 @@ package com.atomist.rug.kind.build
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 
 /**
-  * Provides a consistent view on top of all build tools
+  * Provides a consistent view on top of all build tool config files
   */
 trait BuildViewNonMutatingFunctions {
 

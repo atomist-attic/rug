@@ -10,7 +10,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-
 /**
   * Finds and evaluates handlers in a Rug archive.
   */
@@ -81,4 +80,3 @@ object JavaScriptHandlerFinder {
     }.getOrElse(Nil)
   }
 }
-

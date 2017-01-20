@@ -80,13 +80,10 @@ object RugTestParser
       TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)
     case name ~ debug ~ uses ~ computations ~ gf ~ None ~ roo ~ andThen =>
       TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)
-
-
   }
 
   private def testPrograms: Parser[Seq[TestScenario]] = phrase(rep1(testProgram))
 
   def parse(f: FileArtifact): Seq[TestScenario] =
     parseTo(f, testPrograms)
-
 }

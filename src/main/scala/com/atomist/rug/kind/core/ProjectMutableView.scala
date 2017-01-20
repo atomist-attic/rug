@@ -456,10 +456,9 @@ edited.""")
   def context = new ProjectContext(ctx)
 }
 
-
 class ProjectContext(ctx: UserModelContext) extends UserServices {
 
-  override def pathExpressionEngine(): jsPathExpressionEngine = {
+  override def pathExpressionEngine: jsPathExpressionEngine = {
     ctx.registry("PathExpressionEngine").asInstanceOf[jsPathExpressionEngine]
   }
 }

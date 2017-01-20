@@ -405,8 +405,6 @@ private[elm] object ElmParserCombinator
       case constructor ~ parameters => UnionDeconstruction(constructor, parameters)
     }
 
-    private def discardTheThing: Parser[ElmPattern] = "_".r ^^ {
-      case underscore => MatchAnything
-    }
+    private def discardTheThing: Parser[ElmPattern] = "_".r ^^ (underscore => MatchAnything)
   }
 }

@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 object ViewTree {
 
   /**
-    * Puts a view over an existing tree
+    * Puts a view over an existing tree.
     *
     * @param of tree to put view over
     * @param t  FieldTransformer
@@ -28,7 +28,6 @@ object ViewTree {
     val _fieldValues = ListBuffer.empty[TreeNode]
     _fieldValues.appendAll(filtered)
     new ViewTree(of, filtered)
-
   }
 }
 
@@ -59,5 +58,4 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
 
   override def toString =
     s"${getClass.getSimpleName}($nodeName:$nodeType){${childNodes.mkString(",")}}"
-
 }

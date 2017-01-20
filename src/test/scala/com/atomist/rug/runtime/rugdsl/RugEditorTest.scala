@@ -52,7 +52,6 @@ class RugEditorTest extends FlatSpec with Matchers {
     override def description: String = name
   }
 
-
   private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)

@@ -46,7 +46,7 @@ trait Matcher {
     * @param m
     * @return
     */
-  def ~?(m: Matcher): Matcher = concat(Whitespace.?.concat(m))
+  def ~?(m: Matcher): Matcher = concat(Whitespace.?().concat(m))
 
   def alternate(m: Matcher): Matcher = Alternate(this, m)
 

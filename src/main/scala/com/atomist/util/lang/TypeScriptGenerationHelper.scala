@@ -21,7 +21,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   }
 
   def javaTypeToTypeScriptType(jt: String): String = {
-    val pathExpressionEngineClassName = "class " + classOf[jsPathExpressionEngine].getName()
+    val pathExpressionEngineClassName = "class " + classOf[jsPathExpressionEngine].getName
     jt match {
       case "String" => "string"
       case "boolean" => "boolean"
@@ -47,5 +47,4 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }
-
 }

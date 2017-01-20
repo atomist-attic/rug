@@ -18,7 +18,6 @@ class MutableTreeNodeUpdater(soo: MutableContainerTreeNode)
   }
 }
 
-
 class MutableContainerTypeProvider extends TypeProvider(classOf[MutableContainerMutableView]) {
 
   override def description: String = "Generic container"

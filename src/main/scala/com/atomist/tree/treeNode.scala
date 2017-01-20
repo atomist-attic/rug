@@ -96,4 +96,3 @@ trait TerminalTreeNode extends TreeNode {
 
   override def accept(v: Visitor, depth: Int): Unit = v.visit(this, depth)
 }
-

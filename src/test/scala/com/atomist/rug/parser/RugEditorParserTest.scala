@@ -850,6 +850,4 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   //      """.stripMargin
   //    ri.parse(prog)
   //  }
-
-
 }

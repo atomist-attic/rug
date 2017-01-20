@@ -82,5 +82,3 @@ object ProjectOperationArchiveReaderUtils {
     startingProject.filter(d => !d.path.equals(atomistConfig.atomistRoot), f => true)
   }
 }
-
-

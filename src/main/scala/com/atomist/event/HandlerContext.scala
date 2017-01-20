@@ -2,7 +2,6 @@ package com.atomist.event
 
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
 
-
 /**
   * Implemented by model elements that want to know
   * about the present context. Used in a NodePreparer
@@ -29,4 +28,3 @@ trait ModelContextAware {
   *            or access ServiceSource
   */
 case class HandlerContext(servicesMutableView: ServicesMutableView)
-

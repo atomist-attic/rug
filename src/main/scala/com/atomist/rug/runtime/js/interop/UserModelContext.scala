@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry, MessageBuilder, TeamContext}
 
-
 /**
   * Context exposed to user JavaScript.
   */
@@ -12,7 +11,6 @@ trait UserModelContext {
   def registry: Map[String, Object]
 
 }
-
 
 /**
   * Services available to all JavaScript operations, whether
@@ -24,7 +22,6 @@ trait UserServices {
 
 }
 
-
 /**
   * Entry point to Atomist system
   */
@@ -35,7 +32,6 @@ trait AtomistFacade extends UserModelContext with TeamContext {
   def messageBuilder: MessageBuilder
 
 }
-
 
 class DefaultAtomistFacade(
                             val teamId: String,
@@ -53,7 +49,6 @@ class DefaultAtomistFacade(
   override def messageBuilder: MessageBuilder =
     new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
 }
-
 
 /**
   * Used for Project editing only, when team id isn't needed

@@ -36,8 +36,6 @@ trait TypeScriptEditorTestHelper extends Matchers {
     jsed.name should be(editorName)
     jsed.setContext(others)
 
-
-
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(target, SimpleProjectOperationArguments("", params)) match {
       case sm: SuccessfulModification =>

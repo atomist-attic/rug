@@ -71,7 +71,6 @@ object JavaTypeUsageTest extends Matchers {
                       as: ArtifactSource, poa: Map[String,String],
                       runtime : RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
 
-
     val progAs = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, program)).withPathAbove(".atomist") + TestUtils.user_model
 
     val eds = runtime.create(progAs,None)

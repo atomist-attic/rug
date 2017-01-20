@@ -4,7 +4,6 @@ import com.atomist.rug.RugJavaScriptException
 import com.atomist.source.{ SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-
 class JavaScriptContextTest extends FlatSpec with Matchers {
   val SimpleEditorWithoutParameters: String =
     """

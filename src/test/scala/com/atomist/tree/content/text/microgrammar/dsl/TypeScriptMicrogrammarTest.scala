@@ -109,7 +109,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |  var editor = new MgEditor()
       | """.stripMargin
 
-
   it should "run use microgrammar defined in TypeScript" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))

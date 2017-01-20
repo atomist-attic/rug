@@ -7,7 +7,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers with LazyLogging {
 
-
   it should "compile a simple editor" in {
     val as = SimpleFileBasedArtifactSource(StringFileArtifact(".atomist/Thing.ts",
       """

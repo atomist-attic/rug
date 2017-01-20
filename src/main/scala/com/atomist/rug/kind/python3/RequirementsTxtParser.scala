@@ -35,9 +35,7 @@ object RequirementsTxtParser extends CommonTypesParser {
       new Requirement(pn, None, None)
   }
 
-  private def requirementsStructure: Parser[Requirements] = rep1(positionedStructure(requirement)) ^^ {
-    case l => new Requirements(l)
-  }
+  private def requirementsStructure: Parser[Requirements] = rep1(positionedStructure(requirement)) ^^ (l => new Requirements(l))
 
   private def requirements: Parser[Requirements] = positionedStructure(requirementsStructure)
 
@@ -69,7 +67,7 @@ class Requirement(
   extends ParsedMutableContainerTreeNode("requirement") {
 
   appendField(packageName)
-  version.map(appendField(_))
+  version.foreach(appendField(_))
 
   override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
@@ -108,7 +106,6 @@ class Requirements(
       case None => ??? // Do something sensible here. It won't be known as a field
     }
   }
-
 }
 
 sealed trait RequirementSpecifier

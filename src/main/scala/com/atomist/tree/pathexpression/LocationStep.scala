@@ -43,7 +43,6 @@ case class LocationStep(axis: AxisSpecifier,
   }
 }
 
-
 /**
   * Result of parsing a path expression.
   */

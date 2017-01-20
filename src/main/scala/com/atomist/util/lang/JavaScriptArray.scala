@@ -145,14 +145,12 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
           lyst.toString
         }
       }
-
       case "push" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           args.foreach(a => lyst.add(a.asInstanceOf[T]))
           lyst.size().asInstanceOf[AnyRef]
         }
       }
-
       case "concat" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val newList = new util.ArrayList[T]()
@@ -173,7 +171,6 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
           lyst.remove(lyst.size() - 1).asInstanceOf[AnyRef]
         }
       }
-
       case "join" => new AbstractJSObject {
         override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
           val sep = if (args.nonEmpty) args.head.asInstanceOf[String] else ","
@@ -225,10 +222,10 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
               lyst.sort(new Comparator[T] {
                 override def compare(t: T, t1: T): Int = {
                   val ret = filterfn.call(thiz, t.asInstanceOf[Object], t1.asInstanceOf[Object])
-                  //TODO - why does replacing this with matching fail to compile?
+                  // TODO - why does replacing this with matching fail to compile?
                   if (ret.isInstanceOf[Double]) {
                     ret.asInstanceOf[Double].toInt
-                  }else if(ret.isInstanceOf[Integer]){
+                  } else if(ret.isInstanceOf[Integer]){
                     ret.asInstanceOf[Integer].toInt
                   } else {
                     throw new RuntimeException("Unrecognised return type from comparator: " + ret.getClass.getName)

@@ -16,7 +16,6 @@ trait FunctionInvocationContext[T] {
 
   def functionInvocation: FunctionInvocation
 
-
   def args: ProjectOperationArguments
 
   /**

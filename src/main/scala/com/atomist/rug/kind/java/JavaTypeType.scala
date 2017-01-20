@@ -43,7 +43,7 @@ class JavaTypeType(evaluator: Evaluator)
         Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.childrenNamed(JavaTypeAlias)))
       case fmv: FileArtifactBackedMutableView =>
         Some(
-          Seq(new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView(fmv.parent))).flatMap(s => s.childrenNamed(JavaTypeAlias))
+          Seq(new JavaSourceMutableView(fmv.originalBackingObject, JavaProjectMutableView(fmv.parent))).flatMap(_.childrenNamed(JavaTypeAlias))
         )
       case dmv: DirectoryMutableView =>
         val jpmv = JavaProjectMutableView(dmv.parent)
@@ -52,7 +52,7 @@ class JavaTypeType(evaluator: Evaluator)
           case f: FileArtifactBackedMutableView if f.path.endsWith(JavaExtension) =>
             new JavaSourceMutableView(f.originalBackingObject, jpmv)
         }
-        val allClasses = javaSourceFiles.flatMap(s => s.childrenNamed(JavaTypeAlias))
+        val allClasses = javaSourceFiles.flatMap(_.childrenNamed(JavaTypeAlias))
         Some(allClasses)
       case _ => None
     }

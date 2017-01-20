@@ -9,7 +9,6 @@ package com.atomist.tree
 case class SimpleTerminalTreeNode(nodeName: String, value: String)
   extends TerminalTreeNode
 
-
 /**
   * Convenient class for padding nodes
   * @param description description of what's being padded

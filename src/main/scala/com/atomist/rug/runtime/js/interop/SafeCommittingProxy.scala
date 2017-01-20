@@ -44,7 +44,7 @@ class SafeCommittingProxy(types: Set[Typed],
         }
         else
           throw new RugRuntimeException(null,
-            s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found ${possibleOps}")
+            s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found $possibleOps")
       }
       else
         new MethodInvocationProxy(name, possibleOps)
@@ -117,7 +117,6 @@ private object SafeCommittingProxy {
   def MagicJavaScriptMethods = Set("valueOf", "toString")
 
 }
-
 
 /**
   * Return a type that exposes all the operations on the given set of types

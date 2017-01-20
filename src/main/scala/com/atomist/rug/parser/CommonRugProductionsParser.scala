@@ -139,9 +139,7 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
   }
 
   protected def nottedTerm: Parser[Predicate] =
-    NotToken ~> predicateTerm ^^ {
-      case pt => NotExpression(pt)
-    }
+    NotToken ~> predicateTerm ^^ (pt => NotExpression(pt))
 
   protected def andedTerm: Parser[Term] = AndToken ~> predicateExpression ^^ (right => Term(right, "AND"))
 

@@ -67,11 +67,11 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
     */
   def dispatch(plan: Object): Unit = {
     plan match {
-      case o: ScriptObjectMirror => {
+      case o: ScriptObjectMirror =>
         o.get("messages") match {
-          case messages: ScriptObjectMirror if messages.isArray => {
+          case messages: ScriptObjectMirror if messages.isArray =>
             messages.values().asScala.foreach {
-              case m: ScriptObjectMirror => {
+              case m: ScriptObjectMirror =>
                 var responseMessage = ctx.messageBuilder.regarding(m.get("regarding").asInstanceOf[TreeNode])
                 responseMessage =m.get("text") match {
                   case text: String => responseMessage.say(text)
@@ -82,18 +82,14 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
                   case _ => responseMessage
                 }
                 responseMessage = m.get("rugs") match {
-                  case rugs: ScriptObjectMirror if rugs.isArray => {
+                  case rugs: ScriptObjectMirror if rugs.isArray =>
                     addActions(responseMessage, rugs)
-                  }
                   case _ => responseMessage
                 }
                 responseMessage.send()
-              }
               case _ =>
             }
-          }
         }
-      }
     }
   }
 
@@ -110,18 +106,17 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
     var responseMessage = msg
     for (rug <- rugs.values().asScala) {
       val r = rug.asInstanceOf[ScriptObjectMirror]
-      //TODO - this is a reimplementation of the @cd's label hack - but at least it's not in TS
+      // TODO - this is a reimplementation of the @cd's label hack - but at least it's not in TS
       val actionName = r.get("label") match {
         case label: String => s"${r.get("name").asInstanceOf[String]}|$label"
         case _ => r.get("name").asInstanceOf[String]
       }
       var action = responseMessage.actionRegistry.findByName(actionName)
       r.get("params") match {
-        case params: ScriptObjectMirror => {
+        case params: ScriptObjectMirror =>
           for (param <- params.entrySet().asScala) {
             action = responseMessage.actionRegistry.bindParameter(action, param.getKey, param.getValue)
           }
-        }
         case _ =>
       }
       responseMessage = msg.withAction(action)
@@ -129,7 +124,6 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
     responseMessage
   }
 }
-
 
 /**
   * Represents an event that drives a handler

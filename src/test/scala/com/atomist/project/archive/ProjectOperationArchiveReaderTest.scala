@@ -168,15 +168,12 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
 
-
     val rugAs = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleEditor.js",
         NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
     ) + TestUtils.user_model
-
-
 
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.editors.size should be(1)
@@ -229,7 +226,6 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
 
-
     val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
@@ -249,5 +245,4 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     // Should contain new contain
     result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
   }
-
 }

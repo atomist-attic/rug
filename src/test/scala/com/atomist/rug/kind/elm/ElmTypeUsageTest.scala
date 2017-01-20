@@ -37,7 +37,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-
   private def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
     val p1 = """{name: "old_name", description: "Name of module we're renaming", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
     val p2 = """{name: "new_name", description: "New name for the module", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""

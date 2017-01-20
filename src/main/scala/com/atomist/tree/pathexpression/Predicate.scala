@@ -41,7 +41,6 @@ trait Predicate {
 
 }
 
-
 case object TruePredicate extends Predicate {
 
   override def toString: String = "true"
@@ -53,7 +52,6 @@ case object TruePredicate extends Predicate {
                         nodePreparer: Option[NodePreparer]): Boolean = true
 }
 
-
 case object FalsePredicate extends Predicate {
 
   override def toString: String = "false"
@@ -64,7 +62,6 @@ case object FalsePredicate extends Predicate {
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): Boolean = false
 }
-
 
 case class NegationOfPredicate(p: Predicate) extends Predicate {
 
@@ -157,7 +154,6 @@ case class NodeNamePredicate(expectedName: String) extends Predicate {
     n.nodeName.equals(expectedName)
 }
 
-
 case class NodeTypePredicate(expectedType: String) extends Predicate {
 
   override def toString: String = s"type=[$expectedType]"
@@ -170,7 +166,6 @@ case class NodeTypePredicate(expectedType: String) extends Predicate {
     n.nodeType.contains(expectedType)
 
 }
-
 
 /**
   * Needs to run against JVM objects. Can't be used to
@@ -189,7 +184,6 @@ case class FunctionPredicate(override val name: String, f: (TreeNode, Seq[TreeNo
                nodePreparer: Option[NodePreparer]): Boolean = f(tn, among)
 
 }
-
 
 case class NestedPathExpressionPredicate(expression: PathExpression) extends Predicate {
 

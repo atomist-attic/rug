@@ -28,7 +28,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
     val ed = rp.create(as,None).head
 
-
     // Check it works OK with these parameters
     ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
@@ -49,7 +48,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
          |  do append m
       """.stripMargin
     val rp = new DefaultRugPipeline
-
 
     val rugAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
 

@@ -61,7 +61,6 @@ package object ElmModel {
 
     override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
-
     private var _exposing = initialExposing
 
     addType(Typed.typeClassToTypeName(classOf[ElmModuleType]))
@@ -178,7 +177,6 @@ package object ElmModel {
 
     insertFieldCheckingPosition(moduleNameField)
     exposing.foreach(insertFieldCheckingPosition(_))
-
 
     override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 

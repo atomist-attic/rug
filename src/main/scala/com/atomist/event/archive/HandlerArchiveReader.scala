@@ -39,11 +39,10 @@ class HandlerArchiveReader(
     val atomist = new ModelBackedAtomistFacade(teamId, messageBuilder, treeMaterializer)
     JavaScriptHandlerFinder.registerHandlers(rugArchive, atomist)
     val handlers = atomist.handlers
-    if(handlers.nonEmpty){
+    if (handlers.nonEmpty) {
       handlers
-    }else{
-      JavaScriptHandlerFinder.fromJavaScriptArchive(rugArchive, new JavaScriptHandlerContext(teamId,treeMaterializer, messageBuilder), None)
+    } else {
+      JavaScriptHandlerFinder.fromJavaScriptArchive(rugArchive, new JavaScriptHandlerContext(teamId, treeMaterializer, messageBuilder), None)
     }
   }
 }
-

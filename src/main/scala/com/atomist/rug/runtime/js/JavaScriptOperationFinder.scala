@@ -45,8 +45,7 @@ object JavaScriptOperationFinder {
     operationsFromVars(rugAs, jsc)
   }
 
-
-  //TODO clean up this dispatch/signature stuff - too coupled
+  // TODO clean up this dispatch/signature stuff - too coupled
   private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
     jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
       case (v, Some(EditorType)) =>
@@ -54,7 +53,7 @@ object JavaScriptOperationFinder {
       case (v, Some(ReviewerType)) =>
         new JavaScriptInvokingProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(GeneratorType)) =>
-        //TODO properly fix the following
+        // TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
         new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
@@ -72,7 +71,7 @@ object JavaScriptOperationFinder {
         obj.hasMember(fn) && obj.getMember(fn).asInstanceOf[ScriptObjectMirror].isFunction
       })
       val propsCount = props.count(prop => {
-        obj.hasMember(prop) //TODO make stronger check
+        obj.hasMember(prop) // TODO make stronger check
       })
       if (fnCount == fns.size && propsCount == props.size) {
         acc :+ kv._1
@@ -83,9 +82,5 @@ object JavaScriptOperationFinder {
     matches.headOption
   }
 
-  case class JsRugOperationSignature(functionsNames: Set[String], propertyNames: Set[String] = Set("name", "description")) {
-
-  }
-
+  case class JsRugOperationSignature(functionsNames: Set[String], propertyNames: Set[String] = Set("name", "description"))
 }
-

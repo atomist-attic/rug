@@ -19,7 +19,6 @@ class SaveAllDescendantsVisitor extends CycleAvoidingVisitor {
   def descendants: Seq[Visitable] = _nodes
 }
 
-
 object ConsoleVisitor extends Visitor {
 
   override def visit(v: Visitable, depth: Int): Boolean = {

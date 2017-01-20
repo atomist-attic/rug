@@ -62,7 +62,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
     matcherTerm ~ opt(whitespaceSep) ~ matcherExpression ^^ {
       case left ~ _ ~ right =>
         //left ~? right
-        Concat(Concat(left, Whitespace.?), right, matcherName)
+        Concat(Concat(left, Whitespace.?()), right, matcherName)
     }
 
   // TODO mixin that adds predicate check to a matcher
@@ -126,8 +126,8 @@ object MatcherDefinitionParser {
   val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
 
-
   private def escape(token: String) = """\""" + token
+
   def anythingBut(tokens: Set[String]): ScalaRegex =
     ("""[^""" + // NOT any of the following characters
       tokens.mkString("") +

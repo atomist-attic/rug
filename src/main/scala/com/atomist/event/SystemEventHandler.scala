@@ -3,7 +3,6 @@ package com.atomist.event
 import com.atomist.param.Tag
 import com.atomist.rug.kind.service.ServiceSource
 
-
 /**
   * System event, such as a new issue
   *

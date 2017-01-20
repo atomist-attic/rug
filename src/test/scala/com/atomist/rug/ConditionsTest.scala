@@ -295,7 +295,6 @@ class ConditionsTest extends FlatSpec with Matchers {
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(prog), prog))
     val eds = runtime.create(as,  None)
 
-
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe
   }

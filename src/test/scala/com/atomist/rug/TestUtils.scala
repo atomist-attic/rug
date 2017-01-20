@@ -41,7 +41,6 @@ object TestUtils extends Matchers {
     pe.modify(as, poa)
   }
 
-
   val compiler = new TypeScriptCompiler()
 
   // This brings in a node_modules directory that was copied there by a maven goal called copy-ts, which takes it from src/main/typescript

@@ -38,7 +38,6 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
       }
     ).asInstanceOf[NashornScriptEngine]
 
-
   def load(rugAs: ArtifactSource) : Unit = {
 
     configureEngine(engine, rugAs)
@@ -70,7 +69,6 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     */
   case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {
   }
-
 
   /**
     * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key

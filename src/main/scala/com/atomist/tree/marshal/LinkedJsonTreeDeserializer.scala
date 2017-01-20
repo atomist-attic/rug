@@ -94,7 +94,6 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
     }
 }
 
-
 private class LinkableContainerTreeNode(
                                  val nodeName: String,
                                  override val nodeType: Set[String],

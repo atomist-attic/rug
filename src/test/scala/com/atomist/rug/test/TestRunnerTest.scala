@@ -61,7 +61,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val parsedTest = RugTestParser.parse(generatorTest)
     val executedTests = testRunner.run(parsedTest, rugArchive, parsedGenerator)
 
-
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
     if (!testResult.passed) {
@@ -231,7 +230,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
 
-
 //    val as =
 //      new SimpleFileBasedArtifactSource(DefaultRugArchive,
 //        StringFileArtifact(defaultFilenameFor(input), input))
@@ -361,8 +359,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = "Dog"
         |do fail "This is bad"
       """.stripMargin
-
-
 
     val rp =new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))

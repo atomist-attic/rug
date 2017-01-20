@@ -29,8 +29,7 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
       case 1 => Option(candidates.head)
       case 0 => None
       case x =>
-        throw new RugRuntimeException("CommandType", s"Multiple Commands $x registered for '${name}' on treeNode '${treeNode.nodeType}'")
+        throw new RugRuntimeException("CommandType", s"Multiple Commands $x registered for '$name' on treeNode '${treeNode.nodeType}'")
     }
-
   }
 }

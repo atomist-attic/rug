@@ -51,7 +51,6 @@ class EditorMutableView(originalBackingObject: FileArtifact,
 //    Some(these)
 //  }
 
-
   @ExportFunction(readOnly = true, description = "Editor name")
   def name: String = removeFileSuffix(currentBackingObject.name)
 

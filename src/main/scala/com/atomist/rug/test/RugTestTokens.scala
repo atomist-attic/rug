@@ -1,8 +1,6 @@
 package com.atomist.rug.test
 
 import com.atomist.rug.parser.CommonRugTokens
-import com.atomist.source.FileArtifact
-
 
 object RugTestTokens extends CommonRugTokens {
 

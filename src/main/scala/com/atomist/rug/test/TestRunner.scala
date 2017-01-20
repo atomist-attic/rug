@@ -81,7 +81,6 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     TestReport(executedTests)
   }
 
-
   private def executeAgainst(test: TestScenario, ed: ProjectEditor, testResources: ArtifactSource): ExecutedTest = {
     val eventLog = new TestEventLog
     try {
@@ -150,13 +149,11 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     }
   }
 
-
   private def executeGenerator(test: TestScenario, gen: ProjectGenerator): ExecutedTest = {
     val eventLog = new TestEventLog
     try {
       // TODO should publish events rather than sysout
       executionLog.log(s"Executing scenario ${test.name}...")
-
 
       val poa: ProjectOperationArguments = test.args
       eventLog.recordParameters(poa)

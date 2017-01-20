@@ -56,7 +56,6 @@ class HandlerTest extends FlatSpec with Matchers {
     }
 }
 
-
 object TestAtomistFacade extends AtomistFacade {
 
   override def teamId: String = "foobar"

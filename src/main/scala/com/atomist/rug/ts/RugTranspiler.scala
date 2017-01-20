@@ -42,7 +42,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   def rugPathToTsPath(rugPath: String): String = rugPath.dropRight(RugExtension.length) + ".ts"
 
-
   override def supports(source: ArtifactSource): Boolean = true
 
   /**
@@ -64,7 +63,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     } {
       ts ++= tsProg(rug)
     }
-    //println(ts)
+    // println(ts)
     ts.toString
   }
 
@@ -123,7 +122,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     ts ++= s"""var editor_${JavaHelpers.lowerize(rug.name)} = new ${rug.name}();"""
     ts.toString()
   }
-
 
   private def editorHeader(ed: RugEditor): String = {
     s"implements ProjectEditor {\n\n"

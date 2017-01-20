@@ -56,12 +56,10 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
     }
 }
 
-
 object Repsep {
 
   def apply(m: Matcher, sep: Matcher, name: String): Matcher =
     Rep(m, name, Some(sep))
-
 }
 
 private case class EmptyContainerTreeNode(name: String, pos: InputPosition)

@@ -108,7 +108,6 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
 
   import NamedJavaScriptEventHandlerTest._
 
-
   it should "extract and run a handler based on new style" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val handlers = har.handlers("XX", TestUtils.compileWithModel(SimpleFileBasedArtifactSource(reOpenCloseIssueProgram,issuesStuff)), None, Nil,
@@ -125,7 +124,6 @@ object SimpleActionRegistry extends ActionRegistry {
   val rug = Rug("executor", "group", "artifact", "version", "ReopenIssue")
 
   override def findByName(name: String): Action = Action(name, Callback(rug), new util.ArrayList[ParameterValue]())
-
 
   override def bindParameter(action: Action, name: String, value: Object) = {
     val params = new util.ArrayList[ParameterValue](action.parameters)
@@ -151,7 +149,6 @@ class IssueTreeNode extends TreeNode {
     */
   override def value: String = "blah"
 
-
   def state(): String = "closed"
 
   val number: Int = 10
@@ -169,5 +166,3 @@ object TestTreeMaterializer extends TreeMaterializer {
 
   override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = rawRootNode
 }
-
-

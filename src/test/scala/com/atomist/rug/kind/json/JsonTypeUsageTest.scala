@@ -161,7 +161,6 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
     )
     val newName = "Foo"
 
-
     val r = doModification(prog, as, EmptyArtifactSource(InterpreterRugPipeline.DefaultRugArchive),
       SimpleProjectOperationArguments("", Map(
       "new_name" -> newName

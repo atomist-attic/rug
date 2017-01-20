@@ -22,7 +22,4 @@ class RugArchiveProjectMutableView(pmv: ProjectMutableView)
     case other =>
       super.childrenNamed(typeName)
   }
-
 }
-
-

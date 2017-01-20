@@ -20,7 +20,6 @@ class SimpleMessageBuilder(val teamId: String,
 
 }
 
-
 case class ImmutableMessage(
                              sender: Message => Unit,
                              actionRegistry: ActionRegistry,

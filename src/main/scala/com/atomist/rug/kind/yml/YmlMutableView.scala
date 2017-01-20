@@ -44,7 +44,7 @@ class YmlMutableView(
                  value: String): Unit = {
     val oldValue = model.dump(name).map(oldval => {
       model.setKey(name, value)
-      val dumped: String = model.dump(name).get
+      val dumped = model.dump(name).get
       update(name, oldval, dumped)
     })
   }

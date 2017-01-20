@@ -60,14 +60,11 @@ class PositivePredicateTest extends FlatSpec with Matchers {
     // TODO: remove the trims! this finds the newline problem
     carrotContent should equal(expected)
   }
-
 }
-
 
 class NegativePredicateTest extends FlatSpec with Matchers {
 
   import ElmTypeUsageTest.elmExecute
-
 
   val editor =
     """editor Baby
@@ -105,6 +102,4 @@ class NegativePredicateTest extends FlatSpec with Matchers {
         runtime = new DefaultRugPipeline())
     }
   }
-
-
 }

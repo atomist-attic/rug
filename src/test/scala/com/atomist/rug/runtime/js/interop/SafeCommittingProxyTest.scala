@@ -76,7 +76,6 @@ class FakeCommand extends Command[FileMutableView] {
     fmv = treeNode
     new AnotherFakeCommand
   }
-
 }
 
 class AnotherFakeCommand {
@@ -84,7 +83,4 @@ class AnotherFakeCommand {
   def really(s: String): Unit = {
     println(s)
   }
-
 }
-
-

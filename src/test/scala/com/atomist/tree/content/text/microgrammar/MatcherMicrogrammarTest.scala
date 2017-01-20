@@ -22,7 +22,6 @@ class MatcherMicrogrammarTest extends MicrogrammarTest {
       Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+")
     )
 
-
 //  IDENTIFIER : [a-zA-Z0-9]+;
 //  LPAREN : '(';
 //  RPAREN : ')';

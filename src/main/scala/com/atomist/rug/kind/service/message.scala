@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.service
 
-import com.atomist.param.{ParameterValue}
+import com.atomist.param.ParameterValue
 import com.atomist.tree.TreeNode
 
 /**
@@ -12,6 +12,7 @@ trait MessageBuilder {
 
   /**
     * Construct a message regarding the given tree node.
+    *
     * @param n node message concerns
     * @return new message
     */
@@ -21,13 +22,9 @@ trait MessageBuilder {
     * Send a message without an attached tree node.
     * Such messages should normally be addressed to a channel
     * by using the "on" method on Message.
-    * @param msg
-    * @return
     */
   def say(msg: String): Message
-
 }
-
 
 trait Message {
 
@@ -53,7 +50,7 @@ trait Message {
 
   /**
     * Specify channel address. This can also be used
-    * for direct messages
+    * for direct messages.
     *
     * @param channelId channel to address to.
     * @return updated message
@@ -64,18 +61,16 @@ trait Message {
 
 }
 
-
 trait ActionRegistry {
 
   /**
-    * Return the named Action or null if not found
-    * @param name
-    * @return
+    * Return the named Action or null if not found.
     */
   def findByName(name: String): Action
 
   /**
-    * Bind a parameter to the given Action
+    * Bind a parameter to the given Action.
+    *
     * @param action the action to bind the parameter to
     * @param name the name of the parameter
     * @param value the value of the parameter

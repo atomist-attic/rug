@@ -54,4 +54,3 @@ object Applicability {
 
   val OK = Applicability(canApply = true, "OK")
 }
-

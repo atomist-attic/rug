@@ -48,5 +48,3 @@ abstract class AbstractNashornScriptBacked(javaScripts: Seq[Script])
     startupException.map(sex => throw sex)
   }
 }
-
-

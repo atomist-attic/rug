@@ -25,7 +25,6 @@ object ElmExpressionModels {
 
     override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
-
     appendField(name)
     appendField(expr)
   }

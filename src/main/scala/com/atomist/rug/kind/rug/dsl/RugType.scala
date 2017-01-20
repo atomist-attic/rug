@@ -12,7 +12,6 @@ class EditorType(evaluator: Evaluator) extends Type(evaluator) with Reflectively
 
   override def viewManifest: Manifest[_] = manifest[EditorMutableView]
 
-
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
                                    context: MutableView[_],

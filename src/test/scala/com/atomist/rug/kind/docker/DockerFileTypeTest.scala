@@ -26,7 +26,6 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
 
     val ed = rp.create(as,None).head.asInstanceOf[ProjectEditor]
 
-
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact(DockerFileType.DockerFileName,
         """

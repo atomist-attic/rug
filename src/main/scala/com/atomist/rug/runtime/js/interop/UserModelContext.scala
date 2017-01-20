@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry, MessageBuilder, TeamContext}
+import com.atomist.tree.TreeNode
 
 
 /**
@@ -21,6 +22,8 @@ trait UserModelContext {
 trait UserServices {
 
   def pathExpressionEngine: jsPathExpressionEngine
+
+  def dataStore: DataStore = AmnesiacDataStore
 
 }
 

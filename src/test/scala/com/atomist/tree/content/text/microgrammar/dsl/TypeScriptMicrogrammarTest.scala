@@ -1,14 +1,19 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
+import java.io.File
+
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
-import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
+
+  val testRugs = ClassPathArtifactSource.toArtifactSource("rugs")
 
   val ModifiesWithSimpleMicrogrammar: String =
     """import {Project} from '@atomist/rug/model/Core'
@@ -129,6 +134,20 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
         sm.result.allFiles.exists(f => f.content.contains("_x"))
     }
     jsed
+  }
+
+  it should "run my editor that improves my tests" in {
+      val as = TestUtils.compileWithModel(testRugs)
+      val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).
+        find{ a => println(s"name is ${a.name}"); a.name == "ExtractTypescriptConstants"}.
+        get.asInstanceOf[JavaScriptInvokingProjectEditor]
+
+      val target = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("./src/test/scala")))
+      jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
+        case sm: SuccessfulModification =>
+          sm.result.allFiles.exists(f => f.content.contains("_x"))
+      }
+      jsed
   }
 
   it should "navigate nested using property" in {

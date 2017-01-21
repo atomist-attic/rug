@@ -54,7 +54,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
         "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
 
     val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
-      Seq(new MicrogrammarTypeProvider(mg))
+      Seq(new MicrogrammarTypeProvider("modelVersion", mg))
     )
     val rtn = ee.evaluate(pmv, findFile, tr)
     rtn.right.get.size should be(1)

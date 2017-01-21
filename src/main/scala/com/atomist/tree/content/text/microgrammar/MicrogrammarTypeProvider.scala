@@ -13,11 +13,11 @@ import com.atomist.tree.content.text.grammar.MatchListener
   *
   * @param microgrammar microgrammar to evaluate
   */
-class MicrogrammarTypeProvider(microgrammar: Microgrammar)
+class MicrogrammarTypeProvider(microgrammarTypeName: String, microgrammar: Microgrammar)
   extends TypeProvider(classOf[MutableContainerMutableView])
     with ChildResolver {
 
-  override val name: String = microgrammar.name
+  override val name: String = microgrammarTypeName
 
   override def description: String = s"Microgrammar type for [$name]"
 

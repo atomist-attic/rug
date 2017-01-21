@@ -10,7 +10,7 @@ import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPositi
   */
 case class Literal(literal: String, named: Option[String] = None) extends Matcher {
 
-  override def name = named.getOrElse("literal")
+  override def name: String = named.getOrElse("literal")
 
   override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
     if (input != null && input.length() > 0 && input.length() >= offset + literal.length) {

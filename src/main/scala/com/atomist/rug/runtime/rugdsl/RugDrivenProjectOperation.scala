@@ -5,6 +5,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.rug._
 import com.atomist.rug.runtime.NamespaceUtils
+import com.atomist.rug.runtime.NamespaceUtils.resolve
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -85,7 +86,24 @@ abstract class RugDrivenProjectOperation(
     }
   }
 
-  private def validateUses(ctx: Seq[ProjectOperation]): Unit = {
+  private def validateUses(ctx: Seq[ProjectOperation]): Unit = RugDrivenProjectOperation.validateUses(program, namespace, name, ctx)
+
+  /**
+    * Subclasses can override this to perform further validity checks and initialization.
+    * They can now rely on the context.
+    */
+  protected def onSetContext(): Unit
+
+  override val name = namespaced(program.name, namespace)
+
+  override def description = program.description
+
+  override def toString =
+    s"${getClass.getName} name=${program.name},description=${program.description}, wrapping \n$program"
+}
+
+object RugDrivenProjectOperation {
+  private def validateUses(program: RugProgram, namespace: Option[String], name: String, ctx: Seq[ProjectOperation]): Unit = {
     val missingUsed =
       for {
         used <- program.runs
@@ -108,17 +126,4 @@ abstract class RugDrivenProjectOperation(
           s"Offending uses are [${usedNotActuallyUsed.mkString(",")}]",
         usedNotActuallyUsed)
   }
-
-  /**
-    * Subclasses can override this to perform further validity checks and initialization.
-    * They can now rely on the context.
-    */
-  protected def onSetContext(): Unit
-
-  override val name = namespaced(program.name, namespace)
-
-  override def description = program.description
-
-  override def toString =
-    s"${getClass.getName} name=${program.name},description=${program.description}, wrapping \n$program"
 }

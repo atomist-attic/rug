@@ -30,4 +30,13 @@ object NamespaceUtils {
       inDefaultNamespace
     })
   }
+
+  def unqualified(namespaced: String): String =
+    namespaced.split('.').last
+
+  def fqnThatWouldMakeItResolve(name: String, context: Seq[ProjectOperation]): Option[String] = {
+    val out = context.map(_.name).find(name == unqualified(_))
+    println(s"input: $name, output:${out}")
+    out
+  }
 }

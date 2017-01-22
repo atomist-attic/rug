@@ -111,11 +111,9 @@ object RugDrivenProjectOperation {
         if resolved.isEmpty
       }
         yield used.name
-    if (missingUsed.nonEmpty)
-      throw new UndefinedRugUsesException(name,
-        s"'run' operation(s) not found when processing operation $name: [${missingUsed.mkString(",")}]. " +
-          s"Known operations are [${ctx.map(_.name).mkString(",")}]",
-        missingUsed)
+    if (missingUsed.nonEmpty) {
+      throwUsefulException(missingUsed, ctx, name)
+    }
 
     val simpleNamesForImports = program.imports.map(imp => imp.simpleName)
     val namesActuallyUsed = program.runs.map(roo => roo.name)
@@ -125,5 +123,16 @@ object RugDrivenProjectOperation {
         s"Unused uses in operation $name: [${missingUsed.mkString(",")}]. " +
           s"Offending uses are [${usedNotActuallyUsed.mkString(",")}]",
         usedNotActuallyUsed)
+  }
+
+  private def throwUsefulException(missingUsed: Seq[String], ctx: Seq[ProjectOperation], name: String) = {
+    val hint: String = missingUsed.headOption.flatMap { missing =>
+      val possibleResolution = NamespaceUtils.fqnThatWouldMakeItResolve(missing, ctx)
+      possibleResolution.map{ fqn => s"Try declaring `uses $fqn` near the top of your Rug.\n"}
+    }.getOrElse(s"Known operations are [${ctx.map(_.name).mkString(",")}]")
+    throw new UndefinedRugUsesException(name,
+      s"'run' operation(s) not found when processing operation $name: [${missingUsed.mkString(",")}]. " +
+        hint,
+      missingUsed)
   }
 }

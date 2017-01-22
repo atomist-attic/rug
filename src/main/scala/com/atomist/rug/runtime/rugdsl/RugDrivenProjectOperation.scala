@@ -103,7 +103,7 @@ abstract class RugDrivenProjectOperation(
 }
 
 object RugDrivenProjectOperation {
-  private def validateUses(program: RugProgram, namespace: Option[String], name: String, ctx: Seq[ProjectOperation]): Unit = {
+  private[rugdsl] def validateUses(program: RugProgram, namespace: Option[String], name: String, ctx: Seq[ProjectOperation]): Unit = {
     val missingUsed =
       for {
         used <- program.runs

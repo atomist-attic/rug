@@ -11,7 +11,7 @@ class RugDrivenProjectOperationTest extends FlatSpec with Matchers {
   it should "throw a useful exception when a referenced operation is not found" in {
     val imports: Seq[Import] = Seq()
     val actions = Seq(RunOtherOperation("NonExistentEditor", Seq()))
-    val program = RugEditor("name", None, Seq(), "description", imports, Seq(), None, Seq(), Seq(), actions, None)
+    val program = RugEditor("name", None, Seq(), "description", imports, Seq(), None, Seq(), Seq(), actions)
 
     val knownOperations: Seq[ProjectOperation] = Seq()
 
@@ -28,7 +28,7 @@ class RugDrivenProjectOperationTest extends FlatSpec with Matchers {
   it should "throw a really useful exception when you forgot to declare a referenced operation" in {
     val imports: Seq[Import] = Seq()
     val actions = Seq(RunOtherOperation("OperationOfYay", Seq()))
-    val program = RugEditor("name", None, Seq(), "description", imports, Seq(), None, Seq(), Seq(), actions, None)
+    val program = RugEditor("name", None, Seq(), "description", imports, Seq(), None, Seq(), Seq(), actions)
 
     val knownOperations: Seq[ProjectOperation] = Seq(projectOperationCalled("some.namespaced.OperationOfYay"))
 

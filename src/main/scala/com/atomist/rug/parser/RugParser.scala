@@ -257,9 +257,9 @@ trait EditorFlag
 case class RunOtherOperation(
                               name: String,
                               args: Seq[FunctionArg],
-                              success: Option[DoStep],
-                              noChange: Option[DoStep],
-                              failure: Option[DoStep]
+                              success: Option[DoStep] = None,
+                              noChange: Option[DoStep] = None,
+                              failure: Option[DoStep] = None
                             )
   extends Action with DoStep {
 

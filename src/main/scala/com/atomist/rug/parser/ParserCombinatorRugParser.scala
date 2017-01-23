@@ -1,5 +1,7 @@
 package com.atomist.rug.parser
 
+import java.util.concurrent.Executor
+
 import com.atomist.param.{AllowedValue, Parameter, Tag}
 import com.atomist.rug._
 import com.atomist.util.scalaparsing.ScriptBlock
@@ -61,8 +63,6 @@ class ParserCombinatorRugParser(
 
   object Reviewer extends Op
 
-  object Executor extends Op
-
   object Predicate extends Op
 
   object Generator extends Op
@@ -84,7 +84,6 @@ class ParserCombinatorRugParser(
           case EditorToken => Editor
           case PredicateToken => Predicate
           case ReviewerToken => Reviewer
-          case ExecutorToken => Executor
           case GeneratorToken => Generator
         }
         var ed = OperationSpec(o, name, Nil, name, None, imports)
@@ -247,27 +246,11 @@ class ParserCombinatorRugParser(
       case w: With => WithDoStep(w)
     }
 
-  protected def executorActions: Parser[Seq[Action]] = (scriptActionBlock | rep1(action(simpleExecutionDoStep))) ^^ {
-    case sab: ScriptBlock => Seq(ScriptBlockAction(sab))
-    case actions: Seq[Action@unchecked] => actions
-  }
-
-  private def rugExecutor: Parser[RugExecutor] =
-    operationSpec(ExecutorToken) ~
-      rep(parameter) ~ rep(letStatement) ~
-      executorActions ^^ {
-      case opSpec ~ params ~ compBlock ~ actions =>
-        RugExecutor(opSpec.name, opSpec.publishedName, opSpec.tags, opSpec.description, opSpec.imports,
-          paramDefsToParameters(opSpec.name, params),
-          compBlock, actions)
-    }
-
   protected def rugProgram: Parser[RugProgram] =
     rugPredicate |
       rugGenerator |
       rugEditor |
-      rugReviewer |
-      rugExecutor
+      rugReviewer
 
   private def rugPrograms: Parser[Seq[RugProgram]] = phrase(rep1(rugProgram))
 

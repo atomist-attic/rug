@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
 
-### Changed
-
--   TypeScript editors now return void. Use the new
-    `ProjectMutableView` `describeChange` method to add any comments
-    about the working of your editor.
-
 ### Added
 
 -   Support for a new TS (JS) Handler programming model as per
@@ -30,6 +24,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Remove Executor support from Rug DSL as per:
+    https://github.com/atomist/rug/issues/206
+    
+-   TypeScript editors now return void. Use the new
+    `ProjectMutableView` `describeChange` method to add any comments
+    about the working of your editor.
+    
 -   **BREAKING** CustomizingProjectGenerator was removed from
     ProjectGenerator.ts as it's no longer required, and it's thought
     that it's not being used at all yet.

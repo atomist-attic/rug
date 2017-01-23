@@ -2,12 +2,15 @@ package com.atomist.project.archive
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.{Import, TestUtils}
-import com.atomist.rug.exec.FakeServiceSource
+import com.atomist.rug.kind.service._
 import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
-import com.atomist.rug.runtime.js.interop.NamedJavaScriptEventHandlerTest
+import com.atomist.rug.runtime.js.interop.{NamedJavaScriptEventHandlerTest, jsPathExpressionEngine}
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
-import com.atomist.source.{SimpleDirectoryArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, ArtifactSourceIdentifier, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.mutable.ListBuffer
 
 class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
@@ -244,5 +247,36 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
     // Should contain new contain
     result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
+  }
+}
+
+
+class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource with IssueRouter {
+
+  val updatePersister = new FakeUpdatePersister
+
+  val teamId = "atomist-test"
+
+  override def pathExpressionEngine: jsPathExpressionEngine =
+    new jsPathExpressionEngine(teamContext = this)
+
+  override def messageBuilder: MessageBuilder =
+    new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
+
+  var issues = ListBuffer.empty[Issue]
+
+  override def services: Seq[Service] =
+    projects.map(proj => Service(proj, updatePersister, issueRouter = this, messageBuilder = messageBuilder))
+
+  override def raiseIssue(service: Service, issue: Issue): Unit = issues.append(issue)
+}
+
+class FakeUpdatePersister extends UpdatePersister with LazyLogging {
+
+  var latestVersion: Map[ArtifactSourceIdentifier, ArtifactSource] = Map()
+
+  override def update(service: Service, newContent: ArtifactSource, updateIdentifier: String): Unit = {
+    logger.debug(s"Service $service updated")
+    latestVersion += (service.project.id -> newContent)
   }
 }

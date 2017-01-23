@@ -41,13 +41,6 @@ class RugDrivenProjectPredicate(
         val idm = buildIdentifierMap(project, poa)
         executedSelectedBlock(
           rugAs, wb, as, reviewContext, project, poa, identifierMap = idm)
-      //      case sba: ScriptBlockAction =>
-      //        val identifierMap = buildIdentifierMap(rugAs, project, project.currentBackingObject, poa)
-      //        scriptBlockActionExecutor.execute(sba, project, ScriptBlockActionExecutor.DEFAULT_SERVICES_ALIAS, identifierMap)
-      //      case run: RunOtherOperation =>
-      //        val rr = runReviewer(run, rugAs, as, poa)
-      //        for (comment <- rr.comments)
-      //          reviewContext.comment(comment)
     }
     reviewContext.comments.nonEmpty
   }

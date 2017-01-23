@@ -48,8 +48,6 @@ object RugParser extends CommonRugTokens {
 
   val PredicateToken = "predicate"
 
-  val ExecutorToken = "executor"
-
   val ParameterToken = "param"
 
   val PreconditionToken = "precondition"
@@ -107,7 +105,7 @@ object RugParser extends CommonRugTokens {
   val Prepositions = Set("to", "from")
 
   val ReservedWordsToAvoidInBody = CommonReservedWords ++ Set(
-    EditorToken, ReviewerToken, ExecutorToken, PredicateToken,
+    EditorToken, ReviewerToken, PredicateToken,
     OnFailToken,
     EditCallToken, ReviewCallToken,
     PreconditionToken, PostconditionToken,

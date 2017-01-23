@@ -4,8 +4,6 @@ import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
-import com.atomist.rug.RugReferenceException
-import com.atomist.rug.runtime.rugdsl.RugDrivenProjectReviewer
 
 object Operations {
 

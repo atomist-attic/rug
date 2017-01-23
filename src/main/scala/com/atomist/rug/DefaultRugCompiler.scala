@@ -30,7 +30,6 @@ class DefaultRugCompiler(
       case ed: RugEditor => new RugDrivenProjectEditor(evaluator, viewFinder, ed, artifactSource, typeRegistry, namespace)
       case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, viewFinder, rev, artifactSource, typeRegistry, namespace)
       case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, viewFinder, rpp, artifactSource, typeRegistry, namespace)
-      case ex: RugExecutor => new RugDrivenExecutor(evaluator, viewFinder, ex, artifactSource, typeRegistry, namespace)
     }
   }
 

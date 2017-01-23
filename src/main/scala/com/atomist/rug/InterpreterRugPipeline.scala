@@ -81,10 +81,6 @@ class InterpreterRugPipeline(
       throw new BadRugPackagingException(s"Found editor(s) in file $f in ${atomistConfig.reviewersRoot} reviewers tree. It must be under ${atomistConfig.editorsRoot}.",
         f, progs)
     }
-    if (!f.path.contains(atomistConfig.executorsDirectory) && progs.exists(ed => ed.isInstanceOf[RugExecutor])) {
-      throw new BadRugPackagingException(s"Found executor(s) in file $f in ${atomistConfig.reviewersRoot}. It must be under ${atomistConfig.executorsRoot}.",
-        f, progs)
-    }
   }
 }
 

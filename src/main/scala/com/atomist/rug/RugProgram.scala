@@ -102,36 +102,6 @@ case class RugReviewer(
                       )
   extends CanInvokeProjectOperation
 
-case class RugExecutor(
-                        name: String,
-                        publishedName: Option[String],
-                        tags: Seq[String],
-                        description: String,
-                        imports: Seq[Import],
-                        parameters: Seq[Parameter],
-                        computations: Seq[Computation],
-                        actions: Seq[Action]
-                      )
-  extends RugProgram {
-
-  /**
-    * Find all other operations that may be run requires drilling into all With blocks
-    * to check if they call other operations. For other operation types it's not possible
-    * to invoke other operations inside With blocks.
-    *
-    * @return
-    */
-  def runs: Seq[RunOtherOperation] = {
-
-    def roosFor(action: Action): Seq[RunOtherOperation] = action match {
-      case roo: RunOtherOperation => Seq(roo)
-      case w: With => w.doSteps.flatMap(d => roosFor(d))
-      case _ => Nil
-    }
-    actions.flatMap(a => roosFor(a))
-  }
-}
-
 case class Condition(predicateOrReviewerName: String)
 
 case class Import(fqn: String) {

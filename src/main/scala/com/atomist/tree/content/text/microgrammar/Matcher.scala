@@ -57,11 +57,6 @@ trait Matcher {
 
 }
 
-trait TerminalMatcher extends Matcher {
-
-  def name: String
-
-}
 
 /**
   * Trait extended by Matchers that are configurable.
@@ -92,9 +87,9 @@ case class PatternMatch(
 
   def remainderOffset: Int = resultingInputState.offset + matched.length
 
-  override def startPosition: InputPosition = OffsetInputPosition(resultingInputState.offset)
+  override def startPosition: InputPosition = endPosition - matched.length
 
-  override def endPosition: InputPosition = OffsetInputPosition(resultingInputState.offset + matched.length)
+  override def endPosition: InputPosition = resultingInputState.inputPosition
 
   def remainder: CharSequence = resultingInputState.input.subSequence(remainderOffset, resultingInputState.input.length())
 

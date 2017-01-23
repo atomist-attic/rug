@@ -156,7 +156,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "parse strict string literals" in {
     val f = s"""${StrictLiteralOpen}xxxx$StrictLiteralClose"""
     val parsed = mgp.parseMatcher("f", f)
-    parsed.name should be ("literal")
+    parsed.name should be("literal")
     parsed match {
       case Literal("xxxx", _) =>
     }
@@ -174,15 +174,31 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "accept valid break in string using strict literals x2" in {
-    val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}${StrictLiteralOpen}and now for something completely different${StrictLiteralClose}x"""
-    mgp.parseMatcher("f", f) match {
-      case parsedMatcher: Matcher =>
-        println(parsedMatcher)
-        parsedMatcher.matchPrefix(
-          InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely differentx""")) match {
-          case Some(pe) =>
-        }
+  it should "accept valid break in string using strict literals with suffix and post-suffix" in {
+    val suffixes = Seq(
+      "",
+      "short",
+      "and now for something completely different"
+    )
+    val postsuffixes = Seq(
+      "",
+      "x"
+    )
+    for {
+      suffix <- suffixes
+      postsuffix <- postsuffixes
+    } {
+      val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}${StrictLiteralOpen}$suffix${StrictLiteralClose}$postsuffix"""
+      mgp.parseMatcher("f", f) match {
+        case parsedMatcher: Matcher =>
+          println(parsedMatcher)
+          parsedMatcher.matchPrefix(
+            InputState(s"""<tr class="emoji_row">THIS OTHER STUFF<span data-original="${suffix}$postsuffix""")) match {
+            case Some(pe) =>
+            case None => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not")
+          }
+      }
     }
   }
+
 }

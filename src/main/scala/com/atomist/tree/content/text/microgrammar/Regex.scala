@@ -6,7 +6,7 @@ import com.atomist.tree.content.text.MutableTerminalTreeNode
   * Matches a regex.
   */
 case class Regex(name: String, regex: String, config: MatcherConfig = MatcherConfig())
-  extends TerminalMatcher with ConfigurableMatcher {
+  extends ConfigurableMatcher {
 
   // TODO look at greedy
 

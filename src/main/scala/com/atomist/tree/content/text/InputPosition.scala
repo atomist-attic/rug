@@ -12,6 +12,8 @@ trait InputPosition {
 
   def -(that: InputPosition) = this.offset - that.offset
 
+  def -(n: Int) = OffsetInputPosition(this.offset - n)
+
   /**
     * Advance by a number of characters
     * @param offs number of characters to advance by

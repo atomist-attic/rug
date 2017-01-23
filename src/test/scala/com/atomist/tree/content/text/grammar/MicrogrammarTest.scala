@@ -2,6 +2,7 @@ package com.atomist.tree.content.text.grammar
 
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.microgrammar._
+import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -395,8 +396,11 @@ abstract class MicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = repTest.findMatches(input)
     m.size should be(2)
-    //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    m.head.childrenNamed("keys").size should be(1)
+    val firstMatch = m.head
+    println(s"First match in its entirely was [${firstMatch.value}]")
+    println(s"First match=\n${TreeNodeUtils.toShortString(firstMatch)}")
+    println(s"The child names under firstMatch are ${firstMatch.childNodeNames.mkString(",")}")
+    firstMatch.childrenNamed("keys").size should be(1)
     val keys: Seq[TreeNode] = m.head.childrenNamed("keys").head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
     keys.size should be(4)
     keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))

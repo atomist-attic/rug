@@ -12,18 +12,18 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def name: String = named.getOrElse("literal")
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    if (input != null && input.length() > 0 && input.length() >= offset + literal.length) {
-      val possibleMatch = take(offset, input, literal.length)
-      if (possibleMatch.equals(literal))
-        Some(PatternMatch(
-          named.map(name => new MutableTerminalTreeNode(name, literal, OffsetInputPosition(offset))),
-          offset, literal, input, this.toString))
-      else
-        None
-    }
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+    val (matched, is) = inputState.take(literal.length)
+    if (matched == literal)
+      Some(PatternMatch(
+        named.map(name =>
+          new MutableTerminalTreeNode(name, literal, inputState.inputPosition)),
+        literal,
+        is,
+        this.toString))
     else
       None
+  }
 
 }
 
@@ -37,12 +37,18 @@ object Literal {
   */
 case class Remainder(name: String = "remainder") extends Matcher {
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    Some(
-      PatternMatch(node = null, offset = offset,
-        matched = take(offset, input, input.length() - offset),
-        input = input, this.toString)
-    )
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+    if (inputState.exhausted)
+      None
+    else {
+      val (matched, is) = inputState.takeAll
+      Some(
+        PatternMatch(node = null,
+          matched,
+          is, this.toString)
+      )
+    }
+  }
 
 }
 
@@ -51,7 +57,7 @@ case class Remainder(name: String = "remainder") extends Matcher {
   */
 case class RestOfLine(name: String = "restOfLine") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
     ???
 
   // Some(PatternMatch(null, offset, s.toString, ""))
@@ -62,6 +68,6 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
   */
 case class Reference(delegate: Matcher, name: String) extends Matcher {
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    delegate.matchPrefix(offset, input).map(m => m.copy(node = ???))
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    delegate.matchPrefix(inputState).map(m => m.copy(node = ???))
 }

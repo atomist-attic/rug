@@ -103,8 +103,8 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       withClue(s"[$v] IS a valid microgrammar definition") {
         mgp.parseMatcher("x", v) match {
           case cat: Concat =>
-            cat.matchPrefix(0, v) match {
-              case Some(PatternMatch(_, _, matched, `v`, _)) =>
+            cat.matchPrefix(InputState(v)) match {
+              case Some(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
               case None => fail(s"Failed to match on [$v]")
             }
         }
@@ -119,12 +119,36 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "accept short break in string" in {
+    val f = s"""<div id="$BreakOpenToken"${BreakCloseToken}"""
+    mgp.parseMatcher("f", f) match {
+      case parsedMatcher : Matcher =>
+        println(parsedMatcher)
+        val validInputs = Seq(
+          """<div id="foo" """,
+          """<div          id="fom o" """,
+          """<div id="2394029384  %^34o5u345ewjh029384xxxfd!" """
+        )
+        validInputs.foreach { in =>
+          parsedMatcher.matchPrefix(
+            InputState(in)) match {
+            case Some(pe) =>
+            //pe.matched should be ("foo\"")
+            case None => fail(s"[$in] didn't match and should have done")
+          }
+        }
+    }
+  }
+
   it should "accept valid break in string" in {
     val f = s"""<tr class="emoji_row">$BreakOpenToken<span data-original="${BreakCloseToken}and now for something completely different"""
     mgp.parseMatcher("f", f) match {
-      case x : Matcher =>
-        val matchThisYouMicrogrammar = x.matchPrefix(0, """<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different blah blah more things here""")
-        matchThisYouMicrogrammar.isDefined should be(true)
+      case parsedMatcher : Matcher =>
+        println(parsedMatcher)
+        parsedMatcher.matchPrefix(
+          InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
+          case Some(pe) =>
+        }
     }
   }
 }

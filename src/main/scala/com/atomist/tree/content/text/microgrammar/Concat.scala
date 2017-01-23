@@ -18,19 +18,20 @@ object Concat {
 case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultConcatName)
   extends Matcher {
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] = {
-    val l = left.matchPrefix(offset, input)
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+    val l = left.matchPrefix(inputState)
     l match {
       case None =>
         // We're done. It cannot match.
         None
       case Some(leftMatch) =>
         // So far so good
-        right.matchPrefix(leftMatch.remainderOffset, input) match {
+        right.matchPrefix(leftMatch.resultingInputState) match {
           case None =>
             // We're done. Right doesn't match.
             None
           case Some(rightMatch) =>
+            // Both match.
             val mergedTree: Option[MatchedNode] = (leftMatch.node, rightMatch.node) match {
               case (None, None) => None
               case (Some(l), None) => Some(l)
@@ -45,7 +46,10 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
                 })
                 Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition))
             }
-            Some(PatternMatch(mergedTree, offset, leftMatch.matched + rightMatch.matched, input, this.toString))
+            Some(PatternMatch(mergedTree,
+              leftMatch.matched + rightMatch.matched,
+              rightMatch.resultingInputState,
+              this.toString))
         }
     }
   }

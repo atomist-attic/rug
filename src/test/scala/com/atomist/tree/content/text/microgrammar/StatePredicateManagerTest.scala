@@ -6,7 +6,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class StatePredicateManagerTest extends FlatSpec with Matchers {
 
   it should "track curlies not in strings" in {
-    var spm = new StatePredicateManager()
+    var spm = new InputState("x{")
     spm = spm.register(new CurlyDepth)
     spm = spm.consume('x')
     spm.valueOf("curlyDepth") should be (Some(0))
@@ -15,7 +15,7 @@ class StatePredicateManagerTest extends FlatSpec with Matchers {
   }
 
   it should "track curlies allowing for strings" in {
-    var spm = new StatePredicateManager
+    var spm = new InputState("\"x{\"{")
     spm = spm.register(new CurlyDepth)
     spm = spm.consume('"')
     spm = spm.consume('x')

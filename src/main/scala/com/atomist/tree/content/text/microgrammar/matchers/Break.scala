@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar.matchers
 
-import com.atomist.tree.content.text.microgrammar.{Matcher, PatternMatch}
+import com.atomist.tree.content.text.microgrammar.{InputState, Matcher, PatternMatch}
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
 /**
@@ -15,26 +15,25 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends 
 
   override def name: String = named.getOrElse("break")
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    if (input != null && input.length() > 0) {
-      var last = offset
-      var matched = breakToMatcher.matchPrefix(last, input)
-      while (matched.isEmpty && last < input.length()) {
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    if (!inputState.exhausted) {
+      var is = inputState
+      var matchedTerminatingPattern = breakToMatcher.matchPrefix(is)
+      while (matchedTerminatingPattern.isEmpty && !is.exhausted) {
         // Advance one character
-        last += 1
-        matched = breakToMatcher.matchPrefix(last, input)
+        is = is.advance
+        matchedTerminatingPattern = breakToMatcher.matchPrefix(is)
       }
-      matched match {
+      matchedTerminatingPattern match {
         case None =>
           None
         case Some(m) =>
-          val eaten = take(offset, input, m.endPosition.offset - offset)
+          val (eaten,resultingIs) = inputState.take(m.endPosition.offset - inputState.offset - 1)
           Some(PatternMatch(
             named.map(n =>
-              new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
-            offset,
+              new MutableTerminalTreeNode(n, eaten, inputState.inputPosition)),
             eaten,
-            input,
+            resultingIs,
             this.toString))
       }
     }

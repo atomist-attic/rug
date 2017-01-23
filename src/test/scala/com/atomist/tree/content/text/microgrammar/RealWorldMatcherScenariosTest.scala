@@ -8,7 +8,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
   private def javaIdentifier(name: String): Matcher = Regex(name, "[a-zA-Z][a-zA-Z0-9]*")
 
   it should "match JavaIdentifiers" in {
-    javaIdentifier("foo").matchPrefix(0, "uuuuer23") match {
+    javaIdentifier("foo").matchPrefix(InputState("uuuuer23")) match {
       case Some(m) =>
     }
   }
@@ -25,8 +25,8 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       """.stripMargin
     )
     formats.map(noArgs =>
-      scalaMethodHeader.matchPrefix(0, noArgs) match {
-        case Some(PatternMatch(tn, 0, matched, `noArgs`, _)) =>
+      scalaMethodHeader.matchPrefix(InputState(noArgs)) match {
+        case Some(PatternMatch(tn, matched, InputState(`noArgs`, _, _), _)) =>
         //println(s"Successfully parsed [$matched]")
       })
   }
@@ -46,8 +46,8 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       """.stripMargin
     )
     formats.map(input =>
-      scalaMethodHeader.matchPrefix(0, input) match {
-        case Some(PatternMatch(tn, 0, matched, `input`, _)) =>
+      scalaMethodHeader.matchPrefix(InputState(input)) match {
+        case Some(PatternMatch(tn, matched, InputState(`input`, _, _), _)) =>
         case None => fail(s"Failed to match input [$input]")
       })
   }
@@ -60,8 +60,8 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       s"<title>$content</title>"
     )
     formats.map(input =>
-      pattern.matchPrefix(0, input) match {
-        case Some(PatternMatch(tn, 0, matched, `input`, _)) =>
+      pattern.matchPrefix(InputState(input)) match {
+        case Some(PatternMatch(tn, matched, InputState(`input`, _, _), _)) =>
         //println(s"Successfully parsed [$matched]")
       })
 

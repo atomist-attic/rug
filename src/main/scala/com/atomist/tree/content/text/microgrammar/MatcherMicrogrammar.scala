@@ -55,16 +55,18 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
   private def findMatchesInternal(input: CharSequence, l: Option[MatchListener]) = {
     var offset = 0
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
-    while (offset < input.length) {
-      matcher.matchPrefix(offset, input) match {
+    var is = InputState(input)
+    while (!is.exhausted) {
+      matcher.matchPrefix(is) match {
         case None =>
-          offset += 1
+          is = is.advance
         case Some(m) =>
           l.foreach(l => m.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })
           m.node.foreach(n => nodes.append(n))
-          offset = m.remainderOffset
+          //offset = m.remainderOffset
+          is = m.resultingInputState
       }
     }
     nodes

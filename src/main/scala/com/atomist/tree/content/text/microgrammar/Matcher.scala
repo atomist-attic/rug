@@ -20,13 +20,10 @@ trait Matcher {
     * Match this string at the present offset. Return None
     * in event of failure
     *
-    * @param offset offset within a whole input that we're matching at.
-    *               We keep this rather than the whole input as a string as a potential
-    *               efficiency measure
-    * @param input  whole input we're matching
+    * @param inputState input state
     * @return match or failure to match
     */
-  def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch]
+  def matchPrefix(inputState: InputState): Option[PatternMatch]
 
   def concat(m: Matcher): Matcher = Concat(this, m)
 
@@ -58,17 +55,6 @@ trait Matcher {
 
   def -(): Matcher = Discard(this)
 
-  /**
-    * Utility method to take next characters from input
-    *
-    * @param offset start offset
-    * @param input  input sequence
-    * @param n      number of characters to take
-    * @return a String
-    */
-  protected def take(offset: Int, input: CharSequence, n: Int): String = {
-    input.subSequence(offset, offset + n).toString
-  }
 }
 
 trait TerminalMatcher extends Matcher {
@@ -94,24 +80,22 @@ object PatternMatch {
   * Returned for a pattern match.
   *
   * @param node    matched node. If None, the match is discarded.
-  * @param offset  offset in the input at which the match begins
   * @param matched the string that was matched
-  * @param input   the entire input
+  * @param resultingInputState   resulting InputState
   */
 case class PatternMatch(
                          node: Option[MatchedNode],
-                         offset: Int,
                          matched: String,
-                         input: CharSequence,
+                         resultingInputState: InputState,
                          matcherId: String)
   extends Positioned {
 
-  def remainderOffset: Int = offset + matched.length
+  def remainderOffset: Int = resultingInputState.offset + matched.length
 
-  override def startPosition: InputPosition = OffsetInputPosition(offset)
+  override def startPosition: InputPosition = OffsetInputPosition(resultingInputState.offset)
 
-  override def endPosition: InputPosition = OffsetInputPosition(offset + matched.length)
+  override def endPosition: InputPosition = OffsetInputPosition(resultingInputState.offset + matched.length)
 
-  def remainder: CharSequence = input.subSequence(remainderOffset, input.length())
+  def remainder: CharSequence = resultingInputState.input.subSequence(remainderOffset, resultingInputState.input.length())
 
 }

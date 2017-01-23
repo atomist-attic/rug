@@ -28,6 +28,10 @@ class MutableTerminalTreeNode(
 
   private var currentValue = initialValue
 
+  override def padded: Boolean = true
+
+  override def pad(initialSource: String, topLevel: Boolean): Unit = {}
+
   @ExportFunction(readOnly = false, description = "Update the node value")
   override def update(newValue: String): Unit =
     currentValue = newValue

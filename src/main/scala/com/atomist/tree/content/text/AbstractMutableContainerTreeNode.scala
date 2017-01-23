@@ -21,7 +21,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   private var _padded = false
 
-  def padded: Boolean = _padded
+  override def padded: Boolean = _padded
 
   final override def childNodes: Seq[TreeNode] = _fieldValues
 
@@ -39,17 +39,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     _padded = true
   }
 
-  /**
-    * Compile this so that we can manipulate it at will without further
-    * reference to the input string.
-    * Introduces padding objects to cover string content that isn't explained in known structures.
-    * Must be called before value method is invoked.
-    *
-    * @param initialSource entire source
-    * @param topLevel      whether this is a top level element, in which
-    *                      case we should pad after known structures
-    */
-  def pad(initialSource: CharSequence, topLevel: Boolean = false): Unit = if (!_padded) {
+  override def pad(initialSource: CharSequence, topLevel: Boolean = false): Unit = if (!_padded) {
 
     // Number of characters of fields to show in padding field names
     val show = 40

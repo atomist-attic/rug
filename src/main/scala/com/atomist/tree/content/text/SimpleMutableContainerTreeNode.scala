@@ -29,9 +29,9 @@ object SimpleMutableContainerTreeNode {
     * @param input input string
     * @return a new node explaining the whole input
     */
-  def wholeInput(name: String, fieldValues: Seq[TreeNode], input: String): MutableContainerTreeNode = {
+  def wholeInput(name: String, fieldValues: Seq[TreeNode], input: String): SimpleMutableContainerTreeNode = {
     val moo = new SimpleMutableContainerTreeNode(name, fieldValues, startOf(input), endOf(input))
-    moo.pad(input, true)
+    moo.pad(input, topLevel = true)
     moo
   }
 

@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
-import com.atomist.tree.content.text.{MutableContainerTreeNode, MutableTerminalTreeNode}
+import com.atomist.tree.content.text.{MutableContainerTreeNode, MutableTerminalTreeNode, TreeNodeOperations}
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar.matchers.Break
 import com.atomist.tree.utils.TreeNodeUtils
@@ -446,12 +446,36 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
   }
 
-  it should "find printlns" in {
+  private val printlns: MatcherMicrogrammar = {
+    val printlns = "println(" ~ Break(")", Some("content"))
+    new MatcherMicrogrammar(printlns)
+  }
+
+  it should "use println matcher directory" in {
+    val p1 = "println(\"The first thing\")"
     val input =
-      """
+      s"""$p1
+         |
+         |   println("The second thing")
+         |
+         |   println(s"And this");
+         |
+         |}
+      """.stripMargin
+    printlns.matcher.matchPrefix(InputState(input)) match {
+      case Some(pm) =>
+        pm.matched should be (p1)
+        pm.node.get.value should be (p1)
+    }
+  }
+
+  it should "find simple printlns in Java" in {
+    val p1 = "println(\"The first thing\")"
+    val input =
+      s"""
         |class Foo {
         |
-        |   println("The first thing")
+        |   $p1
         |
         |   println("The second thing")
         |
@@ -461,6 +485,8 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = printlns.findMatches(input)
     m.size should be(3)
+    println(TreeNodeUtils.toShortString(m.head))
+    m.head.value should be (p1)
   }
 
   protected def thingGrammar: Microgrammar = {
@@ -512,12 +538,6 @@ protected def matchScalaMethodHeaderRepsep: Microgrammar = {
     val pair = "-" ~? key ~? Alternate(":", "=") ~? value
     val envList = "env:" ~~ "global:" ~~ Repsep(pair, WhitespaceOrNewLine, "keys")
     new MatcherMicrogrammar(envList)
-  }
-
-  protected def printlns: Microgrammar = {
-    // Yes this is naive because of linebreaks and escaped )
-    val printlns = "println(" ~ Break(")", Some("content"))
-    new MatcherMicrogrammar(printlns)
   }
 
 }

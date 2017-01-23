@@ -30,6 +30,15 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     }
     // Add the microgrammar type annotation to every top level node we return
     processedNodes.foreach(n => n.addType(MicrogrammarNode.MicrogrammarNodeType))
+    processedNodes.foreach {
+      case amut: AbstractMutableContainerTreeNode =>
+        amut.pad(input.toString)
+      case _ =>
+    }
+    rawNodes.zip(processedNodes).foreach {
+      case (raw, cooked) => require(raw.value == cooked.value)
+    }
+
     processedNodes
   }
 
@@ -42,7 +51,9 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
       case mctn: MutableContainerTreeNode =>
         transform(mctn)
       case tn: TreeNode =>
-        SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input.toString)
+        val ret = SimpleMutableContainerTreeNode.wholeInput("input", Seq(tn), input.toString)
+        require(ret.padded)
+        ret
     }
   }
 
@@ -52,20 +63,19 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     outputNode(input, nodes.head)
   }
 
-  private def findMatchesInternal(input: CharSequence, l: Option[MatchListener]) = {
+  private def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]) = {
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
     var is = InputState(input)
     while (!is.exhausted) {
       matcher.matchPrefix(is) match {
         case None =>
           is = is.advance
-        case Some(m) =>
-          l.foreach(l => m.node collect {
+        case Some(matchFound) =>
+          listeners.foreach(l => matchFound.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })
-          m.node.foreach(n => nodes.append(n))
-          //offset = m.remainderOffset
-          is = m.resultingInputState
+          matchFound.node.foreach(n => nodes.append(n))
+          is = matchFound.resultingInputState
       }
     }
     nodes

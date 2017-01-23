@@ -10,12 +10,13 @@ import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
   */
 case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] = {
-    val l = left.matchPrefix(offset, s)
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+    val l = left.matchPrefix(inputState)
     l match {
       case None =>
-        right.matchPrefix(offset, s)
-      case Some(leftMatch) => Some(leftMatch)
+        right.matchPrefix(inputState)
+      case Some(leftMatch) =>
+        Some(leftMatch)
     }
   }
 }
@@ -28,8 +29,8 @@ case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") 
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    m.matchPrefix(offset, input).map(matched => matched.copy(node = None))
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    m.matchPrefix(inputState).map(matched => matched.copy(node = None))
 
 }
 
@@ -42,8 +43,8 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 case class Wrap(m: Matcher, name: String)
   extends Matcher {
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    m.matchPrefix(offset, input).map(matched =>
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    m.matchPrefix(inputState).map(matched =>
       matched.copy(node = matched.node.map(mn => {
         val n = SimpleMutableContainerTreeNode.wrap(name, mn)
         //println(s"New node is $n")
@@ -54,10 +55,10 @@ case class Wrap(m: Matcher, name: String)
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
-    m.matchPrefix(offset, s) match {
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    m.matchPrefix(inputState) match {
       case None =>
-        Some(PatternMatch(None, offset = offset, matched = "", s, this.toString))
+        Some(PatternMatch(None, matched = "", inputState, this.toString))
       case Some(there) =>
         Some(there)
     }

@@ -13,45 +13,44 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
 case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
   extends Matcher {
 
-  private val secondaryMatch = separator match {
+  private val secondaryMatch: Matcher = separator match {
     case None => m
     case Some(sep) => Discard(sep) ~? m
   }
 
-  override def matchPrefix(offset: Int, s: CharSequence): Option[PatternMatch] =
-    m.matchPrefix(offset, s) match {
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    m.matchPrefix(inputState) match {
       case None =>
         // We can match zero times. Put in an empty node.
-        val pos = OffsetInputPosition(offset)
+        val pos = inputState.inputPosition
         Some(
           PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
-            offset = offset, matched = "", s, this.toString))
+            matched = "", inputState, this.toString))
       case Some(initialMatch) =>
         // We matched once. Let's keep going
         //println(s"Found initial match for $initialMatch")
         var matched = initialMatch.matched
-        val offset = initialMatch.offset
-        var upToOffset = initialMatch.endPosition.offset
+        var latestInputState = initialMatch.resultingInputState
         var nodes = initialMatch.node.toSeq
         //println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
-        while (secondaryMatch.matchPrefix(upToOffset, s) match {
+        while (secondaryMatch.matchPrefix(latestInputState) match {
           case None => false
           case Some(lastMatch) =>
             //println(s"Made it to secondary match [$lastMatch]")
-            upToOffset = lastMatch.endPosition.offset
             matched += lastMatch.matched
             nodes ++= lastMatch.node.toSeq
+            latestInputState = lastMatch.resultingInputState
             true
         }) {
-          // Do nothing
+          // Do nothing. The nasty vars are already being updated. Nasty vars
         }
 
-        val pos = OffsetInputPosition(offset)
+        val pos = latestInputState.inputPosition
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
         val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
         Some(
           PatternMatch(node = Some(combinedNode),
-            offset, matched, s, this.toString)
+            matched, latestInputState, this.toString)
         )
     }
 }

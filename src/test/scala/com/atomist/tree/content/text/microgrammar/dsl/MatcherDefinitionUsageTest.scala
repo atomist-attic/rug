@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
+import com.atomist.tree.content.text.microgrammar.{InputState, MatcherMicrogrammar}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
@@ -10,7 +10,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
   it should "match literal" in {
     val matcher = mgp.parseMatcher("foo", "def foo")
-    matcher.matchPrefix(0, "def foo thing") match {
+    matcher.matchPrefix(InputState("def foo thing")) match {
       case Some(pm) =>
     }
   }
@@ -27,7 +27,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val matcher = mgp.parseMatcher("l", "def $foo:§f.o§")
     val mg = new MatcherMicrogrammar(matcher)
     val input = "def foo bar"
-    matcher.matchPrefix(0, input) match {
+    matcher.matchPrefix(InputState(input)) match {
       case Some(pm) =>
     }
     mg.findMatches(input).size should be(1)

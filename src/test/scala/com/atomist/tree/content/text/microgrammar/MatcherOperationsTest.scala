@@ -7,8 +7,8 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
   it should "match literal in whole string" in {
     val l = Literal("thing", named = Some("x"))
     val ls = l.toString
-    l.matchPrefix(0, "thing") match {
-      case Some(PatternMatch(tn, 0, "thing", "thing", `ls`)) =>
+    l.matchPrefix(InputState("thing")) match {
+      case Some(PatternMatch(tn, "thing", InputState("thing", _, _), `ls`)) =>
         tn.get.nodeName should be ("x")
         tn.get.value should be ("thing")
     }
@@ -16,15 +16,16 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
 
   it should "match literal in partial string" in {
     val l = Literal("thing")
-    l.matchPrefix(0, "thing2") should equal(Some(PatternMatch(None, 0, "thing", "thing2", l.toString)))
+    l.matchPrefix(InputState("thing2")) should equal(
+      Some(PatternMatch(None, "thing", InputState("thing2", offset = 5), l.toString)))
   }
 
   it should "concatenate literals" in {
     val l1 = Literal("thing")
     val l2 = Literal("2")
     val l = l1 ~ l2
-    l.matchPrefix(0, "thing2") match {
-      case Some(PatternMatch(tn, 0, "thing2", "thing2", _)) =>
+    l.matchPrefix(InputState("thing2")) match {
+      case Some(PatternMatch(tn, "thing2", InputState(thing2, _, _), _)) =>
     }
   }
 
@@ -32,7 +33,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l1 = Literal("thing")
     val l2 = Literal("22222")
     val l = l1 ~ l2
-    l.matchPrefix(0, "thing2") match {
+    l.matchPrefix(InputState("thing2")) match {
       case None =>
     }
   }
@@ -41,31 +42,42 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l1 = Literal("thing")
     val l2 = Literal("2")
     val l = l1 | l2
-    l.matchPrefix(0, "thing") match {
-      case Some(PatternMatch(tn, 0, "thing", "thing", _)) =>
+    l.matchPrefix(InputState("thing")) match {
+      case Some(PatternMatch(_, "thing", InputState("thing", _, _), _)) =>
     }
-    l.matchPrefix(0, "2") match {
-      case Some(PatternMatch(tn, 0, "2", "2", _)) =>
+    l2.matchPrefix(InputState("2")) match {
+      case Some(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
     }
-    l.matchPrefix(0, "thing2") match {
-      case Some(PatternMatch(tn, 0, "thing", "thing2", _)) =>
+    l.matchPrefix(InputState("2")) match {
+      case Some(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
+    }
+    l.matchPrefix(InputState("thing2")) match {
+      case Some(PatternMatch(tn, "thing", InputState("thing2", _, _), _)) =>
     }
   }
 
   it should "match opt" in {
     val l1 = Literal("thing")
+    val l = l1.?
+    l.matchPrefix(InputState("thing2")) match {
+      case Some(PatternMatch(_, "thing", InputState("thing2", _, 5), _)) =>
+    }
+  }
+
+  it should "match opt in alternate" in {
+    val l1 = Literal("thing")
     val l2 = Literal("2")
     val l = l1.? ~ l2
-    l.matchPrefix(0, "thing2") match {
-      case Some(PatternMatch(tn, 0, "thing2", "thing2", _)) =>
+    l.matchPrefix(InputState("thing2")) match {
+      case Some(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
     }
-    l.matchPrefix(0, "2") match {
-      case Some(PatternMatch(tn, 0, "2", "2", _)) =>
+    l.matchPrefix(InputState("2")) match {
+      case Some(PatternMatch(tn, "2", InputState("2", _, _), _)) =>
     }
-    l.matchPrefix(0, "thing2") match {
-      case Some(PatternMatch(tn, 0, "thing2", "thing2", _)) =>
+    l.matchPrefix(InputState("thing2")) match {
+      case Some(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
     }
-    l.matchPrefix(0, "xthing2") match {
+    l.matchPrefix(InputState("xthing2")) match {
       case None =>
     }
   }

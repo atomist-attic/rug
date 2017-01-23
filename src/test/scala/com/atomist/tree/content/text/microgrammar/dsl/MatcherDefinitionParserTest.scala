@@ -43,14 +43,15 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     for (v <- validLiterals) mgp.parseMatcher("x", v) match {
       case Regex("foo", rex, _) =>
         withClue(s"String [$v] should contain regex [$rex]") {
-          v.contains(rex) should be (true) }
+          v.contains(rex) should be(true)
+        }
     }
   }
 
   it should "accept valid descendant phrase" in {
     val dog = Literal("dog", named = Some("dog"))
     val cat = Literal("cat", named = Some("cat"))
-    val mr = SimpleMatcherRegistry(Seq(dog,cat))
+    val mr = SimpleMatcherRegistry(Seq(dog, cat))
     val validDescendantPhrases = Seq("▶$:cat", "▶$d:dog")
     for (v <- validDescendantPhrases) mgp.parseMatcher("v", v, mr) match {
       case w: Wrap =>
@@ -60,7 +61,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "accept valid descendant phrase with predicate" in {
     val dog = Literal("dog", named = Some("dog"))
     val cat = Literal("cat", named = Some("Cat"))
-    val mr = SimpleMatcherRegistry(Seq(dog,cat))
+    val mr = SimpleMatcherRegistry(Seq(dog, cat))
     val validDescendantPhrases = Seq("▶$fido:dog[curlyDepth=3]", "▶$felix:Cat[fat=false]")
     for (v <- validDescendantPhrases) mgp.parseMatcher("v", v, mr) match {
       //case Literal(l, None) =>
@@ -103,8 +104,8 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       withClue(s"[$v] IS a valid microgrammar definition") {
         mgp.parseMatcher("x", v) match {
           case cat: Concat =>
-            cat.matchPrefix(0, v) match {
-              case Some(PatternMatch(_, _, matched, `v`, _)) =>
+            cat.matchPrefix(InputState(v)) match {
+              case Some(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
               case None => fail(s"Failed to match on [$v]")
             }
         }
@@ -119,12 +120,85 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "accept short break in string" in {
+    val f = s"""<div id="$BreakOpenToken"${BreakCloseToken}"""
+    mgp.parseMatcher("f", f) match {
+      case parsedMatcher: Matcher =>
+        println(parsedMatcher)
+        val validInputs = Seq(
+          """<div id="foo" """,
+          """<div          id="fom o" """,
+          """<div id="2394029384  %^34o5u345ewjh029384xxxfd!" """
+        )
+        validInputs.foreach { in =>
+          parsedMatcher.matchPrefix(
+            InputState(in)) match {
+            case Some(pe) =>
+            //pe.matched should be ("foo\"")
+            case None => fail(s"[$in] didn't match and should have done")
+          }
+        }
+    }
+  }
+
   it should "accept valid break in string" in {
     val f = s"""<tr class="emoji_row">$BreakOpenToken<span data-original="${BreakCloseToken}and now for something completely different"""
     mgp.parseMatcher("f", f) match {
-      case x : Matcher =>
-        val matchThisYouMicrogrammar = x.matchPrefix(0, """<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different blah blah more things here""")
-        matchThisYouMicrogrammar.isDefined should be(true)
+      case parsedMatcher: Matcher =>
+        println(parsedMatcher)
+        parsedMatcher.matchPrefix(
+          InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
+          case Some(pe) =>
+        }
     }
   }
+
+  it should "parse strict string literals" in {
+    val f = s"""${StrictLiteralOpen}xxxx$StrictLiteralClose"""
+    val parsed = mgp.parseMatcher("f", f)
+    parsed.name should be("literal")
+    parsed match {
+      case Literal("xxxx", _) =>
+    }
+  }
+
+  it should "accept valid break in string using strict literals" in {
+    val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}"""
+    mgp.parseMatcher("f", f) match {
+      case parsedMatcher: Matcher =>
+        println(parsedMatcher)
+        parsedMatcher.matchPrefix(
+          InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
+          case Some(pe) =>
+        }
+    }
+  }
+
+  it should "accept valid break in string using strict literals with suffix and post-suffix" in {
+    val suffixes = Seq(
+      "",
+      "short",
+      "and now for something completely different"
+    )
+    val postsuffixes = Seq(
+      "",
+      "x"
+    )
+    for {
+      suffix <- suffixes
+      postsuffix <- postsuffixes
+    } {
+      val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}${StrictLiteralOpen}$suffix${StrictLiteralClose}$postsuffix"""
+      mgp.parseMatcher("f", f) match {
+        case parsedMatcher: Matcher =>
+          println(parsedMatcher)
+          parsedMatcher.matchPrefix(
+            InputState(s"""<tr class="emoji_row">THIS OTHER STUFF<span data-original="${suffix}$postsuffix""")) match {
+            case Some(pe) =>
+            case None => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not")
+          }
+      }
+    }
+  }
+
 }

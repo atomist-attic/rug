@@ -1,7 +1,8 @@
 package com.atomist.tree.content.text.microgrammar.matchers
 
-import com.atomist.tree.content.text.microgrammar.{Matcher, PatternMatch}
-import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
+import com.atomist.tree.content.text.MutableTerminalTreeNode
+import com.atomist.tree.content.text.microgrammar.{InputState, Matcher, PatternMatch}
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Similar to a SNOBOL "break". If we don't eventually find the terminating pattern in breakToMatcher,
@@ -11,31 +12,34 @@ import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPositi
   * @param named          Name if we have one. If we don't,
   *                       no node will be created, which effectively discards the content
   */
-case class Break(breakToMatcher: Matcher, named: Option[String] = None) extends Matcher {
+case class Break(breakToMatcher: Matcher, named: Option[String] = None)
+  extends Matcher with LazyLogging {
 
   override def name: String = named.getOrElse("break")
 
-  override def matchPrefix(offset: Int, input: CharSequence): Option[PatternMatch] =
-    if (input != null && input.length() > 0) {
-      var last = offset
-      var matched = breakToMatcher.matchPrefix(last, input)
-      while (matched.isEmpty && last < input.length()) {
+  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+    if (!inputState.exhausted) {
+      var currentInputState = inputState
+      var matchedTerminatingPattern = breakToMatcher.matchPrefix(currentInputState)
+      while (matchedTerminatingPattern.isEmpty && !currentInputState.exhausted) {
         // Advance one character
-        last += 1
-        matched = breakToMatcher.matchPrefix(last, input)
+        currentInputState = currentInputState.advance
+        matchedTerminatingPattern = breakToMatcher.matchPrefix(currentInputState)
       }
-      matched match {
+      // We either exhausted the input and didn't match at all, or we have a match
+      matchedTerminatingPattern match {
         case None =>
           None
-        case Some(m) =>
-          val eaten = take(offset, input, m.endPosition.offset - offset)
-          Some(PatternMatch(
+        case Some(terminatingMatch) =>
+          val (eaten, resultingIs) = inputState.take(terminatingMatch.endPosition.offset - inputState.offset)
+          val returnedMatch = PatternMatch(
             named.map(n =>
-              new MutableTerminalTreeNode(n, eaten, OffsetInputPosition(offset))),
-            offset,
+              new MutableTerminalTreeNode(n, eaten, inputState.inputPosition)),
             eaten,
-            input,
-            this.toString))
+            terminatingMatch.resultingInputState,
+            this.toString)
+          logger.debug(s"terminatingMatch=[$terminatingMatch],eaten=[$eaten], matched=$returnedMatch")
+          Some(returnedMatch)
       }
     }
     else

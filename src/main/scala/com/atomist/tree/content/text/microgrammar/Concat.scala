@@ -29,6 +29,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
         right.matchPrefix(leftMatch.resultingInputState) match {
           case None =>
             // We're done. Right doesn't match.
+            println(s"We matched OK on [$left]->[${leftMatch}] but failed on [$right], next 20 characters were [${leftMatch.resultingInputState.take(20)}]")
             None
           case Some(rightMatch) =>
             // Both match.

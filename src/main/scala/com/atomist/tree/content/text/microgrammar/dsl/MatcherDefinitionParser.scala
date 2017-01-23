@@ -21,9 +21,15 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   private def whitespaceSep: Parser[String] = """\s*""".r
 
-  // TODO may want to consider whether we want to use $
-  private def literal: Parser[Literal] =
+  private def delimitedLiteral: Parser[Literal] =
+    (StrictLiteralOpen ~ s"[^$StrictLiteralClose]*".r ~ StrictLiteralClose) ^^ {
+      case _ ~ l ~ _ => Literal(l)
+    }
+
+  private def singleWordLiteral: Parser[Literal] =
     AnythingButReservedCharacters ^^ (l => Literal(l))
+
+  private def literal: Parser[Literal] = delimitedLiteral | singleWordLiteral
 
   private def rex(implicit matcherName: String): Parser[Regex] =
     RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(matcherName, r))
@@ -125,6 +131,8 @@ object MatcherDefinitionParser {
   val PredicateOpenToken = "["
   val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
+  val StrictLiteralOpen = "⟦"
+  val StrictLiteralClose = "⟧"
 
   private def escape(token: String) = """\""" + token
 

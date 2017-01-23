@@ -53,7 +53,6 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
   }
 
   private def findMatchesInternal(input: CharSequence, l: Option[MatchListener]) = {
-    var offset = 0
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
     var is = InputState(input)
     while (!is.exhausted) {

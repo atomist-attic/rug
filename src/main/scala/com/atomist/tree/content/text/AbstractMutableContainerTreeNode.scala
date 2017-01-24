@@ -76,7 +76,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
           if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
           lastEndOffset = sm.endPosition.offset
           fieldResults.append(sm)
-        case soo: AbstractMutableContainerTreeNode =>
+        case soo: PositionedTreeNode =>
           try {
             soo.pad(initialSource)
           }

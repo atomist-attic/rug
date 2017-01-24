@@ -3,6 +3,8 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.{InputPosition, OffsetInputPosition}
 import com.atomist.util.lang.JavaHelpers
 
+import scala.annotation.tailrec
+
 /**
   * Represents the state of the input we're consuming.
   * Keeps track of offset.
@@ -24,31 +26,19 @@ case class InputState(
 
   def exhausted: Boolean = offset > input.length() - 1
 
-  def advance: InputState = take(1)._2
+  def advance: InputState = takeOne._2
+
+  private def takeOne: (Char, InputState) = {
+    val frontChar = input.charAt(offset)
+    (frontChar, consume(frontChar))
+  }
 
   /**
     * Consume the given number of characters, if possible.
     * @param n
     * @return
     */
-  def take(n: Int): (String, InputState) = {
-    var newme = this
-    var s = ""
-    for {
-      i <- 0 until n
-      if !newme.exhausted
-    } {
-      val c = newme.input.charAt(newme.offset)
-      s += c.toString
-      //println(s"Consumed $c from ${newme.input} at ${newme.offset} with s =[$s]")
-      val updated = newme.consume(c)
-      //println(s"Newme now=$newme")
-      require(updated.offset == newme.offset + 1)
-      newme = updated
-    }
-    //println(s"Take $n on [$input] returned ([$s, $newme)")
-    (s, newme)
-  }
+  def take(n: Int): (String, InputState) = InputState.take(this, n)
 
   /**
     * Consume all input
@@ -66,6 +56,9 @@ case class InputState(
 
   def registered(predicateName: String): Boolean = predicates.contains(predicateName)
 
+  /*
+   * Notice all the state changes that this character causes.
+   */
   override def consume(c: Char): InputState = {
     val updatedPredicates: Map[String, StatePredicate[_]] = predicates.map {
       case (k, v) => (k, v.consume(c))
@@ -84,5 +77,19 @@ case class InputState(
 object InputState {
 
   def nameFor(p: StatePredicate[_]): String = JavaHelpers.lowerize(p.getClass.getSimpleName)
+
+  def take(inputState: InputState, n: Int): (String, InputState) = {
+    @tailrec
+    def takeEach(n: Int, characters: Seq[Char], state: InputState): (Seq[Char], InputState) =
+      if (state.exhausted || n <= 0)
+        (characters, state)
+      else {
+        val (consumedChar, newState) = state.takeOne
+        takeEach(n - 1, characters :+ consumedChar, newState)
+      }
+
+    val (characters, state) = takeEach(n, Seq(), inputState)
+    (characters.mkString, state)
+  }
 
 }

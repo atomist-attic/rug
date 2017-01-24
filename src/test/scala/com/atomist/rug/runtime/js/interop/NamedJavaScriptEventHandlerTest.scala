@@ -10,7 +10,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{Action, ActionRegistry, Callback, ConsoleMessageBuilder, Rug}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.util.Visitor
 import org.scalatest.{FlatSpec, Matchers}
@@ -125,7 +125,7 @@ object SimpleActionRegistry extends ActionRegistry {
 
   override def findByName(name: String): Action = Action(name, Callback(rug), new util.ArrayList[ParameterValue]())
 
-  override def bindParameter(action: Action, name: String, value: Object) = {
+  override def bindParameter(action: Action, name: String, value: Object): Action = {
     val params = new util.ArrayList[ParameterValue](action.parameters)
     params.add(SimpleParameterValue(name,value))
     Action(action.title,action.callback,params)
@@ -134,19 +134,10 @@ object SimpleActionRegistry extends ActionRegistry {
 
 object SysEvent extends SystemEvent ("blah", "issue", 0l)
 
-class IssueTreeNode extends TreeNode {
-  /**
-    * Name of the node. This may vary with individual nodes: For example,
-    * with files. However, node names do not always need to be unique.
-    *
-    * @return name of the individual node
-    */
+class IssueTreeNode extends TerminalTreeNode {
+
   override def nodeName: String = "issue"
 
-  /**
-    * All nodes have values: Either a terminal value or the
-    * values built up from subnodes.
-    */
   override def value: String = "blah"
 
   def state(): String = "closed"
@@ -157,7 +148,6 @@ class IssueTreeNode extends TreeNode {
 
   val owner: String = "atomist"
 
-  override def accept(v: Visitor, depth: Int): Unit = ???
 }
 
 object TestTreeMaterializer extends TreeMaterializer {

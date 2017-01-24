@@ -42,13 +42,6 @@ trait TreeNode extends Visitable {
   @ExportFunction(readOnly = true, description = "Node content")
   def value: String
 
-}
-
-/**
-  * TreeNode that can contain other TreeNodes.
-  */
-trait ContainerTreeNode extends TreeNode {
-
   /**
     * Return all children of this node
     *
@@ -90,9 +83,21 @@ trait ContainerTreeNode extends TreeNode {
 }
 
 /**
-  * Terminal TreeNode. Contains a simple string value.
+  * Tag interface for TreeNodes that are intended to contain other TreeNodes.
+  */
+trait ContainerTreeNode extends TreeNode
+
+/**
+  * Convenient supertrait for terminal TreeNodes. Contains a simple string value.
   */
 trait TerminalTreeNode extends TreeNode {
 
-  override def accept(v: Visitor, depth: Int): Unit = v.visit(this, depth)
+  final override def accept(v: Visitor, depth: Int): Unit = v.visit(this, depth)
+
+  final override def childNodeNames: Set[String] = Set()
+
+  final override def childNodeTypes: Set[String] = Set()
+
+  final override def childrenNamed(key: String): Seq[TreeNode] = Nil
+
 }

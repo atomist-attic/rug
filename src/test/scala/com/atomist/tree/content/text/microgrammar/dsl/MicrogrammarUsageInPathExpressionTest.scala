@@ -7,7 +7,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{MutableTreeNode, TreeNode}
 import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, Microgrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
@@ -30,16 +30,20 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   it should "use simple microgrammar in a single file and modify content" in {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
-    nodes.size should be (1)
+    nodes.size should be(1)
     withClue(s"Type was ${nodes.head.nodeType}") {
       nodes.head.nodeType.contains("modelVersion") should be(true)
     }
     nodes.head match {
-      case mtn: MutableContainerMutableView =>
+      case mtn: MutableTreeNode =>
         mtn.update(highlyImprobableValue)
         val newContent = pmv.findFile("pom.xml").content
-        //println(s"New content=\n$newContent")
+        println(s"New content=\n$newContent")
         newContent.contains(highlyImprobableValue) should be(true)
+      case x =>
+        println(s"what is this $x")
+        fail
+
     }
   }
 
@@ -49,9 +53,12 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val findFile = "/File()[@name='pom.xml']"
 
-    val mg: Microgrammar = new MatcherMicrogrammar(
+    val mg: MatcherMicrogrammar = new MatcherMicrogrammar(
       mgp.parseMatcher("pom",
-        "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
+        "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"), "pom")
+
+    val matches = mg.findMatches(proj.findFile("pom.xml").get.content)
+    matches.length should be(1)
 
     val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
       Seq(new MicrogrammarTypeProvider(mg))

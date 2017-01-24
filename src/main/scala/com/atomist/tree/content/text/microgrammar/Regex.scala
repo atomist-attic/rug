@@ -12,7 +12,7 @@ case class Regex(name: String, regex: String, config: MatcherConfig = MatcherCon
 
   private val rex = regex.r
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     if (!inputState.exhausted) {
       rex.anchored.findPrefixMatchOf(inputState.remainder) match {
         case Some(m) =>
@@ -36,7 +36,7 @@ class Placeholder extends Matcher {
 
   override def name: String = "placeholder"
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     if (!inputState.exhausted) {
       Some(PatternMatch(None, "", inputState, this.toString))
     }

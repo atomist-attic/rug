@@ -90,8 +90,6 @@ object TreeNodeOperations {
   val Prune: TreeOperation = treeOperation {
     case ofv: ContainerTreeNode if ofv.childNodes.isEmpty =>
       None
-    case empty if "".equals(empty.value) =>
-      None
     case ectn: EmptyContainerTreeNode =>
       None
     case x =>

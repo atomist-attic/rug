@@ -12,15 +12,20 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def name: String = named.getOrElse("literal")
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
     val (matched, is) = inputState.take(literal.length)
-    if (matched == literal)
+    if (matched == literal) {
+      val nodeOption = named.map { name => val node =
+        new MutableTerminalTreeNode(name, literal, inputState.inputPosition)
+        node.addType(name)
+        node
+      }
       Some(PatternMatch(
-        named.map(name =>
-          new MutableTerminalTreeNode(name, literal, inputState.inputPosition)),
+        nodeOption,
         literal,
         is,
         this.toString))
+    }
     else
       None
   }
@@ -37,7 +42,7 @@ object Literal {
   */
 case class Remainder(name: String = "remainder") extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
     if (inputState.exhausted)
       None
     else {
@@ -57,7 +62,7 @@ case class Remainder(name: String = "remainder") extends Matcher {
   */
 case class RestOfLine(name: String = "restOfLine") extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     ???
 
   // Some(PatternMatch(null, offset, s.toString, ""))
@@ -68,6 +73,6 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
   */
 case class Reference(delegate: Matcher, name: String) extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     delegate.matchPrefix(inputState).map(m => m.copy(node = ???))
 }

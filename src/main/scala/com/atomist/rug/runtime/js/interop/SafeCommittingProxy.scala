@@ -25,6 +25,8 @@ class SafeCommittingProxy(types: Set[Typed],
   def this(t: Typed, node: TreeNode, commandRegistry: CommandRegistry = DefaultCommandRegistry) =
     this(Set(t), node, commandRegistry)
 
+  override def toString: String = s"SafeCommittingProxy around $node"
+
   private val typ = UnionType(types)
 
   import SafeCommittingProxy.MagicJavaScriptMethods
@@ -99,11 +101,15 @@ class SafeCommittingProxy(types: Set[Typed],
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       val r = node match {
         case ctn: ContainerTreeNode =>
-          ctn.childrenNamed(name)
+          val childrenAccessedThroughThisFunctionCall = ctn.childrenNamed(name)
+          childrenAccessedThroughThisFunctionCall.toList match {
+            case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
+            case head :: Nil => head
+            case more => ???
+          }
+        case _ => node
       }
-      //println(s"Calling $name")
-      // TODO consider collection returns
-      node
+      r
     }
   }
 

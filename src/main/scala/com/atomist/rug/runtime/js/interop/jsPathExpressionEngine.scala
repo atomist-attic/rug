@@ -76,7 +76,7 @@ class jsPathExpressionEngine(
       val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
       //println("Parsed matcher=" + parsedMatcher)
       matcherRegistry += parsedMatcher
-      val mg = new MatcherMicrogrammar(parsedMatcher)
+      val mg = new MatcherMicrogrammar(parsedMatcher, name)
       new MicrogrammarTypeProvider(mg)
   }
 
@@ -118,7 +118,7 @@ class jsPathExpressionEngine(
   }
 
   /**
-    * Evalute the path expression, applying a function
+    * Evaluate the path expression, applying a function
     * to each result
     *
     * @param root  node to evaluate path expression against

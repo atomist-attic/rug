@@ -42,7 +42,8 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def childNodeTypes: Set[String] = currentBackingObject.childNodeTypes
 
-  override def childrenNamed(fieldName: String): Seq[MutableView[_]] = currentBackingObject.childrenNamed(fieldName) collect {
+  override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
+    currentBackingObject.childrenNamed(fieldName) collect {
     case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
     case o: ContainerTreeNode => viewFrom(o)
     case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)
@@ -75,6 +76,7 @@ class ScalarValueView(
 
   override def value: String = originalBackingObject.value
 
+  @ExportFunction(readOnly = false, description = "Update the value of the sole key")
   override def update(to: String): Unit = setValue(to)
 
   @ExportFunction(readOnly = true, description = "Return the value of the sole key")
@@ -83,8 +85,10 @@ class ScalarValueView(
   @ExportFunction(readOnly = false, description = "Update the value of the sole key")
   def setValue(@ExportFunctionParameterDescription(name = "name",
     description = "The new value")
-               newValue: String): Unit =
+               newValue: String): Unit = {
     originalBackingObject.update(newValue)
+    commit()
+  }
 
   override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)
 

@@ -30,12 +30,11 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
     case f: FileArtifactBackedMutableView =>
       val l: Option[MatchListener] = None
-      val container = microgrammar.matchesInContainer(f.content, l)
-      val views = container.childNodes collect {
+      val views = microgrammar.findMatches(f.content, l) collect {
         case moo: MutableContainerTreeNode =>
+          f.registerUpdater(new MutableTreeNodeUpdater(moo))
           new MutableContainerMutableView(moo, f)
       }
-      f.registerUpdater(new MutableTreeNodeUpdater(container))
       Some(views)
     case _ => None
   }

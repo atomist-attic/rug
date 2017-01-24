@@ -48,15 +48,14 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     //require all the atomist stuff
     for (f <- filtered.allFiles) {
       val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
-      try{
+      try {
         engine.eval(s"exports.$varName = require('./${f.path.dropRight(3)}');") //because otherwise the loader doesn't know about the paths and can't resolve relative modules
-      }catch {
+      } catch {
         case x: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}",x)
         case x: RuntimeException => x.getCause match {
           case c: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}",c)
           case c => throw x
         }
-        case x => throw x
       }
     }
   }

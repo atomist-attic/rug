@@ -21,7 +21,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   private var _padded = false
 
-  def padded: Boolean = _padded
+  override def padded: Boolean = _padded
 
   final override def childNodes: Seq[TreeNode] = _fieldValues
 
@@ -39,17 +39,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     _padded = true
   }
 
-  /**
-    * Compile this so that we can manipulate it at will without further
-    * reference to the input string.
-    * Introduces padding objects to cover string content that isn't explained in known structures.
-    * Must be called before value method is invoked.
-    *
-    * @param initialSource entire source
-    * @param topLevel      whether this is a top level element, in which
-    *                      case we should pad after known structures
-    */
-  def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
+  override def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
 
     // Number of characters of fields to show in padding field names
     val show = 40
@@ -81,23 +71,30 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
       fv <- _fieldValues
     } {
       fv match {
-        case sm: MutableTerminalTreeNode if sm.startPosition != null && sm.startPosition.offset >= 0 && sm.startPosition.offset >= lastEndOffset =>
-          val smoffset = sm.startPosition.offset
-          if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
-          lastEndOffset = sm.endPosition.offset
-          fieldResults.append(sm)
-        case soo: AbstractMutableContainerTreeNode =>
-          try {
-            soo.pad(initialSource)
+        case sm: PositionedTreeNode if sm.initialized =>
+          // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
+          // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
+          // but that whitespace appears to be appended to the previous node maybe? because if we add those
+          // whitespace nodes here it gets doubled.
+          if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[AbstractMutableContainerTreeNode]) {
+            try {
+              sm.pad(initialSource)
+            }
+            catch {
+              case iex: IllegalArgumentException =>
+                throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $sm", iex)
+            }
+            val smoffset = sm.startPosition.offset
+            if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
+            lastEndOffset = sm.endPosition.offset
+            fieldResults.append(sm)
+          } else
+          {
+            println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
           }
-          catch {
-            case iex: IllegalArgumentException =>
-              throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $soo", iex)
-          }
-          val smoffset = soo.startPosition.offset
-          if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
-          lastEndOffset = soo.endPosition.offset
-          fieldResults.append(soo)
+        case mttn: PositionedTreeNode =>
+        // This one is not actually positioned now is it
+          ???
         case f if "".equals(f.value) =>
           // It's harmless. Keep it as it may be queried. It won't be updateable
           // Because we probably don't know where it lives.
@@ -117,18 +114,10 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
       if (content.nonEmpty) {
         val pn = PaddingTreeNode("End", content)
         fieldResults.append(pn)
-        // assertPaddingInvariants(initialSource)
       }
     }
     this._fieldValues = fieldResults
     _padded = true
-  }
-
-  private def assertPaddingInvariants(initialSource: String): Unit = {
-    val lastFieldValue = this._fieldValues.last.value
-    val endOfInput = initialSource.takeRight(_fieldValues.last.value.length.min(initialSource.length))
-    require(lastFieldValue.equals(endOfInput),
-      s"Last field value of [$lastFieldValue] does not equal end of input string, [$endOfInput]")
   }
 
   /**

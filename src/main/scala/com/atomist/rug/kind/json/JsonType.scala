@@ -31,7 +31,7 @@ class JsonType(
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
-                                   context: MutableView[_],
+                                   context: TreeNode,
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
     context match {

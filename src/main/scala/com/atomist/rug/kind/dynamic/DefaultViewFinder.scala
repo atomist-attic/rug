@@ -20,8 +20,8 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
     * Finds views, first looking at children of current scope,
     * then identifiers in scope, then global identifiers.
     */
-  override def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
-                         poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
+                         poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
 
     val fromIdentifierInScope: Option[Seq[MutableView[_]]] = identifierMap.get(selected.kind).flatMap(typ => {
       logger.debug(s"Getting type '${selected.kind}' from $typ")
@@ -60,7 +60,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
       }
     })
 
-    val childOfCurrentContext: Option[Seq[MutableView[_]]] =
+    val childOfCurrentContext: Option[Seq[TreeNode]] =
       if (context.childNodeTypes.contains(selected.kind))
         Some(context.childrenNamed(selected.kind).collect {
           case mv: MutableView[_] => mv
@@ -71,7 +71,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         })
       else None
 
-    val fromGlobalTypes: Option[Seq[MutableView[_]]] =
+    val fromGlobalTypes: Option[Seq[TreeNode]] =
       typeRegistry.findByName(selected.kind) flatMap {
         case t: Type =>
           t.findIn(rugAs, selected, context, poa, identifierMap)

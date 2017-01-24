@@ -10,6 +10,7 @@ import com.atomist.rug.kind.dynamic.ViewFinder
 import com.atomist.rug.parser.{Computation, DoStep, With}
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
 
 /**
   * A Rug predicate enables use of Rug matching and navigation syntax to return true/false results.
@@ -54,7 +55,7 @@ class RugDrivenProjectPredicate(
                                        withBlock: With,
                                        poa: ProjectOperationArguments,
                                        identifierMap: Map[String, Object],
-                                       t: MutableView[_]): PartialFunction[DoStep, Object] = {
+                                       t: TreeNode): PartialFunction[DoStep, Object] = {
     case _ =>
       reviewContext.comment(ReviewComment("anything will do", Severity.FINE))
       null

@@ -82,8 +82,8 @@ trait RugOperationSupport extends LazyLogging {
   }
 
   protected def buildIdentifierMap(
-                                   context: Object,
-                                   poa: ProjectOperationArguments): Map[String, Object] = {
+                                    context: Object,
+                                    poa: ProjectOperationArguments): Map[String, Object] = {
     val idm = RugOperationSupport.poaToIdentifierMap(parameters, poa)
     val compMap = computationsMap(poa, targetAlias = "x", context, identifiersAlreadyResolved = idm)
     idm ++ compMap ++ wellKnownIdentifiers
@@ -93,8 +93,8 @@ trait RugOperationSupport extends LazyLogging {
     * Return expanded parameters we can pass to other operations. We must include our computations.
     */
   protected def parametersForOtherOperation(
-                                            roo: RunOtherOperation,
-                                            poa: ProjectOperationArguments) = {
+                                             roo: RunOtherOperation,
+                                             poa: ProjectOperationArguments) = {
     val context = null
     val idm = buildIdentifierMap(context, poa)
     val params: Seq[ParameterValue] = (idm.collect {
@@ -113,11 +113,11 @@ trait RugOperationSupport extends LazyLogging {
     * Return the computed values (assignments) for this operation
     */
   protected def computationsMap(
-                                poa: ProjectOperationArguments,
-                                targetAlias: String = "p",
-                                context: Object,
-                                reviewContext: ReviewContext = null,
-                                identifiersAlreadyResolved: Map[String, Object]): Map[String, Object] = {
+                                 poa: ProjectOperationArguments,
+                                 targetAlias: String = "p",
+                                 context: Object,
+                                 reviewContext: ReviewContext = null,
+                                 identifiersAlreadyResolved: Map[String, Object]): Map[String, Object] = {
     // We need to keep adding to this as we go
     var knownIdentifiers = identifiersAlreadyResolved
     computations.map {
@@ -132,7 +132,7 @@ trait RugOperationSupport extends LazyLogging {
                                       selected: Selected,
                                       as: ArtifactSource,
                                       reviewContext: ReviewContext,
-                                      context: MutableView[_],
+                                      context: TreeNode,
                                       poa: ProjectOperationArguments,
                                       identifierMap: Map[String, Object]): Object = {
     val views = findViews(rugAs, selected, context, poa, identifierMap)
@@ -145,7 +145,11 @@ trait RugOperationSupport extends LazyLogging {
             runDoStep(rugAs, as, reviewContext, w, step, poa, idm, v)
           }
           )
-          v.commit()
+          v match {
+            case mv: MutableView[_] =>
+              mv.commit()
+            case _ =>
+          }
         }
         context
     }
@@ -153,16 +157,11 @@ trait RugOperationSupport extends LazyLogging {
 
   private def findViews(rugAs: ArtifactSource,
                         selected: Selected,
-                        context: MutableView[_],
+                        context: TreeNode,
                         poa: ProjectOperationArguments,
-                        identifierMap: Map[String, Object]): Seq[MutableView[_]] = {
+                        identifierMap: Map[String, Object]): Seq[TreeNode] = {
     val vo = viewFinder.findIn(rugAs, selected, context, poa, identifierMap)
     vo.getOrElse {
-      context.currentBackingObject match {
-        case fmv: TreeNode =>
-          println(TreeNodeUtils.toShortString(fmv))
-        case _ =>
-      }
       throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $viewFinder")
     }
   }
@@ -174,7 +173,7 @@ trait RugOperationSupport extends LazyLogging {
                         step: DoStep,
                         poa: ProjectOperationArguments,
                         identifierMap: Map[String, Object],
-                        t: MutableView[_]): Object = {
+                        t: TreeNode): Object = {
     doStepHandler(rugAs, as, reviewContext, withBlock, poa, identifierMap, t)
       .apply(step)
   }
@@ -188,8 +187,8 @@ trait RugOperationSupport extends LazyLogging {
                               withBlock: With,
                               poa: ProjectOperationArguments,
                               identifierMap: Map[String, Object],
-                              t: MutableView[_]): PartialFunction[DoStep, Object] =
-  withOrFunctionDoStepHandler(rugAs, as, reviewContext, withBlock, poa, identifierMap, t)
+                              t: TreeNode): PartialFunction[DoStep, Object] =
+    withOrFunctionDoStepHandler(rugAs, as, reviewContext, withBlock, poa, identifierMap, t)
 
   /**
     * Well known do step handler subclasses will probably use via orElse in a custom doStepHandler.
@@ -200,9 +199,12 @@ trait RugOperationSupport extends LazyLogging {
                                             withBlock: With,
                                             poa: ProjectOperationArguments,
                                             identifierMap: Map[String, Object],
-                                            context: MutableView[_]): PartialFunction[DoStep, Object] = {
+                                            context: TreeNode): PartialFunction[DoStep, Object] = {
     case fi: FunctionInvocation =>
-      context.evaluator.evaluate(fi, as, reviewContext, context, withBlock.alias, identifierMap, poa)
+      context match {
+        case mv: MutableView[_] =>
+          mv.evaluator.evaluate(fi, as, reviewContext, context, withBlock.alias, identifierMap, poa)
+      }
     case w: WithDoStep =>
       executedSelectedBlock(rugAs, w.wth, as, reviewContext, context, poa, identifierMap)
   }
@@ -230,14 +232,14 @@ trait RugOperationSupport extends LazyLogging {
     case a: RugRuntimeException if a.getCause.isInstanceOf[BadRugSyntaxException] =>
       val bre = a.getCause.asInstanceOf[BadRugSyntaxException]
       val detailedDescription =
-         s"""While trying to parse:
-            |${bre.info.badInput}
-            |
+        s"""While trying to parse:
+           |${bre.info.badInput}
+           |
             |I encountered this error:
-            |${a.getMessage}
+           |${a.getMessage}
            """.stripMargin
       FailedModificationAttempt(detailedDescription, Some(a))
-    case nie : NotImplementedError =>
+    case nie: NotImplementedError =>
       FailedModificationAttempt(s"NotImplementedError: ??? encountered while running ${roo.name}", Some(nie))
     case other =>
       other.printStackTrace()

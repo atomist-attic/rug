@@ -5,6 +5,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.parser._
 import com.atomist.rug.spi.MutableView
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
 import org.springframework.util.ObjectUtils
 
 /**
@@ -14,15 +15,17 @@ trait ChildResolver {
 
   /**
     * The set of node types this can resolve from
+    *
     * @return set of node types this can resolve from
     */
   def resolvesFromNodeTypes: Set[String]
 
   /**
     * Find all in this context
+    *
     * @param context
     */
-  def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]]
+  def findAllIn(context: TreeNode): Option[Seq[TreeNode]]
 }
 
 /**
@@ -31,7 +34,7 @@ trait ChildResolver {
   */
 trait ContextlessViewFinder extends ViewFinder with ChildResolver {
 
-  override final def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] =
+  override final def findAllIn(context: TreeNode): Option[Seq[TreeNode]] =
     findAllIn(null, null, context, null, null)
 }
 
@@ -43,9 +46,9 @@ trait ViewFinder {
   final def findIn(
                     rugAs: ArtifactSource,
                     selected: Selected,
-                    context: MutableView[_],
+                    context: TreeNode,
                     poa: ProjectOperationArguments,
-                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+                    identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
     try {
       findAllIn(rugAs, selected, context, poa, identifierMap)
         .map(_.filter(v => invokePredicate(rugAs, poa, identifierMap, selected.predicate, selected.alias, v))
@@ -53,10 +56,11 @@ trait ViewFinder {
     }
     catch {
       case npe: NullPointerException =>
-        val msg = s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
-                      | The context is: $context
-                      | This is what is available: ${findAllIn(rugAs, selected, context, poa, identifierMap)}
-                      |"""
+        val msg =
+          s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
+             | The context is: $context
+             | This is what is available: ${findAllIn(rugAs, selected, context, poa, identifierMap)}
+             |"""
         throw new RugRuntimeException(null, msg, npe)
     }
   }
@@ -64,16 +68,16 @@ trait ViewFinder {
   protected def findAllIn(
                            rugAs: ArtifactSource,
                            selected: Selected,
-                           context: MutableView[_],
+                           context: TreeNode,
                            poa: ProjectOperationArguments,
-                           identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]]
+                           identifierMap: Map[String, Object]): Option[Seq[TreeNode]]
 
   def invokePredicate(rugAs: ArtifactSource,
                       poa: ProjectOperationArguments,
                       identifierMap: Map[String, Object],
                       predicate: Predicate,
                       targetAlias: String,
-                      v: MutableView[_]): Boolean = {
+                      v: TreeNode): Boolean = {
     predicate match {
       case and: AndExpression =>
         invokePredicate(rugAs, poa, identifierMap, and.a, targetAlias, v) &&
@@ -84,11 +88,17 @@ trait ViewFinder {
       case not: NotExpression =>
         !invokePredicate(rugAs, poa, identifierMap, not.inner, targetAlias, v)
       case eq: EqualsExpression =>
-        val l = v.evaluator.evaluate[MutableView[_], Object](eq.a, null, null, v, targetAlias, identifierMap, poa)
-        val r = v.evaluator.evaluate[MutableView[_], Object](eq.b, null, null, v, targetAlias, identifierMap, poa)
-        ObjectUtils.nullSafeEquals(l, r)
+        v match {
+          case v: MutableView[_] =>
+            val l = v.evaluator.evaluate[MutableView[_], Object](eq.a, null, null, v, targetAlias, identifierMap, poa)
+            val r = v.evaluator.evaluate[MutableView[_], Object](eq.b, null, null, v, targetAlias, identifierMap, poa)
+            ObjectUtils.nullSafeEquals(l, r)
+        }
       case _ =>
-        v.evaluator.evaluate[MutableView[_], Boolean](predicate, null, null, v, targetAlias, identifierMap, poa)
+        v match {
+          case v: MutableView[_] =>
+            v.evaluator.evaluate[MutableView[_], Boolean](predicate, null, null, v, targetAlias, identifierMap, poa)
+        }
     }
   }
 

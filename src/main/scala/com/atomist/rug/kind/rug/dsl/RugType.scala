@@ -6,6 +6,7 @@ import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.tree.TreeNode
 
 class EditorType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
@@ -14,7 +15,7 @@ class EditorType(evaluator: Evaluator) extends Type(evaluator) with Reflectively
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
-                                   context: MutableView[_],
+                                   context: TreeNode,
                                    poa: ProjectOperationArguments,
                                    identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] =
     context match {

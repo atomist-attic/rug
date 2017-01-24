@@ -1,7 +1,5 @@
 package com.atomist.rug.kind.core
 
-import java.util
-
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -77,7 +75,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
   it should "get simple project name with file system backed artifact" in {
     val as = ParsingTargets.NewStartSpringIoProject
-    as.isInstanceOf[FileSystemArtifactSource] should be (true)
+    as.isInstanceOf[FileSystemArtifactSource] should be(true)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), as)
     pmv.name should equal("demo")
   }
@@ -114,7 +112,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.currentBackingObject.findFile(newContentDir + "/" + static1.path).get.content should equal(static1.content)
     pmv.currentBackingObject.findFile(expectedPath).get.content should equal(FirstExpected)
     pmv.dirty should be(true)
-    pmv.changeLogEntries should be (empty)
+    pmv.changeLogEntries should be(empty)
     pmv.changeCount should be(1)
   }
 
@@ -142,19 +140,19 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
       FirstPoa, Nil)
     pmv.merge(templatePath, mergeOutputPath, ic)
-    pmv.currentBackingObject.totalFileCount should be (1)
-    pmv.currentBackingObject.cachedDeltas.size should be (1)
-    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
-    pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) should be (true)
+    pmv.currentBackingObject.totalFileCount should be(1)
+    pmv.currentBackingObject.cachedDeltas.size should be(1)
+    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal("content")
+    pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) should be(true)
 
     pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = copyInputDir, destinationPath = copyOutputDir)
-    pmv.fileCount should be (2)
-    pmv.currentBackingObject.cachedDeltas.size should be (3)
-    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal ("content")
-    pmv.currentBackingObject.findFile(copyOutputPath).get.content should equal ("file content")
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == mergeOutputPath) should be (true)
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputDir) should be (true)
-    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputPath) should be (true)
+    pmv.fileCount should be(2)
+    pmv.currentBackingObject.cachedDeltas.size should be(3)
+    pmv.currentBackingObject.findFile(mergeOutputPath).get.content should equal("content")
+    pmv.currentBackingObject.findFile(copyOutputPath).get.content should equal("file content")
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == mergeOutputPath) should be(true)
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputDir) should be(true)
+    pmv.currentBackingObject.cachedDeltas.exists(_.path == copyOutputPath) should be(true)
   }
 
   it should "add two entries to change log" in {
@@ -166,7 +164,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.describeChange("Added valid program in emoji programming language, which will be exclusively " +
       "used by everyone born after 2005")
     pmv.dirty should be(true)
-    pmv.changeLogEntries.size should be (2)
+    pmv.changeLogEntries.size should be(2)
     pmv.changeCount should be(2)
   }
 
@@ -177,9 +175,9 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), asToEdit)
     pmv.countFilesInDirectory("src") should be(1)
     pmv.countFilesInDirectory("xxx") should be(0)
-    pmv.changeCount should be (0)
-    pmv.dirty should be (false)
-    pmv.changeLogEntries.isEmpty should be (true)
+    pmv.changeCount should be(0)
+    pmv.dirty should be(false)
+    pmv.changeLogEntries.isEmpty should be(true)
   }
 
   it should "copy files under dir preserving path" in {
@@ -329,17 +327,18 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   }
 
   it should "move a file so that it's not found at its former address" in
-    moveAFileAndVerifyNotFoundAtFormerAddress(pmv => ())
+    moveAFileAndVerifyNotFoundAtFormerAddress(_ => ())
 
   it should "move a file so that it's not found at its former address even after adding another file" in
-    moveAFileAndVerifyNotFoundAtFormerAddress(pmv => {
-      pmv.addFile("some/path", "This is what I want you to put in. Am I Wrong??")
-    })
+    moveAFileAndVerifyNotFoundAtFormerAddress(_.addFile("some/path", "This is what I want you to put in. Am I Wrong??"))
+
+  it should "move an executable file so that it's not found at its former address even after adding another file" in
+    moveAFileAndVerifyNotFoundAtFormerAddress(_.addExecutableFile("some/path", "This is what I want you to put in. Am I Wrong??"))
 
   it should "expose the backing archive as a PMV" in {
     val src1 = StringFileArtifact(".atomist/package.json", "{}}")
     val backingObject = SimpleFileBasedArtifactSource(src1)
-    val pmv = new ProjectMutableView(backingObject,EmptyArtifactSource(""))
+    val pmv = new ProjectMutableView(backingObject, EmptyArtifactSource(""))
     pmv.countFilesInDirectory(".atomist") should be(0)
     val backingPMV = pmv.backingArchiveProject
     backingPMV.countFilesInDirectory(".atomist") should be(1)

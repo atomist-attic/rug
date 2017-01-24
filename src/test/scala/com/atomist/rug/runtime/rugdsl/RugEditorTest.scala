@@ -27,7 +27,7 @@ object RugEditorTest {
       |  begin
       |    do addFile dsf "Probation"
       |    with File f when { !p.fileExists("README") }
-      |      do p.addFile "README" "A Pledge Pin!"
+      |      do p.addExecutableFile "README" "A Pledge Pin!"
       |  end
     """.stripMargin
 

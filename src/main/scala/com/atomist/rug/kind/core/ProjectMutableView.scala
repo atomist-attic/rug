@@ -201,18 +201,23 @@ class ProjectMutableView(
     updateTo(moved)
   }
 
-  @ExportFunction(readOnly = false,
-    description = "Add the given file to the project. Path can contain /s. Content is a literal string")
-  def addFile(@ExportFunctionParameterDescription(name = "path",
-    description = "The path to use")
-              path: String,
+  @ExportFunction(readOnly = false, description = "Add the given file to the project. Path can contain /s. Content is a literal string")
+  def addFile(@ExportFunctionParameterDescription(name = "path", description = "The path to use") path: String,
               @ExportFunctionParameterDescription(name = "content",
-                description = "The content to be placed in the new file")
-              content: String): Unit = {
+                description = "The content to be placed in the new file") content: String): Unit =
+    addFile(path, content, FileArtifact.DefaultMode)
+
+  @ExportFunction(readOnly = false, description = "Add the given executable file to the project. Path can contain /s. Content is a literal string")
+  def addExecutableFile(@ExportFunctionParameterDescription(name = "path", description = "The path to use") path: String,
+                        @ExportFunctionParameterDescription(name = "content",
+                          description = "The content to be placed in the new file") content: String): Unit =
+    addFile(path, content, FileArtifact.ExecutableMode)
+
+  private def addFile(path: String, content: String, mode: Int): Unit = {
     val desiredContent = content.replace("\\n", Properties.lineSeparator)
     val exactSameFileIsAlreadyThere = currentBackingObject.findFile(path).exists(_.content == desiredContent)
     if (!exactSameFileIsAlreadyThere) {
-      updateTo(currentBackingObject + StringFileArtifact(path, desiredContent))
+      updateTo(currentBackingObject + StringFileArtifact(path, desiredContent, mode, None))
     }
   }
 

@@ -23,12 +23,13 @@ trait Matcher {
     * @param inputState input state
     * @return match or failure to match
     */
-  def matchPrefixInternal(inputState: InputState): Option[PatternMatch]
+  protected def matchPrefixInternal(inputState: InputState): Option[PatternMatch]
 
-  def matchPrefix(is: InputState) = {
+  final def matchPrefix(is: InputState) = {
     val matchedOption = matchPrefixInternal(is)
 
-    for (matched <- matchedOption; node <- matched.node) {
+    for {matched <- matchedOption
+         node <- matched.node} {
         node.addType(name)
     }
     matchedOption

@@ -88,9 +88,9 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
             if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
             lastEndOffset = sm.endPosition.offset
             fieldResults.append(sm)
-          } else
-          {
-            println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
+          }
+          else {
+            //println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
           }
         case mttn: PositionedTreeNode =>
         // This one is not actually positioned now is it

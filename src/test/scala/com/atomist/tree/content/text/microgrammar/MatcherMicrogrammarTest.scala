@@ -508,8 +508,12 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     val m = printlns.findMatches(input)
     m.size should be(3)
-    println(TreeNodeUtils.toShortString(m.head))
+    //println(TreeNodeUtils.toShortString(m.head))
     m.head.value should be (p1)
+    val newThing = s"""/* $p1 */"""
+    m.head.update(newThing)
+    m.head.dirty should be (true)
+    m.head.value should be (newThing)
   }
 
   protected def thingGrammar: MatcherMicrogrammar = {

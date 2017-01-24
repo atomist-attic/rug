@@ -6,7 +6,7 @@ import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
-import com.atomist.rug.runtime.js.interop.{ContextMatch, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsPathExpressionEngine}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpression, PathExpressionParser}
@@ -54,7 +54,7 @@ class JavaScriptEventHandler(
     pexe.ee.evaluate(root, pathExpression, DefaultTypeRegistry, Some(np)) match {
       case Right(Nil) =>
       case Right(matches) =>
-        val cm = ContextMatch(
+        val cm = jsContextMatch(
           targetNode,
           pexe.wrap(matches),
           s2,
@@ -66,7 +66,7 @@ class JavaScriptEventHandler(
     }
   }
 
-  protected def invokeHandlerFunction(e: SystemEvent, cm: ContextMatch): Object = {
+  protected def invokeHandlerFunction(e: SystemEvent, cm: jsContextMatch): Object = {
     handlerFunction.call("apply", cm)
   }
 }

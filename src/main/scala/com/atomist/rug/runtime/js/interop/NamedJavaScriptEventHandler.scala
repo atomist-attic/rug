@@ -44,7 +44,7 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, DefaultTypeRegistry, Some(np)) match {
       case Right(Nil) =>
       case Right(matches) =>
-        val cm = ContextMatch(
+        val cm = jsContextMatch(
           targetNode,
           ctx.pathExpressionEngine.wrap(matches),
           s2,
@@ -57,7 +57,7 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
     }
   }
 
-  override protected def invokeHandlerFunction(e: SystemEvent, cm: ContextMatch): Object = {
+  override protected def invokeHandlerFunction(e: SystemEvent, cm: jsContextMatch): Object = {
     handlerFunction.call(thiz, Event(cm))
   }
 
@@ -130,6 +130,6 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
   *
   * @param cm the root node in the tree
   */
-case class Event(cm: ContextMatch) {
+case class Event(cm: jsContextMatch) {
   def child: TreeNode = cm.root.asInstanceOf[TreeNode]
 }

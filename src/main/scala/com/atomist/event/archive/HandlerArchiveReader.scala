@@ -9,7 +9,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.kind.service.MessageBuilder
 import com.atomist.rug.runtime.js.JavaScriptHandlerFinder
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, ModelBackedAtomistFacade}
+import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsModelBackedAtomistFacade}
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -36,7 +36,7 @@ class HandlerArchiveReader(
                 namespace: Option[String],
                 knownOperations: Seq[ProjectOperation] = Nil,
                 messageBuilder: MessageBuilder): Seq[SystemEventHandler] = {
-    val atomist = new ModelBackedAtomistFacade(teamId, messageBuilder, treeMaterializer)
+    val atomist = new jsModelBackedAtomistFacade(teamId, messageBuilder, treeMaterializer)
     JavaScriptHandlerFinder.registerHandlers(rugArchive, atomist)
     val handlers = atomist.handlers
     if (handlers.nonEmpty) {

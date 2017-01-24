@@ -5,7 +5,7 @@ import java.util.Collections
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.{AtomistFacade, Match, NamedJavaScriptEventHandlerTest, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.{AtomistFacade, jsMatch, NamedJavaScriptEventHandlerTest, jsPathExpressionEngine}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -63,7 +63,7 @@ object TestAtomistFacade extends AtomistFacade {
   def on(s: String, handler: Any): Unit = {
     handler match {
       case som: ScriptObjectMirror =>
-        val arg = Match(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())
+        val arg = jsMatch(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())
         val args = Seq(arg)
         som.call("apply", args:_*)
     }

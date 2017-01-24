@@ -13,9 +13,9 @@ import scala.collection.mutable.ListBuffer
 /**
   * AtomistFacade for a given team.
   */
-class ModelBackedAtomistFacade(val teamId: String,
-                               val messageBuilder: MessageBuilder,
-                               override val treeMaterializer: TreeMaterializer)
+class jsModelBackedAtomistFacade(val teamId: String,
+                                 val messageBuilder: MessageBuilder,
+                                 override val treeMaterializer: TreeMaterializer)
   extends AtomistFacade {
 
   private val _handlers = ListBuffer.empty[SystemEventHandler]

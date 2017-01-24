@@ -29,7 +29,7 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class Match(root: Object, matches: _root_.java.util.List[Object])
+case class jsMatch(root: Object, matches: _root_.java.util.List[Object])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -91,7 +91,7 @@ class jsPathExpressionEngine(
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: Object, pe: Object): Match = {
+  def evaluate(root: Object, pe: Object): jsMatch = {
     val parsed: PathExpression = pe match {
       case som: ScriptObjectMirror =>
         // Examine a JavaScript object passed to us. It's probably a
@@ -105,10 +105,10 @@ class jsPathExpressionEngine(
     val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
-        val m = Match(root, wrap(nodes))
+        val m = jsMatch(root, wrap(nodes))
         m
       case Left(_) =>
-        Match(root, Collections.emptyList())
+        jsMatch(root, Collections.emptyList())
     }
   }
 

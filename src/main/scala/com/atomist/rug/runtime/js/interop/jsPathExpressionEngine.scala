@@ -76,7 +76,7 @@ class jsPathExpressionEngine(
       val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
       //println("Parsed matcher=" + parsedMatcher)
       matcherRegistry += parsedMatcher
-      val mg = new MatcherMicrogrammar(parsedMatcher)
+      val mg = new MatcherMicrogrammar(parsedMatcher, name)
       new MicrogrammarTypeProvider(mg)
   }
 

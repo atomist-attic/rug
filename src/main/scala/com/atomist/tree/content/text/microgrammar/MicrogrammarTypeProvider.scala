@@ -33,9 +33,10 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
       val yay = microgrammar.findMatches(f.content, l)
       val views = yay collect {
         case moo: MutableContainerTreeNode =>
+          f.registerUpdater(new MutableTreeNodeUpdater(moo))
           new MutableContainerMutableView(moo, f)
       }
-   //   f.registerUpdater(new MutableTreeNodeUpdater(container))
+
       Some(views)
     case _ => None
   }

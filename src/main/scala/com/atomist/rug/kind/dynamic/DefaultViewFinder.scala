@@ -31,9 +31,10 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           val ms = mg.findMatches(f.content, l)
           val views = ms collect {
             case moo: MutableContainerTreeNode =>
+              f.registerUpdater(new MutableTreeNodeUpdater(moo))
               new MutableContainerMutableView(moo, f)
           }
-        //  f.registerUpdater(new MutableTreeNodeUpdater(container)) does this matter?? are updates tested??
+      //   f.registerUpdater(new MutableTreeNodeUpdater(container)) does this matter?? can I do it individually?
           Some(views)
         case (pex: PathExpression, m: MutableView[_]) =>
           // TODO cache this

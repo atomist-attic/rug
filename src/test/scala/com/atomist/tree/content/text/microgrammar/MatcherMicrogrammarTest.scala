@@ -12,7 +12,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   import Literal._
 
   it should "parse and update complete match" in {
-    val g = thingGrammar
+    val g: MatcherMicrogrammar = thingGrammar
     val input = "This is a test"
     val m = g.strictMatch(input)
     m.count should be >= 1
@@ -30,7 +30,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
 
   it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
-    matches.count should be >= 2
+    matches.count should be (1)
     matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
@@ -40,6 +40,12 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
         sm.value should equal("19")
     }
   }
+
+  /**
+    * Match all input, which must exactly match input.
+    */
+
+
 
   it should "parse 1 match of 2 parts in whole string and replace both keys" in {
     val g = aWasaB
@@ -145,6 +151,23 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
 
   it should "parse 1 scala method with repsep parameters" in
     matchScalaMethodHeaderUsing(matchScalaMethodHeaderRepsep)
+
+  //  IDENTIFIER : [a-zA-Z0-9]+;
+  //  LPAREN : '(';
+  //  RPAREN : ')';
+  //  param_def : name=IDENTIFIER ':' type=IDENTIFIER;
+  //  params : param_def (',' param_def)*;
+  //  method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
+  protected def matchScalaMethodHeaderRepsep: Microgrammar = {
+    val identifier = Regex("identifier", "[a-zA-Z0-9]+")
+    val paramDef = Wrap(
+      identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type"),
+      "param_def")
+    val params = Repsep(paramDef, ",", "params")
+    val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~?
+      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(name = "type")
+    new MatcherMicrogrammar(method)
+  }
 
   private def matchScalaMethodHeaderUsing(mg: Microgrammar, ml: Option[MatchListener] = None) {
     val input =
@@ -489,7 +512,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     m.head.value should be (p1)
   }
 
-  protected def thingGrammar: Microgrammar = {
+  protected def thingGrammar: MatcherMicrogrammar = {
     val matcher = Regex("thing", ".*")
     new MatcherMicrogrammar(matcher)
   }
@@ -499,27 +522,12 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     new MatcherMicrogrammar(field)
   }
 
-  protected def aWasaB: Microgrammar =
+  protected def aWasaB: MatcherMicrogrammar =
     new MatcherMicrogrammar(
       Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+")
     )
 
-//  IDENTIFIER : [a-zA-Z0-9]+;
-//  LPAREN : '(';
-//  RPAREN : ')';
-//  param_def : name=IDENTIFIER ':' type=IDENTIFIER;
-//  params : param_def (',' param_def)*;
-//  method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
-protected def matchScalaMethodHeaderRepsep: Microgrammar = {
-    val identifier = Regex("identifier", "[a-zA-Z0-9]+")
-    val paramDef = Wrap(
-      identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type"),
-      "param_def")
-    val params = Repsep(paramDef, ",", "params")
-    val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~?
-      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(name = "type")
-    new MatcherMicrogrammar(method)
-  }
+
 
   protected def matchAnnotatedJavaFields: Microgrammar = {
     val visibility: Matcher = "public" | "private"

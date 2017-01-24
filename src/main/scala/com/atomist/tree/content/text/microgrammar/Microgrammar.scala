@@ -24,11 +24,6 @@ trait Microgrammar {
   def findMatches(input: CharSequence, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
 
   /**
-    * Match all input, which must exactly match input.
-    */
-  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode
-
-  /**
     * Return a single container object holding all matches.
     */
   def matchesInContainer(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode = {

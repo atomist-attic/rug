@@ -294,8 +294,9 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
         case suc: Success[T @unchecked] =>
           // Only update positions if they're not already updated
           if (suc.result.startPosition == null || suc.result.endPosition == null) {
-            suc.result.startPosition = LineHoldingOffsetInputPosition(in.source, start)
-            suc.result.endPosition = LineHoldingOffsetInputPosition(in.source, suc.next.offset)
+            val inputString = in.source.toString
+            suc.result.startPosition = LineHoldingOffsetInputPosition(inputString, start)
+            suc.result.endPosition = LineHoldingOffsetInputPosition(inputString, suc.next.offset)
           }
           suc
         case x => x

@@ -45,11 +45,11 @@ case class OffsetInputPosition(offset: Int) extends InputPosition {
   override def toString = show
 }
 
-case class LineHoldingOffsetInputPosition(input: CharSequence, offset: Int) extends InputPosition {
+case class LineHoldingOffsetInputPosition(input: String, offset: Int) extends InputPosition {
 
   require(offset >= 0, s"Offset must be >= 0, had $offset")
 
-  override def show: String = s"${input.subSequence(0, offset)}  HERE [${input.subSequence(offset, input.length)}] : offset=$offset"
+  override def show: String = s"${input.take(offset)}  HERE [${input.drop(offset)}] : offset=$offset"
 
   override def toString = show
 }

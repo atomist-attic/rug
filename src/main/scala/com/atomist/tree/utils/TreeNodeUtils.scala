@@ -14,7 +14,7 @@ object TreeNodeUtils {
     * @param s
     * @return
     */
-  def inlineReturns(s: CharSequence): String = s.toString.replace("\n", "ø")
+  def inlineReturns(s: String): String = s.replace("\n", "ø")
 
   /**
     * Return a directory tree like representation of the node, using newlines and tabs

@@ -31,7 +31,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     outputNode(input)(nodes.head._1)
   }
 
-  private [microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = LineHoldingOffsetInputPosition(input, 0)) = {
+  private [microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = OffsetInputPosition(0)) = {
     val endOffset = startOffset + matchFound.matched.length
     val matchedNode = matchFound.node match {
       case None =>
@@ -41,13 +41,13 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
       case Some(container: MutableContainerTreeNode) =>
         new MicrogrammarNode(name, name, container.childNodes, startOffset, endOffset)
     }
-    matchedNode.pad(input, padAtBeginning = true)
+    matchedNode.pad(input.toString)
     transform(matchedNode)
   }
 
 
-  private[microgrammar] def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]): Seq[(PatternMatch, LineHoldingOffsetInputPosition)] = {
-    val matches = ListBuffer.empty[(PatternMatch, LineHoldingOffsetInputPosition)]
+  private[microgrammar] def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]): Seq[(PatternMatch, OffsetInputPosition)] = {
+    val matches = ListBuffer.empty[(PatternMatch, OffsetInputPosition)]
     var is = InputState(input)
     while (!is.exhausted) {
       matcher.matchPrefix(is) match {
@@ -57,7 +57,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
           listeners.foreach(l => matchFound.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })
-          val thisStartedAt = LineHoldingOffsetInputPosition(input, is.offset)
+          val thisStartedAt = OffsetInputPosition(is.offset)
           matches.append(matchFound -> thisStartedAt)
           is = matchFound.resultingInputState
       }

@@ -72,9 +72,10 @@ class MutableContainerMutableView(
   @ExportFunction(readOnly = false, description = "Update the whole value")
   def update(newValue: String): Unit = {
     originalBackingObject match {
-      case msoo: SimpleMutableContainerTreeNode =>
+      case msoo: MutableTreeNode =>
         msoo.update(newValue)
         //println(s"Updated to $msoo")
+      case other => throw new Exception(s"waaah I don't know what to do with a ${other}")
     }
     require(dirty)
     parent.commit()

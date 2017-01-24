@@ -81,9 +81,6 @@ class MutableContainerMutableView(
     parent.commit()
   }
 
-  @ExportFunction(readOnly = false, description = "Update the whole value")
-  def setValue(to: String) = update(to)
-
   override protected def viewFrom(o: ContainerTreeNode): ContainerTreeNodeView[_] = o match {
     case suov: MutableContainerTreeNode => new MutableContainerMutableView(suov, this)
     case _ => super.viewFrom(o)

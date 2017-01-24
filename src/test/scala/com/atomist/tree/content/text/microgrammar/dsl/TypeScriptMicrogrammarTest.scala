@@ -26,7 +26,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
       |
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
-      |        n.setValue('Foo bar')
+      |        n.update('Foo bar')
       |      })
       |    }
       |  }
@@ -52,7 +52,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
-      |        n.setValue('Foo bar')
+      |        n.update('Foo bar')
       |      })
       |    }
       |  }
@@ -77,7 +77,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TreeNode>(project, "//File()/method()/type()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.setValue(n.value() + "_x")
+      |        n.update(n.value() + "_x")
       |      })
       |    }
       |  }
@@ -102,7 +102,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.setValue(n.type().value() + "_x")
+      |        n.update(n.type().value() + "_x")
       |      })
       |    }
       |  }

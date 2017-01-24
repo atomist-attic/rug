@@ -30,7 +30,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
 
   it should "parse 1 match of 2 parts in whole string" in {
     val matches = aWasaB.strictMatch("Henry was aged 19")
-    matches.count should be (1)
+    matches.count should be (2)
     matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")

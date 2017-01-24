@@ -14,6 +14,8 @@ trait Positioned {
   */
 trait PositionedTreeNode extends TreeNode with Positioned {
 
+  def initialized: Boolean = startPosition != null && startPosition.offset >= 0
+
   def padded: Boolean
 
   /**

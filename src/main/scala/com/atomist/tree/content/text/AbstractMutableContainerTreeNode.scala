@@ -71,7 +71,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
       fv <- _fieldValues
     } {
       fv match {
-        case sm: PositionedTreeNode if sm.startPosition != null && sm.startPosition.offset >= 0 =>
+        case sm: PositionedTreeNode if sm.initialized =>
           // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
           // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
           // but that whitespace appears to be appended to the previous node maybe? because if we add those

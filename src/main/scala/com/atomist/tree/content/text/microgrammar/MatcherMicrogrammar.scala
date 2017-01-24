@@ -24,8 +24,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     processedNodes
   }
 
-  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode =
-  {
+  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode = {
     val nodes = findMatchesInternal(input, l)
     require(nodes.size == 1, s"Expected 1 result, not ${nodes.size}")
     outputNode(input)(nodes.head._1)

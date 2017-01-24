@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
@@ -32,7 +33,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     processedNodes.foreach(n => n.addType(MicrogrammarNode.MicrogrammarNodeType))
     processedNodes.foreach {
       case amut: AbstractMutableContainerTreeNode =>
-        amut.pad(input.toString)
+        amut.pad(input.toString, padAtBeginning = true)
       case _ =>
     }
     rawNodes.zip(processedNodes).foreach {
@@ -46,7 +47,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     //println(s"Before transform, node=\n${TreeNodeUtils.toShortString(n)}")
     n match {
       case mctn: AbstractMutableContainerTreeNode =>
-        mctn.pad(input)
+        mctn.pad(input, padAtBeginning = true)
         transform(mctn)
       case mctn: MutableContainerTreeNode =>
         transform(mctn)
@@ -67,6 +68,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     val nodes = ListBuffer.empty[PatternMatch.MatchedNode]
     var is = InputState(input)
     while (!is.exhausted) {
+      val thisStartedAt = LineHoldingOffsetInputPosition(input, is.offset)
       matcher.matchPrefix(is) match {
         case None =>
           is = is.advance
@@ -74,6 +76,15 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
           listeners.foreach(l => matchFound.node collect {
             case ctn: ContainerTreeNode => l.onMatch(ctn)
           })
+        val matchedNode = matchFound.node match {
+           case None =>
+             new MutableTerminalTreeNode("matcher name goes here", matchFound.matched, thisStartedAt)
+           case Some(one: MutableTerminalTreeNode) =>
+             new SimpleMutableContainerTreeNode("matcher name goes here", Seq(one), thisStartedAt, LineHoldingOffsetInputPosition(input, is.offset + matchFound.matched.length))
+           case Some(container: MutableContainerTreeNode) =>
+             new SimpleMutableContainerTreeNode("matcher name goes here", container.childNodes.map(_.asInstanceOf[MatchedNode]), thisStartedAt, LineHoldingOffsetInputPosition(input, is.offset + matchFound.matched.length))
+         }
+          matchedNode.pad(input, padAtBeginning = true)
           matchFound.node.foreach(n => nodes.append(n))
           is = matchFound.resultingInputState
       }

@@ -39,7 +39,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     _padded = true
   }
 
-  override def pad(initialSource: CharSequence, topLevel: Boolean = false): Unit = if (!_padded) {
+  override def pad(initialSource: CharSequence, topLevel: Boolean = false, padAtBeginning: Boolean = false): Unit = if (!_padded) {
 
     // Number of characters of fields to show in padding field names
     val show = 40

@@ -465,7 +465,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     printlns.matcher.matchPrefix(InputState(input)) match {
       case Some(pm) =>
         pm.matched should be (p1)
-        pm.node.get.value should be (p1)
+        p1.contains(pm.node.get.value) should be (true)
     }
   }
 

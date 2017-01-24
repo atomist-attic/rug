@@ -26,5 +26,5 @@ trait PositionedTreeNode extends TreeNode with Positioned {
     * @param topLevel      whether this is a top level element, in which
     *                      case we should pad after known structures
     */
-  def pad(initialSource: String, topLevel: Boolean = false): Unit
+  def pad(initialSource: CharSequence, topLevel: Boolean = false, padAtBeginning: Boolean = false): Unit
 }

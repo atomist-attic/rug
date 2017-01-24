@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.edit.SuccessfulModification
+import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
@@ -26,7 +26,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
       |
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
-      |        n.update('Foo bar')
+      |        n.setValue('Foo bar')
       |      })
       |    }
       |  }
@@ -52,7 +52,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
-      |        n.update('Foo bar')
+      |        n.setValue('Foo bar')
       |      })
       |    }
       |  }
@@ -77,7 +77,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TreeNode>(project, "//File()/method()/type()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.value() + "_x")
+      |        n.setValue(n.value() + "_x")
       |      })
       |    }
       |  }
@@ -102,7 +102,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.type().value() + "_x")
+      |        n.setValue(n.type().value() + "_x")
       |      })
       |    }
       |  }
@@ -127,6 +127,48 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.content.contains("_x"))
+    }
+    jsed
+  }
+
+  val NavigatesNestedAndCallsNonexistentMethod: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses single microgrammar"
+      |
+      |    edit(project: Project) {
+      |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      |
+      |      eng.with<any>(project, "//File()/method()", n => {
+      |        n.setBanana("this is bananas")
+      |      })
+      |    }
+      |  }
+      |  var editor = new MgEditor()
+      | """.stripMargin
+
+  it should "throw an error when calling a method that doesn't exist" in pendingUntilFixed {
+    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedAndCallsNonexistentMethod)))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val target = ParsingTargets.SpringIoGuidesRestServiceSource
+    jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
+      case sm: SuccessfulModification =>
+        fail("There is no setBanana method, this should fail")
+      case nm: NoModificationNeeded =>
+        fail("There is no setBanana method, this should fail")
+      case f: FailedModificationAttempt =>
+        withClue(f.failureExplanation) {
+          f.failureExplanation.contains("setBanana") should be(true)
+        }
     }
     jsed
   }

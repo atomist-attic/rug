@@ -11,14 +11,12 @@ import scala.collection.mutable.ListBuffer
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
-class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
+class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMicrogrammar") extends Microgrammar {
 
   // Transformation to run on matched nodes
   private val transform = collapse(
     ctn => ctn.nodeName.equals(Concat.DefaultConcatName)
   ) andThen RemovePadding andThen Prune
-
-  override def name: String = matcher.name
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val matches = findMatchesInternal(input, l)
@@ -37,14 +35,14 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     val endOffset = startOffset + matchFound.matched.length
     val matchedNode = matchFound.node match {
       case None =>
-        new MicrogrammarNode(matcher.name, matcher.name, Seq(), startOffset, endOffset)
+        new MicrogrammarNode(name, name, Seq(), startOffset, endOffset)
       case Some(one: MutableTerminalTreeNode) =>
-        new MicrogrammarNode(matcher.name, matcher.name, Seq(one), startOffset, endOffset)
+        new MicrogrammarNode(name, name, Seq(one), startOffset, endOffset)
       case Some(container: MutableContainerTreeNode) =>
-        new MicrogrammarNode(matcher.name, matcher.name, container.childNodes, startOffset, endOffset)
+        new MicrogrammarNode(name, name, container.childNodes, startOffset, endOffset)
     }
     matchedNode.pad(input, padAtBeginning = true)
-    matchedNode
+    transform(matchedNode)
   }
 
   private[microgrammar] def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]): Seq[(PatternMatch, LineHoldingOffsetInputPosition)] = {

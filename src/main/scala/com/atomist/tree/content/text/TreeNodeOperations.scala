@@ -43,20 +43,15 @@ object TreeNodeOperations {
     * that's typically necessary to provide a context for the name of the terminal.
     */
   val Flatten: TreeOperation = treeOperation {
-    case ofv: ContainerTreeNode if ofv.childNodes.size == 1 =>
-        val ret = ofv.childNodes.head match {
-          case ctn: ContainerTreeNode => Some(ctn)
-          case x => Some(x)
-        }
-      ret
-    case ofv: ContainerTreeNode =>
-      Some(ofv)
+    case ofv: TreeNode if ofv.childNodes.size == 1 =>
+      ofv.childNodes.headOption
     case x =>
       Some(x)
   }
 
   /**
     * Get rid of this level, pulling up its children
+    *
     * @param name name of node level to get rid of
     */
   def collapse(name: String): TreeOperation =
@@ -64,6 +59,7 @@ object TreeNodeOperations {
 
   /**
     * Get rid of this level, pulling up its children
+    *
     * @param f test for which nodes should be removed
     * @return new tree
     */
@@ -81,6 +77,7 @@ object TreeNodeOperations {
       case x =>
         Some(x)
     }
+
     filter
   }
 
@@ -90,8 +87,6 @@ object TreeNodeOperations {
   val Prune: TreeOperation = treeOperation {
     case ofv: ContainerTreeNode if ofv.childNodes.isEmpty =>
       None
-    case ectn: EmptyContainerTreeNode =>
-      None
     case x =>
       Some(x)
   }
@@ -100,7 +95,7 @@ object TreeNodeOperations {
     * TreeOperation that removes padding nodes
     */
   val RemovePadding: TreeOperation = treeOperation {
-    case pn: PaddingTreeNode =>
+    case _: PaddingTreeNode =>
       None
     case x =>
       Some(x)

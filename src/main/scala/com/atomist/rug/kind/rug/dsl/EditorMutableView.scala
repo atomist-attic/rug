@@ -9,7 +9,8 @@ import com.atomist.tree.TerminalTreeNode
 
 class EditorMutableView(originalBackingObject: FileArtifact,
                         parent: ProjectMutableView)
-  extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) with TerminalTreeNode {
+  extends LazyFileArtifactBackedMutableView(originalBackingObject, parent)
+    with TerminalTreeNode {
 
   @ExportFunction(readOnly = false, description = "Change a .rug to a .ts editor")
   def convertToTypeScript(): Unit = {

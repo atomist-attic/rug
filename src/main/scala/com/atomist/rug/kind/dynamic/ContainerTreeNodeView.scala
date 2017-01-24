@@ -24,7 +24,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
   @ExportFunction(readOnly = true, description = "Value")
   override def value: String = currentBackingObject.value
 
-  override def dirty: Boolean = originalBackingObject.dirty
+  override def dirty: Boolean = false
 
   @ExportFunction(readOnly = true, description = "Return the value of the given key")
   def valueOf(@ExportFunctionParameterDescription(name = "name",

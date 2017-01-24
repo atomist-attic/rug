@@ -18,4 +18,10 @@ trait MutableContainerTreeNode
   def appendFields(newFields: Seq[TreeNode]): Unit = {
     newFields.foreach(appendField)
   }
+
+  override def dirty: Boolean =
+    (childNodes collect {
+      case u: MutableTreeNode if u.dirty => u
+    }).nonEmpty
+
 }

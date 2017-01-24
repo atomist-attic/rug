@@ -1,8 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.ContainerTreeNode
-import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
-import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
+import com.atomist.tree.content.text.{PositionedTreeNode, SimpleMutableContainerTreeNode}
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
 
@@ -40,7 +39,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
             None
           case Some(rightMatch) =>
             // Both match.
-            val mergedTree: Option[MatchedNode] = (leftMatch.node, rightMatch.node) match {
+            val mergedTree: Option[PositionedTreeNode] = (leftMatch.node, rightMatch.node) match {
               case (None, None) => None
               case (Some(l), None) => Some(l)
               case (None, Some(r)) => Some(r)

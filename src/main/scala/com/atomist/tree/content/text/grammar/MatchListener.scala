@@ -1,9 +1,7 @@
 package com.atomist.tree.content.text.grammar
 
-import com.atomist.tree.ContainerTreeNode
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.InputPosition
-import com.atomist.util.ConsoleVisitor
-import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Decorates a string with its position in input
@@ -24,7 +22,7 @@ trait MatchListener {
 
   def onSkip(junk: PositionalString): Unit
 
-  def onMatch(m: ContainerTreeNode): Unit
+  def onMatch(m: TreeNode): Unit
 
   /**
     * Return the number of matches found.
@@ -41,12 +39,12 @@ abstract class AbstractMatchListener(val name: String) extends MatchListener {
 
   override def onSkip(junk: PositionalString): Unit = {}
 
-  final override def onMatch(m: ContainerTreeNode): Unit = {
+  final override def onMatch(m: TreeNode): Unit = {
     _matches += 1
     onMatchInternal(m)
   }
 
-  protected def onMatchInternal(m: ContainerTreeNode): Unit
+  protected def onMatchInternal(m: TreeNode): Unit
 
   final override def matches: Int = _matches
 }

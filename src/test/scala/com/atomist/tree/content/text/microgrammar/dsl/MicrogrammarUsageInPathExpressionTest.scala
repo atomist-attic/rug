@@ -38,11 +38,9 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
       case mtn: MutableTreeNode =>
         mtn.update(highlyImprobableValue)
         val newContent = pmv.findFile("pom.xml").content
-        println(s"New content=\n$newContent")
         newContent.contains(highlyImprobableValue) should be(true)
       case x =>
-        println(s"what is this $x")
-        fail
+        fail(s"What is this? $x")
 
     }
   }

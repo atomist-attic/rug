@@ -127,19 +127,16 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
                         returnedNodes: Seq[TreeNode],
                         ee: ExpressionEngine,
                         typeRegistry: TypeRegistry,
-                        nodePreparer: Option[NodePreparer]): Boolean =
-      n match {
-        case ctn: ContainerTreeNode =>
-          val extracted = ctn.childrenNamed(property)
-          if (extracted.size == 1) {
-            val result = extracted.head.value.equals(expectedValue)
-            //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
-            result
-          }
-          else
-            false
-        case _ => false
-      }
+                        nodePreparer: Option[NodePreparer]): Boolean = {
+    val extracted = n.childrenNamed(property)
+    if (extracted.size == 1) {
+      val result = extracted.head.value.equals(expectedValue)
+      //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
+      result
+    }
+    else
+      false
+  }
 }
 
 case class NodeNamePredicate(expectedName: String) extends Predicate {

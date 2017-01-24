@@ -2,7 +2,6 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.MutableTreeNode
 import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.microgrammar.PatternMatch.MatchedNode
 
 case class MatcherConfig(
                           greedy: Boolean = true
@@ -28,9 +27,10 @@ trait Matcher {
   final def matchPrefix(is: InputState) = {
     val matchedOption = matchPrefixInternal(is)
 
-    for {matched <- matchedOption
-         node <- matched.node} {
-        node.addType(name)
+    for {
+      matched <- matchedOption
+      node <- matched.node} {
+      node.asInstanceOf[MutableTreeNode].addType(name)
     }
     matchedOption
   }
@@ -76,20 +76,15 @@ trait ConfigurableMatcher extends Matcher {
   def config: MatcherConfig
 }
 
-object PatternMatch {
-
-  type MatchedNode = PositionedTreeNode with MutableTreeNode
-}
-
 /**
   * Returned for a pattern match.
   *
-  * @param node    matched node. If None, the match is discarded.
-  * @param matched the string that was matched
-  * @param resultingInputState   resulting InputState
+  * @param node                matched node. If None, the match is discarded.
+  * @param matched             the string that was matched
+  * @param resultingInputState resulting InputState
   */
 case class PatternMatch(
-                         node: Option[MatchedNode],
+                         node: Option[PositionedTreeNode],
                          matched: String,
                          resultingInputState: InputState,
                          matcherId: String)

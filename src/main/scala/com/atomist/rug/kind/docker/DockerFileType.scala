@@ -7,6 +7,7 @@ import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
 
 import scala.collection.immutable.Map
 
@@ -29,9 +30,9 @@ class DockerFileType(
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,
-                                   context: MutableView[_],
+                                   context: TreeNode,
                                    poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+                                   identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
     context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject

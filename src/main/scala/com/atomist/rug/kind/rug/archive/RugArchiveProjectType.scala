@@ -3,6 +3,7 @@ package com.atomist.rug.kind.rug.archive
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
+import com.atomist.tree.TreeNode
 
 class RugArchiveProjectType
   extends Type(DefaultEvaluator)
@@ -15,7 +16,7 @@ class RugArchiveProjectType
   // Members declared in com.atomist.rug.kind.dynamic.ViewFinder
   protected def findAllIn(rugAs: com.atomist.source.ArtifactSource,
                           selected: com.atomist.rug.parser.Selected,
-                          context: com.atomist.rug.spi.MutableView[_],
+                          context: TreeNode,
                           poa: com.atomist.project.ProjectOperationArguments,
                           identifierMap: Map[String,Object]): Option[Seq[com.atomist.rug.spi.MutableView[_]]] = {
     context match {

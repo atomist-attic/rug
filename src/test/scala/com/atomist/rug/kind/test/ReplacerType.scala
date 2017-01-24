@@ -6,6 +6,7 @@ import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectiveStaticTypeInformation, Type, TypeInformation}
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeNode
 import org.springframework.beans.factory.annotation.Autowired
 
 import scala.reflect.ManifestFactory
@@ -26,7 +27,7 @@ class ReplacerType(ev: Evaluator) extends Type(ev) {
 
   protected def listViews(rugAs: ArtifactSource,
                           selected: Selected,
-                          context: MutableView[_],
+                          context: TreeNode,
                           poa: ProjectOperationArguments,
                           identifierMap: Map[String, AnyRef]): Seq[MutableView[_]] = context match {
     case pmv: ProjectMutableView =>
@@ -35,7 +36,7 @@ class ReplacerType(ev: Evaluator) extends Type(ev) {
     case _ => Nil
   }
 
-  def findAllIn(rugAs: ArtifactSource, selected: Selected, context: MutableView[_],
+  def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
                 poa: ProjectOperationArguments, identifierMap: Map[String, AnyRef]): Option[Seq[MutableView[_]]] = {
     val l = listViews(rugAs, selected, context, poa, identifierMap)
     Option.apply(l)

@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileType}
 import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.spi.{MutableView, TypeProvider, Typed}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
 
@@ -27,7 +28,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
     */
   override def resolvesFromNodeTypes: Set[String] = Set(Typed.typeClassToTypeName(classOf[FileType]))
 
-  override def findAllIn(context: MutableView[_]): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
     case f: FileArtifactBackedMutableView =>
       val l: Option[MatchListener] = None
       val views = microgrammar.findMatches(f.content, l) collect {

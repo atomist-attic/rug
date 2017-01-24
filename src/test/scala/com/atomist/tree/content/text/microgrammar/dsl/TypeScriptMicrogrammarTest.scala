@@ -155,19 +155,18 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |  var editor = new MgEditor()
       | """.stripMargin
 
-  it should "throw an error when calling a method that doesn't exist" in pendingUntilFixed {
+  it should "throw an error when calling a method that doesn't exist" in {
     val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedAndCallsNonexistentMethod)))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
-    jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
-      case sm: SuccessfulModification =>
-        fail("There is no setBanana method, this should fail")
-      case nm: NoModificationNeeded =>
-        fail("There is no setBanana method, this should fail")
-      case f: FailedModificationAttempt =>
-        withClue(f.failureExplanation) {
-          f.failureExplanation.contains("setBanana") should be(true)
+    try {
+      jsed.modify(target, SimpleProjectOperationArguments.Empty)
+      fail("There is no setBanana method, this should fail")
+    } catch {
+      case e: Exception =>
+        withClue(e.getMessage) {
+          e.getMessage.contains("setBanana") should be(true)
         }
     }
     jsed

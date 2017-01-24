@@ -102,10 +102,10 @@ class SafeCommittingProxy(types: Set[Typed],
       val r = node match {
         case ctn: ContainerTreeNode =>
           val childrenAccessedThroughThisFunctionCall = ctn.childrenNamed(name)
-          if (childrenAccessedThroughThisFunctionCall.size == 1) {
-            childrenAccessedThroughThisFunctionCall.head
-          } else {
-            ???
+          childrenAccessedThroughThisFunctionCall.toList match {
+            case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
+            case head :: Nil => head
+            case more => ???
           }
         case _ => node
       }

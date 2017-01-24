@@ -83,8 +83,10 @@ class ScalarValueView(
   @ExportFunction(readOnly = false, description = "Update the value of the sole key")
   def setValue(@ExportFunctionParameterDescription(name = "name",
     description = "The new value")
-               newValue: String): Unit =
+               newValue: String): Unit = {
     originalBackingObject.update(newValue)
+    commit()
+  }
 
   override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)
 

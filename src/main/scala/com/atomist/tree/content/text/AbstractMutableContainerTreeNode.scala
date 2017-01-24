@@ -71,23 +71,30 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
       fv <- _fieldValues
     } {
       fv match {
-        case sm: MutableTerminalTreeNode if sm.startPosition != null && sm.startPosition.offset >= 0 && sm.startPosition.offset >= lastEndOffset =>
-          val smoffset = sm.startPosition.offset
-          if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
-          lastEndOffset = sm.endPosition.offset
-          fieldResults.append(sm)
-        case soo: PositionedTreeNode =>
-          try {
-            soo.pad(initialSource)
+        case sm: PositionedTreeNode if sm.startPosition != null && sm.startPosition.offset >= 0 =>
+          // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
+          // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
+          // but that whitespace appears to be appended to the previous node maybe? because if we add those
+          // whitespace nodes here it gets doubled.
+          if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[AbstractMutableContainerTreeNode]) {
+            try {
+              sm.pad(initialSource)
+            }
+            catch {
+              case iex: IllegalArgumentException =>
+                throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $sm", iex)
+            }
+            val smoffset = sm.startPosition.offset
+            if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
+            lastEndOffset = sm.endPosition.offset
+            fieldResults.append(sm)
+          } else
+          {
+            println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
           }
-          catch {
-            case iex: IllegalArgumentException =>
-              throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $soo", iex)
-          }
-          val smoffset = soo.startPosition.offset
-          if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
-          lastEndOffset = soo.endPosition.offset
-          fieldResults.append(soo)
+        case mttn: PositionedTreeNode =>
+        // This one is not actually positioned now is it
+          ???
         case f if "".equals(f.value) =>
           // It's harmless. Keep it as it may be queried. It won't be updateable
           // Because we probably don't know where it lives.

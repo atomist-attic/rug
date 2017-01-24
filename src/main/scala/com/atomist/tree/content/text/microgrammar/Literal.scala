@@ -14,13 +14,18 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
     val (matched, is) = inputState.take(literal.length)
-    if (matched == literal)
+    if (matched == literal) {
+      val nodeOption = named.map { name => val node =
+        new MutableTerminalTreeNode(name, literal, inputState.inputPosition)
+        node.addType(name)
+        node
+      }
       Some(PatternMatch(
-        named.map(name =>
-          new MutableTerminalTreeNode(name, literal, inputState.inputPosition)),
+        nodeOption,
         literal,
         is,
         this.toString))
+    }
     else
       None
   }

@@ -101,11 +101,15 @@ class SafeCommittingProxy(types: Set[Typed],
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       val r = node match {
         case ctn: ContainerTreeNode =>
-          ctn.childrenNamed(name)
+          val childrenAccessedThroughThisFunctionCall = ctn.childrenNamed(name)
+          if (childrenAccessedThroughThisFunctionCall.size == 1) {
+            childrenAccessedThroughThisFunctionCall.head
+          } else {
+            ???
+          }
+        case _ => node
       }
-      //println(s"Calling $name")
-      // TODO consider collection returns
-      node
+      r
     }
   }
 

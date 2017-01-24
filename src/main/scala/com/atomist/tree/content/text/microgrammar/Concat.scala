@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 object Concat {
 
-  val DefaultConcatName = "concat"
+  val DefaultConcatName = ".concat"
 
   lazy val logger: Logger =
     Logger(LoggerFactory.getLogger(getClass.getName))

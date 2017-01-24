@@ -25,7 +25,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
 
   import Concat.logger
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
     val l = left.matchPrefix(inputState)
     l match {
       case None =>

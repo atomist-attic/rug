@@ -17,7 +17,7 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
 
   override def name: String = named.getOrElse("break")
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     if (!inputState.exhausted) {
       var currentInputState = inputState
       var matchedTerminatingPattern = breakToMatcher.matchPrefix(currentInputState)

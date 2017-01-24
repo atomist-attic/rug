@@ -45,6 +45,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     transform(matchedNode)
   }
 
+
   private[microgrammar] def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]): Seq[(PatternMatch, LineHoldingOffsetInputPosition)] = {
     val matches = ListBuffer.empty[(PatternMatch, LineHoldingOffsetInputPosition)]
     var is = InputState(input)

@@ -22,13 +22,4 @@ trait Microgrammar {
     * @return a sequence of MutableContainerTreeNode's
     */
   def findMatches(input: CharSequence, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
-
-  /**
-    * Return a single container object holding all matches.
-    */
-  def matchesInContainer(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode = {
-    val matches = findMatches(input, l)
-    val container = SimpleMutableContainerTreeNode.wholeInput("container", matches, input.toString)
-    container
-  }
 }

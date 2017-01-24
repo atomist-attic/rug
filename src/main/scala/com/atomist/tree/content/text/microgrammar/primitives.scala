@@ -10,7 +10,7 @@ import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
   */
 case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
     val l = left.matchPrefix(inputState)
     l match {
       case None =>
@@ -29,7 +29,7 @@ case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") 
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     m.matchPrefix(inputState).map(matched => matched.copy(node = None))
 
 }
@@ -43,7 +43,7 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 case class Wrap(m: Matcher, name: String)
   extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     m.matchPrefix(inputState).map(matched =>
       matched.copy(node = matched.node.map(mn => {
         val n = SimpleMutableContainerTreeNode.wrap(name, mn)
@@ -55,7 +55,7 @@ case class Wrap(m: Matcher, name: String)
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     m.matchPrefix(inputState) match {
       case None =>
         Some(PatternMatch(None, matched = "", inputState, this.toString))

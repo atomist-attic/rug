@@ -28,12 +28,12 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
       (typ, context) match {
         case (mg: Microgrammar, f: FileArtifactBackedMutableView) =>
           val l: Option[MatchListener] = None
-          val container = mg.matchesInContainer(f.content, l)
-          val views = container.childNodes collect {
+          val ms = mg.findMatches(f.content, l)
+          val views = ms collect {
             case moo: MutableContainerTreeNode =>
               new MutableContainerMutableView(moo, f)
           }
-          f.registerUpdater(new MutableTreeNodeUpdater(container))
+        //  f.registerUpdater(new MutableTreeNodeUpdater(container)) does this matter?? are updates tested??
           Some(views)
         case (pex: PathExpression, m: MutableView[_]) =>
           // TODO cache this

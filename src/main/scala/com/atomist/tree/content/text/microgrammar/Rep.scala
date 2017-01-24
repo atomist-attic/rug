@@ -18,7 +18,7 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
     case Some(sep) => Discard(sep) ~? m
   }
 
-  override def matchPrefix(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
     m.matchPrefix(inputState) match {
       case None =>
         // We can match zero times. Put in an empty node.

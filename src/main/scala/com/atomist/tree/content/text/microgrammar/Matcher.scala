@@ -23,7 +23,16 @@ trait Matcher {
     * @param inputState input state
     * @return match or failure to match
     */
-  def matchPrefix(inputState: InputState): Option[PatternMatch]
+  def matchPrefixInternal(inputState: InputState): Option[PatternMatch]
+
+  def matchPrefix(is: InputState) = {
+    val matchedOption = matchPrefixInternal(is)
+
+    for (matched <- matchedOption; node <- matched.node) {
+        node.addType(name)
+    }
+    matchedOption
+  }
 
   def concat(m: Matcher): Matcher = Concat(this, m)
 

@@ -37,7 +37,7 @@ class MatcherMicrogrammar(val matcher: Matcher) extends Microgrammar {
     //println(s"Before transform, node=\n${TreeNodeUtils.toShortString(n)}")
     n match {
       case mctn: AbstractMutableContainerTreeNode =>
-        mctn.pad(input.toString)
+        mctn.pad(input)
         transform(mctn)
       case mctn: MutableContainerTreeNode =>
         transform(mctn)

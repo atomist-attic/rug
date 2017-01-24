@@ -49,7 +49,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     * @param topLevel      whether this is a top level element, in which
     *                      case we should pad after known structures
     */
-  def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
+  def pad(initialSource: CharSequence, topLevel: Boolean = false): Unit = if (!_padded) {
 
     // Number of characters of fields to show in padding field names
     val show = 40
@@ -58,12 +58,12 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
       //      require(from >= 0 && from < initialSource.size, s"from for padding must be 0-${initialSource.size}, had $from")
       //      require(to >= 0 && to < initialSource.size, s"from for padding must be 0-${initialSource.size}, $to")
 
-      val content = initialSource.substring(from, to)
+      val content = initialSource.subSequence(from, to)
       val name = s"$from-$to[${
         val pcontent = TreeNodeUtils.inlineReturns(content)
         if (pcontent.length > show) s"${pcontent.take(show)}..." else pcontent
       }]"
-      val pad = PaddingTreeNode(name, content)
+      val pad = PaddingTreeNode(name, content.toString)
       pad
     }
 
@@ -113,9 +113,9 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
     // If it's a top level element, make sure we account for the entire file
     if (topLevel) {
-      val content = initialSource.substring(endPosition.offset)
-      if (content.nonEmpty) {
-        val pn = PaddingTreeNode("End", content)
+      val content = initialSource.subSequence(endPosition.offset, initialSource.length)
+      if (content.length > 0) {
+        val pn = PaddingTreeNode("End", content.toString)
         fieldResults.append(pn)
         // assertPaddingInvariants(initialSource)
       }
@@ -123,13 +123,13 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
     this._fieldValues = fieldResults
     _padded = true
   }
-
-  private def assertPaddingInvariants(initialSource: String): Unit = {
-    val lastFieldValue = this._fieldValues.last.value
-    val endOfInput = initialSource.takeRight(_fieldValues.last.value.length.min(initialSource.length))
-    require(lastFieldValue.equals(endOfInput),
-      s"Last field value of [$lastFieldValue] does not equal end of input string, [$endOfInput]")
-  }
+//
+//  private def assertPaddingInvariants(initialSource: String): Unit = {
+//    val lastFieldValue = this._fieldValues.last.value
+//    val endOfInput = initialSource.takeRight(_fieldValues.last.value.length.min(initialSource.length))
+//    require(lastFieldValue.equals(endOfInput),
+//      s"Last field value of [$lastFieldValue] does not equal end of input string, [$endOfInput]")
+//  }
 
   /**
     * Replace all the fields of this object with the new fields

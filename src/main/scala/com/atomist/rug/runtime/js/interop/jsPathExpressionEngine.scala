@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js.interop
 import java.util
 import java.util.Collections
 
-import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -16,6 +15,7 @@ import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
+import NashornUtils._
 
 import scala.collection.JavaConverters._
 
@@ -66,18 +66,19 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror =>
+    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar") =>
       // It's a microgrammar
-      val name = NashornUtils.stringProperty(som, "name")
-      val grammar = NashornUtils.stringProperty(som, "grammar")
-      if (name == null || grammar == null)
-        throw new RugRuntimeException(null, "A microgrammar must specify both name and grammar")
+      val name = stringProperty(som, "name")
+      val grammar = stringProperty(som, "grammar")
       //println(s"Parsing $name=$grammar with ${matcherRegistry}")
       val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
       //println("Parsed matcher=" + parsedMatcher)
       matcherRegistry += parsedMatcher
       val mg = new MatcherMicrogrammar(parsedMatcher, name)
       new MicrogrammarTypeProvider(mg)
+    case x =>
+      throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
+
   }
 
   /**

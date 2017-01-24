@@ -29,4 +29,10 @@ object NashornUtils {
       case x => Objects.toString(x)
     }
   }
+
+  /**
+    * Are all these properties defined
+    */
+  def hasDefinedProperties(som: ScriptObjectMirror, properties: String*): Boolean =
+    properties.forall(p => som.get(p) != null)
 }

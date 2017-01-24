@@ -118,7 +118,7 @@ class jsPathExpressionEngine(
   }
 
   /**
-    * Evalute the path expression, applying a function
+    * Evaluate the path expression, applying a function
     * to each result
     *
     * @param root  node to evaluate path expression against

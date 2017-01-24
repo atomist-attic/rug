@@ -25,6 +25,8 @@ class SafeCommittingProxy(types: Set[Typed],
   def this(t: Typed, node: TreeNode, commandRegistry: CommandRegistry = DefaultCommandRegistry) =
     this(Set(t), node, commandRegistry)
 
+  override def toString: String = s"SafeCommittingProxy around $node"
+
   private val typ = UnionType(types)
 
   import SafeCommittingProxy.MagicJavaScriptMethods

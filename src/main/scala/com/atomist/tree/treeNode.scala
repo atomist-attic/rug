@@ -66,11 +66,6 @@ trait TreeNode extends Visitable {
       childNodes.foreach(_.accept(v, depth + 1))
   }
 
-  def dirty: Boolean =
-    (childNodes collect {
-      case u: MutableTreeNode if u.dirty => u
-    }).nonEmpty
-
   def count: Int = childNodes.size
 
   /**

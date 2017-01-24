@@ -39,9 +39,9 @@ class MutableTerminalTreeNode(
   override def endPosition: InputPosition = startPosition + currentValue.length
 
   @ExportFunction(readOnly = true, description = "Return the value")
-  override def value = currentValue
+  override def value: String = currentValue
 
-  override def dirty = currentValue != initialValue
+  override def dirty: Boolean = currentValue != initialValue
 
   def longString =
     s"scalar:${getClass.getSimpleName}: $nodeName=[$currentValue], position=$startPosition"

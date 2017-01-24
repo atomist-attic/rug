@@ -58,4 +58,6 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
 
   override def toString =
     s"${getClass.getSimpleName}($nodeName:$nodeType){${childNodes.mkString(",")}}"
+
+  override def dirty: Boolean = of.dirty
 }

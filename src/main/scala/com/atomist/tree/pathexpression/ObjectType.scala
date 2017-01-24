@@ -17,43 +17,35 @@ case class ObjectType(typeName: String)
 
   private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
     typeRegistry.findByName(typeName) match {
-    case Some(cr: ChildResolver) => Some(cr)
-    case _ => None
-  }
+      case Some(cr: ChildResolver) => Some(cr)
+      case _ => None
+    }
 
   private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
 
   // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {
-    tn match {
-      case ctn: ContainerTreeNode =>
-        val directKids = ctn.childNodes.filter(eligibleNode)
-        if (directKids.nonEmpty)
-          directKids
-        else
-          tn match {
-            case mv: MutableView[_] =>
-              childResolver(typeRegistry) match {
-                case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
-                case None =>
-                  throw new IllegalArgumentException(
-                    s"No type with name [$typeName]: Node=$tn, Kids=$directKids")
-              }
-            case x =>
-              throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
+    val directKids = tn.childNodes.filter(eligibleNode)
+    if (directKids.nonEmpty)
+      directKids
+    else
+      tn match {
+        case mv: MutableView[_] =>
+          childResolver(typeRegistry) match {
+            case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
+            case None =>
+              throw new IllegalArgumentException(
+                s"No type with name [$typeName]: Node=$tn, Kids=$directKids")
           }
-      case _ => Nil
-    }
+        case x =>
+          throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
+      }
   }
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {
       case NavigationAxis(propertyName) =>
-        val nodes = tn match {
-          case ctn: ContainerTreeNode =>
-            ctn.childrenNamed(propertyName).filter(eligibleNode)
-          case _ => Nil
-        }
+        val nodes = tn.childrenNamed(propertyName).filter(eligibleNode)
         ExecutionResult(nodes)
       case Self => ExecutionResult(List(tn).filter(eligibleNode))
       case Child =>

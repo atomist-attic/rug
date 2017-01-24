@@ -42,8 +42,8 @@ object TreeNodeUtils {
       s"${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
 
     def toShortStr(fv: TreeNode, depth: Int): String = fv match {
-      case ofv: ContainerTreeNode =>
-        tabs(depth) + info(ofv) + (if (ofv.childNodes.nonEmpty) ":\n" else "") + ofv.childNodes.map(toShortStr(_, depth + 1)).mkString("\n")
+      case ctn: ContainerTreeNode =>
+        tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(toShortStr(_, depth + 1)).mkString("\n")
       case f => tabs(depth) + info(f) + "\n"
     }
 

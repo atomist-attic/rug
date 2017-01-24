@@ -44,21 +44,15 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     */
   protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Self => ExecutionResult(List(tn))
-    case Child => tn match {
-      case ctn: ContainerTreeNode =>
-        val kids = ctn.childNodes.toList
-        ExecutionResult(kids)
-      case x => ExecutionResult.empty
-    }
+    case Child =>
+      val kids = tn.childNodes.toList
+      ExecutionResult(kids)
+
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
       ExecutionResult(kids)
     case NavigationAxis(propertyName) =>
-      val nodes = tn match {
-        case ctn: ContainerTreeNode =>
-          ctn.childrenNamed(propertyName)
-        case _ => Nil
-      }
+      val nodes = tn.childrenNamed(propertyName)
       ExecutionResult(nodes)
   }
 }

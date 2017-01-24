@@ -52,9 +52,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
         case None =>
           is = is.advance
         case Some(matchFound) =>
-          listeners.foreach(l => matchFound.node collect {
-            case ctn: ContainerTreeNode => l.onMatch(ctn)
-          })
+          listeners.foreach(l => matchFound.node.map(l.onMatch(_)))
           val thisStartedAt = OffsetInputPosition(is.offset)
           matches.append(matchFound -> thisStartedAt)
           is = matchFound.resultingInputState

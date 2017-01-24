@@ -39,13 +39,11 @@ object Descendant extends AxisSpecifier {
 
   // TODO this is very inefficient and needs to be optimized.
   // Subclasses can help, or knowing a plan
-  def allDescendants(tn: TreeNode): Seq[TreeNode] = tn match {
-    case ctn: ContainerTreeNode =>
-      val v = new SaveAllDescendantsVisitor
-      ctn.accept(v, 0)
-      // Remove this node
-      v.nodes.diff(Seq(tn))
-    case x => Nil
+  def allDescendants(tn: TreeNode): Seq[TreeNode] = {
+    val v = new SaveAllDescendantsVisitor
+    tn.accept(v, 0)
+    // Remove this node
+    v.nodes.diff(Seq(tn))
   }
 
   private class SaveAllDescendantsVisitor extends Visitor {
@@ -53,8 +51,6 @@ object Descendant extends AxisSpecifier {
     private val _nodes = ListBuffer.empty[TreeNode]
 
     override def visit(v: Visitable, depth: Int): Boolean = v match {
-      //    case ctn: ContainerTreeNode =>
-      //      true
       case tn: TreeNode =>
         _nodes.append(tn)
         true

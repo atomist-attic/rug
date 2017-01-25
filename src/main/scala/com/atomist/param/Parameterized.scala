@@ -5,12 +5,6 @@ package com.atomist.param
   */
 trait Parameterized {
 
-  /**
-    * Custom keys for this template. Must be satisfied in ParameterValues passed in.
-    *
-    * @return a list of parameters
-    */
-  def parameters: Seq[Parameter]
 
   /**
     * Convenience method subclasses can use to identify any missing parameters.
@@ -40,4 +34,11 @@ trait Parameterized {
     */
   def areValid(pvs: ParameterValues): Boolean =
     findMissingParameters(pvs).isEmpty && findInvalidParameterValues(pvs).isEmpty
+
+  /**
+    * Custom keys for this template. Must be satisfied in ParameterValues passed in.
+    *
+    * @return a list of parameters
+    */
+  def parameters: Seq[Parameter]
 }

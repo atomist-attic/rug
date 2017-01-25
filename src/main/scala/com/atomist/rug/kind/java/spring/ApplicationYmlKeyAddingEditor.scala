@@ -2,7 +2,7 @@ package com.atomist.rug.kind.java.spring
 
 import java.util
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.project.edit._
 import com.atomist.project.edit.ProjectEditorSupport
 import com.atomist.project.edit.ProjectEditorUtils._
@@ -20,7 +20,7 @@ object ApplicationYmlKeyAddingEditor extends ProjectEditorSupport {
 
   val YamlHeader = "# Created by Atomist\n\n"
 
-  override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+  override protected def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
     val yamlMap = new util.HashMap[String, Object]()
     val yamlFile = newOrExistingFile(as, ApplicationYmlPath, YamlHeader)
 

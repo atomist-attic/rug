@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.rugdsl.RugDrivenProjectPredicate
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -65,6 +65,6 @@ class PredicateExecutionTest extends FlatSpec with Matchers {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
     val pe = eds.head.asInstanceOf[RugDrivenProjectPredicate]
-    pe.holds(as, SimpleProjectOperationArguments.Empty)
+    pe.holds(as, SimpleParameterValues.Empty)
   }
 }

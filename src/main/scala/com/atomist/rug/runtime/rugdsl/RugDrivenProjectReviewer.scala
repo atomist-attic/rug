@@ -1,8 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import java.util.{List => JList}
-
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult}
 import com.atomist.rug.RugReviewer
@@ -26,7 +24,7 @@ class RugDrivenProjectReviewer(
 
   override protected def onSetContext(): Unit = {}
 
-  override def review(as: ArtifactSource, poa: ProjectOperationArguments): ReviewResult = {
+  override def review(as: ArtifactSource, poa: ParameterValues): ReviewResult = {
     val reviewContext = new ReviewContext
     val project = new ProjectMutableView(rugAs, as, atomistConfig = DefaultAtomistConfig)
 

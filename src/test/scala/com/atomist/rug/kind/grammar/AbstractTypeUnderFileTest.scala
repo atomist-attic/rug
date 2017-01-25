@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.grammar
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -63,7 +63,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
 
   protected def modify(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
     val pe = TestUtils.editorInSideFile(this, tsFilename)
-    pe.modify(as, SimpleProjectOperationArguments("", params))
+    pe.modify(as, SimpleParameterValues(params))
   }
 
   protected def modifyAndReparseSuccessfully(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ArtifactSource = {

@@ -1,7 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.util.scalaparsing.SimpleLiteral
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -9,6 +8,7 @@ import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.parser.{RunOtherOperation, WrappedFunctionArg}
 import com.atomist.rug.runtime.rugdsl.RugDrivenProjectEditor
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.scalaparsing.SimpleLiteral
 import org.scalatest.{FlatSpec, Matchers}
 
 class UsesTest extends FlatSpec with Matchers {
@@ -79,7 +79,7 @@ class UsesTest extends FlatSpec with Matchers {
         |do replace "content" "bar"
       """.stripMargin
     val pe = create(prog).find(_.name.equals("Redeploy")).get
-    pe.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+    pe.modify(simpleAs, SimpleParameterValues.Empty)
     match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 1)
@@ -108,7 +108,7 @@ class UsesTest extends FlatSpec with Matchers {
     val namespace = "com.foobar"
     val pe = create(prog, Some(namespace)).find(_.name.equals(namespace + ".Redeploy")).get
     assert(pe.name === namespace + ".Redeploy")
-    pe.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    pe.modify(simpleAs, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
@@ -140,7 +140,7 @@ class UsesTest extends FlatSpec with Matchers {
         |do replace "bar" "baz"
       """.stripMargin
     val pe = create(prog).find(_.name.equals("Redeploy")).get
-    pe.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+    pe.modify(simpleAs, SimpleParameterValues.Empty)
     match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 1)
@@ -174,7 +174,7 @@ class UsesTest extends FlatSpec with Matchers {
     val foo = create(global, Some("foo")).head
     val pe = create(prog, Some(namespace), Seq(foo)).head
     assert(pe.name === namespace + ".Redeploy")
-    pe.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    pe.modify(simpleAs, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
@@ -379,7 +379,7 @@ class UsesTest extends FlatSpec with Matchers {
     assert(red.program.withs.size === 0)
     assert(ed.parameters.map(p => p.name).toSet === Set("new_package"))
     // Check it works OK with these parameters
-    ed.modify(new EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "test"))) match {
+    ed.modify(new EmptyArtifactSource(""), SimpleParameterValues(Map[String, String]("new_package" -> "test"))) match {
       case nmn: NoModificationNeeded =>
       
       case _ => ???
@@ -389,7 +389,7 @@ class UsesTest extends FlatSpec with Matchers {
         |package com.atomist.springrest;
         |class Dog {}
       """.stripMargin))
-    ed.modify(as, SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "com.foo"))) match {
+    ed.modify(as, SimpleParameterValues(Map[String, String]("new_package" -> "com.foo"))) match {
       case sm: SuccessfulModification =>
       
       case _ => ???
@@ -419,7 +419,7 @@ class UsesTest extends FlatSpec with Matchers {
       WrappedFunctionArg(SimpleLiteral("com.foo.bar"), parameterName = Some("new_package"))
     ), None, None, None)))
     assert(red.program.withs.size === 0)
-    ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleProjectOperationArguments("", Map[String, String]())) match {
+    ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleParameterValues( Map[String, String]())) match {
       case sm: SuccessfulModification =>
       
       case _ => ???

@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.predicate.ProjectPredicate
 import com.atomist.project.review.{ReviewComment, Severity}
@@ -31,7 +31,7 @@ class RugDrivenProjectPredicate(
 
   override protected def onSetContext(): Unit = {}
 
-  override def holds(as: ArtifactSource, poa: ProjectOperationArguments): Boolean = {
+  override def holds(as: ArtifactSource, poa: ParameterValues): Boolean = {
     val reviewContext = new ReviewContext
     val project = new ProjectMutableView(rugAs, as, atomistConfig = DefaultAtomistConfig)
 
@@ -52,7 +52,7 @@ class RugDrivenProjectPredicate(
                                        as: ArtifactSource,
                                        reviewContext: ReviewContext,
                                        withBlock: With,
-                                       poa: ProjectOperationArguments,
+                                       poa: ParameterValues,
                                        identifierMap: Map[String, Object],
                                        t: TreeNode): PartialFunction[DoStep, Object] = {
     case _ =>

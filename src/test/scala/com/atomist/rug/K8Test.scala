@@ -1,9 +1,7 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -243,7 +241,7 @@ class K8Test extends FlatSpec with Matchers {
     val newSha = "666aabb"
     val pipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler, new RugTranspiler()))
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(prog), prog)) + TypeScriptBuilder.userModel
-    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleParameterValues(Map(
       "service" -> service,
       "new_sha" -> newSha
     )), pipeline)

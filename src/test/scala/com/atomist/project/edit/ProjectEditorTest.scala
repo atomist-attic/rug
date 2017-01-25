@@ -1,9 +1,8 @@
 package com.atomist.project.edit
 
-import com.atomist.param.{Parameter, ParameterValidationPatterns, SimpleParameterValue}
+import com.atomist.param._
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.common.{IllformedParametersException, MissingParametersException}
-import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.java.AddClassAnnotationEditor
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -22,12 +21,12 @@ class ProjectEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
-  val args = SimpleProjectOperationArguments.Empty
+  val args = SimpleParameterValues.Empty
 
   val ed: ProjectEditor = new ProjectEditorSupport {
     addParameter(Parameter("class", ParameterValidationPatterns.JavaClass))
 
-    override protected  def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
       SuccessfulModification(as)
     }
 
@@ -39,12 +38,11 @@ class ProjectEditorTest extends FlatSpec with Matchers {
   }
 
   it should "require required parameters" in {
-    an[MissingParametersException] should be thrownBy ed.modify(new EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty)
+    an[MissingParametersException] should be thrownBy ed.modify(new EmptyArtifactSource(""), SimpleParameterValues.Empty)
   }
 
   it should "require valid parameters" in {
-    an[IllformedParametersException] should be thrownBy ed.modify(new EmptyArtifactSource(""), new SimpleProjectOperationArguments("name",
-      List(SimpleParameterValue("class", "3xxx")
+    an[IllformedParametersException] should be thrownBy ed.modify(new EmptyArtifactSource(""), new SimpleParameterValues(List(SimpleParameterValue("class", "3xxx")
       )))
   }
 

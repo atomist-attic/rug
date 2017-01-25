@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.TestUtils.doModification
 import com.atomist.rug.compiler.typescript.TypeScriptCompilationException
@@ -33,7 +33,7 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
     val programAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))
 
-    val poa = SimpleProjectOperationArguments("", Map(
+    val poa = SimpleParameterValues(Map(
       "text" -> extraText,
       "message" -> "say this"))
     val r = doModification(programAs + TypeScriptBuilder.userModel, RugCompilerTest.JavaAndText, EmptyArtifactSource(), poa, pipeline)

@@ -6,7 +6,6 @@ import java.util.Collections
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.kind.service.TeamContext
 import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode

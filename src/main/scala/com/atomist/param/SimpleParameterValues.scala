@@ -8,8 +8,14 @@ object SimpleParameterValues {
   def apply(pvs: ParameterValue*): ParameterValues =
     SimpleParameterValues(pvs)
 
-  def fromMap(m: Map[String, String]): ParameterValues =
+  def apply(m: Map[String, Object]): ParameterValues = fromMap(m)
+
+  def apply(k: String, o: Object) : ParameterValues = fromMap(Map(k -> o))
+
+  def fromMap(m: Map[String, Object]): ParameterValues =
     SimpleParameterValues((m map {
       case (k, v) => SimpleParameterValue(k, v)
     }).toSeq)
+
+  val Empty = new SimpleParameterValues(Seq())
 }

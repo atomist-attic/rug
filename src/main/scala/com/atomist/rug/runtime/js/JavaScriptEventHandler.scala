@@ -1,31 +1,54 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.event.{HandlerContext, ModelContextAware, SystemEvent, SystemEventHandler}
 import com.atomist.param.Tag
-import com.atomist.plan.TreeMaterializer
-import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
-import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.{SystemEvent, EventHandler}
+import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-class JavaScriptEventHandler(
+/**
+  * Discover JavaScriptEventHandlers from a Nashorn instance
+  */
+class JavaScriptEventHandlerFinder(ctx: JavaScriptHandlerContext)
+  extends BaseJavaScriptHandlerFinder[JavaScriptEventHandler](ctx) {
+
+  override def kind = "event-handler"
+
+  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror, ctx: JavaScriptHandlerContext): Option[JavaScriptEventHandler] = {
+    if(someVar.hasMember("__expression")){
+      val expression: String = someVar.getMember("__expression").asInstanceOf[String]
+      Some(new JavaScriptEventHandler(jsc, someVar, ctx, expression, name(someVar), description(someVar), tags(someVar)))
+    } else {
+      Option.empty
+    }
+  }
+}
+
+/**
+  * An invokable JS based handler for System Events
+  * @param pathExpressionStr
+  * @param handler
+  * @param ctx
+  * @param name
+  * @param description
+  * @param tags
+  */
+class JavaScriptEventHandler(jsc: JavaScriptContext,
+                              handler: ScriptObjectMirror,
+                              ctx: JavaScriptHandlerContext,
                               pathExpressionStr: String,
-                              handlerFunction: ScriptObjectMirror,
-                              rugAs: ArtifactSource,
-                              materializer: TreeMaterializer,
-                              pexe: jsPathExpressionEngine
+                              override val name: String,
+                              override val description: String,
+                              override val tags: Seq[Tag]
                                  )
-  extends SystemEventHandler {
-
-  override def name: String = pathExpressionStr
-
-  override def tags: Seq[Tag] = Nil
-
-  override def description: String = name
+  extends EventHandler
+  with JavaScriptUtils {
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
@@ -35,39 +58,39 @@ class JavaScriptEventHandler(
     case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }
 
-  import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+  override def handle(e: SystemEvent): Option[Plan] = {
 
-  protected def nodePreparer(hc: HandlerContext): NodePreparer = {
-    case mca: ModelContextAware =>
-      mca.setContext(hc)
-      mca
-    case x => x
-  }
-
-  override def handle(e: SystemEvent, s2: ServiceSource): Unit = {
-    val smv = new ServicesMutableView(rugAs, s2)
-    val handlerContext = HandlerContext(smv)
-    val np = nodePreparer(handlerContext)
-
-    val targetNode = materializer.rootNodeFor(e, pathExpression)
+    val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
     val root = new SimpleMutableContainerTreeNode("root", Seq(targetNode), null, null)
-    pexe.ee.evaluate(root, pathExpression, DefaultTypeRegistry, Some(np)) match {
-      case Right(Nil) =>
+    ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, DefaultTypeRegistry, None) match {
+      case Right(Nil) => None
       case Right(matches) =>
         val cm = jsContextMatch(
           jsSafeCommittingProxy.wrapOne(targetNode),
           jsSafeCommittingProxy.wrap(matches),
-          s2,
           teamId = e.teamId)
-        invokeHandlerFunction(e, cm)
+        invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
+          case plan: ScriptObjectMirror => ConstructPlan(plan)
+          case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
+
+        }
+
       case Left(failure) =>
         throw new RugRuntimeException(pathExpressionStr,
           s"Error evaluating path expression $pathExpression: [$failure]")
     }
   }
 
-  protected def invokeHandlerFunction(e: SystemEvent, cm: jsContextMatch): Object = {
-    handlerFunction.call("apply", cm)
-  }
+}
+
+
+/**
+  * Represents an event that drives a handler
+  *
+  * @param cm the root node in the tree
+  */
+private case class jsMatch(cm: jsContextMatch) {
+  def root(): Object = cm.root
+  def matches(): java.util.List[jsSafeCommittingProxy] = cm.matches
 }

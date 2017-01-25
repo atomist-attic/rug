@@ -1,12 +1,12 @@
 package com.atomist.rug.kind.java.spring
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.spring.ApplicationYmlAssertions
-import com.atomist.tree.content.project.Configuration
-import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.java.ExtractApplicationProperties
 import com.atomist.rug.kind.java.support.JavaAssertions
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, EmptyArtifactSource, StringFileArtifact}
+import com.atomist.tree.content.project.Configuration
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -64,7 +64,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
     // Wouldn't normally call get without checking, but if it fails the test that's fine
     val config = eap(as.findFile(JavaAssertions.ApplicationPropertiesFilePath).get)
 
-    val mr = ApplicationPropertiesToApplicationYmlEditor.modify(as, SimpleProjectOperationArguments.Empty)
+    val mr = ApplicationPropertiesToApplicationYmlEditor.modify(as, SimpleParameterValues.Empty)
     mr match {
       case sma: SuccessfulModification =>
         val ayml = sma.result.findFile(ApplicationPropertiesToApplicationYmlEditor.ApplicationYmlPath)

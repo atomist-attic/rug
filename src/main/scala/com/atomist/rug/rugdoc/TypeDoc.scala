@@ -3,10 +3,9 @@ package com.atomist.rug.rugdoc
 import _root_.java.nio.charset.Charset
 import _root_.java.util
 
-import com.atomist.param.Parameter
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.{Parameter, ParameterValues}
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.common.template.{MergeContext, VelocityMergeTool}
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
@@ -34,7 +33,7 @@ object TypeDoc {
 class TypeDoc(
                typeRegistry: TypeRegistry = DefaultTypeRegistry
              ) extends ProjectGenerator
-  with ProjectEditor with ProjectOperationParameterSupport {
+  with ProjectEditor with ProjectOperationSupport {
 
   import TypeDoc._
 
@@ -44,13 +43,13 @@ class TypeDoc(
     setDefaultValue(DefaultDocName))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
-  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
     val createdFile = createFile(poa)
     val output = StringFileArtifact(DefaultDocName, createdFile.content)
     new SimpleFileBasedArtifactSource("RugDocs", output)
   }
 
-  private def createFile(poa: ProjectOperationArguments): FileArtifact = {
+  private def createFile(poa: ParameterValues): FileArtifact = {
     val template = IOUtils.toString(getClass.getResourceAsStream("/" + DefaultTemplateName), Charset.defaultCharset())
     val templates = new SimpleFileBasedArtifactSource("template", StringFileArtifact(DefaultTemplateName, template))
     val mt = new VelocityMergeTool(templates)
@@ -94,7 +93,7 @@ class TypeDoc(
     }
   }.asJava
 
-  override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
+  override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
     val createdFile = createFile(poa)
     val r = as + createdFile
     SuccessfulModification(r)

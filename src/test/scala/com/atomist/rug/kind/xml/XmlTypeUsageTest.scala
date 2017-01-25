@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.xml
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
@@ -65,7 +65,7 @@ class XmlTypeUsageTest extends FlatSpec with Matchers {
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
     val newName = "Foo"
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues( Map(
       "new_name" -> newName
     )))
   }

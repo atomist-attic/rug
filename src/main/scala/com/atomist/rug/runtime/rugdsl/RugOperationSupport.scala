@@ -4,11 +4,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Objects
 
-import com.atomist.param.{Parameter, ParameterValue, SimpleParameterValue}
+import com.atomist.param._
+import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
-import com.atomist.rug.kind.dynamic._
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.NamespaceUtils._
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
@@ -21,6 +20,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
+
 object RugOperationSupport {
 
   val YmlFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
@@ -30,7 +30,7 @@ object RugOperationSupport {
   private def isIllegalParameterName(k: String) = !JavaHelpers.isValidJavaIdentifier(k)
 
   def poaToIdentifierMap(parameters: Seq[Parameter],
-                         poa: ProjectOperationArguments): Map[String, Object] = {
+                         poa: ParameterValues): Map[String, Object] = {
     val parametersPassedIn = poa.parameterValueMap collect {
       case (k, pv) if !isIllegalParameterName(k) => (k, pv.getValue)
     }
@@ -80,7 +80,7 @@ trait RugOperationSupport extends LazyLogging {
 
   protected def buildIdentifierMap(
                                     context: Object,
-                                    poa: ProjectOperationArguments): Map[String, Object] = {
+                                    poa: ParameterValues): Map[String, Object] = {
     val idm = RugOperationSupport.poaToIdentifierMap(parameters, poa)
     val compMap = computationsMap(poa, targetAlias = "x", context, identifiersAlreadyResolved = idm)
     idm ++ compMap ++ wellKnownIdentifiers
@@ -91,7 +91,7 @@ trait RugOperationSupport extends LazyLogging {
     */
   protected def parametersForOtherOperation(
                                              roo: RunOtherOperation,
-                                             poa: ProjectOperationArguments) = {
+                                             poa: ParameterValues) = {
     val context = null
     val idm = buildIdentifierMap(context, poa)
     val params: Seq[ParameterValue] = (idm.collect {
@@ -103,14 +103,14 @@ trait RugOperationSupport extends LazyLogging {
       case arg if arg.parameterName.isEmpty =>
         throw new RugRuntimeException(name, s"Argument '$arg' is invalid when invoking ${roo.name} as it is unnamed", null)
     }).toSeq
-    SimpleProjectOperationArguments(poa.name, params)
+    SimpleParameterValues(params)
   }
 
   /**
     * Return the computed values (assignments) for this operation
     */
   protected def computationsMap(
-                                 poa: ProjectOperationArguments,
+                                 poa: ParameterValues,
                                  targetAlias: String = "p",
                                  context: Object,
                                  reviewContext: ReviewContext = null,
@@ -130,7 +130,7 @@ trait RugOperationSupport extends LazyLogging {
                                       as: ArtifactSource,
                                       reviewContext: ReviewContext,
                                       context: TreeNode,
-                                      poa: ProjectOperationArguments,
+                                      poa: ParameterValues,
                                       identifierMap: Map[String, Object]): Object = {
     val views = findViews(rugAs, selected, context, poa, identifierMap)
 
@@ -155,7 +155,7 @@ trait RugOperationSupport extends LazyLogging {
   private def findViews(rugAs: ArtifactSource,
                         selected: Selected,
                         context: TreeNode,
-                        poa: ProjectOperationArguments,
+                        poa: ParameterValues,
                         identifierMap: Map[String, Object]): Seq[TreeNode] = {
     DefaultViewFinder.findIn(rugAs, selected, context, poa, identifierMap) match {
       case Left(s) if s.isEmpty =>
@@ -171,7 +171,7 @@ trait RugOperationSupport extends LazyLogging {
                         reviewContext: ReviewContext,
                         withBlock: With,
                         step: DoStep,
-                        poa: ProjectOperationArguments,
+                        poa: ParameterValues,
                         identifierMap: Map[String, Object],
                         t: TreeNode): Object = {
     doStepHandler(rugAs, as, reviewContext, withBlock, poa, identifierMap, t)
@@ -185,7 +185,7 @@ trait RugOperationSupport extends LazyLogging {
                               as: ArtifactSource,
                               reviewContext: ReviewContext,
                               withBlock: With,
-                              poa: ProjectOperationArguments,
+                              poa: ParameterValues,
                               identifierMap: Map[String, Object],
                               t: TreeNode): PartialFunction[DoStep, Object] =
     withOrFunctionDoStepHandler(rugAs, as, reviewContext, withBlock, poa, identifierMap, t)
@@ -197,7 +197,7 @@ trait RugOperationSupport extends LazyLogging {
                                             as: ArtifactSource,
                                             reviewContext: ReviewContext,
                                             withBlock: With,
-                                            poa: ProjectOperationArguments,
+                                            poa: ParameterValues,
                                             identifierMap: Map[String, Object],
                                             context: TreeNode): PartialFunction[DoStep, Object] = {
     case fi: FunctionInvocation =>
@@ -218,7 +218,7 @@ trait RugOperationSupport extends LazyLogging {
   protected def runEditor(roo: RunOtherOperation,
                           rugAs: ArtifactSource, // not used
                           as: ArtifactSource,
-                          poa: ProjectOperationArguments): ModificationAttempt = {
+                          poa: ParameterValues): ModificationAttempt = {
     resolve(roo.name, namespace, operations, imports) match {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown operation: ${roo.name}", null)
@@ -252,7 +252,7 @@ trait RugOperationSupport extends LazyLogging {
   protected def runReviewer(roo: RunOtherOperation,
                             rugAs: ArtifactSource, // not used
                             project: ArtifactSource,
-                            poa: ProjectOperationArguments): ReviewResult = {
+                            poa: ParameterValues): ReviewResult = {
     resolve(roo.name, namespace, operations, imports) match {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown reviewer: ${roo.name}", null)

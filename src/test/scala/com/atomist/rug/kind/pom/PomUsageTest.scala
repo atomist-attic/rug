@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.pom
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
@@ -63,7 +63,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
     val newName = "Foo"
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
 
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues( Map(
       "new_name" -> newName
     )))
   }

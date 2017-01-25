@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.yml
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -25,7 +25,7 @@ class YmlViewTest extends FlatSpec with Matchers {
     val newName = "Foo"
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
 
-    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleParameterValues( Map(
       "new_name" -> newName
     )))
 

@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
@@ -24,7 +24,7 @@ class PythonFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   def executePython(tsFilename: String, as: ArtifactSource, params: Map[String,String] = Map()): ModificationAttempt = {
     val pe = TestUtils.editorInSideFile(this, tsFilename)
-    pe.modify(as, SimpleProjectOperationArguments("", params))
+    pe.modify(as, SimpleParameterValues( params))
   }
 
   it should "enumerate imports in simple project" in {

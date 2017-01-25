@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.yml
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -85,7 +85,7 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleProjectOperationArguments.Empty, Nil)
+      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -104,7 +104,7 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleProjectOperationArguments.Empty, Nil)
+      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -126,7 +126,7 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleProjectOperationArguments.Empty, Nil)
+      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -154,7 +154,7 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleProjectOperationArguments.Empty, Nil)
+      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)

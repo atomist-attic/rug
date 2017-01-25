@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.rug.parser.FunctionInvocation
 import com.atomist.source.ArtifactSource
 
@@ -16,7 +16,7 @@ trait FunctionInvocationContext[T] {
 
   def functionInvocation: FunctionInvocation
 
-  def args: ProjectOperationArguments
+  def args: ParameterValues
 
   /**
     * Includes identifiers in Rug script plus project parameters.
@@ -68,6 +68,6 @@ case class SimpleFunctionInvocationContext[T <: Object](
                                                          deprecated: ArtifactSource,
                                                          reviewContext: ReviewContext,
                                                          identifierMap: Map[String, Object],
-                                                         args: ProjectOperationArguments = SimpleProjectOperationArguments.Empty,
+                                                         args: ParameterValues = SimpleParameterValues.Empty,
                                                          localArgs: Seq[Object] = Nil)
   extends FunctionInvocationContext[T]

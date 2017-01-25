@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
@@ -85,7 +85,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
 
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(Map(
       "foo" -> "bar"
     )))
   }

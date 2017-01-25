@@ -1,9 +1,10 @@
 package com.atomist.rug.ts
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -12,7 +13,7 @@ class SampleTypeScriptTest extends FlatSpec with Matchers {
   it should "use Sample from TypeScript" in {
 
     val tsEditorResource = "com/atomist/rug/ts/SampleTypeScriptTest.ts"
-    val parameters = SimpleProjectOperationArguments.Empty
+    val parameters = SimpleParameterValues.Empty
     val target = ParsingTargets.NewStartSpringIoProject
     val fileThatWillBeModified = "pom.xml"
 
@@ -22,7 +23,7 @@ class SampleTypeScriptTest extends FlatSpec with Matchers {
     //println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
-    val projectEditor = JavaScriptOperationFinder.fromJavaScriptArchive(artifactSourceWithRugNpmModule).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val projectEditor = SimpleJavaScriptProjectOperationFinder.find(artifactSourceWithRugNpmModule).editors.head
 
     // apply the operation
     projectEditor.modify(target, parameters) match {

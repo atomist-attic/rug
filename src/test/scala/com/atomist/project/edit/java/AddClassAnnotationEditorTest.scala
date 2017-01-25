@@ -1,7 +1,7 @@
 package com.atomist.project.edit.java
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{FailedModificationAttempt, SuccessfulModification}
 import com.atomist.rug.kind.java.AddClassAnnotationEditor
 import org.scalatest.{FlatSpec, Matchers}
@@ -16,7 +16,7 @@ class AddClassAnnotationEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
-  val args = SimpleProjectOperationArguments.Empty
+  val args = SimpleParameterValues.Empty
 
   it should "apply annotations where needed" in {
     val as = ParsingTargets.SpringIoGuidesRestServiceSource

@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
@@ -22,7 +22,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       |{{#in_ca}}
       |Well, {{taxed_value}} dollars, after taxes.{{/in_ca}}""".stripMargin
 
-  val FirstPoa = SimpleProjectOperationArguments("", Map[String, String](
+  val FirstPoa = SimpleParameterValues(Map[String, String](
     "name" -> "Chris",
     "value" -> "10000",
     "taxed_value" -> "6,000",

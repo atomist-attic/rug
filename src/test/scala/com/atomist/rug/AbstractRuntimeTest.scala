@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
@@ -27,7 +27,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
     def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
 
-    val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
+    val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleParameterValues.Empty, pipeline)
     r.allFiles.size should be > (0)
     r.allFiles.foreach(f => f.content.contains(license) should be(true))
   }
@@ -343,7 +343,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |  end
       """.stripMargin
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
-    val r = doModification(pas, outputAs, rugAs, SimpleProjectOperationArguments.Empty, pipeline)
+    val r = doModification(pas, outputAs, rugAs, SimpleParameterValues.Empty, pipeline)
     assert(r.totalFileCount === 2)
     assert(r.findFile(mergeOutputPath).get.content === "content")
     assert(r.findFile("test_out/foo").get.content === "file content")
@@ -498,7 +498,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
                                                          extraParams: Map[String, String] = Map(),
                                                          pipeline: RugPipeline = new DefaultRugPipeline()): Assertion = {
     // val originalFile = as.findFile("src/main/java/Dog.java").get
-    val poa = SimpleProjectOperationArguments("", Map(
+    val poa = SimpleParameterValues(Map(
       "text" -> extraText,
       "message" -> "say this") ++ extraParams)
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel

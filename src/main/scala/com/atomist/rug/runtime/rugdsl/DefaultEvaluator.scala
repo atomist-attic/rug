@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.rug._
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser._
@@ -29,7 +29,7 @@ class DefaultEvaluator(
                                          target: T,
                                          alias: String,
                                          identifierMap: Map[String, Object],
-                                         poa: ProjectOperationArguments): Seq[Object] = {
+                                         poa: ParameterValues): Seq[Object] = {
     def evaluateArg: FunctionArg => Object = {
       case ident: IdentifierFunctionArg =>
         val resolved = identifierMap.get(ident.name)
@@ -50,7 +50,7 @@ class DefaultEvaluator(
                                                  target: T,
                                                  alias: String,
                                                  identifierMap: Map[String, Object],
-                                                 poa: ProjectOperationArguments): R = {
+                                                 poa: ParameterValues): R = {
     try {
       te match {
         case literal: Literal[R @unchecked] =>

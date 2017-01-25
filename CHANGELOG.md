@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.12.0...HEAD
 
+### Added
+
+-   Added support for Command, Event and Response Handlers. All return Plans.
+
+### CHANGED
+
 -   New text node structure. See [docs/treenodes.md]().
+-   **BREAKING** Removed ProjectOperationArguments. Use ParameterizedRug instead
+-   **BREAKING** Refactored loading of Rugs from archives. Now returns `Rugs`
+-   **BREAKING** Removed Executor and old Handlers completely
 
 ## [0.12.0] - 2017-02-14
 

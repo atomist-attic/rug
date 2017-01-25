@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -8,8 +8,8 @@ import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.OptionValues._
+import org.scalatest.{FlatSpec, Matchers}
 
 class ElmTypeUsageTest extends FlatSpec with Matchers {
 
@@ -795,7 +795,7 @@ object ElmTypeUsageTest extends FlatSpec {
     }
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
-    val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))
+    val r = pe.modify(elmProject, SimpleParameterValues(params))
     r match {
       case sm: SuccessfulModification =>
         for {

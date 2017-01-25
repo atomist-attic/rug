@@ -1,11 +1,11 @@
 package com.atomist.rug.kind.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline._
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.parser.{ParserCombinatorRugParser, RugParser}
+import com.atomist.rug.parser.ParserCombinatorRugParser
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.Matchers
 
@@ -25,7 +25,7 @@ trait RugEditorTestHelper extends Matchers {
     assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
-    val r = pe.modify(startingProject, SimpleProjectOperationArguments("", params))
+    val r = pe.modify(startingProject, SimpleParameterValues( params))
     r match {
       case sm: SuccessfulModification =>
         sm.result

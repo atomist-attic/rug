@@ -1,6 +1,5 @@
 package com.atomist.project.common.yml
 
-import com.atomist.tree.content.project.SimpleResourceSpecifier
 import com.atomist.param.ParameterValidationPatterns
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -22,12 +21,6 @@ object YmlProjectOperationInfoParserTest {
       |
       |description:
       |    descr1
-      |
-      |group:
-      |    atomist
-      |
-      |version:
-      |    1.0
       |
       |parameters:
       |
@@ -138,17 +131,6 @@ class YmlProjectOperationInfoParserTest extends FlatSpec with Matchers {
   it should "return empty tags if no tags specified" in {
     val poi = YmlProjectOperationInfoParser.parse(noParameters)
     assert(poi.tags.isEmpty === true)
-  }
-
-  it should "return no GAV if version and group not specified" in {
-    val poi = YmlProjectOperationInfoParser.parse(noParameters)
-    assert(poi.gav.isDefined === false)
-  }
-
-  it should "return GAV if version and group specified" in {
-    val poi = YmlProjectOperationInfoParser.parse(valid1)
-    assert(poi.gav.isDefined === true)
-    assert(poi.gav.get === SimpleResourceSpecifier("atomist", "test1", "1.0"))
   }
 
   it should "find name in valid content" in {

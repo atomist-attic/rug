@@ -17,7 +17,16 @@ object NashornUtils {
 
   def toJavaType(nashornReturn: Object): Object = nashornReturn match {
     case s: ConsString => s.toString
+    case r: ScriptObjectMirror if r.isArray =>
+      //println(s"Array size is ${r.values().size()}")
+      r.values().asScala
     case x => x
+  }
+
+  def toScalaSeq(nashornReturn: Object): Seq[Object] = nashornReturn match {
+    case r: ScriptObjectMirror if r.isArray =>
+      //println(s"Array size is ${r.values().size()}")
+      r.values().asScala.toSeq
   }
 
   /**
@@ -25,6 +34,16 @@ object NashornUtils {
     */
   def stringProperty(som: ScriptObjectMirror, name: String): String = {
     som.get(name) match {
+      case null => null
+      case x => Objects.toString(x)
+    }
+  }
+
+  /**
+    * Call the given JavaScript function, which must return a string
+    */
+  def stringFunction(som: ScriptObjectMirror, name: String): String = {
+    som.callMember(name) match {
       case null => null
       case x => Objects.toString(x)
     }

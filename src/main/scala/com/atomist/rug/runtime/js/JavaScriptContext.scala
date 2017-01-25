@@ -115,10 +115,6 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
   private class ArtifactSourceBasedFolder private(val artifacts: ArtifactSource, val parent: Folder, val path: String) extends AbstractFolder(parent, path) {
 
     private val commentPattern: Pattern = Pattern.compile("^//.*$", Pattern.MULTILINE)
-    //put single line vars like var x = new Blah() into exports
-    private val varPattern: Pattern = Pattern.compile("var (\\w+) = new .*\\);\\s+$")
-
-    private val letPattern: Pattern = Pattern.compile("var (\\w+) = \\{.*\\};\\s+$", Pattern.DOTALL)
 
     def this(artifacts: ArtifactSource, rootPath: String = "") {
       this(artifacts.underPath(rootPath), null, "")
@@ -128,30 +124,13 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
       val file = artifacts.findFile(getPath + s)
       if (file.isEmpty) return null
       //remove these source-map comments because they seem to be breaking nashorn :/
-      val withoutComments = commentPattern.matcher(file.get.content).replaceAll("")
-      if(atomistConfig.isAtomistSource(file.get)){
-        //add export for those vars without them. TODO should be removed at some point once all have moved over!
-        val js = new StringBuilder(withoutComments)
-        append(varPattern, withoutComments, js)
-        append(letPattern, withoutComments, js)
-        js.toString()
-      }else{
-        withoutComments
-      }
+      commentPattern.matcher(file.get.content).replaceAll("")
     }
 
     def getFolder(s: String): Folder = {
       val dir = artifacts.findDirectory(getPath + s)
       if (dir.isEmpty) return null
       new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
-    }
-
-    def append(p: Pattern, str: String, sb: StringBuilder): Unit ={
-      val m = p.matcher(str)
-      if(m.find()){
-        val varName = m.group(1)
-        sb.append(s"\nexports.$varName = $varName;\n")
-      }
     }
   }
 }

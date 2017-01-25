@@ -30,7 +30,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      })
       |    }
       |  }
-      |  var editor = new MgEditor()
+      |export let editor = new MgEditor()
       | """.stripMargin
 
   val ModifiesWithSimpleMicrogrammarSplitInto2: String =
@@ -56,7 +56,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      })
       |    }
       |  }
-      |  var editor = new MgEditor()
+      |export let editor = new MgEditor()
       | """.stripMargin
 
   val NavigatesNestedUsingPathExpression: String =
@@ -81,7 +81,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      })
       |    }
       |  }
-      |  var editor = new MgEditor()
+      |export let editor = new MgEditor()
       | """.stripMargin
 
   val NavigatesNestedUsingProperty: String =
@@ -106,7 +106,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      })
       |    }
       |  }
-      |  var editor = new MgEditor()
+      |export let editor = new MgEditor()
       | """.stripMargin
 
   it should "run use microgrammar defined in TypeScript" in {
@@ -152,7 +152,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      })
       |    }
       |  }
-      |  var editor = new MgEditor()
+      |export let editor = new MgEditor()
       | """.stripMargin
 
   it should "throw an error when calling a method that doesn't exist" in {

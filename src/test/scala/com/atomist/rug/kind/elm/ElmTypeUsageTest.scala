@@ -81,7 +81,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |    }
         |}
         |
-        |var editor = new Renamer()
+        |export let editor = new Renamer()
           """.stripMargin
   }
 

@@ -234,7 +234,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       }
       |    }
       |  }
-      |  var editor = new ConstructedEditor()
+      | export let editor = new ConstructedEditor()
       | """.stripMargin
 
   it should "behave just like a normal JS/TS array, but also support some cool Java stuff!" in {

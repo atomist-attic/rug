@@ -50,4 +50,4 @@ class SimpleBanana implements ProjectEditor {
        throw new Error("No bananas tested. Sad.")
     }
   }
-  var editor = new SimpleBanana()
+export let editor = new SimpleBanana();

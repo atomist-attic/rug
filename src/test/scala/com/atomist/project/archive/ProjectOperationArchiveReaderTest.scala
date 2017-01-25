@@ -126,7 +126,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       |         `We are clever`)
       |    }
       |}
-      |var exec = new SimpleExecutor()
+      |export let exec = new SimpleExecutor()
     """.stripMargin
   it should "find typescript executor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)

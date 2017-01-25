@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.util.Timing._
 
 
-class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
+class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
 
   val SimpleProjectEditorWithParametersArray: String =
     s"""
@@ -83,7 +83,7 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
     println(s"Compiling took: $compileTime ms")
 
     val (ed, evalTime) = time {
-      JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+      JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectEditor]
     }
     println(s"Loading editor took: $evalTime ms")
 
@@ -119,9 +119,9 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
   }
 
 
-  private def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be("Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target,SimpleProjectOperationArguments("", Map("content" -> "woot")))

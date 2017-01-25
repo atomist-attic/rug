@@ -1,7 +1,6 @@
-package com.atomist.event
+package com.atomist.rug.runtime
 
-import com.atomist.param.Tag
-import com.atomist.rug.kind.service.ServiceSource
+import com.atomist.rug.spi.Plan.Plan
 
 /**
   * System event, such as a new issue
@@ -21,13 +20,7 @@ case class SystemEvent(
 /**
   * Event implemented by SystemEventHandlers
   */
-trait SystemEventHandler {
-
-  def name: String
-
-  def tags: Seq[Tag]
-
-  def description: String
+trait SystemEventHandler extends Handler {
 
   /**
     * Return the name of the the root node that this handler is interested in,
@@ -39,11 +32,9 @@ trait SystemEventHandler {
   val rootNodeName: String
 
   /**
-    * Handle the given event type. Communication occurs back
-    * through the ServiceSource.
+    * Handle the given event type.
     *
     * @param e SystemEvent we're processing
-    * @param s2 ServiceSource providing context for the current team
     */
-  def handle(e: SystemEvent, s2: ServiceSource): Unit
+  def handle(e: SystemEvent): Option[Plan]
 }

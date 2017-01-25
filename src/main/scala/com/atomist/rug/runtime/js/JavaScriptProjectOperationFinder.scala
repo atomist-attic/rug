@@ -7,9 +7,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 /**
   * Find and instantiate JavaScript editors in a Rug archive
   */
-object JavaScriptOperationFinder {
-
-  val ExecutorType = "executor"
+object JavaScriptProjectOperationFinder {
 
   val EditorType = "editor"
 
@@ -22,8 +20,6 @@ object JavaScriptOperationFinder {
     * TODO - this should probably include type checking too!
     */
   val KnownSignatures = Set(
-    JsRugOperationSignature(ExecutorType, Set("execute")),
-    JsRugOperationSignature(ExecutorType, Set("execute"), Set("__name", "__description")),
     JsRugOperationSignature(EditorType, Set("edit")),
     JsRugOperationSignature(EditorType, Set("edit"), Set("__name", "__description")),
     JsRugOperationSignature(ReviewerType,Set("review")),
@@ -43,19 +39,17 @@ object JavaScriptOperationFinder {
   }
 
   // TODO clean up this dispatch/signature stuff - too coupled
-  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
+  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptProjectOperation] = {
     jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
       case (v, Some(EditorType)) =>
-        new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptProjectEditor(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(ReviewerType)) =>
-        new JavaScriptInvokingProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(GeneratorType)) =>
         // TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
-        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
-      case (v, Some(ExecutorType)) =>
-        new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
     }
   }
 

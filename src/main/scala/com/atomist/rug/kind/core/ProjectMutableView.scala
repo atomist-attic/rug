@@ -40,7 +40,7 @@ class ProjectMutableView(
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
                           projectOperations: Seq[ProjectOperation] = Nil,
-                          ctx: UserModelContext = LocalAtomistFacade)
+                          ctx: UserModelContext = LocalAtomistContext)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
     with ChangeLogging[ArtifactSource] {
 

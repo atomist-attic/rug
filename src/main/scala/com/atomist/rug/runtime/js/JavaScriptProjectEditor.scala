@@ -12,12 +12,12 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 /**
   * ProjectEditor implementation that invokes a JavaScript function.
   */
-class JavaScriptInvokingProjectEditor(
+class JavaScriptProjectEditor(
                                        jsc: JavaScriptContext,
                                        jsVar: ScriptObjectMirror,
                                        rugAs: ArtifactSource
                                      )
-  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectEditorSupport {
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK

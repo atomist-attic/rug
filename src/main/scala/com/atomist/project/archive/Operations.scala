@@ -3,11 +3,11 @@ package com.atomist.project.archive
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.project.{Executor, ProjectOperation}
+import com.atomist.project.ProjectOperation
 
 object Operations {
 
-  val Empty = Operations(Nil, Nil, Nil, Nil)
+  val Empty = Operations(Nil, Nil, Nil)
 }
 
 /**
@@ -16,19 +16,16 @@ object Operations {
 case class Operations(
                        generators: Seq[ProjectGenerator],
                        editors: Seq[ProjectEditor],
-                       reviewers: Seq[ProjectReviewer],
-                       executors: Seq[Executor] = Nil) {
+                       reviewers: Seq[ProjectReviewer]) {
 
   val allOperations: Seq[ProjectOperation] =
-    generators ++ editors ++ reviewers ++ executors
+    generators ++ editors ++ reviewers
 
   def generatorNames: Seq[String] = generators.map(_.name)
 
   def editorNames: Seq[String] = editors.map(_.name)
 
   def reviewerNames: Seq[String] = reviewers.map(_.name)
-
-  def executorNames: Seq[String] = executors.map(_.name)
 
   override def toString: String = {
     def showOp(op: ProjectOperation): String = {
@@ -38,7 +35,6 @@ case class Operations(
 
     s"Generators are \n\t${generators.map(g => showOp(g)).mkString("\n\t")}\n" +
       s"Editors are \n\t${editors.map(ed => showOp(ed)).mkString("\n\t")}\n" +
-      s"Reviewers are ${reviewers.map(r => showOp(r)).mkString("\n\t")}\n" +
-      s"Executors are ${executors.map(r => showOp(r)).mkString("\n\t")}\n"
+      s"Reviewers are ${reviewers.map(r => showOp(r)).mkString("\n\t")}\n"
   }
 }

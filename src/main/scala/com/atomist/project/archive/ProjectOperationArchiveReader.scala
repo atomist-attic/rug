@@ -2,9 +2,9 @@ package com.atomist.project.archive
 
 import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGenerator}
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.project.{Executor, ProjectOperation}
+import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
 import com.atomist.rug.runtime.rugdsl.{ContextAwareProjectOperation, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
@@ -34,7 +34,7 @@ class ProjectOperationArchiveReader(
   def findOperations(startingProject: ArtifactSource,
                      namespace: Option[String],
                      otherOperations: Seq[ProjectOperation]): Operations = {
-    val fromTs = JavaScriptOperationFinder.fromJavaScriptArchive(startingProject.filter(_ => true, (x: FileArtifact) => !atomistConfig.isJsHandler(x)))
+    val fromTs = JavaScriptProjectOperationFinder.fromJavaScriptArchive(startingProject.filter(_ => true, (x: FileArtifact) => !atomistConfig.isJsHandler(x)))
     val fromOldPipeline = oldInterpreterPipeline.create(startingProject, namespace, otherOperations ++ fromTs)
 
     val operations = fromOldPipeline ++ fromTs
@@ -49,7 +49,7 @@ class ProjectOperationArchiveReader(
 
       // TODO these can't be generators yet.
       // This is a hack to avoid breaking tests
-      case ed: JavaScriptInvokingProjectEditor => ed
+      case ed: JavaScriptProjectEditor => ed
     }
 
     val generators = operations collect {
@@ -68,11 +68,7 @@ class ProjectOperationArchiveReader(
       case r: ProjectReviewer => r
     }
 
-    val executors = operations collect {
-      case ed: Executor => ed
-    }
-
-    Operations(generators, editors, reviewers, executors)
+    Operations(generators, editors, reviewers)
   }
 }
 

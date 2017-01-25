@@ -7,6 +7,7 @@ import com.atomist.project.edit.NoModificationNeeded
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.interop.UserModelContext
 import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -243,7 +244,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
     val ctx = new JavaScriptContext(Set("java.util.ArrayList","com.atomist.util.lang.JavaScriptArray"))
     ctx.load(as)

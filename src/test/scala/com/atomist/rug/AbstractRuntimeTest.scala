@@ -7,6 +7,7 @@ import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.rug.runtime.rugdsl.LambdaPredicate
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -27,7 +28,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |
       """.stripMargin
 
-    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
     val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
     r.allFiles.size should be > (0)
     r.allFiles.foreach(f => f.content.contains(license) should be(true))
@@ -343,7 +344,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |    do copyEditorBackingFilesWithNewRelativePath sourcePath='test/' destinationPath='test_out'
         |  end
       """.stripMargin
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
     val r = doModification(pas, outputAs, rugAs, SimpleProjectOperationArguments.Empty, pipeline)
     r.totalFileCount should be (2)
     r.findFile(mergeOutputPath).get.content should equal ("content")
@@ -541,7 +542,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     val poa = SimpleProjectOperationArguments("", Map(
       "text" -> extraText,
       "message" -> "say this") ++ extraParams)
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TestUtils.user_model
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
     val r = doModification(pas, as, rugAs, poa, pipeline)
     val path = "src/main/java/Dog.java"
     val fO = r.findFile(path)

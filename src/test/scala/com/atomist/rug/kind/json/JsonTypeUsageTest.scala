@@ -5,7 +5,7 @@ import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.rug._
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -146,7 +146,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |
         |export let finder = new PackageFinder();
       """.stripMargin
-    val pas = TestUtils.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(program), program)))
+    val pas = TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(program), program)))
     val edited = updateWith(pas, new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create()))))
   }
 

@@ -5,7 +5,8 @@ import java.util.Collections
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.{AtomistFacade, jsMatch, NamedJavaScriptEventHandlerTest, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.{AtomistFacade, NamedJavaScriptEventHandlerTest, jsMatch, jsPathExpressionEngine}
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -31,7 +32,7 @@ class HandlerTest extends FlatSpec with Matchers {
         |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
         |})
       """.stripMargin
-    val r = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
 
@@ -49,7 +50,7 @@ class HandlerTest extends FlatSpec with Matchers {
 
   it should "find and invoke other style of handler" in {
 
-      val r = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram, NamedJavaScriptEventHandlerTest.issuesStuff))
+      val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram, NamedJavaScriptEventHandlerTest.issuesStuff))
       val jsc = new JavaScriptContext()
 
       jsc.load(r)

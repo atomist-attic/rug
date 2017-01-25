@@ -4,6 +4,7 @@ import com.atomist.project.review.{ReviewResult, Severity}
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -194,7 +195,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectReviewer]
     jsed.name should be("Simple")

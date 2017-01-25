@@ -5,8 +5,8 @@ import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, Successful
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
-import com.atomist.rug.ts.RugTranspiler
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline, TestUtils}
+import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
+import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -776,7 +776,7 @@ object ElmTypeUsageTest extends LazyLogging {
                  runtime: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
                 ): ArtifactSource = {
 
-    val as = TestUtils.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program)))
+    val as = TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program)))
     val eds = runtime.create(as,  None)
     if (eds.isEmpty) {
       print(program); throw new Exception("No editor was parsed")

@@ -6,6 +6,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.ConsoleMessageBuilder
 import com.atomist.rug.runtime.js.interop.NamedJavaScriptEventHandlerTest
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.PathExpression
@@ -42,7 +43,7 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "parse single handler" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
-    val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", FirstHandler)), None, Nil,
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", FirstHandler)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(1)
     handlers.head.rootNodeName should be("issue")
@@ -50,7 +51,7 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "parse two handlers" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
-    val handlers = har.handlers("XX", TestUtils.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(2)
     handlers.exists(h => h.rootNodeName == "issue") should be(true)
@@ -59,7 +60,7 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "parse single new-style handler" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
-    val handlers = har.handlers("XX", TestUtils.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram,NamedJavaScriptEventHandlerTest.issuesStuff)), None, Nil,
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram,NamedJavaScriptEventHandlerTest.issuesStuff)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     handlers.size should be(1)
     handlers.head.rootNodeName should be("issue")

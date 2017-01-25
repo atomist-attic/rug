@@ -40,7 +40,7 @@ class SimpleBanana implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
 
       let i = 0
-      eng.with<any>(project, "//File()/banana()", n => {
+      eng.with<Banana>(project, "//File()/banana()", n => {
         //console.log("Checking color of banana")
         if (n.value() != "yellow")
          throw new Error(`Banana is not yellow but [${n.value()}]. Sad.`)

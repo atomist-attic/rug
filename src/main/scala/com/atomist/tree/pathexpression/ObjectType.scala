@@ -2,8 +2,8 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
 /**
@@ -29,13 +29,7 @@ case class ObjectType(typeName: String)
     if (directKids.nonEmpty)
       directKids
     else
-      childResolver(typeRegistry) match {
-        case Some(cr) => cr.findAllIn(tn).getOrElse(Nil)
-        case None =>
-          Nil
-//          throw new IllegalArgumentException(
-//            s"No type with name [$typeName]: Looking under node [$tn], Kids=$directKids, known types=[${typeRegistry.typeNames}]")
-      }
+      childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
   }
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {

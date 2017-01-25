@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, TestUtils}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -207,7 +208,7 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -218,7 +219,7 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifySimpleReviewer(tsf: FileArtifact): JavaScriptInvokingProjectReviewer = {
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsr = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectReviewer]
     jsr.name should be("Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -229,7 +230,7 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
   }
 
   private def invokeAndVerifyEditorWithDefaults(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))

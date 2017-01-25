@@ -6,6 +6,7 @@ import com.atomist.rug.kind.service._
 import com.atomist.rug.runtime.js.TypeScriptRugEditorTest
 import com.atomist.rug.runtime.js.interop.{NamedJavaScriptEventHandlerTest, jsPathExpressionEngine}
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, ArtifactSourceIdentifier, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -101,7 +102,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "find typescript editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleEditor.ts", TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
     ))
     val ops = apc.findOperations(as, None, Nil)
@@ -130,7 +131,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """.stripMargin
   it should "find typescript executor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val as = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/executors/SimpleExecutor.ts", SimpleExecutor)
     ))
     val ops = apc.findOperations(as, None, Nil)
@@ -144,7 +145,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
-    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val rugAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
       f1,
@@ -176,7 +177,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
         NashornConstructorTest.SimpleJavascriptEditor),
       f1,
       f2
-    ) + TestUtils.user_model
+    ) + TypeScriptBuilder.userModel
 
     val ops = apc.findOperations(rugAs, None, Nil)
     ops.editors.size should be(1)
@@ -204,7 +205,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
          |})
          |
       """.stripMargin
-    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val rugAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
       f1,
@@ -229,7 +230,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.ts", "class Thing {}")
 
-    val rugAs = TestUtils.compileWithModel(SimpleFileBasedArtifactSource(
+    val rugAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/SimpleGenerator.ts",
         TypeScriptRugEditorTest.SimpleGenerator),
       f1,

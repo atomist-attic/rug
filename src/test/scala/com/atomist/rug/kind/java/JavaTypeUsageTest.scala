@@ -7,6 +7,7 @@ import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.java.JavaVerifier._
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -71,7 +72,7 @@ object JavaTypeUsageTest extends Matchers {
                       as: ArtifactSource, poa: Map[String,String],
                       runtime : RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
 
-    val progAs = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, program)).withPathAbove(".atomist") + TestUtils.user_model
+    val progAs = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, program)).withPathAbove(".atomist") + TypeScriptBuilder.userModel
 
     val eds = runtime.create(progAs,None)
 

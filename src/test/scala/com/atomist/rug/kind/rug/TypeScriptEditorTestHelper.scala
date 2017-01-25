@@ -6,7 +6,7 @@ import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.{CompilerChainPipeline, RugPipeline, TestUtils}
-import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.Matchers
 
@@ -23,7 +23,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
 
     val cas = {
       val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
-      TestUtils.compileWithModel(as)
+      TypeScriptBuilder.compileWithModel(as)
     }
 
     val eds = JavaScriptOperationFinder.fromJavaScriptArchive(cas)

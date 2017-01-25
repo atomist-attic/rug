@@ -9,6 +9,7 @@ import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{Action, ActionRegistry, Callback, ConsoleMessageBuilder, Rug}
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpression
@@ -110,7 +111,7 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
 
   it should "extract and run a handler based on new style" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
-    val handlers = har.handlers("XX", TestUtils.compileWithModel(SimpleFileBasedArtifactSource(reOpenCloseIssueProgram,issuesStuff)), None, Nil,
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(reOpenCloseIssueProgram,issuesStuff)), None, Nil,
       new ConsoleMessageBuilder("XX", SimpleActionRegistry))
     handlers.size should be(1)
     val handler = handlers.head

@@ -1,6 +1,6 @@
 package com.atomist.rug.compiler
 
-import com.atomist.rug.TestUtils
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
@@ -22,7 +22,7 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers with Lazy
         |}
       """.stripMargin))
 
-    val compiled = TestUtils.compileWithModel(as)
+    val compiled = TypeScriptBuilder.compileWithModel(as)
     for (f <- compiled.allFiles) {
       logger.debug(f.path)
     }

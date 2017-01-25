@@ -2,11 +2,19 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.MutableTreeNode
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.microgrammar.matchers.Break
 
 case class MatcherConfig(
                           greedy: Boolean = true
                         )
+
+
+case class DismatchReport(why: String, causes: Seq[DismatchReport] = Seq()) {
+  def andSo(consequence: String): DismatchReport = DismatchReport(consequence, Seq(this))
+//  def andAlsoBecause(whyNow: String, additionalCause: DismatchReport) = DismatchReport(whyNow, Seq(additionalCause, this))
+}
+
 
 /**
   * Extended by classes that can match part of an input string, preserving
@@ -23,14 +31,14 @@ trait Matcher {
     * @param inputState input state
     * @return match or failure to match
     */
-  protected def matchPrefixInternal(inputState: InputState): Option[PatternMatch]
+  protected def matchPrefixInternal(inputState: InputState): MatchPrefixResult
 
-  final def matchPrefix(is: InputState) = {
+  final def matchPrefix(is: InputState): MatchPrefixResult = {
     val matchedOption = matchPrefixInternal(is)
 
-    for {
-      matched <- matchedOption
-      node <- matched.node} {
+    for {matchFound <- matchedOption.right
+         node <- matchFound.node
+    } {
       node.asInstanceOf[MutableTreeNode].addType(name)
     }
     matchedOption
@@ -70,29 +78,32 @@ trait Matcher {
 
 object Matcher {
 
+  type MatchPrefixResult = Either[DismatchReport, PatternMatch]
+
   def prettyPrint(m: Matcher) = prettyPrintLines(m).mkString("\n")
 
   private def prettyPrintLines(m: Matcher): Seq[String] = {
 
-    def nameOrNot(named: Option[String]):String = named.map(_ + " = ").getOrElse("")
+    def nameOrNot(named: Option[String]): String = named.map(_ + " = ").getOrElse("")
+
     def mkSeq(pre: String, in: Seq[String], post: String = ")") = Seq(pre) ++ in ++ Seq(post)
 
-    val lines:Seq[String] = m match {
+    val lines: Seq[String] = m match {
       case Alternate(left, right, name) =>
         mkSeq(s"Alternate($name",
           prettyPrintLines(left) ++
-          prettyPrintLines(right))
+            prettyPrintLines(right))
       case Literal(literal, named) => Seq(s"Literal(${nameOrNot(named)}$literal)")
       case Rep(m, name, separator) =>
         mkSeq(s"Rep($name",
-        prettyPrintLines(m) ++
-        separator.map(sm => s" separated by ${prettyPrintLines(sm)}"))
+          prettyPrintLines(m) ++
+            separator.map(sm => s" separated by ${prettyPrintLines(sm)}"))
       case Break(breakToMatcher, named) =>
         mkSeq(s"Break(${nameOrNot(named)}", prettyPrintLines(breakToMatcher))
       case Concat(left, right, name) =>
         mkSeq(s"Concat($name",
           prettyPrintLines(left) ++
-          prettyPrintLines(right))
+            prettyPrintLines(right))
       case Discard(m, name) =>
         mkSeq(s"Discard($name", prettyPrintLines(m), ")")
       case Remainder(name) =>

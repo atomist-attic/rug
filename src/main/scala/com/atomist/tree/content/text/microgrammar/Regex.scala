@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.MutableTerminalTreeNode
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 
 /**
   * Matches a regex.
@@ -12,21 +13,21 @@ case class Regex(name: String, regex: String, config: MatcherConfig = MatcherCon
 
   private val rex = regex.r
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
       rex.anchored.findPrefixMatchOf(inputState.remainder) match {
         case Some(m) =>
-          Some(PatternMatch(
+          Right(PatternMatch(
             Some(
               new MutableTerminalTreeNode(name, m.matched, inputState.inputPosition)),
             m.matched,
             inputState.take(m.matched.length)._2,
             this.toString))
-        case _ => None
+        case _ => Left(DismatchReport(s"Regex $regex did not match ${inputState.remainder.toString.substring(0, Math.min(40, inputState.remainder.length))}"))
       }
     }
     else
-      None
+      Left(DismatchReport("we have reached the end"))
 }
 
 /**
@@ -36,12 +37,14 @@ class Placeholder extends Matcher {
 
   override def name: String = "placeholder"
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  // what does this accomplish if we can't name it?
+
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
-      Some(PatternMatch(None, "", inputState, this.toString))
+      Right(PatternMatch(None, "", inputState, this.toString))
     }
     else
-      None
+      Left(DismatchReport("no input remains")) // why can't we put a placeholder at the very end?
 }
 
 object Whitespace extends Discard(Regex("whitespace", """\s+"""))

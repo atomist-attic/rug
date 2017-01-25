@@ -1,7 +1,8 @@
 package com.atomist.tree.content.text.microgrammar.matchers
 
 import com.atomist.tree.content.text.MutableTerminalTreeNode
-import com.atomist.tree.content.text.microgrammar.{InputState, Matcher, PatternMatch}
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
+import com.atomist.tree.content.text.microgrammar.{DismatchReport, InputState, Matcher, PatternMatch}
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -17,20 +18,20 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
 
   override def name: String = named.getOrElse("break")
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
       var currentInputState = inputState
       var matchedTerminatingPattern = breakToMatcher.matchPrefix(currentInputState)
-      while (matchedTerminatingPattern.isEmpty && !currentInputState.exhausted) {
+      while (matchedTerminatingPattern.isLeft && !currentInputState.exhausted) {
         // Advance one character
         currentInputState = currentInputState.advance
         matchedTerminatingPattern = breakToMatcher.matchPrefix(currentInputState)
       }
       // We either exhausted the input and didn't match at all, or we have a match
       matchedTerminatingPattern match {
-        case None =>
-          None
-        case Some(terminatingMatch) =>
+        case Left(no) =>
+          Left(no.andSo("not anywhere in the rest of the input"))
+        case Right(terminatingMatch) =>
           val (eaten, resultingIs) = inputState.take(terminatingMatch.endPosition.offset - inputState.offset)
           val returnedMatch = PatternMatch(
             named.map(n =>
@@ -39,9 +40,9 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
             terminatingMatch.resultingInputState,
             this.toString)
           logger.debug(s"terminatingMatch=[$terminatingMatch],eaten=[$eaten], matched=$returnedMatch")
-          Some(returnedMatch)
+          Right(returnedMatch)
       }
     }
     else
-      None
+      Left(DismatchReport("no input left"))
 }

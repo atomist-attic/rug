@@ -1,22 +1,22 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 
 /**
   * Try first to match the left pattern, then the right
   *
-  * @param left  left pattern
-  * @param right right pattern
+  * @param a left pattern
+  * @param b right pattern
   */
-case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") extends Matcher {
+case class Alternate(a: Matcher, b: Matcher, name: String = "alternate") extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
-    val l = left.matchPrefix(inputState)
-    l match {
-      case None =>
-        right.matchPrefix(inputState)
-      case Some(leftMatch) =>
-        Some(leftMatch)
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
+    a.matchPrefix(inputState) match {
+      case Left(noFromA) =>
+        b.matchPrefix(inputState).left.map(noFromB => DismatchReport("Neither matched", Seq(noFromA, noFromB)))
+      case Right(leftMatch) =>
+        Right(leftMatch)
     }
   }
 }
@@ -29,8 +29,8 @@ case class Alternate(left: Matcher, right: Matcher, name: String = "alternate") 
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
-    m.matchPrefix(inputState).map(matched => matched.copy(node = None))
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
+    m.matchPrefix(inputState).right.map(matched => matched.copy(node = None))
 
 }
 
@@ -43,8 +43,8 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 case class Wrap(m: Matcher, name: String)
   extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
-    m.matchPrefix(inputState).map(matched =>
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
+    m.matchPrefix(inputState).right.map(matched =>
       matched.copy(node = matched.node.map(mn => {
         val n = SimpleMutableContainerTreeNode.wrap(name, mn)
         //println(s"New node is $n")
@@ -55,11 +55,11 @@ case class Wrap(m: Matcher, name: String)
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState) match {
-      case None =>
-        Some(PatternMatch(None, matched = "", inputState, this.toString))
-      case Some(there) =>
-        Some(there)
+      case Left(no) =>
+        Right(PatternMatch(None, matched = "", inputState, this.toString))
+      case Right(there) =>
+        Right(there)
     }
 }

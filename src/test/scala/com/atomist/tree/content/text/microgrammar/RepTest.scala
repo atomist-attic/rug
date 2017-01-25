@@ -10,7 +10,7 @@ class RepTest extends FlatSpec with Matchers {
     val l = Rep(l1)
     val input = "woieurowieurowieur"
     l.matchPrefix(InputState(input)) match {
-      case Some(PatternMatch(Some(tn), "", InputState(input, _, _), _)) =>
+      case Right(PatternMatch(Some(tn), "", InputState(input, _, _), _)) =>
         tn.nodeName should be ("rep")
     }
   }
@@ -19,7 +19,7 @@ class RepTest extends FlatSpec with Matchers {
     val l1 = Literal("thing", Some("thing"))
     val l = Rep(l1)
     l.matchPrefix(InputState("thing2")) match {
-      case Some(PatternMatch(Some(tn: ContainerTreeNode), "thing", InputState(thing2, _, _), _)) =>
+      case Right(PatternMatch(Some(tn: ContainerTreeNode), "thing", InputState(thing2, _, _), _)) =>
         tn.nodeName should be ("rep")
         tn.childNodes.size should be (1)
     }
@@ -30,7 +30,7 @@ class RepTest extends FlatSpec with Matchers {
     val l = Rep(l1)
     val input = "thingthing2"
     l.matchPrefix(InputState(input)) match {
-      case Some(pe: PatternMatch) =>
+      case Right(pe: PatternMatch) =>
         pe.matched should be ("thingthing")
         pe.resultingInputState.input should be (input)
         pe.resultingInputState.offset should be ("thingthing".length)
@@ -46,7 +46,7 @@ class RepTest extends FlatSpec with Matchers {
     val namedRep = Rep(l1, "myReppyName")
     val input = "thingthing2"
     namedRep.matchPrefix(InputState(input)) match {
-      case Some(pe: PatternMatch) =>
+      case Right(pe: PatternMatch) =>
         pe.matched should be ("thingthing")
         pe.resultingInputState.input should be (input)
         pe.resultingInputState.offset should be ("thingthing".length)

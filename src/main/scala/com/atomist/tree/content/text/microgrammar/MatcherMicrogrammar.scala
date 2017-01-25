@@ -44,14 +44,15 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
   }
 
 
-  private[microgrammar] def findMatchesInternal(input: CharSequence, listeners: Option[MatchListener]): Seq[(PatternMatch, OffsetInputPosition)] = {
+  private[microgrammar] def findMatchesInternal(input: CharSequence,
+                                                listeners: Option[MatchListener]): Seq[(PatternMatch, OffsetInputPosition)] = {
     val matches = ListBuffer.empty[(PatternMatch, OffsetInputPosition)]
     var is = InputState(input)
     while (!is.exhausted) {
       matcher.matchPrefix(is) match {
-        case None =>
+        case Left(whyNot) =>
           is = is.advance
-        case Some(matchFound) =>
+        case Right(matchFound) =>
           listeners.foreach(l => matchFound.node.map(l.onMatch(_)))
           val thisStartedAt = OffsetInputPosition(is.offset)
           matches.append(matchFound -> thisStartedAt)

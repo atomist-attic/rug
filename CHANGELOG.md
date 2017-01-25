@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   LinkedJsonTreeDeserializer now works when an already linked object
+    is updated
+
 -   TS generators are now passed project name as second argument as
     per TS contract
 

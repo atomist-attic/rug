@@ -47,9 +47,118 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
       |]
     """.stripMargin
 
+  val t2: String =
+    """
+     |[
+     |   {
+     |      "build_url":"https://travis-ci.org/something",
+     |      "id":"192756197",
+     |      "timestamp":"2017-01-17T17:21:48.374Z",
+     |      "started_at":"2017-01-17T17:18:57Z",
+     |      "nodeId":4770,
+     |      "name":"333",
+     |      "compare_url":"https://github.com/something",
+     |      "status":"Passed",
+     |      "type":[
+     |         "Build"
+     |      ],
+     |      "finished_at":"2017-01-17T17:21:45Z"
+     |   },
+     |   {
+     |      "message":"Commit message",
+     |      "sha":"sha",
+     |      "timestamp":"2017-01-17T11:18:51-06:00",
+     |      "nodeId":4767,
+     |      "type":[
+     |         "Commit"
+     |      ]
+     |   },
+     |   {
+     |      "name":"user-name",
+     |      "login":"user-login",
+     |      "email":"user-email",
+     |      "nodeId":2900,
+     |      "type":[
+     |         "GitHubId"
+     |      ]
+     |   },
+     |   {
+     |      "owner":"owner",
+     |      "name":"repo-name",
+     |      "nodeId":2391,
+     |      "type":[
+     |         "Repo"
+     |      ]
+     |   },
+     |   {
+     |      "name":"channel-name",
+     |      "id":"channel-id",
+     |      "nodeId":2200,
+     |      "type":[
+     |         "ChatChannel",
+     |         "SlackChannel"
+     |      ]
+     |   },
+     |   {
+     |      "before":"before-sha",
+     |      "after":"after-sha",
+     |      "branch":"git-branch",
+     |      "timestamp":"2017-01-17T17:18:52.943Z",
+     |      "nodeId":4766,
+     |      "type":[
+     |         "Push"
+     |      ]
+     |   },
+     |   {
+     |      "startNodeId":4767,
+     |      "endNodeId":4770,
+     |      "type":"HAS_BUILD"
+     |   },
+     |   {
+     |      "startNodeId":4767,
+     |      "endNodeId":2900,
+     |      "type":"AUTHOR"
+     |   },
+     |   {
+     |      "startNodeId":4770,
+     |      "endNodeId":2391,
+     |      "type":"ON"
+     |   },
+     |   {
+     |      "startNodeId":2391,
+     |      "endNodeId":2200,
+     |      "type":"CHANNEL"
+     |   },
+     |   {
+     |      "startNodeId":4770,
+     |      "endNodeId":4766,
+     |      "type":"TRIGGERED_BY"
+     |   },
+     |   {
+     |      "startNodeId":4766,
+     |      "endNodeId":4767,
+     |      "type":"CONTAINS"
+     |   },
+     |   {
+     |      "startNodeId":4767,
+     |      "endNodeId":2900,
+     |      "type":"AUTHOR"
+     |   }
+     |]
+    """.stripMargin
+
   it should "deserialize simple tree" in {
     val node = LinkedJsonTreeDeserializer.fromJson(t1)
     node.nodeType should be (Set("Issue"))
     node.childrenNamed("number").size should be (1)
+  }
+
+  it should "deserialize a tree of n depth" in {
+    val node = LinkedJsonTreeDeserializer.fromJson(t2)
+    node.nodeType should be (Set("Build"))
+    val repo = node.childrenNamed("ON").head
+    repo.childrenNamed("owner").size should be (1)
+    val chatChannel = repo.childrenNamed("CHANNEL").head
+    chatChannel.childrenNamed("name").size should be (1)
   }
 }

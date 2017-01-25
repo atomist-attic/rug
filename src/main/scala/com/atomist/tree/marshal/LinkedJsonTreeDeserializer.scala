@@ -103,7 +103,7 @@ private class LinkableContainerTreeNode(
 
   def link(c: LinkableContainerTreeNode, link: String): Unit = {
     // Add a child with the appropriate name
-    val nn = new LinkableContainerTreeNode(link, c.nodeType, c.fieldValues)
+    val nn = new WrappingLinkableContainerTreeNode(c, link)
     fieldValues = fieldValues :+ nn
   }
 
@@ -118,4 +118,17 @@ private class LinkableContainerTreeNode(
   override def childrenNamed(key: String): Seq[TreeNode] =
     fieldValues.filter(n => n.nodeName.equals(key))
 
+}
+
+private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
+                                                override val nodeName: String)
+  extends ContainerTreeNode {
+
+  override def value: String = ???
+
+  override def childNodeNames: Set[String] = wrappedNode.childNodeNames
+
+  override def childNodeTypes: Set[String] = wrappedNode.childNodeTypes
+
+  override def childrenNamed(key: String): Seq[TreeNode] = wrappedNode.childrenNamed(key)
 }

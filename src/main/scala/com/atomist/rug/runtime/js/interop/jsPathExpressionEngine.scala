@@ -76,6 +76,10 @@ class jsPathExpressionEngine(
       matcherRegistry += parsedMatcher
       val mg = new MatcherMicrogrammar(parsedMatcher, name)
       new MicrogrammarTypeProvider(mg)
+    case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
+      // It's a type provider coded in JavaScript
+      val tp = new JavaScriptBackedTypeProvider(som)
+      tp
     case x =>
       throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
 

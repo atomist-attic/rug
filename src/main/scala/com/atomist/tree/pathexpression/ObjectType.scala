@@ -35,7 +35,7 @@ case class ObjectType(typeName: String)
             case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
             case None =>
               throw new IllegalArgumentException(
-                s"No type with name [$typeName]: Node=$tn, Kids=$directKids")
+                s"No type with name [$typeName]: Node=$tn, Kids=$directKids, known types=[${typeRegistry.typeNames}]")
           }
         case x =>
           throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")

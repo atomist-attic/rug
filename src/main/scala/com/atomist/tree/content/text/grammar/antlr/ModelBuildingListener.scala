@@ -152,7 +152,7 @@ class ModelBuildingListener(
         // However, populate it with the possible field names
         val possibleFieldNames =
           typ.getDeclaredMethods.map(_.getName) ++ typ.getDeclaredFields.map(_.getName)
-        Seq(EmptyContainerTreeNode(name, possibleFieldNames.toSet, Set(name)))
+        Seq(EmptyAntlrContainerTreeNode(name, possibleFieldNames.toSet, Set(name)))
     }
     r
   }
@@ -162,9 +162,9 @@ class ModelBuildingListener(
   * Empty container field value including fieldName information about possible fields,
   * that are not present in this instance. This allows Rug type checking to work.
   */
-case class EmptyContainerTreeNode(nodeName: String,
-                                  override val childNodeNames: Set[String],
-                                  types: Set[String] = Set())
+case class EmptyAntlrContainerTreeNode(nodeName: String,
+                                       override val childNodeNames: Set[String],
+                                       types: Set[String] = Set())
   extends ContainerTreeNode {
 
   override def childNodes: Seq[TreeNode] = Nil

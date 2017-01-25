@@ -24,13 +24,12 @@ case class ObjectType(typeName: String)
   private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
 
   // Attempt to find nodes of the require type under the given node
-  private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {
-    val directKids = tn.childNodes.filter(eligibleNode)
-    if (directKids.nonEmpty)
-      directKids
-    else
-      childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
-  }
+  private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =
+    tn.childNodes.filter(eligibleNode) match {
+      case Nil =>
+        childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
+      case kids => kids
+    }
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {

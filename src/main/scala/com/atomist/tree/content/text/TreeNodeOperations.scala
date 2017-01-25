@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text
 
-import com.atomist.tree.content.text.grammar.antlr.EmptyContainerTreeNode
+import com.atomist.tree.content.text.grammar.antlr.EmptyAntlrContainerTreeNode
 import com.atomist.tree.{ContainerTreeNode, PaddingTreeNode, TerminalTreeNode, TreeNode}
 import org.springframework.util.ReflectionUtils
 

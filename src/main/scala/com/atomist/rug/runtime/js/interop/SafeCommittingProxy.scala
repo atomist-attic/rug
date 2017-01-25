@@ -44,9 +44,12 @@ class SafeCommittingProxy(types: Set[Typed],
           // Navigation on a node
           new FixedReturnProxy(name, node)
         }
-        else
-          throw new RugRuntimeException(null,
+        else node match {
+          case sobtn: ScriptObjectBackedTreeNode =>
+            sobtn.invoke(name)
+          case _ => throw new RugRuntimeException(null,
             s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found $possibleOps")
+        }
       }
       else
         new MethodInvocationProxy(name, possibleOps)

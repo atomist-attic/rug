@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.NoModificationNeeded
+import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.file.ClassPathArtifactSource
@@ -83,6 +83,16 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case nmn: NoModificationNeeded =>
+    }
+    jsed
+  }
+
+  it should "invoke side effecting tree finder with two levels" in {
+    val jsed = TestUtils.editorInSideFile(this, "MutatingBanana.ts")
+    val target = ParsingTargets.SpringIoGuidesRestServiceSource
+    jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
+      case sm: SuccessfulModification =>
+        sm.result.allFiles.exists(f => f.name.endsWith(".java") && f.content.startsWith("I am evil!"))
     }
     jsed
   }

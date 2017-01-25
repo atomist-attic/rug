@@ -4,12 +4,10 @@ import java.util.Objects
 
 import com.atomist.rug.kind.core.FileType
 import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView}
+import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi.{TypeProvider, Typed}
 import com.atomist.tree.TreeNode
-import jdk.nashorn.api.scripting.ScriptObjectMirror
-
-import scala.collection.JavaConverters._
-import NashornUtils._
+import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 /**
   * Type provider backed by a JavaScript object
@@ -39,7 +37,7 @@ class JavaScriptBackedTypeProvider(
 /**
   * TreeNode backed by a JavaScript object
   */
-private class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
+class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
 
   override def nodeName: String = stringFunction(som, "nodeName")
 
@@ -59,5 +57,20 @@ private class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNo
 
   override def childrenNamed(key: String): Seq[TreeNode] =
     kids.filter(k => k.nodeName == key)
+
+  /**
+    * Invoke an arbitrary function defined in JavaScript
+    */
+  def invoke(name: String): AbstractJSObject = new InvokingFunctionProxy(name)
+
+  private class InvokingFunctionProxy(name: String)
+    extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      som.callMember(name)
+    }
+  }
 
 }

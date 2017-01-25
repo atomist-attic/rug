@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Support for a new TS (JS) Handler programming model as per
     https://github.com/atomist/rug/issues/105
 
+-   Support for Type extensions/TreeNode written in TypeScript as
+    per https://github.com/atomist/rug/issues/214
+
 ### Fixed
 
 -   TS generators are now passed project name as second argument as

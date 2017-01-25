@@ -46,7 +46,7 @@ abstract class AbstractInMemAntlrGrammar
     }
   }
 
-  protected val config = setup
+  protected val config: ParserSetup = setup
 
   logger.debug(s"Compiling grammar-----\n$config\n-----")
   compileGrammar(config.parser)

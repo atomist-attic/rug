@@ -17,7 +17,7 @@ class AntlrGrammar(
   extends AbstractInMemAntlrGrammar
     with Parser {
 
-  override protected def setup = {
+  override protected def setup: ParserSetup = {
     // Extract the grammar name from the relevant line
     val grammarRe = "grammar ([A-Z][a-zA-Z0-9]*);.*".r
     val names = grammar.lines.flatMap {
@@ -49,7 +49,7 @@ class AntlrGrammar(
 
     val updatedResult = l.results.head
     updatedResult match {
-      case asu: AbstractMutableContainerTreeNode => asu.pad(input, true)
+      case asu: AbstractMutableContainerTreeNode => asu.pad(input, topLevel = true)
     }
     updatedResult
   }

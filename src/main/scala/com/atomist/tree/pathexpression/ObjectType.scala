@@ -29,16 +29,11 @@ case class ObjectType(typeName: String)
     if (directKids.nonEmpty)
       directKids
     else
-      tn match {
-        case mv: MutableView[_] =>
-          childResolver(typeRegistry) match {
-            case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
-            case None =>
-              throw new IllegalArgumentException(
-                s"No type with name [$typeName]: Node=$tn, Kids=$directKids, known types=[${typeRegistry.typeNames}]")
-          }
-        case x =>
-          throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
+      childResolver(typeRegistry) match {
+        case Some(cr) => cr.findAllIn(tn).getOrElse(Nil)
+        case None =>
+          throw new IllegalArgumentException(
+            s"No type with name [$typeName]: Node=$tn, Kids=$directKids, known types=[${typeRegistry.typeNames}]")
       }
   }
 

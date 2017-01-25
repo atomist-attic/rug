@@ -32,8 +32,9 @@ case class ObjectType(typeName: String)
       childResolver(typeRegistry) match {
         case Some(cr) => cr.findAllIn(tn).getOrElse(Nil)
         case None =>
-          throw new IllegalArgumentException(
-            s"No type with name [$typeName]: Node=$tn, Kids=$directKids, known types=[${typeRegistry.typeNames}]")
+          Nil
+//          throw new IllegalArgumentException(
+//            s"No type with name [$typeName]: Looking under node [$tn], Kids=$directKids, known types=[${typeRegistry.typeNames}]")
       }
   }
 

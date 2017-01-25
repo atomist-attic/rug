@@ -9,8 +9,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   */
 object JavaScriptOperationFinder {
 
-  val ExecutorType = "executor"
-
   val EditorType = "editor"
 
   val ReviewerType = "reviewer"
@@ -22,8 +20,6 @@ object JavaScriptOperationFinder {
     * TODO - this should probably include type checking too!
     */
   val KnownSignatures = Set(
-    JsRugOperationSignature(ExecutorType, Set("execute")),
-    JsRugOperationSignature(ExecutorType, Set("execute"), Set("__name", "__description")),
     JsRugOperationSignature(EditorType, Set("edit")),
     JsRugOperationSignature(EditorType, Set("edit"), Set("__name", "__description")),
     JsRugOperationSignature(ReviewerType,Set("review")),
@@ -54,8 +50,6 @@ object JavaScriptOperationFinder {
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
         new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
-      case (v, Some(ExecutorType)) =>
-        new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
     }
   }
 

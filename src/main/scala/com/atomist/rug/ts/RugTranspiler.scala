@@ -202,7 +202,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${wb.alias} => {"
     val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
 
-    val referencingAccessibleThing = Set("Project", "Services").contains(wb.kind)
+    val referencingAccessibleThing = Set("Project").contains(wb.kind)
       //!wb.kind.equals(outerAlias)
     if (!referencingAccessibleThing) {
       descent + "\n" + helper.indented(blockBody, 1) + "\n})"

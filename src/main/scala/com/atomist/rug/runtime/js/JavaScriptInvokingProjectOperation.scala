@@ -7,7 +7,7 @@ import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatt
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.js.interop.SafeCommittingProxy
+import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -155,8 +155,8 @@ abstract class JavaScriptInvokingProjectOperation(
     * @param pmv project to wrap
     * @return proxy TypeScript callers can use
     */
-  protected def wrapProject(pmv: ProjectMutableView): SafeCommittingProxy = {
-    new SafeCommittingProxy(projectType, pmv)
+  protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
+    new jsSafeCommittingProxy(projectType, pmv)
   }
 
 }

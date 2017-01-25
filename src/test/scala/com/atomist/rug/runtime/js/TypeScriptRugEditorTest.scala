@@ -4,7 +4,6 @@ import com.atomist.param.Tag
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -212,7 +211,6 @@ object TypeScriptRugEditorTest {
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
-
       """import {Project,File} from '@atomist/rug/model/Core'
         |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |import {Parameter, Editor, Tags} from '@atomist/rug/operations/Decorators'
@@ -252,7 +250,6 @@ object TypeScriptRugEditorTest {
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
-
     """import {Project, File} from '@atomist/rug/model/Core'
       |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'

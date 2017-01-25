@@ -118,7 +118,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    description: string = "Find a spring boot package"
         |    edit(project: Project) {
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,SpringBootProject>(`/SpringBootProject()`)
+        |      let pe = new PathExpression<Project,SpringBootProject>("/SpringBootProject()")
         |      let p = eng.scalar(project, pe)
         |    }
         |}

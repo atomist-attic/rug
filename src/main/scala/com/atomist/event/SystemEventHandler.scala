@@ -1,7 +1,7 @@
 package com.atomist.event
 
 import com.atomist.param.Tag
-import com.atomist.rug.kind.service.ServiceSource
+import com.atomist.rug.spi.Plan.Plan
 
 /**
   * System event, such as a new issue
@@ -43,7 +43,6 @@ trait SystemEventHandler {
     * through the ServiceSource.
     *
     * @param e SystemEvent we're processing
-    * @param s2 ServiceSource providing context for the current team
     */
-  def handle(e: SystemEvent, s2: ServiceSource): Unit
+  def handle(e: SystemEvent): Plan
 }

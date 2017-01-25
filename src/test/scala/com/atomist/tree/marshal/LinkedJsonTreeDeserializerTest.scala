@@ -156,9 +156,11 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
   it should "deserialize a tree of n depth" in {
     val node = LinkedJsonTreeDeserializer.fromJson(t2)
     node.nodeType should be (Set("Build"))
+    node.childrenNamed("status").head.value should be ("Passed")
     val repo = node.childrenNamed("ON").head
     repo.childrenNamed("owner").size should be (1)
     val chatChannel = repo.childrenNamed("CHANNEL").head
     chatChannel.childrenNamed("name").size should be (1)
+    chatChannel.childrenNamed("id").head.value should be ("channel-id")
   }
 }

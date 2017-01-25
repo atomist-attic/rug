@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   LinkedJsonTreeDeserializer now properly returns string values
+
 -   LinkedJsonTreeDeserializer now works when an already linked object
     is updated
 

@@ -55,7 +55,12 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
             k <- m.keys
             if !SpecialProperties.contains(k)
           } yield {
-            SimpleTerminalTreeNode(k, m.get(k).toString)
+            val nodeValue = m.get(k) match {
+              case Some(s: String) => s
+              case Some(ns) => ns.toString
+              case None => null
+            }
+            SimpleTerminalTreeNode(k, nodeValue)
           }
         val ctn = new LinkableContainerTreeNode(nodeName, Set(nodeType), simpleFields.toSeq)
         val nodeId: String = requiredStringEntry(m, NodeId)

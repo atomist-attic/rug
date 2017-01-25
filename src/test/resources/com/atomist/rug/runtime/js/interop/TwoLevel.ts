@@ -1,4 +1,4 @@
-import {Project} from '@atomist/rug/model/Core'
+import {Project, File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
@@ -10,8 +10,20 @@ class FruitererType implements TypeProvider {
 
  typeName = "fruiterer"
 
+ private isFile(f: TreeNode): f is File {
+   return true
+ }
+
  find(context: TreeNode): TreeNode[] {
-   return [ new Fruiterer() ]
+   if (this.isFile(context)) {
+     let f = context as File
+     console.log(f.name())
+     if (f.isJava())
+      return [ new Fruiterer() ]
+      else return []
+   }
+   else 
+    return []
  }
 
 }
@@ -69,14 +81,14 @@ class TwoLevel implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
 
       let i = 0
-      eng.with<any>(project, "//File()/fruiterer()/banana()", n => {
+      eng.with<Banana>(project, "//File()/fruiterer()/banana()", n => {
         //console.log("Checking color of banana")
         if (n.value() != "yellow")
          throw new Error(`Banana is not yellow but [${n.value()}]. Sad.`)
         i++
       })
-      if (i == 0)
-       throw new Error("No bananas tested. Sad.")
+      if (i != 2)
+       throw new Error(`Two bananas should have been tested, not ${i}. Sad.`)
     }
   }
   var editor = new TwoLevel()

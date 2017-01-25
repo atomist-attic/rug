@@ -1,6 +1,6 @@
 package com.atomist.tree.utils
 
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, PositionedTreeNode}
+import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, PositionedTreeNode, ViewTree}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
@@ -41,12 +41,17 @@ object TreeNodeUtils {
     def info(f: TreeNode) =
       s"${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
 
-    def toShortStr(fv: TreeNode, depth: Int): String = fv match {
+    def toShortStr(fv: TreeNode, depth: Int, shown: TreeNode => Boolean): String = fv match {
+      case vt: ViewTree =>
+        val contents = vt.delegate
+        def stillShown(c: TreeNode) = vt.childNodes.contains(c) && shown(c)
+        tabs(depth) + info(vt) + " around \n" + toShortStr(contents, depth + 1, stillShown)
       case ctn: ContainerTreeNode =>
-        tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(toShortStr(_, depth + 1)).mkString("\n")
+        def star(c: TreeNode) = if (shown(c)) "*" else ""
+        tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")
       case f => tabs(depth) + info(f) + "\n"
     }
 
-    toShortStr(tn, 0)
+    toShortStr(tn, 0, _ => true)
   }
 }

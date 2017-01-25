@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Support for Type extensions/TreeNode written in TypeScript as
     per https://github.com/atomist/rug/issues/214
 
+-   Generators are now declared with the `generator` keyword
+
 ### Fixed
 
 -   LinkedJsonTreeDeserializer now properly returns string values
@@ -37,11 +39,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** Remove Executor support from Rug DSL as per:
     https://github.com/atomist/rug/issues/206
-    
+
 -   TypeScript editors now return void. Use the new
     `ProjectMutableView` `describeChange` method to add any comments
     about the working of your editor.
-    
+
 -   **BREAKING** CustomizingProjectGenerator was removed from
     ProjectGenerator.ts as it's no longer required, and it's thought
     that it's not being used at all yet.
@@ -53,6 +55,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Core.ts is generated and compiled on-the-fly during unit-testing
     so that the build is not dependent on network or later maven
     phases until deployment
+
+### Deprecated
+
+-   The `@generator` has been deprecated in favor of the `generator`
+    keyword
 
 ## [0.10.0]
 

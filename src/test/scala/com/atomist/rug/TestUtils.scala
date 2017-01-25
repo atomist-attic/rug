@@ -7,9 +7,10 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.ts.TypeScriptInterfaceGenerator
-import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource}
+import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
+import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor, SimpleFileBasedArtifactSource}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.scalatest.Matchers
 
@@ -54,7 +55,33 @@ object TestUtils extends Matchers {
     compiled.underPath(".atomist").withPathAbove(".atomist/node_modules/@atomist")
   }
 
-  def compileWithModel(tsAs: ArtifactSource) : ArtifactSource = {
+  def compileWithModel(tsAs: ArtifactSource): ArtifactSource = {
     compiler.compile(user_model + tsAs)
+  }
+
+  /**
+    * Compile the named TypeScript file in the package of the caller
+    */
+  def editorInSideFile(caller: Object, name: String): JavaScriptInvokingProjectEditor = {
+    val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
+    //println(s"Using resourcePath [$resourcePath]")
+    val raw = ClassPathArtifactSource.toArtifactSource(
+      resourcePath
+    )
+    if (raw.empty) {
+      fail(s"Can't load resources at class path resource [$resourcePath]")
+    }
+    val tsAs = raw.filter(d => true, f => f.name == name)
+    if (tsAs.empty) {
+      fail(s"Can't load resource named [$name] at class path resource [$resourcePath]")
+    }
+    val as2 = tsAs.edit(new FileEditor {
+      override def canAffect(f: FileArtifact) = true
+      // Put the editor in the .atomist directory so it's found
+      override def edit(f: FileArtifact) = f.withPath(".atomist/editors/" + f.path)
+    })
+    val as = compiler.compile(user_model + as2)
+    val eds = JavaScriptOperationFinder.fromJavaScriptArchive(as)
+    eds.head.asInstanceOf[JavaScriptInvokingProjectEditor]
   }
 }

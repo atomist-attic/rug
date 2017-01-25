@@ -1,9 +1,13 @@
 package com.atomist.rug.kind.python3
 
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.pathexpression.{PathExpressionEngine, PathExpressionParser}
 import org.scalatest.{FlatSpec, Matchers}
 
 class Python3ParserTest extends FlatSpec with Matchers {
+
+  private val pex = new PathExpressionEngine
 
   lazy val parser = new Python3Parser
 
@@ -18,7 +22,7 @@ class Python3ParserTest extends FlatSpec with Matchers {
 
   def stringShowingIndices(s: String) = {
     val z = s.zipWithIndex
-    "len=" + s.length + " :"  + z.mkString(",")
+    "len=" + s.length + " :" + z.mkString(",")
   }
 
   it should "parse simplest file and write out unchanged" in {
@@ -34,6 +38,13 @@ class Python3ParserTest extends FlatSpec with Matchers {
 
   it should "parse simple script and write out unchanged" in
     parseAndVerifyValueCanBeWrittenOutUnchanged(dateParserDotPy)
+
+  it should "parse path expression" in {
+    val node = parser.rawTree(setupDotPy)
+    val pe = "//import()"
+    val pep = PathExpressionParser.parseString(pe)
+    val r = pex.evaluate(node, pep, DefaultTypeRegistry, None)
+  }
 
   private def parseAndVerifyValueCanBeWrittenOutUnchanged(pyProg: String): MutableContainerTreeNode = {
     if (pyProg.lines.exists(_.trim.startsWith("|")))

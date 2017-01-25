@@ -32,9 +32,13 @@ class Python3Parser extends Parser {
     removeReservedWordTokens(PythonReservedWords)
 
   override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
-    val raw = pythonGrammar.parse(input, ml)
+    val raw = rawTree(input, ml)
     val ast = (stripPythonReservedWords andThen removeNewlines andThen RemovePadding andThen Prune)(raw)
     ast
+  }
+
+  def rawTree(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
+    pythonGrammar.parse(input, ml)
   }
 }
 

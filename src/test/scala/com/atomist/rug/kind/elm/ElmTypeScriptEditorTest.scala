@@ -72,11 +72,11 @@ object ElmTypeScriptEditorTestResources {
       |       `);
       |     }
       |
-      |     var readme = project.files();
+      |     let readme = project.files();
       |  }
       |
       |}
-      |var editor = new Release()
+      |export let editor = new Release()
       | """.stripMargin
 
   val description = "i am the description yo"

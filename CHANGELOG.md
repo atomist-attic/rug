@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** all JS based Rugs must export (a la Common-JS) vars implementing
+    the associated interfaces. Previously we scanned for all top level vars.
+
 -   **BREAKING** Remove Executor support from Rug DSL as per:
     https://github.com/atomist/rug/issues/206
     

@@ -91,4 +91,4 @@ class TwoLevel implements ProjectEditor {
        throw new Error(`Two bananas should have been tested, not ${i}. Sad.`)
     }
   }
-  var editor = new TwoLevel()
+export let editor = new TwoLevel();

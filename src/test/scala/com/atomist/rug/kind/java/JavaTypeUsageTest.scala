@@ -118,7 +118,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |    }
         |}
         |
-        |var finder = new PackageFinder()
+        |export let finder = new PackageFinder()
       """.stripMargin
 
     attemptToModify(program, "editors/PackageFinder.ts", NewSpringBootProject, Map(), runtime = tsPipeline) match {

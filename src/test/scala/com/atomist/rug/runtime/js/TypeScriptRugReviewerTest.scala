@@ -29,7 +29,7 @@ object TypeScriptRugReviewerTest {
       |        <ReviewComment[]>[])
       |    }
       |}
-      |var reviewer = new SimpleReviewer()
+      |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleReviewerWithParameters =
@@ -49,7 +49,7 @@ object TypeScriptRugReviewerTest {
          |        );
          |    }
          |  }
-         |var reviewer = new SimpleReviewer()
+         |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleReviewerWithParametersSinglePartialCommentReviewResult =
@@ -69,7 +69,7 @@ object TypeScriptRugReviewerTest {
        |        );
        |    }
        |  }
-       |var reviewer = new SimpleReviewer()
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleReviewerWithParametersMultiPartialCommentsReviewResult =
@@ -89,7 +89,7 @@ object TypeScriptRugReviewerTest {
        |        );
        |    }
        |  }
-       |var reviewer = new SimpleReviewer()
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleReviewerWithParametersSingleCompleteCommentReviewResult =
@@ -114,7 +114,7 @@ object TypeScriptRugReviewerTest {
        |        );
        |    }
        |  }
-       |var reviewer = new SimpleReviewer()
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 }
 

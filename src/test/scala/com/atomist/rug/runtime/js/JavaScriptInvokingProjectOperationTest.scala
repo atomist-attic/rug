@@ -21,7 +21,7 @@ object JavaScriptInvokingProjectOperationTest {
        |    edit(project: Project, {content} : {content: string}) {
        |    }
        |  }
-       |var editor = new SimpleEditor()
+       |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters: String =
@@ -41,7 +41,7 @@ object JavaScriptInvokingProjectOperationTest {
        |        );
        |    }
        |  }
-       |var reviewer = new SimpleReviewer()
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleEditorWithBrokenParameterPattern: String =
@@ -62,7 +62,7 @@ object JavaScriptInvokingProjectOperationTest {
          |        );
          |    }
          |  }
-         |var editor = new SimpleEditor()
+         |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleReviewerWithBrokenParameterPattern: String =
@@ -82,7 +82,7 @@ object JavaScriptInvokingProjectOperationTest {
        |        );
        |    }
        |  }
-       |var reviewer = new SimpleReviewer()
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleEditorWithInvalidDefaultParameterValuePattern: String =
@@ -108,7 +108,7 @@ object JavaScriptInvokingProjectOperationTest {
        |      // Do nothing
        |    }
        |  }
-       |var editor = new SimpleEditor()
+       |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditorWithValidDefaultParameterValueFromAlternation: String =
@@ -136,7 +136,7 @@ object JavaScriptInvokingProjectOperationTest {
        |      )
        |    }
        |  }
-       |var editor = new SimpleEditor()
+       |export let editor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditorWithInvalidDefaultParameterValueAlternation: String =
@@ -162,7 +162,7 @@ object JavaScriptInvokingProjectOperationTest {
        |      // empty
        |    }
        |  }
-       |var editor = new SimpleEditor()
+       |export let editor = new SimpleEditor()
     """.stripMargin
 }
 

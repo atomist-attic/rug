@@ -119,7 +119,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     ts ++= "}\n"
 
     // Check that editors have distinct names
-    ts ++= s"""var editor_${JavaHelpers.lowerize(rug.name)} = new ${rug.name}();"""
+    ts ++= s"""export let editor_${JavaHelpers.lowerize(rug.name)} = new ${rug.name}();"""
     ts.toString()
   }
 

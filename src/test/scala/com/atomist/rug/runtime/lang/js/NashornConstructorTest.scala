@@ -24,7 +24,7 @@ object NashornConstructorTest {
       |    return SimpleEditor;
       |}());
       |var editor = new SimpleEditor();
-      |
+      |exports.editor = editor;
       |""".stripMargin
 }
 

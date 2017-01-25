@@ -144,7 +144,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
         |    }
         |}
         |
-        |var finder = new PackageFinder();
+        |export let finder = new PackageFinder();
       """.stripMargin
     val pas = TestUtils.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(program), program)))
     val edited = updateWith(pas, new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create()))))

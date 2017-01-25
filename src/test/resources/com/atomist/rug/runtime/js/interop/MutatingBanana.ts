@@ -25,7 +25,6 @@ class FruitererType implements TypeProvider {
    else 
     return []
  }
-
 }
 
 class Fruiterer implements TreeNode {
@@ -61,7 +60,6 @@ class MutatingBanana implements TreeNode {
   mutate(): void { 
     this.file.prepend("I am evil")
   }
-
 }
 
 class Pear implements TreeNode {
@@ -92,4 +90,5 @@ class TwoLevel implements ProjectEditor {
       })
     }
   }
-  var editor = new TwoLevel()
+
+export let editor = new TwoLevel();

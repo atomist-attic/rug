@@ -2,6 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.MutableTreeNode
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.microgrammar.matchers.Break
 
 case class MatcherConfig(
                           greedy: Boolean = true
@@ -65,6 +66,51 @@ trait Matcher {
 
   def -(): Matcher = Discard(this)
 
+}
+
+object Matcher {
+
+  def prettyPrint(m: Matcher) = prettyPrintLines(m).mkString("\n")
+
+  private def prettyPrintLines(m: Matcher): Seq[String] = {
+
+    def nameOrNot(named: Option[String]):String = named.map(_ + " = ").getOrElse("")
+    def mkSeq(pre: String, in: Seq[String], post: String = ")") = Seq(pre) ++ in ++ Seq(post)
+
+    val lines:Seq[String] = m match {
+      case Alternate(left, right, name) =>
+        mkSeq(s"Alternate($name",
+          prettyPrintLines(left) ++
+          prettyPrintLines(right))
+      case Literal(literal, named) => Seq(s"Literal(${nameOrNot(named)}$literal)")
+      case Rep(m, name, separator) =>
+        mkSeq(s"Rep($name",
+        prettyPrintLines(m) ++
+        separator.map(sm => s" separated by ${prettyPrintLines(sm)}"))
+      case Break(breakToMatcher, named) =>
+        mkSeq(s"Break(${nameOrNot(named)}", prettyPrintLines(breakToMatcher))
+      case Concat(left, right, name) =>
+        mkSeq(s"Concat($name",
+          prettyPrintLines(left) ++
+          prettyPrintLines(right))
+      case Discard(m, name) =>
+        mkSeq(s"Discard($name", prettyPrintLines(m), ")")
+      case Remainder(name) =>
+        Seq(s"Remainder($name)")
+      case Wrap(m, name) =>
+        mkSeq(s"Wrap($name", prettyPrintLines(m), ")")
+      case RestOfLine(name) =>
+        Seq(s"RestOfLine($name)")
+      case Optional(m, name) =>
+        mkSeq(s"Optional($name", prettyPrintLines(m), ")")
+      case Reference(delegate, name) =>
+        mkSeq(s"Reference($name", prettyPrintLines(delegate), ")")
+      case other =>
+        Seq(other.toString)
+    }
+
+    lines.map(l => " " + l)
+  }
 }
 
 

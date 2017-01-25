@@ -3,9 +3,8 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.Tag
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsPathExpressionEngine}
 import com.atomist.rug.runtime.{SystemEvent, SystemEventHandler}
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch}
 import com.atomist.rug.spi.Plan.Plan
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode

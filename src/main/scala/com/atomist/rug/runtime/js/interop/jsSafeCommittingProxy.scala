@@ -17,9 +17,9 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * @param types Rug types we are fronting. This is a union type.
   * @param node  node we are fronting
   */
-class SafeCommittingProxy(types: Set[Typed],
-                          val node: TreeNode,
-                          commandRegistry: CommandRegistry)
+class jsSafeCommittingProxy(types: Set[Typed],
+                            val node: TreeNode,
+                            commandRegistry: CommandRegistry)
   extends AbstractJSObject {
 
   def this(t: Typed, node: TreeNode, commandRegistry: CommandRegistry = DefaultCommandRegistry) =
@@ -29,7 +29,7 @@ class SafeCommittingProxy(types: Set[Typed],
 
   private val typ = UnionType(types)
 
-  import SafeCommittingProxy.MagicJavaScriptMethods
+  import jsSafeCommittingProxy.MagicJavaScriptMethods
 
   override def getMember(name: String): AnyRef = typ.typeInformation match {
     case _ if MagicJavaScriptMethods.contains(name) =>
@@ -118,7 +118,7 @@ class SafeCommittingProxy(types: Set[Typed],
 
 }
 
-private object SafeCommittingProxy {
+private object jsSafeCommittingProxy {
 
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.

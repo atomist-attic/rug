@@ -119,7 +119,7 @@ class jsPathExpressionEngine(
   // If the node is a SafeCommittingProxy, find the underlying object
   private def toTreeNode(o: Object): TreeNode = o match {
     case tn: TreeNode => tn
-    case scp: SafeCommittingProxy => scp.node
+    case scp: jsSafeCommittingProxy => scp.node
   }
 
   /**
@@ -195,7 +195,7 @@ class jsPathExpressionEngine(
       node.nodeType.flatMap(t => typeRegistry.findByName(t))
 
     def proxify(n: TreeNode): Object = n match {
-      case _ => new SafeCommittingProxy(nodeTypes(n), n, cr)
+      case _ => new jsSafeCommittingProxy(nodeTypes(n), n, cr)
     }
 
     new JavaScriptArray(

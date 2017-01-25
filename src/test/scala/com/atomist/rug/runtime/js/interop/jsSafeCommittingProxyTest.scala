@@ -10,14 +10,14 @@ import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.AbstractJSObject
 import org.scalatest.{FlatSpec, Matchers}
 
-class SafeCommittingProxyTest extends FlatSpec with Matchers {
+class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 
   it should "not allow invocation of non export function" in {
     val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
 
-    val sc = new SafeCommittingProxy(typed, fmv)
+    val sc = new jsSafeCommittingProxy(typed, fmv)
     intercept[RugRuntimeException] {
       sc.getMember("bla")
     }
@@ -27,7 +27,7 @@ class SafeCommittingProxyTest extends FlatSpec with Matchers {
     val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val sc = new SafeCommittingProxy(typed, fmv)
+    val sc = new jsSafeCommittingProxy(typed, fmv)
      sc.getMember("setContent")
   }
 
@@ -36,7 +36,7 @@ class SafeCommittingProxyTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
     val fc = new FakeCommand
-    val sc = new SafeCommittingProxy(typed, fmv, new FakeCommandRegistry(fc))
+    val sc = new jsSafeCommittingProxy(typed, fmv, new FakeCommandRegistry(fc))
     val ajs: AbstractJSObject = sc.getMember("execute").asInstanceOf[AbstractJSObject]
     val afc = ajs.call(fmv, null)
     fc.fmv should be(fmv)
@@ -47,7 +47,7 @@ class SafeCommittingProxyTest extends FlatSpec with Matchers {
     val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val sc = new SafeCommittingProxy(typed, fmv, new FakeCommandRegistry)
+    val sc = new jsSafeCommittingProxy(typed, fmv, new FakeCommandRegistry)
     intercept[RugRuntimeException] {
       sc.getMember("delete")
     }

@@ -84,11 +84,9 @@ class TwoLevel implements ProjectEditor {
     description: string = "Uses single microgrammar"
 
     edit(project: Project) {
-      //console.log("Editing")
       let mg = new FruitererType()
       let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
 
-      let i = 0
       eng.with<MutatingBanana>(project, "//File()/fruiterer()/mutatingBanana()", n => {
         n.mutate()
       })

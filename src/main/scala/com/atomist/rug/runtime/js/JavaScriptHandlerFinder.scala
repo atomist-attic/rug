@@ -1,10 +1,7 @@
 package com.atomist.rug.runtime.js
 
-import javax.script.SimpleBindings
-
 import com.atomist.event.SystemEventHandler
 import com.atomist.param.Tag
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.source.ArtifactSource
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -21,26 +18,13 @@ object JavaScriptHandlerFinder {
     * Find handler operations in the given Rug archive
     *
     * @param rugAs   archive to look into
-    * @param atomist facade to Atomist
     * @return a sequence of instantiated operations backed by JavaScript
     *
     */
-  def registerHandlers(rugAs: ArtifactSource,
-                       atomist: AtomistFacade,
-                       atomistConfig: AtomistConfig = DefaultAtomistConfig): Unit = {
 
-    //TODO - remove this when new Handler model put in
-    val bindings = new SimpleBindings()
-    bindings.put("atomist", atomist)
-    new JavaScriptContext(rugAs,atomistConfig,bindings)
-  }
-
-  def fromJavaScriptArchive(rugAs: ArtifactSource,
-                            ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
-
-    val jsc = new JavaScriptContext(rugAs)
-
-    handlersFromVars(rugAs, jsc, ctx)
+  def findEventHandlers(rugAs: ArtifactSource,
+                        ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
+    handlersFromVars(rugAs, new JavaScriptContext(rugAs), ctx)
   }
 
   private def handlersFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext, ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
@@ -56,7 +40,7 @@ object JavaScriptHandlerFinder {
           case _ => null
         }
         val tags = readTagsFromMetadata(obj)
-        acc :+ new NamedJavaScriptEventHandler(expression, handle, obj, rugAs, ctx, name, description, tags)
+        acc :+ new JavaScriptEventHandler(expression, handle, obj, rugAs, ctx, name, description, tags)
       } else {
         acc
       }

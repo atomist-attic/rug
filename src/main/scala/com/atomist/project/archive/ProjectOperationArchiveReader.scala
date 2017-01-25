@@ -2,7 +2,7 @@ package com.atomist.project.archive
 
 import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGenerator}
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.project.{Executor, ProjectOperation}
+import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.runtime.rugdsl.{ContextAwareProjectOperation, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
@@ -68,11 +68,7 @@ class ProjectOperationArchiveReader(
       case r: ProjectReviewer => r
     }
 
-    val executors = operations collect {
-      case ed: Executor => ed
-    }
-
-    Operations(generators, editors, reviewers, executors)
+    Operations(generators, editors, reviewers)
   }
 }
 

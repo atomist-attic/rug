@@ -7,32 +7,24 @@ import org.snt.inmemantlr.GenericParser
 
 /**
   * Parse input using Antlr, with classes created and compiled on the fly.
-  * Uses a patched version of Inmemantlr (https://github.com/julianthome/inmemantlr)
+  * Uses Inmemantlr (https://github.com/julianthome/inmemantlr)
   *
-  * @param grammar Antlr G4 grammar definition to use
+  * @param grammars Antlr G4 grammar definitions to use
   */
 class AntlrGrammar(
-                    grammar: String,
-                    production: String)
+                    production: String,
+                    grammars: String*)
   extends AbstractInMemAntlrGrammar
     with Parser {
 
   override protected def setup: ParserSetup = {
-    // Extract the grammar name from the relevant line
-    val grammarRe = "grammar ([A-Z][a-zA-Z0-9]*);.*".r
-    val names = grammar.lines.flatMap {
-      case grammarRe(name) =>
-        Some(name)
-      case l =>
-        None
-    }
-    val name = names.toSeq.headOption.getOrElse(throw new IllegalArgumentException("Cannot match grammar name"))
-    val parser = GenericParser.independentInstance(this, grammar)
-    ParserSetup(grammar, parser, production)
+   //val parser = GenericParser.independentInstance(this, grammar)
+    val parser = new GenericParser(this, false, grammars:_*)
+    ParserSetup(grammars, parser, production)
   }
 
   override def parse(input: String, ml: Option[MatchListener]): MutableContainerTreeNode = {
-    logger.debug(s"Using grammar:\n$grammar")
+    logger.debug(s"Using grammars:\n$grammars")
     val l = new ModelBuildingListener(production, ml)
     try {
       val parser = config.parser

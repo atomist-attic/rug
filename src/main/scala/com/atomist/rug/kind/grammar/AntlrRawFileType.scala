@@ -20,26 +20,24 @@ import scala.collection.JavaConverters._
 /**
   * Convenient superclass for Antlr grammars.
   *
-  * @param evaluator used to evaluate expressions
-  * @param grammar   g4 file
+  * @param grammars           g4 files
+  * @param topLevelProduction name of the top level production
   */
 abstract class AntlrRawFileType(
-                                 evaluator: Evaluator,
-                                 grammar: String
+                                 topLevelProduction: String,
+                                 grammars: String*
                                )
-  extends Type(evaluator)
+  extends Type(DefaultEvaluator)
     with ReflectivelyTypedType
     with ContextlessViewFinder {
 
-  def this(grammar: String) = this(DefaultEvaluator, grammar)
+  private val g4s: Seq[String] = {
+    val cp = new DefaultResourceLoader()
+    val resources = grammars.map(grammar => cp.getResource(grammar))
+    resources.map(r => withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8)))
+  }
 
-  private val cp = new DefaultResourceLoader()
-
-  private val r = cp.getResource(grammar)
-
-  private val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
-
-  private lazy val antlrGrammar = new AntlrGrammar(g4, "file_input")
+  private lazy val antlrGrammar = new AntlrGrammar(topLevelProduction, g4s: _*)
 
   final override def resolvesFromNodeTypes = Set("Project", "File")
 

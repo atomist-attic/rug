@@ -11,7 +11,7 @@ import org.stringtemplate.v4.ST
 import scala.collection.mutable.ListBuffer
 
 case class ParserSetup(
-                        grammar: String,
+                        grammars: Seq[String],
                         parser: GenericParser,
                         production: String
                       )

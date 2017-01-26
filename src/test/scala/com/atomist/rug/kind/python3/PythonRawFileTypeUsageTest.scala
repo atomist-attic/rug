@@ -1,9 +1,8 @@
 package com.atomist.rug.kind.python3
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.{DefaultRugPipeline, TestUtils}
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.rug.TestUtils
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -16,7 +15,7 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
       StringFileArtifact("setup.py", setupDotPy)
     ))
 
-  val Flask1: ArtifactSource = new SimpleFileBasedArtifactSource("name",
+  val Flask1: ArtifactSource = Simple + new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("hello.py", flask1)
     ))
@@ -40,8 +39,8 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "enumerate imports in simple file" in {
-    val r = executePython("Imports.ts", Simple)
+  it should "enumerate imports in simple project" in {
+    val r = executePython("Imports.ts", Flask1)
     r match {
       case nmn: NoModificationNeeded =>
       case sm: SuccessfulModification =>

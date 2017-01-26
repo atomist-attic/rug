@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.python3
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
+import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
+import com.atomist.rug.kind.dynamic.{ContextlessViewFinder, MutableContainerMutableView}
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -36,14 +36,17 @@ object PythonFileType {
 import com.atomist.rug.kind.python3.PythonFileType._
 
 class PythonFileType(
-                  evaluator: Evaluator
-                )
+                      evaluator: Evaluator
+                    )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ContextlessViewFinder {
 
   def this() = this(DefaultEvaluator)
 
   override def description = "Python file"
+
+  override def resolvesFromNodeTypes = Set("File", "Project")
 
   override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
@@ -51,7 +54,7 @@ class PythonFileType(
                                    selected: Selected,
                                    context: TreeNode,
                                    poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+                                   identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
     context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
@@ -59,11 +62,13 @@ class PythonFileType(
           .filter(f => f.name.endsWith(PythonExtension))
           .map(f => toView(f, pmv))
         )
+      case f: FileMutableView if f.filename.endsWith(PythonExtension) =>
+        Some(Seq(toView(f.currentBackingObject, f.parent)))
       case _ => None
     }
   }
 
-  private def toView(f: FileArtifact, pmv: ProjectMutableView): MutableView[_] = {
+  private def toView(f: FileArtifact, pmv: ProjectMutableView): TreeNode = {
     new PythonFileMutableView(f, pmv)
   }
 }

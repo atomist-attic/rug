@@ -2,8 +2,8 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
 /**
@@ -24,23 +24,12 @@ case class ObjectType(typeName: String)
   private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
 
   // Attempt to find nodes of the require type under the given node
-  private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] = {
-    val directKids = tn.childNodes.filter(eligibleNode)
-    if (directKids.nonEmpty)
-      directKids
-    else
-      tn match {
-        case mv: MutableView[_] =>
-          childResolver(typeRegistry) match {
-            case Some(cr) => cr.findAllIn(mv).getOrElse(Nil)
-            case None =>
-              throw new IllegalArgumentException(
-                s"No type with name [$typeName]: Node=$tn, Kids=$directKids, known types=[${typeRegistry.typeNames}]")
-          }
-        case x =>
-          throw new UnsupportedOperationException(s"Type ${x.getClass} not yet supported for resolution")
-      }
-  }
+  private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =
+    tn.childNodes.filter(eligibleNode) match {
+      case Nil =>
+        childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
+      case kids => kids
+    }
 
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {

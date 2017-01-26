@@ -61,7 +61,8 @@ class ModelBuildingListener(
       OffsetInputPosition(rc.getStop.getStopIndex + 1)
 
     // Create an empty model node that we'll fill
-    val mof = new SimpleMutableContainerTreeNode(rule, Nil, startPos, endPos)
+    val tn = new SimpleMutableContainerTreeNode(rule, Nil, startPos, endPos)
+    tn.addType(rule)
 
     // We only want methods on the generated class itself
     val valueMethods = rc.getClass
@@ -93,8 +94,8 @@ class ModelBuildingListener(
     for {
       f <- deduped
     }
-      mof.insertFieldCheckingPosition(f)
-    mof
+      tn.insertFieldCheckingPosition(f)
+    tn
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case
@@ -129,18 +130,20 @@ class ModelBuildingListener(
     val r = value match {
       case en: ErrorNode =>
         logger.info(s"ErrorNode: $name=$en")
-        val sf = SimpleTerminalTreeNode(name, "")
+        val sf = SimpleTerminalTreeNode(name, "", Set(name))
         Seq(sf)
       case ct: Token if ct.getText.startsWith(s"<missing ") =>
         // Handle Antlr empty values
         val sf = new MutableTerminalTreeNode(name, "", position(ct))
+        sf.addType(name)
         Seq(sf)
       case ct: Token =>
         val sf = new MutableTerminalTreeNode(name, ct.getText, position(ct))
+        sf.addType(name)
         Seq(sf)
       case tn: TerminalNode =>
         makeField(name, tn.getSymbol, classOf[String])
-      case l: java.util.List[Object @unchecked] =>
+      case l: java.util.List[Object@unchecked] =>
         l.asScala.flatMap(e => makeField(name, e, classOf[Object]))
       case prc: ParserRuleContext =>
         Seq(treeToContainerField(prc))
@@ -149,7 +152,7 @@ class ModelBuildingListener(
         // However, populate it with the possible field names
         val possibleFieldNames =
           typ.getDeclaredMethods.map(_.getName) ++ typ.getDeclaredFields.map(_.getName)
-        Seq(EmptyContainerTreeNode(name, possibleFieldNames.toSet))
+        Seq(EmptyAntlrContainerTreeNode(name, possibleFieldNames.toSet, Set(name)))
     }
     r
   }
@@ -159,14 +162,16 @@ class ModelBuildingListener(
   * Empty container field value including fieldName information about possible fields,
   * that are not present in this instance. This allows Rug type checking to work.
   */
-case class EmptyContainerTreeNode(nodeName: String, override val childNodeNames: Set[String])
+case class EmptyAntlrContainerTreeNode(nodeName: String,
+                                       override val childNodeNames: Set[String],
+                                       types: Set[String] = Set())
   extends ContainerTreeNode {
 
   override def childNodes: Seq[TreeNode] = Nil
 
   override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
-  override def nodeType: Set[String] = Set("empty")
+  override def nodeType: Set[String] = Set("empty") ++ types
 
   override def childNodeTypes: Set[String] = Set()
 

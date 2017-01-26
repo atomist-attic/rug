@@ -6,8 +6,13 @@ package com.atomist.tree
   * @param nodeName name of the field (usually unimportant)
   * @param value field content.
   */
-case class SimpleTerminalTreeNode(nodeName: String, value: String)
-  extends TerminalTreeNode
+case class SimpleTerminalTreeNode(nodeName: String,
+                                  value: String,
+                                  types: Set[String] = Set())
+  extends TerminalTreeNode {
+
+  override val nodeType: Set[String] = super.nodeType ++ types
+}
 
 /**
   * Convenient class for padding nodes

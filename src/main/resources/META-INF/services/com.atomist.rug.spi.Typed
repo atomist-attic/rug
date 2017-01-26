@@ -18,6 +18,8 @@ com.atomist.rug.kind.pom.EveryPomType
 
 com.atomist.rug.kind.dynamic.MutableContainerTypeProvider
 com.atomist.rug.kind.python3.PythonFileType
+com.atomist.rug.kind.python3.PythonRawFileType
+
 com.atomist.rug.kind.python3.RequirementsType
 com.atomist.rug.kind.python3.PythonRequirementsTxtType
 com.atomist.rug.kind.properties.PropertiesType

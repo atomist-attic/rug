@@ -3,6 +3,7 @@ package com.atomist.rug.kind.python3
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
+
 class Python3ParserTest extends FlatSpec with Matchers {
 
   lazy val parser = new Python3Parser
@@ -18,7 +19,7 @@ class Python3ParserTest extends FlatSpec with Matchers {
 
   def stringShowingIndices(s: String) = {
     val z = s.zipWithIndex
-    "len=" + s.length + " :"  + z.mkString(",")
+    "len=" + s.length + " :" + z.mkString(",")
   }
 
   it should "parse simplest file and write out unchanged" in {

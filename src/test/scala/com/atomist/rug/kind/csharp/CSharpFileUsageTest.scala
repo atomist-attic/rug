@@ -30,17 +30,32 @@ class CSharpFileUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "enumerate imports in simple project" in {
+  it should "enumerate usings in simple project" in {
     val r = doModify("ListImports.ts", HelloWorldSources)
     r match {
       case nmn: NoModificationNeeded =>
     }
   }
 
-  it should "modify imports in single file" in pendingUntilFixed {
+  it should "enumerate usings in simple project with ill-formed C#" in {
+    val r = doModify("ListImports.ts", ProjectWithBogusCSharp.currentBackingObject)
+    r match {
+      case nmn: NoModificationNeeded =>
+    }
+  }
+
+  it should "modify using in single file" in {
     val r = modifyCSharpAndReparseSuccessfully("ChangeImports.ts", HelloWorldSources)
-    val f = r.findFile("hello.cs").get
+    val f = r.findFile("src/hello.cs").get
     f.content.contains("newImport") should be(true)
+  }
+
+  it should "add using in single file" in {
+    val r = modifyCSharpAndReparseSuccessfully("AddImport.ts", HelloWorldSources)
+    val f = r.findFile("src/hello.cs").get
+    println(f.content)
+    f.content.contains("using System;") should be(true)
+    f.content.contains("using Thing;") should be(true)
   }
 
 }

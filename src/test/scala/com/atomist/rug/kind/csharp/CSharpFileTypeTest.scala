@@ -48,7 +48,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
   it should "ignore ill-formed file without error" in {
     val cs = new CSharpFileType
     val csharps = cs.findAllIn(ProjectWithBogusCSharp)
-    // Should have ignored the bogus file
+    // Should have silently ignored the bogus file
     csharps.size should be (1)
   }
 

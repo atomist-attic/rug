@@ -21,7 +21,7 @@ class JsonParser extends Parser {
 
   val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
 
-  private lazy val jsGrammar = new AntlrGrammar(g4, "json")
+  private lazy val jsGrammar = new AntlrGrammar("json", g4)
 
   override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
     val raw = jsGrammar.parse(input, ml)

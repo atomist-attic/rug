@@ -23,7 +23,7 @@ class Python3Parser extends Parser {
 
   val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
 
-  private lazy val pythonGrammar = new AntlrGrammar(g4, "file_input")
+  private lazy val pythonGrammar = new AntlrGrammar("file_input", g4)
 
   private val removeNewlines: TreeOperation =
     removeProductionsNamed(Set("NEWLINE"))

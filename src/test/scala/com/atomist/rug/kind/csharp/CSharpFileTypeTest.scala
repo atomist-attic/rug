@@ -6,11 +6,9 @@ import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, S
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 import org.scalatest.{FlatSpec, Matchers}
 
-class CSharpFileTypeTest extends FlatSpec with Matchers {
+object CSharpFileTypeTest {
 
-  val ee: ExpressionEngine = new PathExpressionEngine
-
-  val hello =
+  val HelloWorld =
     """
       |// A Hello World! program in C#.
       |using System;
@@ -30,21 +28,30 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
       |}
     """.stripMargin
 
+  val HelloWorldSources =
+    SimpleFileBasedArtifactSource(StringFileArtifact("src/hello.cs", HelloWorld))
+
+  val HelloWorldProject = new ProjectMutableView(EmptyArtifactSource(), HelloWorldSources)
+
+}
+
+class CSharpFileTypeTest extends FlatSpec with Matchers {
+
+  import CSharpFileTypeTest._
+
+  val ee: ExpressionEngine = new PathExpressionEngine
+
   it should "handle ill-formed file correctly" is pending
 
   it should "parse hello world" in {
-    val as = SimpleFileBasedArtifactSource(StringFileArtifact("hello.cs", hello))
-    val pmv = new ProjectMutableView(EmptyArtifactSource(), as)
     val cs = new CSharpFileType
-    val csharps = cs.findAllIn(pmv)
+    val csharps = cs.findAllIn(HelloWorldProject)
     csharps.size should be (1)
   }
 
   it should "find hello world using path expression" in {
-    val as = SimpleFileBasedArtifactSource(StringFileArtifact("src/main/hello.cs", hello))
-    val pmv = new ProjectMutableView(EmptyArtifactSource(), as)
     val expr = "/src//CSharpFile()"
-    val rtn = ee.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(HelloWorldProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
   }
 

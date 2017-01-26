@@ -1,54 +1,46 @@
 package com.atomist.rug.kind.csharp
 
+import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.rug.TestUtils
+import com.atomist.source.ArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
 class CSharpFileUsageTest extends FlatSpec with Matchers {
 
-  /*
-  val Simple: ArtifactSource = new SimpleFileBasedArtifactSource("name",
-    Seq(
-      StringFileArtifact("setup.py", setupDotPy)
-    ))
+  import CSharpFileType._
+  import CSharpFileTypeTest._
 
-  val Flask1: ArtifactSource = Simple + new SimpleFileBasedArtifactSource("name",
-    Seq(
-      StringFileArtifact("hello.py", flask1)
-    ))
+  val cSharpFileType = new CSharpFileType
 
-  def execute(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
+  def doModify(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
     val pe = TestUtils.editorInSideFile(this, tsFilename)
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
 
-  import PythonFileType._
 
-  def modifyPythonAndReparseSuccessfully(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ArtifactSource = {
-    val parser = new Python3Parser
-    execute(tsFilename, as, params) match {
+  def modifyCSharpAndReparseSuccessfully(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ArtifactSource = {
+    doModify(tsFilename, as, params) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles
-          .filter(_.name.endsWith(PythonExtension))
-          .map(py => parser.parse(py.content))
+          .filter(_.name.endsWith(CSharpExtension))
+          .map(cs => cSharpFileType.parseToRawNode(cs.content))
           .map(tree => tree.childNodes.nonEmpty)
         sm.result
     }
   }
 
   it should "enumerate imports in simple project" in {
-    val r = execute("ListImports.ts", Flask1)
+    val r = doModify("ListImports.ts", HelloWorldSources)
     r match {
       case nmn: NoModificationNeeded =>
-      case sm: SuccessfulModification =>
-        val f = sm.result.findFile("setup.py").get
-        fail
     }
   }
 
-  it should "modify imports in single file" in {
-    val r = modifyPythonAndReparseSuccessfully("ChangeImports.ts", Flask1)
-    val f = r.findFile("hello.py").get
+  it should "modify imports in single file" in pendingUntilFixed {
+    val r = modifyCSharpAndReparseSuccessfully("ChangeImports.ts", HelloWorldSources)
+    val f = r.findFile("hello.cs").get
     f.content.contains("newImport") should be(true)
   }
-  */
 
 }

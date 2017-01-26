@@ -10,6 +10,7 @@ import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
@@ -65,10 +66,19 @@ abstract class AntlrRawFileType(
   }
 
   private def toView(f: FileArtifactBackedMutableView): MutableView[_] = {
-    val rawNode = antlrGrammar.parse(f.content, None)
+    val rawNode = parseToRawNode(f.content)
     val mtn = new MutableContainerMutableView(rawNode, f)
     // Ensure the file is updated based on any changes to the underlying AST at any level
     f.registerUpdater(new MutableTreeNodeUpdater(mtn.currentBackingObject))
     mtn
+  }
+
+  /**
+    * Return a parsed node. Useful to validate content, for example in tests.
+    * @param content content to parse
+    * @return
+    */
+  def parseToRawNode(content: String): MutableContainerTreeNode = {
+    antlrGrammar.parse(content, None)
   }
 }

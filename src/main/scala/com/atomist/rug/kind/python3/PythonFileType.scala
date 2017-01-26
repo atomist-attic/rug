@@ -46,7 +46,7 @@ class PythonFileType(
 
   override def description = "Python file"
 
-  override def resolvesFromNodeTypes = Set("File")
+  override def resolvesFromNodeTypes = Set("File", "Project")
 
   override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 

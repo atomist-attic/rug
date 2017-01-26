@@ -3,11 +3,11 @@ package com.atomist.rug.kind.grammar
 import java.nio.charset.StandardCharsets
 
 import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.{ContextlessViewFinder, MutableContainerMutableView}
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileMutableView, ProjectMutableView}
+import com.atomist.rug.kind.dynamic.{ContextlessViewFinder, MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
-import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
+import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
@@ -15,15 +15,18 @@ import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
 import org.springframework.core.io.DefaultResourceLoader
 
+import scala.collection.JavaConverters._
+
 /**
   * Convenient superclass for Antlr grammars.
+  *
   * @param evaluator used to evaluate expressions
-  * @param grammar g4 file
+  * @param grammar   g4 file
   */
 abstract class AntlrRawFileType(
-                         evaluator: Evaluator,
-                         grammar: String
-                       )
+                                 evaluator: Evaluator,
+                                 grammar: String
+                               )
   extends Type(evaluator)
     with ReflectivelyTypedType
     with ContextlessViewFinder {
@@ -40,7 +43,7 @@ abstract class AntlrRawFileType(
 
   final override def resolvesFromNodeTypes = Set("Project", "File")
 
-  protected def isOfType(f: FileArtifact): Boolean
+  protected def isOfType(f: FileArtifactBackedMutableView): Boolean
 
   override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
@@ -51,18 +54,23 @@ abstract class AntlrRawFileType(
                                    identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
     context match {
       case pmv: ProjectMutableView =>
-        Some(pmv.currentBackingObject
+        Some(pmv
           .files
+          .asScala
           .filter(isOfType)
-          .map(f => toView(f, pmv))
+          .map(f => toView(f))
         )
-      case f: FileMutableView if isOfType(f.currentBackingObject) =>
-        Some(Seq(toView(f.currentBackingObject, f.parent)))
+      case f: FileMutableView if isOfType(f) =>
+        Some(Seq(toView(f)))
       case _ => None
     }
   }
 
-  private def toView(f: FileArtifact, pmv: ProjectMutableView): TreeNode = {
-    antlrGrammar.parse(f.content, None)
+  private def toView(f: FileArtifactBackedMutableView): MutableView[_] = {
+    val rawNode = antlrGrammar.parse(f.content, None)
+    val mtn = new MutableContainerMutableView(rawNode, f)
+    // Ensure the file is updated based on any changes to the underlying AST at any level
+    f.registerUpdater(new MutableTreeNodeUpdater(mtn.currentBackingObject))
+    mtn
   }
 }

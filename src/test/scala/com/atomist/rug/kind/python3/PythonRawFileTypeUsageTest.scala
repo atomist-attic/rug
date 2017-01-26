@@ -49,9 +49,9 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "modify imports in single file" in pendingUntilFixed {
+  it should "modify imports in single file" in {
     val r = modifyPythonAndReparseSuccessfully("ChangeImports.ts", Flask1)
-    val f = r.findFile("setup.py").get
+    val f = r.findFile("hello.py").get
     f.content.contains("newImport") should be(true)
   }
 

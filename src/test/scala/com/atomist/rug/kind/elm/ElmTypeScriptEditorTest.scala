@@ -12,7 +12,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
   import ElmTypeScriptEditorTestResources._
 
   val typeScriptPipeline: RugPipeline =
-    new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler(CompilerFactory.create())))
+    new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler()))
 
   it should "produce a README with a link" in {
     val projectName = "Elminess"

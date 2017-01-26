@@ -11,7 +11,7 @@ import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, String
   */
 class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
-  override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(CompilerFactory.create()), new RugTranspiler()))
+  override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(), new RugTranspiler()))
 
   // Note that we do not support .endsWith
   it should "execute simple program with parameters, simple JavaScript file function and transform function using default type" in {

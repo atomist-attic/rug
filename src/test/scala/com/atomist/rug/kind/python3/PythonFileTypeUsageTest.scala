@@ -38,7 +38,7 @@ class PythonFileTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         sm.result.allFiles
           .filter(_.name.endsWith(PythonExtension))
-          .map(py => parser.parse(py.content))
+          .flatMap(py => parser.parse(py.content))
           .map(tree => tree.childNodes.nonEmpty)
         sm.result
     }

@@ -11,10 +11,9 @@ import com.atomist.tree.{MutableTreeNode, TreeNode}
 
 class PythonFileMutableView(
                              originalBackingObject: FileArtifact,
-                             parent: ProjectMutableView)
+                             parent: ProjectMutableView,
+                             originalParsed: MutableContainerTreeNode)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
-
-  val originalParsed: MutableContainerTreeNode = pythonParser.parse(originalBackingObject.content)
 
   private var currentParsed = originalParsed
 
@@ -39,7 +38,7 @@ class PythonFileMutableView(
                 description = "Content to append to the file")
               newContent: String): Unit = {
     val appended = currentContent + "\n" + newContent
-    currentParsed = pythonParser.parse(appended)
+    currentParsed = pythonParser.parse(appended).get
   }
 }
 

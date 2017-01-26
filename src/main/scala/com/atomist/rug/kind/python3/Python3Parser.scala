@@ -31,13 +31,14 @@ class Python3Parser extends Parser {
   private val stripPythonReservedWords: TreeOperation =
     removeReservedWordTokens(PythonReservedWords)
 
-  override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
-    val raw = rawTree(input, ml)
-    val ast = (stripPythonReservedWords andThen removeNewlines andThen RemovePadding andThen Prune)(raw)
-    ast
+  override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
+    rawTree(input, ml).map(raw => {
+      val ast = (stripPythonReservedWords andThen removeNewlines andThen RemovePadding andThen Prune) (raw)
+      ast
+    })
   }
 
-  def rawTree(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
+  def rawTree(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
     pythonGrammar.parse(input, ml)
   }
 }

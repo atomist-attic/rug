@@ -33,6 +33,10 @@ object CSharpFileTypeTest {
 
   val HelloWorldProject = new ProjectMutableView(EmptyArtifactSource(), HelloWorldSources)
 
+  val ProjectWithBogusCSharp = new ProjectMutableView(EmptyArtifactSource(),
+    HelloWorldSources + StringFileArtifact("bogus.cs", "And this is nothing like C#"))
+
+
 }
 
 class CSharpFileTypeTest extends FlatSpec with Matchers {
@@ -41,7 +45,12 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-  it should "handle ill-formed file correctly" is pending
+  it should "ignore ill-formed file without error" in {
+    val cs = new CSharpFileType
+    val csharps = cs.findAllIn(ProjectWithBogusCSharp)
+    // Should have ignored the bogus file
+    csharps.size should be (1)
+  }
 
   it should "parse hello world" in {
     val cs = new CSharpFileType

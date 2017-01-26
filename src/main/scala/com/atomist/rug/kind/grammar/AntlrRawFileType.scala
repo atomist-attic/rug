@@ -57,28 +57,31 @@ abstract class AntlrRawFileType(
           .files
           .asScala
           .filter(isOfType)
-          .map(f => toView(f))
+          .flatMap(f => toView(f))
         )
       case f: FileMutableView if isOfType(f) =>
-        Some(Seq(toView(f)))
+        Some(toView(f).toSeq)
       case _ => None
     }
   }
 
-  private def toView(f: FileArtifactBackedMutableView): MutableView[_] = {
+  private def toView(f: FileArtifactBackedMutableView): Option[MutableView[_]] = {
     val rawNode = parseToRawNode(f.content)
-    val mtn = new MutableContainerMutableView(rawNode, f)
-    // Ensure the file is updated based on any changes to the underlying AST at any level
-    f.registerUpdater(new MutableTreeNodeUpdater(mtn.currentBackingObject))
-    mtn
+    rawNode.map(n => {
+      val mtn = new MutableContainerMutableView(n, f)
+      // Ensure the file is updated based on any changes to the underlying AST at any level
+      f.registerUpdater(new MutableTreeNodeUpdater(mtn.currentBackingObject))
+      mtn
+    })
   }
 
   /**
     * Return a parsed node. Useful to validate content, for example in tests.
+    *
     * @param content content to parse
     * @return
     */
-  def parseToRawNode(content: String): MutableContainerTreeNode = {
+  def parseToRawNode(content: String): Option[MutableContainerTreeNode] = {
     antlrGrammar.parse(content, None)
   }
 }

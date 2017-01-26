@@ -12,11 +12,13 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
   import JsonParserTest._
   import com.atomist.tree.pathexpression.PathExpressionParser._
 
+  val jsonParser = new JsonParser
+
   it should "parse and find node in root" in {
     val f = StringFileArtifact("glossary.json", simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
-    val j = new JsonMutableView(f, pmv)
+    val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     j.nodeType should be (Set("Json"))
     j.childrenNamed("glossary").size should be(1)
   }
@@ -27,7 +29,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("glossary.json", simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
-    val j = new JsonMutableView(f, pmv)
+    val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
     rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.value should be ("S")
@@ -39,7 +41,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("glossary.json", simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
-    val j = new JsonMutableView(f, pmv)
+    val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
     rtn.right.get.size should be(1)
     val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.asInstanceOf[MutableTreeNode]

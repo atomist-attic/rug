@@ -22,6 +22,8 @@ class JsonType(
 
   def this() = this(DefaultEvaluator)
 
+  private def jsonParser = new JsonParser
+
   override def description = "package.json configuration file"
 
   override val resolvesFromNodeTypes: Set[String] =
@@ -39,18 +41,24 @@ class JsonType(
         Some(pmv.currentBackingObject
           .allFiles
           .filter(f => f.name.endsWith(Extension))
-          .map(f => new JsonMutableView(f, pmv))
+          .map(f => (f, jsonParser.parse(f.content)))
+          .filter(tup => tup._2.nonEmpty)
+          .map(tup => new JsonMutableView(tup._1, pmv, tup._2.get))
         )
       case f: FileArtifactBackedMutableView =>
         Some(Seq(f)
           .filter(f => f.filename.endsWith(Extension))
-          .map(j => new JsonMutableView(j.currentBackingObject, j.parent))
+          .map(f => (f, jsonParser.parse(f.content)))
+          .filter(tup => tup._2.nonEmpty)
+          .map(tup => new JsonMutableView(tup._1.currentBackingObject, tup._1.parent, tup._2.get))
         )
       case dmv: DirectoryMutableView =>
         Some(dmv.currentBackingObject
           .allFiles
           .filter(f => f.name.endsWith(Extension))
-          .map(f => new JsonMutableView(f, dmv.parent))
+          .map(f => (f, jsonParser.parse(f.content)))
+          .filter(tup => tup._2.nonEmpty)
+          .map(tup => new JsonMutableView(tup._1, dmv.parent, tup._2.get))
         )
       case _ => None
     }
@@ -96,10 +104,10 @@ import com.atomist.rug.kind.json.JsonType._
 
 class JsonMutableView(
                        originalBackingObject: FileArtifact,
-                       parent: ProjectMutableView)
+                       parent: ProjectMutableView,
+                       originalParsed: MutableContainerTreeNode
+                     )
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
-
-  val originalParsed: MutableContainerTreeNode = new JsonParser().parse(originalBackingObject.content)
 
   private var currentParsed = originalParsed
 

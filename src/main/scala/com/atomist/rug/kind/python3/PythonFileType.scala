@@ -60,15 +60,17 @@ class PythonFileType(
         Some(pmv.currentBackingObject
           .files
           .filter(f => f.name.endsWith(PythonExtension))
-          .map(f => toView(f, pmv))
+          .flatMap(f => toView(f, pmv))
         )
       case f: FileMutableView if f.filename.endsWith(PythonExtension) =>
-        Some(Seq(toView(f.currentBackingObject, f.parent)))
+        Some(toView(f.currentBackingObject, f.parent).toSeq)
       case _ => None
     }
   }
 
-  private def toView(f: FileArtifact, pmv: ProjectMutableView): TreeNode = {
-    new PythonFileMutableView(f, pmv)
+  private def toView(f: FileArtifact, pmv: ProjectMutableView): Option[TreeNode] = {
+    pythonParser.parse(f.content).map(parsed =>
+      new PythonFileMutableView(f, pmv, parsed)
+    )
   }
 }

@@ -24,7 +24,7 @@ class CSharpFileUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         sm.result.allFiles
           .filter(_.name.endsWith(CSharpExtension))
-          .map(cs => cSharpFileType.parseToRawNode(cs.content))
+          .flatMap(cs => cSharpFileType.parseToRawNode(cs.content))
           .map(tree => tree.childNodes.nonEmpty)
         sm.result
     }

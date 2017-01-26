@@ -39,7 +39,7 @@ class Python3ParserTest extends FlatSpec with Matchers {
   private def parseAndVerifyValueCanBeWrittenOutUnchanged(pyProg: String): MutableContainerTreeNode = {
     if (pyProg.lines.exists(_.trim.startsWith("|")))
       fail(s"Probably a test error. Did you forget to call stripMargin?")
-    val parsed = parser.parse(pyProg)
+    val parsed = parser.parse(pyProg).get
 
     val writtenOut = parsed.value
     val comp = s"Result: --------------\n[$writtenOut]\nExpected: -----------\n[$pyProg]"

@@ -10,11 +10,11 @@ import com.atomist.tree.content.text.TreeNodeOperations.{NodeTransformer, TreeOp
 trait Parser {
 
   /**
-    * Parse input
-    * @param input input
+    * Parse input if possible.
+    * @param input input input to parse
     * @param ml optional listener that will be notified of matches
-    * @return a parsed tree structure
+    * @return a parsed tree structure if input was valid. Otherwise None
     */
-  def parse(input: String, ml: Option[MatchListener]): MutableContainerTreeNode
+  def parse(input: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode]
 
 }

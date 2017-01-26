@@ -23,7 +23,7 @@ class AntlrGrammar(
     ParserSetup(grammars, parser, production)
   }
 
-  override def parse(input: String, ml: Option[MatchListener]): MutableContainerTreeNode = {
+  override def parse(input: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
     logger.debug(s"Using grammars:\n$grammars")
     val l = new ModelBuildingListener(production, ml)
     try {
@@ -37,11 +37,10 @@ class AntlrGrammar(
       // Return any results we found
     }
 
-    require(l.results.size == 1, s"Should have found 1 $production, not ${l.results.size}")
-
-    val updatedResult = l.results.head
+    val updatedResult = l.results.headOption
     updatedResult match {
-      case asu: AbstractMutableContainerTreeNode => asu.pad(input, topLevel = true)
+      case Some(asu: AbstractMutableContainerTreeNode) => asu.pad(input, topLevel = true)
+      case _ =>
     }
     updatedResult
   }

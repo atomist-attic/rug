@@ -26,16 +26,16 @@ class JavaScriptParserTest extends FlatSpec with Matchers with LazyLogging {
     if (prog.lines.exists(_.trim.startsWith("|")))
       fail(s"Probably a test error. Did you forget to call stripMargin?")
     val parsed = parser.parse(prog)
-    logger.debug(TreeNodeUtils.toShortString(parsed))
+    logger.debug(TreeNodeUtils.toShortString(parsed.get))
 
-    val actual = parsed.value.trim
+    val actual = parsed.get.value.trim
     val expected = prog.trim
 
     val comp = s"Result: --------------\n[$actual]\nExpected: -----------\n[$expected]"
     withClue(comp) {
       actual should equal(expected)
     }
-    parsed
+    parsed.get
   }
 }
 

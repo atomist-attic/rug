@@ -15,17 +15,18 @@ import org.springframework.core.io.DefaultResourceLoader
   */
 class JsonParser extends Parser {
 
-  val cp = new DefaultResourceLoader()
-
-  val r = cp.getResource("classpath:grammars/antlr/JSON.g4")
-
-  val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
+  val g4: String = {
+    val cp = new DefaultResourceLoader()
+    val r = cp.getResource("classpath:grammars/antlr/JSON.g4")
+    withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
+  }
 
   private lazy val jsGrammar = new AntlrGrammar("json", g4)
 
-  override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
-    val raw = jsGrammar.parse(input, ml)
-    val r = (RemovePadding andThen Prune)(raw)
-    r
+  override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
+    jsGrammar.parse(input, ml).map(raw => {
+      val r = (RemovePadding andThen Prune) (raw)
+      r
+    })
   }
 }

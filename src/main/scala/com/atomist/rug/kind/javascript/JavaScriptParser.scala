@@ -15,15 +15,15 @@ import org.springframework.core.io.DefaultResourceLoader
   */
 class JavaScriptParser extends Parser {
 
-  val cp = new DefaultResourceLoader()
-
-  val r = cp.getResource("classpath:grammars/antlr/ECMAScript.g4")
-
-  val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
+  val g4: String = {
+    val cp = new DefaultResourceLoader()
+    val r = cp.getResource("classpath:grammars/antlr/ECMAScript.g4")
+    withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
+  }
 
   private lazy val jsGrammar = new AntlrGrammar("program", g4)
 
-  override def parse(input: String, ml: Option[MatchListener] = None): MutableContainerTreeNode = {
+  override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
     jsGrammar.parse(input, ml)
   }
 }

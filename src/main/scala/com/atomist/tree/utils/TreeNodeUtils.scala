@@ -45,7 +45,7 @@ object TreeNodeUtils {
       case vt: ViewTree =>
         val contents = vt.delegate
         def stillShown(c: TreeNode) = vt.childNodes.contains(c) && shown(c)
-        tabs(depth) + info(vt) + " around \n" + toShortStr(contents, depth + 1, stillShown)
+        tabs(depth) + info(vt) + s" because '${vt.description}' around \n" + toShortStr(contents, depth + 1, stillShown)
       case ctn: ContainerTreeNode =>
         def star(c: TreeNode) = if (shown(c)) "*" else ""
         tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")

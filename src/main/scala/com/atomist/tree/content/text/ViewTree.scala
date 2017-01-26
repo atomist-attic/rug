@@ -13,12 +13,12 @@ object ViewTree {
     * @param of tree to put view over
     * @param t  FieldTransformer
     */
-  def apply(of: MutableContainerTreeNode, t: NodeTransformer): ViewTree = {
+  def apply(of: MutableContainerTreeNode, t: NodeTransformer, description: String, depth: Int = 0): ViewTree = {
 
     val filtered1 = of.fieldValues map (tn => {
       val transformed = t(tn)
       transformed.map {
-        case ctn: MutableContainerTreeNode => ViewTree(ctn, t)
+        case ctn: MutableContainerTreeNode => ViewTree(ctn, t, s"$description", depth + 1)
         case x => x
       }
     })
@@ -27,11 +27,11 @@ object ViewTree {
     // TODO this is a bit ugly
     val _fieldValues = ListBuffer.empty[TreeNode]
     _fieldValues.appendAll(filtered)
-    new ViewTree(of, filtered)
+    new ViewTree(of, filtered, description)
   }
 }
 
-class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode])
+class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode], val description: String)
   extends MutableContainerTreeNode {
 
   def delegate: ContainerTreeNode = of

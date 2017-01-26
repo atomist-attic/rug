@@ -40,13 +40,17 @@ object Descendant extends AxisSpecifier {
   // TODO this is very inefficient and needs to be optimized.
   // Subclasses can help, or knowing a plan
   def allDescendants(tn: TreeNode): Seq[TreeNode] = {
-    val v = new SaveAllDescendantsVisitor
-    tn.accept(v, 0)
     // Remove this node
-    v.nodes.diff(Seq(tn))
+    selfAndAllDescendants(tn).diff(Seq(tn))
   }
 
-  private class SaveAllDescendantsVisitor extends Visitor {
+  def selfAndAllDescendants(tn: TreeNode): Seq[TreeNode] = {
+    val v = new SaveAllDescendantsVisitor
+    tn.accept(v, 0)
+    v.nodes
+  }
+
+    private class SaveAllDescendantsVisitor extends Visitor {
 
     private val _nodes = ListBuffer.empty[TreeNode]
 

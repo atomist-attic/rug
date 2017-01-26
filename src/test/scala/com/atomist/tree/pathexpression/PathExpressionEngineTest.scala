@@ -79,7 +79,22 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }
 
-  it should "match on node type" in {
+  it should "match on node name with /@name" in
+    matchOnNodeName("/nested/level2/*[@name='foo']")
+
+  it should "match on node name with //@name" in
+    matchOnNodeName("/nested/level2//*[@name='foo']")
+
+  it should "match on node name with //foo" in
+    matchOnNodeName("/nested/level2//foo")
+
+  it should "match on node name with /foo and or predicate" in
+    matchOnNodeName("/nested/level2/*[@value='foo1' or @value='foo2']")
+
+  it should "match on node name with //foo and or predicate" in
+    matchOnNodeName("/nested/level2//*[@value='foo1' or @value='foo2']")
+
+  private def matchOnNodeName(expr: String) {
     val tn = new ParsedMutableContainerTreeNode("name")
     val prop1 = new ParsedMutableContainerTreeNode("nested")
     val prop11 = new ParsedMutableContainerTreeNode("level2")
@@ -90,7 +105,6 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     prop11.appendField(fooNode2)
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
-    val expr = "/nested/level2/*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Seq(fooNode1, fooNode2))
   }

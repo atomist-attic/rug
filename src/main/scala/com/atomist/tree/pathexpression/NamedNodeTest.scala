@@ -12,27 +12,29 @@ import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 case class NamedNodeTest(name: String)
   extends NodeTest {
 
+  private def findUnder(tn: TreeNode): List[TreeNode] = {
+    tn.childrenNamed(name).toList match {
+      case Nil =>
+        TreeNodeOperations.invokeMethodIfPresent[TreeNode](tn, name).
+          map {
+            case s: List[TreeNode@unchecked] =>
+              s
+            case t: TreeNode =>
+              List(t)
+            case x =>
+              Nil
+          }.getOrElse(Nil)
+      case l => l
+    }
+  }
+
   override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Child =>
-      val kids: List[TreeNode] =
-        tn.childrenNamed(name).toList match {
-          case Nil =>
-            TreeNodeOperations.invokeMethodIfPresent[TreeNode](tn, name).
-              map {
-                case s: List[TreeNode@unchecked] =>
-                  s
-                case t: TreeNode =>
-                  List(t)
-                case x =>
-                  Nil
-              }.getOrElse {
-              val allKids = tn.childNodes
-              val filteredKids = allKids.filter(n => name.equals(n.nodeName))
-              filteredKids.toList
-            }
-          case l => l
-        }
+      val kids: List[TreeNode] = findUnder(tn)
       Right(kids)
+    case Descendant =>
+      val possibleMatches: List[TreeNode] = Descendant.selfAndAllDescendants(tn).flatMap(n => findUnder(n)).toList
+      Right(possibleMatches)
   }
 
 }

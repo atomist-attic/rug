@@ -128,14 +128,22 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
                         ee: ExpressionEngine,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): Boolean = {
-    val extracted = n.childrenNamed(property)
-    if (extracted.size == 1) {
-      val result = extracted.head.value.equals(expectedValue)
-      //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
-      result
+    if (property == "value") {
+      // Treat the value property specially
+      n.value == expectedValue
     }
-    else
-      false
+    else {
+      val extracted = n.childrenNamed(property)
+      if (extracted.size == 1) {
+        val result = extracted.head.value.equals(expectedValue)
+        //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
+        result
+      }
+      else {
+        // TODO try to invoke a method?
+        false
+      }
+    }
   }
 }
 

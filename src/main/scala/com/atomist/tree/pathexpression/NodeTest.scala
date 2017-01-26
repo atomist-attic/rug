@@ -47,7 +47,6 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     case Child =>
       val kids = tn.childNodes.toList
       ExecutionResult(kids)
-
     case Descendant =>
       val kids = Descendant.allDescendants(tn).toList
       ExecutionResult(kids)

@@ -1,4 +1,4 @@
-import {Project} from '@atomist/rug/model/Core'
+import {Project,File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
@@ -12,19 +12,19 @@ class Imports implements ProjectEditor {
     edit(project: Project) {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
-      let i = 0
 
-      // eng.with<File>(project, "//File()[/PythonRawFile()//import_from()//FROM[@value='flask']]", n => {
-      //   console.log(`The file path is ${n.path()}`)
-      //   i++
-      // })
-
-      eng.with<TreeNode>(project, "//File()/PythonRawFile()//import_stmt()", n => {
-        console.log(`The node is ${n.value()}`)
-        i++
+    eng.with<TreeNode>(project, "//File()/PythonRawFile()//import_from()//dotted_name", n => {
+        console.log(`The FROM value is '${n.value()}'`)
       })
-      if (i == 0)
-       throw new Error("No Pythons found. Sad.")
+
+      let count = 0
+      eng.with<File>(project, "//File()[/PythonRawFile()//import_from()//dotted_name[@value='flask']]", n => {
+        console.log(`The file path is '${n.path()}'`)
+        count++
+      })
+
+      if (count == 0)
+       throw new Error("No files with flask imports found. Sad.")
     }
   }
 export let editor = new Imports();

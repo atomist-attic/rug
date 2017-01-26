@@ -40,7 +40,7 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
   }
 
   it should "enumerate imports in simple project" in {
-    val r = executePython("Imports.ts", Flask1)
+    val r = executePython("ListImports.ts", Flask1)
     r match {
       case nmn: NoModificationNeeded =>
       case sm: SuccessfulModification =>
@@ -49,18 +49,9 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  /*
-  it should "modify imports in simple file" in {
-    val prog =
-      """
-        |editor ImportUpdater
-        |
-        |with PythonFile
-        | with import
-        |   do setName "newImport"
-      """.stripMargin
-    val r = modifyPythonAndReparseSuccessfully(prog, Simple)
-    val f = r.findFile("setup.py").get
+  it should "modify imports in single file" in {
+    val r = modifyPythonAndReparseSuccessfully("ChangeImports.ts", Flask1)
+    val f = r.findFile("hello.py").get
     f.content.contains("newImport") should be(true)
   }
 
@@ -71,6 +62,7 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
       |    return "Hello World!"
     """.stripMargin
 
+  /*
   it should "add Flask route to Python file" in {
     val prog =
       """

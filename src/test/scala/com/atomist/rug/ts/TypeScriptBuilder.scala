@@ -1,10 +1,11 @@
 package com.atomist.rug.ts
 
+import _root_.java.io.File
+
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
-import _root_.java.io.File
 
 /**
   * Helps us compile TypeScript archives.
@@ -17,7 +18,7 @@ object TypeScriptBuilder {
   val userModel: ArtifactSource = {
     val generator = new TypeScriptInterfaceGenerator
     val output = generator.generate("stuff", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "Core.ts")))
-    val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/main/typescript")))
+    val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/main/typescript"))) // THIS ONLY WORKS IN TESTS NOT IN PRODUCTION
     val compiled = compiler.compile(src.underPath("node_modules/@atomist").withPathAbove(".atomist") + output.withPathAbove(".atomist/rug/model"))
     compiled.underPath(".atomist").withPathAbove(".atomist/node_modules/@atomist")
   }

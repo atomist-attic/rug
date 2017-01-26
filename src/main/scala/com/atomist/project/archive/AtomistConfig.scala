@@ -1,6 +1,5 @@
 package com.atomist.project.archive
 
-import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
 /**
@@ -40,11 +39,6 @@ trait AtomistConfig {
     * Handlers directory under Atomist root or root of archive.
     */
   def handlersDirectory: String
-
-  /**
-    * User model for TypeScript
-    */
-  def userModel: ArtifactSource
 
   /**
     * Extension for Rug files.
@@ -145,6 +139,4 @@ object DefaultAtomistConfig extends AtomistConfig {
   override val jsExtension = ".js"
 
   override def testExtension: String = ".rt"
-
-  override val userModel: ArtifactSource = TypeScriptBuilder.userModel
 }

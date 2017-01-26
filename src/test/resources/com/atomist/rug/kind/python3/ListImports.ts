@@ -25,15 +25,6 @@ class Imports implements ProjectEditor {
 
       if (count == 0)
        throw new Error("No files with flask imports found. Sad.")
-
-      let i = 0
-
-      eng.with<TreeNode>(project, "//File()/PythonRawFile()//import_stmt()", n => {
-        console.log(`The node is ${n.value()}`)
-        i++
-      })
-      if (i == 0)
-       throw new Error("No Pythons found. Sad.")
     }
   }
 export let editor = new Imports();

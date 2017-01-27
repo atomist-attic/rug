@@ -23,10 +23,9 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     processedNodes
   }
 
-  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): MutableContainerTreeNode = {
-    val nodes = findMatchesInternal(input, l)
-    require(nodes.size == 1, s"Expected 1 result, not ${nodes.size}")
-    outputNode(input)(nodes.head._1)
+  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): Either[DismatchReport, MutableContainerTreeNode] = {
+    val result = matcher.matchPrefix(InputState(input))
+    result.right.map(matched => outputNode(input)(matched, OffsetInputPosition(0)))
   }
 
   private [microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = OffsetInputPosition(0)) = {

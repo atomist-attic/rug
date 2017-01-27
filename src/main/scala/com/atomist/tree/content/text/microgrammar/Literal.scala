@@ -27,8 +27,9 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
         is,
         this.toString))
     }
-    else
-      Left(DismatchReport(s"<$literal> != <$matched>"))
+    else {
+      Left(DismatchReport(s"Literal: <$literal> != <$matched>").at(OffsetInputPosition(inputState.offset), OffsetInputPosition(inputState.offset + literal.length)))
+    }
   }
 
 }

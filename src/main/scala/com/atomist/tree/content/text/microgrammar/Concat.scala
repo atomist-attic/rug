@@ -37,7 +37,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
           case Left(noOnTheRight) =>
             // We're done. Right doesn't match.
             logger.debug(s"We matched OK on [$left]->[${leftMatch}] but failed on [$right], next 20 characters were [${leftMatch.resultingInputState.take(20)}]")
-            Left(noOnTheRight.andSo("right didn't match"))
+            Left(noOnTheRight.andSo("Concat: left matched, right didn't").withPriorMatch(leftMatch))
           case Right(rightMatch) =>
             // Both match.
             val mergedTree: Option[PositionedTreeNode] = (leftMatch.node, rightMatch.node) match {

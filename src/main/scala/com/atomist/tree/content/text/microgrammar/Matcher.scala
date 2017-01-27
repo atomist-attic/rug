@@ -5,16 +5,7 @@ import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.microgrammar.matchers.Break
 
-case class MatcherConfig(
-                          greedy: Boolean = true
-                        )
-
-
-case class DismatchReport(why: String, causes: Seq[DismatchReport] = Seq()) {
-  def andSo(consequence: String): DismatchReport = DismatchReport(consequence, Seq(this))
-//  def andAlsoBecause(whyNow: String, additionalCause: DismatchReport) = DismatchReport(whyNow, Seq(additionalCause, this))
-}
-
+case class MatcherConfig(greedy: Boolean = true)
 
 /**
   * Extended by classes that can match part of an input string, preserving

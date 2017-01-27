@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.csharp
 
-import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.kind.grammar.AntlrRawFileType
+import com.atomist.source.FileArtifact
 
 object CSharpFileType {
 
@@ -18,7 +18,7 @@ class CSharpFileType
 
   override def description = "C# file"
 
-  override protected def isOfType(f: FileArtifactBackedMutableView): Boolean =
-    f.filename.endsWith(CSharpExtension)
+  override def isOfType(f: FileArtifact): Boolean =
+    f.name.endsWith(CSharpExtension)
 
 }

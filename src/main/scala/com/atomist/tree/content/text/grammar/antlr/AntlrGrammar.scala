@@ -2,6 +2,7 @@ package com.atomist.tree.content.text.grammar.antlr
 
 import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
 import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode}
+import org.antlr.v4.runtime.NoViableAltException
 import org.antlr.v4.runtime.InputMismatchException
 import org.snt.inmemantlr.GenericParser
 
@@ -32,8 +33,12 @@ class AntlrGrammar(
       parser.parse(input, production)
     }
     catch {
+      case nva: NoViableAltException =>
+        logger.info(s"Unable to parse file: $nva on [$input]", nva)
       case ime: InputMismatchException =>
         logger.info(s"Antlr parse failure: $ime on [$input]", ime)
+      case t: Throwable =>
+        logger.error(s"Unexpected Antlr parse failure: $t on [$input]", t)
       // Return any results we found
     }
 

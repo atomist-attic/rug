@@ -5,17 +5,21 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
-class ChangeImports implements ProjectEditor {
+class AddImport implements ProjectEditor {
     name: string = "Constructed"
     description: string = "Uses single microgrammar"
+    parameters: Parameter[] = [
+        {name: "packageName", description: "The package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}
+    ]
 
-    edit(project: Project) {
+    edit(project: Project, {packageName } : {packageName: string}) {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
       let count = 0
-      eng.with<TreeNode>(project, "//File()/CSharpFile()//using_directive", n => {
-        console.log(`The import was '${n.value()}'`)
-        n.update("using newImportWithAVeryVeryLongName;")
+      eng.with<TreeNode>(project, "//File()/CSharpFile()//using_directive[1]", n => {
+        let newUsing = `${n.value()}\nusing ${packageName};\n`
+        console.log(`The using was ['${n.value()}], Updating to [${newUsing}]`)
+        n.update(newUsing)
         count++
       })
 
@@ -24,4 +28,4 @@ class ChangeImports implements ProjectEditor {
     }
 }
 
-export let editor = new ChangeImports();
+export let editor = new AddImport()

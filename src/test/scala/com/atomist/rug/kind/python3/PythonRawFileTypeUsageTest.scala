@@ -3,10 +3,13 @@ package com.atomist.rug.kind.python3
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.TestUtils
+import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
 
-class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
+
+class PythonRawFileTypeUsageTest extends AntlrRawFileTypeTest {
+
+  override protected val typeBeingTested = new PythonRawFileType
 
   import Python3ParserTest._
 
@@ -25,16 +28,10 @@ class PythonRawFileTypeUsageTest extends FlatSpec with Matchers {
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
 
-  import PythonFileType._
-
   def modifyPythonAndReparseSuccessfully(tsFilename: String, as: ArtifactSource, params: Map[String,String] = Map()): ArtifactSource = {
-    val parser = new Python3Parser
     executePython(tsFilename, as, params) match {
       case sm: SuccessfulModification =>
-        sm.result.allFiles
-          .filter(_.name.endsWith(PythonExtension))
-          .flatMap(py => parser.parse(py.content))
-          .map(tree => tree.childNodes.nonEmpty)
+        validateResultContainsValidFiles(sm.result)
         sm.result
     }
   }

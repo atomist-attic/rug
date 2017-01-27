@@ -4,7 +4,6 @@ import com.atomist.param.Tag
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
-import com.atomist.rug.TestUtils
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}

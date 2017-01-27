@@ -18,7 +18,7 @@ class RawPython3Test extends FlatSpec with Matchers {
   it should "find Python file type using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/src/File()/PythonRawFile()"
+    val expr = "/src/File()/PythonFile()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
     //    rtn.right.get.foreach {
@@ -29,7 +29,7 @@ class RawPython3Test extends FlatSpec with Matchers {
   it should "drill down to Python import statement using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/src/File()/PythonRawFile()//import_stmt()"
+    val expr = "/src/File()/PythonFile()//import_stmt()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {
@@ -42,7 +42,7 @@ class RawPython3Test extends FlatSpec with Matchers {
   it should "drill down to Python import from statement using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/src/File()/PythonRawFile()//import_from()"
+    val expr = "/src/File()/PythonFile()//import_from()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {

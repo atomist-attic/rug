@@ -4,7 +4,6 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
-import com.atomist.rug.kind.python3.PythonFileType._
 import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
@@ -45,6 +44,22 @@ class RequirementsType(
   }
 }
 
+object PythonRequirementsTxtType {
+
+  /**
+    * Requirements at well-known location
+    */
+  val RequirementsTextTypeAlias = "python.requirements.txt"
+
+  /** Path within archive of Python requirements.txt */
+  val RequirementsTextPath = "requirements.txt"
+
+  val RequirementAlias = "requirement"
+
+}
+
+import PythonRequirementsTxtType._
+
 /**
   * Type for Python requirements.txt
   *
@@ -81,7 +96,7 @@ class RequirementsTxtMutableView(
                                   parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  lazy val originalParsed = RequirementsTxtParser.parseFile(originalBackingObject.content)
+  lazy val originalParsed: Requirements = RequirementsTxtParser.parseFile(originalBackingObject.content)
 
   private var currentParsed = originalParsed
 

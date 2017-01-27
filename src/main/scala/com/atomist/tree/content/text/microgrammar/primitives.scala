@@ -44,13 +44,13 @@ case class Wrap(m: Matcher, name: String)
   extends Matcher {
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
-    m.matchPrefix(inputState).right.map(matched =>
-      matched.copy(node = matched.node.map(mn => {
-        val n = SimpleMutableContainerTreeNode.wrap(name, mn)
-        //println(s"New node is $n")
-        n
-      })))
-
+    m.matchPrefix(inputState).right.map {
+      matched =>
+        val wrappedNode = matched.node.map {
+          SimpleMutableContainerTreeNode.wrap(name, _)
+        }
+        matched.copy(node = wrappedNode)
+    }
 }
 
 case class Optional(m: Matcher, name: String = "optional") extends Matcher {

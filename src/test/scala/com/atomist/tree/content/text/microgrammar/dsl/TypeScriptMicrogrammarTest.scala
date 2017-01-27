@@ -1,9 +1,8 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.project.edit.SuccessfulModification
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
-import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}

@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.rug.spi.{ExportFunction, TypeProvider}
+import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.{MutableTreeNode, TerminalTreeNode, TreeNode}
 
 class MutableTerminalTreeNodeTypeProvider
@@ -17,12 +18,11 @@ class MutableTerminalTreeNodeTypeProvider
 class MutableTerminalTreeNode(
                                val nodeName: String,
                                val initialValue: String,
-                               val startPosition: InputPosition)
+                               val startPosition: InputPosition,
+                               override val significance: Significance = TreeNode.Explicit)
   extends TerminalTreeNode
     with PositionedTreeNode
     with MutableTreeNode {
-
-  override val significance = TreeNode.Explicit // typically these are here for a reason
 
   def this(other: MutableTerminalTreeNode) = {
     this(other.nodeName, other.initialValue, other.startPosition)

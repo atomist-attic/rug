@@ -158,13 +158,13 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   //  params : param_def (',' param_def)*;
   //  method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
   protected def matchScalaMethodHeaderRepsep: Microgrammar = {
-    val identifier = Regex("identifier", "[a-zA-Z0-9]+")
+    val identifier = Regex("[a-zA-Z0-9]+", Some("identifier"))
     val paramDef = Wrap(
-      identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type"),
+      identifier.copy(givenName = Some("name")) ~? ":" ~? identifier.copy(givenName = Some("type")),
       "param_def")
     val params = Repsep(paramDef, ",", "params")
-    val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~?
-      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(name = "type")
+    val method = "def" ~~ identifier.copy(givenName = Some("name")) ~? "(" ~?
+      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(givenName = Some("type"))
     new MatcherMicrogrammar(method)
   }
 

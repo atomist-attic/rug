@@ -1,17 +1,22 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableTerminalTreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 
 /**
   * Matches a regex.
   */
-case class Regex(name: String, regex: String, config: MatcherConfig = MatcherConfig())
+case class Regex(regex: String, givenName: Option[String], config: MatcherConfig = MatcherConfig())
   extends ConfigurableMatcher {
+  import Regex._
 
   // TODO look at greedy
 
   private val rex = regex.r
+
+  private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Explicit else TreeNode.Structural
+  val name = givenName.getOrElse(DefaultRegexName)
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
@@ -19,7 +24,7 @@ case class Regex(name: String, regex: String, config: MatcherConfig = MatcherCon
         case Some(m) =>
           Right(PatternMatch(
             Some(
-              new MutableTerminalTreeNode(name, m.matched, inputState.inputPosition)),
+              new MutableTerminalTreeNode(name, m.matched, inputState.inputPosition, significance = treeNodeSignificance)),
             m.matched,
             inputState.take(m.matched.length)._2,
             this.toString))
@@ -28,6 +33,13 @@ case class Regex(name: String, regex: String, config: MatcherConfig = MatcherCon
     }
     else
       Left(DismatchReport("we have reached the end"))
+}
+
+object Regex {
+  @deprecated
+  def apply(name: String, regex: String): Regex = Regex(regex, Some(name))
+
+  val DefaultRegexName = ".regex"
 }
 
 /**

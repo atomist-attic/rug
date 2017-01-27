@@ -56,7 +56,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     val microgrammar =
       new MatcherMicrogrammar(
-        Literal("a ") ~ Regex("[a-z]+", "blah") ~ Optional(Literal("yo", Some("myWord"))) ~ Literal(".")
+        Literal("a ") ~ Regex("[a-z]+", Some("blah")) ~ Optional(Literal("yo", Some("myWord"))) ~ Literal(".")
         , "bananagrammar")
     val pathExpression = "/File()/bananagrammar()/blah()"
 

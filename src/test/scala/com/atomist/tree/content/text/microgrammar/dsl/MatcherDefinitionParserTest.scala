@@ -31,7 +31,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       s"$RegexpOpenToken[.*]$RegexpCloseToken",
       s"$RegexpOpenToken[.]$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("y", v) match {
-      case Regex("y", rex, _) =>
+      case Regex(rex, Some("y"), _) =>
     }
   }
 
@@ -41,7 +41,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       s"${VariableDeclarationToken}foo:$RegexpOpenToken.*$RegexpCloseToken",
       s"${VariableDeclarationToken}foo:$RegexpOpenToken.$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("x", v) match {
-      case Regex("foo", rex, _) =>
+      case Regex(rex, Some("foo"), _) =>
         withClue(s"String [$v] should contain regex [$rex]") {
           v.contains(rex) should be(true)
         }

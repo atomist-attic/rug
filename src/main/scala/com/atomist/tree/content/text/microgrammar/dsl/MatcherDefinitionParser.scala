@@ -91,7 +91,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
   // $name:[.*]
   private def inlineReference()(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
     VariableDeclarationToken ~> ident ~ ":" ~ rex ^^ {
-      case newName ~ _ ~ regex => regex.copy(name = newName)
+      case newName ~ _ ~ regex => regex.copy(givenName = Some(newName))
     }
 
   private def matcherExpression(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =

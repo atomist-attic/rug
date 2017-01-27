@@ -5,7 +5,7 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
-class ChangeImports implements ProjectEditor {
+class ChangeUsing implements ProjectEditor {
     name: string = "Constructed"
     description: string = "Uses single microgrammar"
 
@@ -24,4 +24,4 @@ class ChangeImports implements ProjectEditor {
     }
 }
 
-export let editor = new ChangeImports();
+export let editor = new ChangeUsing();

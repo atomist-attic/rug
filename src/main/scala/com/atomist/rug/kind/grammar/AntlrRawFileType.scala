@@ -11,6 +11,7 @@ import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
@@ -95,7 +96,7 @@ abstract class AntlrRawFileType(
     * @param content content to parse
     * @return
     */
-  def parseToRawNode(content: String): Option[MutableContainerTreeNode] = {
-    antlrGrammar.parse(content, None)
+  def parseToRawNode(content: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
+    antlrGrammar.parse(content, ml)
   }
 }

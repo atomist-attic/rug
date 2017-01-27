@@ -23,7 +23,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "modify using via path expression" in {
-    val r = modifyAndReparseSuccessfully("ChangeImports.ts", HelloWorldSources)
+    val r = modifyAndReparseSuccessfully("ChangeUsing.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
     f.content.contains("newImportWithAVeryVeryLongName") should be(true)
   }

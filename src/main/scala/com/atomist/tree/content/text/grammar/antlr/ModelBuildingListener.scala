@@ -27,9 +27,12 @@ class ModelBuildingListener(
                              ml: Option[MatchListener])
   extends DefaultListener with LazyLogging {
 
-  private val _results = new ListBuffer[MutableContainerTreeNode]()
+  private val results = new ListBuffer[MutableContainerTreeNode]()
 
-  def results: Seq[MutableContainerTreeNode] = _results
+  /**
+    * @return the nodes corresponding to these rules
+    */
+  def ruleNodes: Seq[MutableContainerTreeNode] = results
 
   override def enterEveryRule(ctx: ParserRuleContext): Unit = {
     val rule = this.getRuleByKey(ctx.getRuleIndex)
@@ -39,13 +42,15 @@ class ModelBuildingListener(
         if (ctx.exception != null) {
           // Failed to get a whole match
           // ctx.exception.printStackTrace()
-        } else {
+        }
+        else {
           val mof = treeToContainerField(ctx)
-          _results append mof
+          results.append(mof)
           ml.foreach(_.onMatch(mof))
           logger.debug("\t" + ctx)
         }
       case _ =>
+        // Ignore this production
     }
   }
 

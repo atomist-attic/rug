@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar.matchers.Break
-import com.atomist.tree.content.text.{MutableContainerTreeNode, MutableTerminalTreeNode}
+import com.atomist.tree.content.text.{MutableContainerTreeNode, MutableTerminalTreeNode, PositionedTreeNode}
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -332,7 +332,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     var hits: List[TreeNode] = Nil
     var skipped: List[PositionalString] = Nil
 
-    override protected def onMatchInternal(m: TreeNode): Unit = {
+    override protected def onMatchInternal(m: PositionedTreeNode): Unit = {
       hits = hits :+ m
     }
 

@@ -42,7 +42,7 @@ class AntlrGrammar(
       // Return any results we found
     }
 
-    val updatedResult = l.results.headOption
+    val updatedResult = l.ruleNodes.headOption
     updatedResult match {
       case Some(asu: AbstractMutableContainerTreeNode) => asu.pad(input, topLevel = true)
       case _ =>

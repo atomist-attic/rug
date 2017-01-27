@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Generators are now declared with the `generator` keyword
 
+-   Optional predicates in tree expressions
+
 ### Fixed
 
 -   LinkedJsonTreeDeserializer now properly returns string values

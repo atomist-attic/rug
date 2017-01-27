@@ -21,7 +21,7 @@ abstract class AntlrRawFileTypeTest extends FlatSpec with Matchers {
     val goodFileCount = r.allFiles
       .filter(typeBeingTested.isOfType)
       .map(cs => (cs, typeBeingTested.parseToRawNode(cs.content)))
-      .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n${tup._1.content}")))
+      .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
       .count(tree => tree.childNodes.nonEmpty)
     goodFileCount should be >=(1)
   }

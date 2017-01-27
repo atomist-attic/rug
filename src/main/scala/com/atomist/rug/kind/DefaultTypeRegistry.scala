@@ -1,8 +1,6 @@
 package com.atomist.rug.kind
 
 /**
-  * Bootstrap Spring scanning. Use when we need to test a TypeRegistry without
-  * other runtime elements.
+  * Load types using ServiceLoader
   */
-object DefaultTypeRegistry extends ServiceLoaderTypeRegistry {
-}
+object DefaultTypeRegistry extends ServiceLoaderTypeRegistry

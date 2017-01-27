@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherOperationsTest extends FlatSpec with Matchers {
@@ -17,9 +18,10 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
   it should "match literal in partial string" in {
     val l = Literal("thing")
     l.matchPrefix(InputState("thing2")) match {
-      case Right(pm) =>
-        pm should equal(
-          PatternMatch(None, "thing", InputState("thing2", offset = 5), l.toString))
+      case Right(PatternMatch(Some(node), "thing", is, value)) =>
+        node.significance should be(TreeNode.Structural)
+        value should be(l.toString)
+        is.offset should be(5)
     }
   }
 

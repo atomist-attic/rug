@@ -156,7 +156,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "parse strict string literals" in {
     val f = s"""${StrictLiteralOpen}xxxx$StrictLiteralClose"""
     val parsed = mgp.parseMatcher("f", f)
-    parsed.name should be("literal")
+    parsed.name should be(".literal")
     parsed match {
       case Literal("xxxx", _) =>
     }

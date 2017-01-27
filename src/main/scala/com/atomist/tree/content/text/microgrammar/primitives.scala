@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 

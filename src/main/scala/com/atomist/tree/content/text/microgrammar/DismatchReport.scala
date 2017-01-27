@@ -13,6 +13,13 @@ case class DismatchReport(why: String,
     copy(startOffset = Some(startOffset), endOffset = Some(endOffset))
   }
 
+  def lengthOfClosestMatch: Int = {
+    val priorMatchLen =
+    for { m <- priorMatch
+          n <- m.node } yield n.value.length
+    (Seq(0) ++ causes.map(_.lengthOfClosestMatch) ++ priorMatchLen).max
+  }
+
   def andSo(consequence: String): DismatchReport = DismatchReport(consequence, Seq(this), startOffset = startOffset, endOffset = endOffset)
 
   def withPriorMatch(p: PatternMatch) = copy(priorMatch = Some(p))

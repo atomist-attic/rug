@@ -18,7 +18,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     , "it's a concat") andThen RemovePadding andThen RemoveStructuralLiterals andThen Prune
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
-    val matches = findMatchesInternal(input, l)
+    val (matches, dismatches) = findMatchesInternal(input, l)
     val processedNodes = matches.map { case (m, o) =>
       outputNode(input)(m, o)
     }
@@ -46,12 +46,14 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
 
 
   private[microgrammar] def findMatchesInternal(input: CharSequence,
-                                                listeners: Option[MatchListener]): Seq[(PatternMatch, OffsetInputPosition)] = {
+                                                listeners: Option[MatchListener]): (Seq[(PatternMatch, OffsetInputPosition)], Seq[DismatchReport]) = {
     val matches = ListBuffer.empty[(PatternMatch, OffsetInputPosition)]
+    val dismatches = ListBuffer.empty[DismatchReport]
     var is = InputState(input)
     while (!is.exhausted) {
       matcher.matchPrefix(is) match {
-        case Left(whyNot) =>
+        case Left(dismatchReport) =>
+          dismatches.append(dismatchReport)
           is = is.advance
         case Right(matchFound) =>
           listeners.foreach(l => matchFound.node.map(l.onMatch(_)))
@@ -60,7 +62,8 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
           is = matchFound.resultingInputState
       }
     }
-    matches
+
+    (matches, dismatches)
   }
 
   override def toString: String = s"MatcherMicrogrammar wrapping [$matcher]"

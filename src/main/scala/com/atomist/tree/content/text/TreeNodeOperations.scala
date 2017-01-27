@@ -34,7 +34,9 @@ object TreeNodeOperations {
     // We put in a new temporary root to ensure that the root node itself gets
     val artificialRoot = new ParsedMutableContainerTreeNode("temporary-artificial-root")
     artificialRoot.appendField(mtn)
-    ViewTree(artificialRoot, ft, s"temporary artificial root with filter $description").childNodes.head.asInstanceOf[MutableContainerTreeNode]
+    val why = ViewTree(artificialRoot, ft, s"temporary artificial root with filter $description")
+    require(why.childNodes.size == 1, s"Trying to $description but nodes are disappearing or something, I don't understand this function. Input was $mtn" )
+    why.childNodes.head.asInstanceOf[MutableContainerTreeNode]
   }
 
   /**

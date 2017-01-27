@@ -51,4 +51,17 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     result.size should be(2)
   }
+
+  it should "match a named node" in {
+
+    val microgrammar =
+      new MatcherMicrogrammar(
+        Literal("a ") ~ Regex("[a-z]+", "blah") ~ Optional(Literal("yo", Some("myWord"))) ~ Literal(".")
+        , "bananagrammar")
+    val pathExpression = "/File()/bananagrammar()/blah()"
+
+    val result = exercisePathExpression(microgrammar, pathExpression, input)
+
+    result.size should be(1)
+  }
 }

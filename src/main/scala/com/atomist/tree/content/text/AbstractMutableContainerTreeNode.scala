@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{PaddingTreeNode, SimpleTerminalTreeNode, TreeNode}
+import com.atomist.tree.{MutableTreeNode, PaddingTreeNode, SimpleTerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -31,92 +31,11 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
-
-  /**
-    * Tell this node it doesn't need padding
-    */
-  def markPadded(): Unit = {
-    _padded = true
-  }
-
+  
   override def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
-
-    // Number of characters of fields to show in padding field names
-    val show = 40
-
-    def padding(from: Int, to: Int): TreeNode = {
-      //      require(from >= 0 && from < initialSource.size, s"from for padding must be 0-${initialSource.size}, had $from")
-      //      require(to >= 0 && to < initialSource.size, s"from for padding must be 0-${initialSource.size}, $to")
-
-      val content = initialSource.substring(from, to)
-      val name = s"$from-$to[${
-        val pcontent = TreeNodeUtils.inlineReturns(content)
-        if (pcontent.length > show) s"${pcontent.take(show)}..." else pcontent
-      }]"
-      val pad = PaddingTreeNode(name, content)
-      pad
-    }
-
-    val fieldResults = ListBuffer.empty[TreeNode]
-    if (startPosition == null)
-      throw new IllegalStateException(s"startPosition not set in $nodeName: class $this")
-
-    // There may be content before the first production that we want to account if we are a top level production
-    if (topLevel && startPosition.offset > 0) {
-      fieldResults.append(padding(0, startPosition.offset))
-    }
-
-    var lastEndOffset = startPosition.offset
-    for {
-      fv <- _fieldValues
-    } {
-      fv match {
-        case sm: PositionedTreeNode if sm.initialized =>
-          // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
-          // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
-          // but that whitespace appears to be appended to the previous node maybe? because if we add those
-          // whitespace nodes here it gets doubled.
-          if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[AbstractMutableContainerTreeNode]) {
-            try {
-              sm.pad(initialSource)
-            }
-            catch {
-              case iex: IllegalArgumentException =>
-                throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $sm", iex)
-            }
-            val smoffset = sm.startPosition.offset
-            if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
-            lastEndOffset = sm.endPosition.offset
-            fieldResults.append(sm)
-          }
-          else {
-            //println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
-          }
-        case mttn: PositionedTreeNode =>
-        // This one is not actually positioned now is it
-          ???
-        case f if "".equals(f.value) =>
-          // It's harmless. Keep it as it may be queried. It won't be updateable
-          // Because we probably don't know where it lives.
-          fieldResults.append(f)
-        case _ =>
-        // Ignore it. Let padding do its work
-      }
-    }
-    // Put in trailing padding if necessary
-    if (endPosition.offset > lastEndOffset) {
-      fieldResults.append(padding(lastEndOffset, endPosition.offset))
-    }
-
-    // If it's a top level element, make sure we account for the entire file
-    if (topLevel) {
-      val content = initialSource.substring(endPosition.offset)
-      if (content.nonEmpty) {
-        val pn = PaddingTreeNode("End", content)
-        fieldResults.append(pn)
-      }
-    }
-    this._fieldValues = fieldResults
+    val hatched = AbstractMutableContainerTreeNode.pad(this, initialSource, topLevel)
+    _fieldValues = ListBuffer.empty[TreeNode]
+    _fieldValues.append(hatched.childNodes:_*)
     _padded = true
   }
 
@@ -217,4 +136,119 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   override def toString =
     s"${getClass.getSimpleName}($nodeName)[$startPosition-$endPosition]: {${childNodes.mkString(",")}}"
+}
+
+
+object AbstractMutableContainerTreeNode {
+
+  def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): MutableTreeNode = {
+
+      // Number of characters of fields to show in padding field names
+      val show = 40
+
+      def padding(from: Int, to: Int): TreeNode = {
+        //      require(from >= 0 && from < initialSource.size, s"from for padding must be 0-${initialSource.size}, had $from")
+        //      require(to >= 0 && to < initialSource.size, s"from for padding must be 0-${initialSource.size}, $to")
+
+        val content = initialSource.substring(from, to)
+        val name = s"$from-$to[${
+          val pcontent = TreeNodeUtils.inlineReturns(content)
+          if (pcontent.length > show) s"${pcontent.take(show)}..." else pcontent
+        }]"
+        val pad = PaddingTreeNode(name, content)
+        pad
+      }
+
+      val fieldResults = ListBuffer.empty[TreeNode]
+      if (pupae.startPosition == null)
+        throw new IllegalStateException(s"startPosition not set in $pupae.nodeName: class $this")
+
+      // There may be content before the first production that we want to account if we are a top level production
+      if (topLevel && pupae.startPosition.offset > 0) {
+        fieldResults.append(padding(0, pupae.startPosition.offset))
+      }
+
+      var lastEndOffset = pupae.startPosition.offset
+      for {
+        fv <- pupae.childNodes
+      } {
+        fv match {
+          case sm: PositionedTreeNode if sm.initialized =>
+            // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
+            // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
+            // but that whitespace appears to be appended to the previous node maybe? because if we add those
+            // whitespace nodes here it gets doubled.
+            if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[AbstractMutableContainerTreeNode]) {
+              try {
+                sm.pad(initialSource)
+              }
+              catch {
+                case iex: IllegalArgumentException =>
+                  throw new IllegalArgumentException(s"Cannot find position when processing $this and trying to pad $sm", iex)
+              }
+              val smoffset = sm.startPosition.offset
+              if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
+              lastEndOffset = sm.endPosition.offset
+              fieldResults.append(sm)
+            }
+            else {
+              //println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
+            }
+          case mttn: PositionedTreeNode =>
+            // This one is not actually positioned now is it
+            ???
+          case f: TreeNode if "".equals(f.value) =>
+            // It's harmless. Keep it as it may be queried. It won't be updateable
+            // Because we probably don't know where it lives.
+            fieldResults.append(f)
+          case _ =>
+          // Ignore it. Let padding do its work
+        }
+      }
+      // Put in trailing padding if necessary
+      if (pupae.endPosition.offset > lastEndOffset) {
+        fieldResults.append(padding(lastEndOffset, pupae.endPosition.offset))
+      }
+
+      // If it's a top level element, make sure we account for the entire file
+      if (topLevel) {
+        val content = initialSource.substring(pupae.endPosition.offset)
+        if (content.nonEmpty) {
+          val pn = PaddingTreeNode("End", content)
+          fieldResults.append(pn)
+        }
+      }
+    new MutableButNotPositionedContainerTreeNode(pupae.nodeName, fieldResults)
+  }
+}
+
+/**
+  * Conceptually:
+  * We parse PositionedTreeNodes, and then we pad them and they become MutableTreeNodes.
+  * PositionedTreeNodes are like pupa, and the pad method hatches them into moths.
+  * The moths can fly around and be useful; you can do things with a MutableContainerTreeNode
+  * like get its value! and update it!
+  *
+  * But don't do those things before padding!
+  *
+  * This class represents the MutableTreeNode I'd like to have. Right now PositionedTreeNode
+  * and MutableTreeNode are conflated, and the pad method actually updates the instance.
+  *
+  * As of its creation, it will only be used for tests.
+  * @param name
+  * @param initialFieldValues
+  */
+class MutableButNotPositionedContainerTreeNode(
+                                       name: String,
+                                       val initialFieldValues: Seq[TreeNode]
+                                     )
+  extends AbstractMutableContainerTreeNode(name) {
+
+  initialFieldValues.foreach(insertFieldCheckingPosition)
+
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
+  var endPosition: InputPosition = _
+
+  var startPosition: InputPosition = _
 }

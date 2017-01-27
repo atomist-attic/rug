@@ -1,4 +1,4 @@
-import {Project,File} from '@atomist/rug/model/Core'
+import {Project,File,CSharpFile} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
@@ -16,15 +16,13 @@ class AddImport implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
       let count = 0
-      eng.with<TreeNode>(project, "//File()/CSharpFile()//using_directive[1]", n => {
-        let newUsing = `${n.value()}\nusing ${packageName};\n`
-        console.log(`The using was ['${n.value()}], Updating to [${newUsing}]`)
-        n.update(newUsing)
+      eng.with<CSharpFile>(project, "//File()/CSharpFile()", n => {
+        n.addUsing(packageName)
         count++
       })
 
       if (count == 0)
-       throw new Error("No C# files with imports found. Sad.")
+       throw new Error("No C# files found. Sad.")
     }
 }
 

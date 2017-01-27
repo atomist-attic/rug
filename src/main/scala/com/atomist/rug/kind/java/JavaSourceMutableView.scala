@@ -58,7 +58,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
     * Return the package name.
     */
   @ExportFunction(readOnly = true, description = "Return the package name")
-  def pkg = compilationUnit match {
+  def pkg: String = compilationUnit match {
     case Some(cu) => cu.getPackage.getPackageName
     case None => ""
   }
@@ -80,7 +80,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
     case None =>
   }
 
-  def rename(newName: String) = {
+  def rename(newName: String): Unit = {
     setName(newName)
   }
 }

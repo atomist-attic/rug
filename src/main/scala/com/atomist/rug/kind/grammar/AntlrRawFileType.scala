@@ -50,7 +50,7 @@ abstract class AntlrRawFileType(
     */
   def isOfType(f: FileArtifact): Boolean
 
-  override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
+  override def viewManifest: Manifest[_] = manifest[MutableContainerMutableView]
 
   override protected def findAllIn(rugAs: ArtifactSource,
                                    selected: Selected,

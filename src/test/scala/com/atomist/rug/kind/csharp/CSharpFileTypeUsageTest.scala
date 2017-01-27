@@ -37,16 +37,18 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "not add using if it's already present" in pendingUntilFixed {
-    val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources)
+    val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources,
+      Map("packageName" -> "System"))
     val f = r.findFile("src/hello.cs").get
     println(f.content)
     f.content.contains("using Thing;") should be(false)
-    // It should occur once
+    // The one we already had should occur once
     f.content.indexOf("using System;") should be(f.content.lastIndexOf("using System;"))
   }
 
-  it should "add missing using using type" in pendingUntilFixed {
-    val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources)
+  it should "add missing using via type" in pendingUntilFixed {
+    val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources,
+      Map("packageName" -> "Thing"))
     val f = r.findFile("src/hello.cs").get
     println(f.content)
     f.content.contains("using System;") should be(true)

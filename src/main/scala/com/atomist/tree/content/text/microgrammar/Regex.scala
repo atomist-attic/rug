@@ -47,6 +47,6 @@ class Placeholder extends Matcher {
       Left(DismatchReport("no input remains")) // why can't we put a placeholder at the very end?
 }
 
-object Whitespace extends Discard(Regex("whitespace", """\s+"""))
+object Whitespace extends Discard(Regex("""\s+""", None))
 
 object WhitespaceOrNewLine extends Discard(Regex("whitespace-or-newline", """[\s\n]+"""))

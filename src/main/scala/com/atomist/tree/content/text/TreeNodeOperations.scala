@@ -85,7 +85,7 @@ object TreeNodeOperations {
     * Remove empty container nodes
     */
   val Prune: TreeOperation = treeOperation ({
-    case ofv: ContainerTreeNode if ofv.childNodes.isEmpty =>
+    case ofv: ContainerTreeNode if ofv.childNodes.isEmpty && ofv.significance != TreeNode.Explicit =>
       None
     case x =>
       Some(x)
@@ -97,9 +97,18 @@ object TreeNodeOperations {
   val RemovePadding: TreeOperation = treeOperation ({
     case _: PaddingTreeNode =>
       None
+    case n: TerminalTreeNode if n.significance == TreeNode.Structural =>
+      None
     case x =>
       Some(x)
   }, "Remove padding")
+
+  val RemoveStructuralLiterals: TreeOperation = treeOperation ({
+    case n : TerminalTreeNode if n.significance == TreeNode.Structural =>
+      None
+    case x =>
+      Some(x)
+  }, "Remove structural literals")
 
   def removeReservedWordTokens(reservedWords: Set[String]): TreeOperation = treeOperation ({
     case tok: TerminalTreeNode if reservedWords.contains(tok.value) =>

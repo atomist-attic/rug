@@ -1,9 +1,9 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -14,8 +14,8 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
 
   // Transformation to run on matched nodes
   private val transform = collapse(
-    ctn => ctn.nodeName.equals(Concat.DefaultConcatName)
-    , "it's a concat") andThen RemovePadding andThen Prune
+    ctn => ctn.significance == TreeNode.Structural
+    , "it's a concat") andThen RemovePadding andThen RemoveStructuralLiterals andThen Prune
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val matches = findMatchesInternal(input, l)
@@ -73,7 +73,7 @@ private class MicrogrammarNode(name: String,
                                 startPosition: InputPosition,
                                 endPosition: InputPosition)
   extends SimpleMutableContainerTreeNode(
-    name: String, fields, startPosition, endPosition) {
+    name: String, fields, startPosition, endPosition, significance = TreeNode.Explicit) {
 
   addType(typ)
   addType(MicrogrammarNode.MicrogrammarNodeType)

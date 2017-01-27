@@ -2,6 +2,7 @@ package com.atomist.tree.content.text
 
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import TreeNodeOperations.NodeTransformer
+import com.atomist.tree.TreeNode.Significance
 
 import scala.collection.mutable.ListBuffer
 
@@ -60,4 +61,6 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode], val descri
     s"${getClass.getSimpleName}($nodeName:$nodeType){${childNodes.mkString(",")}}"
 
   override def dirty: Boolean = of.dirty
+
+  override def significance: Significance = of.significance
 }

@@ -509,7 +509,7 @@ class RepMatcherTest extends FlatSpec with Matchers {
     keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
   }
 
-  it should "handle simple rep with wrap" in pendingUntilFixed {
+  it should "handle simple rep with wrap" in {
 
     val repTest: Microgrammar = {
       val key: Matcher = Regex("key", "[A-Za-z_]+,")

@@ -52,7 +52,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
                   case ctn: ContainerTreeNode if ctn.significance != TreeNode.Explicit => ctn.childNodes
                   case n => Seq(n)
                 })
-                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition))
+                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition, significance = TreeNode.Structural))
             }
             Right(PatternMatch(mergedTree,
               leftMatch.matched + rightMatch.matched,

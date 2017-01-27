@@ -6,7 +6,6 @@ import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 
-
 class PythonRawFileTypeUsageTest extends AntlrRawFileTypeTest {
 
   override protected val typeBeingTested = new PythonRawFileType
@@ -28,14 +27,6 @@ class PythonRawFileTypeUsageTest extends AntlrRawFileTypeTest {
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
 
-  def modifyPythonAndReparseSuccessfully(tsFilename: String, as: ArtifactSource, params: Map[String,String] = Map()): ArtifactSource = {
-    executePython(tsFilename, as, params) match {
-      case sm: SuccessfulModification =>
-        validateResultContainsValidFiles(sm.result)
-        sm.result
-    }
-  }
-
   it should "enumerate imports in simple project" in {
     val r = executePython("ListImports.ts", Flask1)
     r match {
@@ -47,7 +38,7 @@ class PythonRawFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "modify imports in single file" in {
-    val r = modifyPythonAndReparseSuccessfully("ChangeImports.ts", Flask1)
+    val r = modifyAndReparseSuccessfully("ChangeImports.ts", Flask1)
     val f = r.findFile("hello.py").get
     f.content.contains("newImport") should be(true)
   }

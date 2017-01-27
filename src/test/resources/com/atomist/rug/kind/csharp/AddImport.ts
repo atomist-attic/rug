@@ -15,7 +15,7 @@ class AddImport implements ProjectEditor {
       let count = 0
       eng.with<TreeNode>(project, "//File()/CSharpFile()//using_directive[1]", n => {
         console.log(`The using was '${n.value()}'`)
-        n.update(n.value() + "\nusing Thing;")
+        n.update(n.value() + "\nusing System.Linq;")
         count++
       })
 

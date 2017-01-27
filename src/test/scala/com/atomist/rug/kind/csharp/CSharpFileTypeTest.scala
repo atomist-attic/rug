@@ -60,14 +60,15 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     csharps.size should be (1)
   }
 
-  it should "parse hello world and write out correctly" in pendingUntilFixed {
+  it should "parse hello world and write out correctly" in {
     val parsed = csFileType.parseToRawNode(HelloWorld, Some(ConsoleMatchListener)).get
-    withClue(s"Unexpected content: [${parsed.value}]") {
-      parsed.value should equal(HelloWorldProject.files.get(0).content)
+    val parsedValue = parsed.value
+    withClue(s"Unexpected content: [$parsedValue]") {
+      parsedValue should equal(HelloWorldProject.files.get(0).content)
     }
   }
 
-  it should "parse hello world into mutable view and write out unchanged" in pendingUntilFixed {
+  it should "parse hello world into mutable view and write out unchanged" in {
     val csharps = csFileType.findAllIn(HelloWorldProject)
     csharps.size should be (1)
     csharps.head.head match {

@@ -22,21 +22,21 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
     }
   }
 
-  it should "modify using via path expression" in pendingUntilFixed {
+  it should "modify using via path expression" in {
     val r = modifyAndReparseSuccessfully("ChangeUsing.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
     f.content.contains("newImportWithAVeryVeryLongName") should be(true)
   }
 
-  it should "add using in single file" in pendingUntilFixed {
+  it should "add using and verify" in {
     val r = modifyAndReparseSuccessfully("AddImport.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
     println(f.content)
     f.content.contains("using System;") should be(true)
-    f.content.contains("using Thing;") should be(true)
+    f.content.contains("using System.Linq;") should be(true)
   }
 
-  it should "not add important if already present" in pendingUntilFixed {
+  it should "not add using if it's already present" in pendingUntilFixed {
     val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
     println(f.content)

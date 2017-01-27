@@ -20,7 +20,7 @@ object Excludes {
 /**
   * Builds our TreeNode model from Antlr callbacks.
   *
-  * @param matchRule
+  * @param matchRule name of the rule (production) we want to match
   */
 class ModelBuildingListener(
                              matchRule: String,
@@ -44,9 +44,9 @@ class ModelBuildingListener(
           // ctx.exception.printStackTrace()
         }
         else {
-          val mof = treeToContainerField(ctx)
-          results.append(mof)
-          ml.foreach(_.onMatch(mof))
+          val mctn = treeToContainerField(ctx)
+          results.append(mctn)
+          ml.foreach(_.onMatch(mctn))
           logger.debug("\t" + ctx)
         }
       case _ =>
@@ -76,8 +76,15 @@ class ModelBuildingListener(
 
     val fieldsToAdd = ListBuffer.empty[TreeNode]
 
-    def addField(f: TreeNode): Unit = {
-      fieldsToAdd.append(f)
+    def addField(f: TreeNode): Unit = f match {
+      case ptn: PositionedTreeNode =>
+        if (!fieldsToAdd.exists {
+          case p: PositionedTreeNode if ptn.hasSamePositionAs(p) => true
+          case _ => false
+        })
+        fieldsToAdd.append(f)
+      case tn =>
+        fieldsToAdd.append(tn)
     }
 
     for {
@@ -167,6 +174,9 @@ class ModelBuildingListener(
         val sf = new MutableTerminalTreeNode(name, "", position(ct))
         sf.addType(name)
         Seq(sf)
+      case ct: Token if ct.getText == "<EOF>" =>
+        // For some reason, some grammars put the EOF on the token input stream
+        Nil
       case ct: Token =>
         val sf = new MutableTerminalTreeNode(name, ct.getText, position(ct))
         sf.addType(name)

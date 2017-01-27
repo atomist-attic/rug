@@ -151,7 +151,6 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a property name axis specifier" in {
     val pe = """/Issue()[@state='open']/belongsTo::Repo()[@name='rug-cli']"""
     val parsed = pep.parsePathExpression(pe)
-    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(1).axis match {
       case NavigationAxis("belongsTo") =>
@@ -161,7 +160,6 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse a property name axis specifier using double quoted strings" in {
     val pe = """/Issue()[@state="open"]/belongsTo::Repo()[@name="rug-cli"]"""
     val parsed = pep.parsePathExpression(pe)
-    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps(1).axis match {
       case NavigationAxis("belongsTo") =>
@@ -171,7 +169,6 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse predicate to understandable repo" in {
     val pe = """/Issue()[@state='open']/belongsTo::Repo()[@name='rug-cli']"""
     val parsed = pep.parsePathExpression(pe)
-    //println(parsed)
     parsed.locationSteps.size should be (2)
     parsed.locationSteps.head.predicates.head match {
       case PropertyValuePredicate("state", "open") =>
@@ -181,11 +178,85 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
   it should "parse nested predicate" in {
     val pe = """/Issue()[@state='open'][/belongsTo::Repo()[@name='rug-cli']]"""
     val parsed = pep.parsePathExpression(pe)
-    //println(parsed)
     parsed.locationSteps.size should be (1)
     parsed.locationSteps.head.predicates(1) match {
-      case np: NestedPathExpressionPredicate =>
+      case _: NestedPathExpressionPredicate =>
     }
   }
 
+  it should "parse an optional predicate" in {
+    val pe = """/Push()[contains::Commit()]?"""
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (1)
+    parsed.locationSteps.head.predicates.size should be (1)
+    parsed.locationSteps.head.predicates.head match {
+      case _: OptionalPredicate =>
+    }
+  }
+
+  it should "parse required and optional predicates" in {
+    val pe = """/Push()[@name='brainiac'][contains::Commit()]?"""
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (1)
+    parsed.locationSteps.head.predicates.size should be (2)
+    parsed.locationSteps.head.predicates.count {
+      case _: OptionalPredicate => true
+      case _ => false
+    } should be (1)
+  }
+
+  it should "parse optional and required predicates" in {
+    val pe = """/Push()[contains::Commit()]?[@name='brainiac']"""
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (1)
+    parsed.locationSteps.head.predicates.size should be (2)
+    parsed.locationSteps.head.predicates.count {
+      case _: OptionalPredicate => true
+      case _ => false
+    } should be (1)
+  }
+
+  it should "parse a nested optional predicate" in {
+    val pe = """/Push()[contains::Commit()[belongsTo::Repo()]?]"""
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (1)
+    parsed.locationSteps.head.predicates.size should be (1)
+    parsed.locationSteps.head.predicates.head match {
+      case npep: NestedPathExpressionPredicate =>
+        val npepSteps = npep.expression.locationSteps
+        npepSteps.size should be (1)
+        npepSteps.head.predicates.size should be (1)
+        npepSteps.head.predicates.head match {
+          case _: OptionalPredicate =>
+        }
+    }
+  }
+
+  it should "parse a complicate path expression" in {
+    val pe = """/Build()
+               |[on::Repo()/channel::ChatChannel()]
+               |[triggeredBy::Push()/contains::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()]
+               |/hasBuild::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()""".stripMargin
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (5)
+    parsed.locationSteps.head.predicates.size should be (2)
+    parsed.locationSteps.head.predicates.count {
+      case _: NestedPathExpressionPredicate => true
+      case _ => false
+    } should be (2)
+  }
+
+  it should "parse a complicate path expression with optional predicates" in {
+    val pe = """/Build()
+               |[on::Repo()/channel::ChatChannel()]?
+               |[triggeredBy::Push()/contains::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()]?
+               |/hasBuild::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()""".stripMargin
+    val parsed = pep.parsePathExpression(pe)
+    parsed.locationSteps.size should be (5)
+    parsed.locationSteps.head.predicates.size should be (2)
+    parsed.locationSteps.head.predicates.count {
+      case _: OptionalPredicate => true
+      case _ => false
+    } should be (2)
+  }
 }

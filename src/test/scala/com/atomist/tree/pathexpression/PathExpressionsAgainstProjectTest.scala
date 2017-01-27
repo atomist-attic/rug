@@ -307,7 +307,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     // Second filter is really a no op
     for (nestedType <- types) {
-      val expr2 = s"/src//File()[/$nestedType()]"
+      val expr2 = s"/src//File()[$nestedType()]"
       val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
       val nodes = rtn2.right.get
       nodes.size should be > 1

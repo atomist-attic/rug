@@ -45,7 +45,7 @@ trait PathExpressionParser extends CommonTypesParser {
   private def literal: Parser[Any] = nullLiteral | singleQuotedString | integer
 
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
-    case methodName ~ args ~ op ~ literal =>
+    case methodName ~ args ~ _ ~ literal =>
       FunctionPredicate(s".$methodName", (n, among) => {
         val invoked = invokeMethod[Any](n, methodName, args)
         Objects.equals(literal, invoked)
@@ -94,7 +94,11 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def predicateExpression: Parser[Predicate] = predicateAnd | negatedPredicate | predicateTerm
 
-  private def predicate: Parser[Predicate] = PredicateOpen ~> predicateExpression <~ PredicateClose
+  private def predicate: Parser[Predicate] =
+    PredicateOpen ~> predicateExpression ~ PredicateClose ~ opt(PredicateOptional) ^^ {
+      case p ~ _ ~ Some(_) => OptionalPredicate(p)
+      case p ~ _ ~ None => p
+    }
 
   private def nodeNameTest: Parser[NodeTest] = nodeName ^^
     (s => NamedNodeTest(s))
@@ -120,12 +124,16 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private val slashSeparator = "/"
 
-  def pathExpression: Parser[PathExpression] = slashSeparator ~> repsep(locationStep, slashSeparator) ^^
+  def relativePathExpression: Parser[PathExpression] = repsep(locationStep, slashSeparator) ^^
     (steps => PathExpression(steps))
+
+  def absolutePathExpression: Parser[PathExpression] = slashSeparator ~> relativePathExpression
+
+  def pathExpression: Parser[PathExpression] = absolutePathExpression | relativePathExpression
 
   def parsePathExpression(expr: String): PathExpression = {
     try {
-      parseTo(StringFileArtifact("<input>", expr), phrase(pathExpression))
+      parseTo(StringFileArtifact("<input>", expr), phrase(absolutePathExpression))
     } catch {
       case e: IllegalArgumentException =>
         throw new IllegalArgumentException(s"Path expression '$expr' is invalid: [${e.getMessage}]", e)
@@ -156,6 +164,8 @@ private object PathExpressionParsingConstants {
   val PredicateOpen = "["
 
   val PredicateClose = "]"
+
+  val PredicateOptional = "?"
 
   val PropertyAxis = "property"
 

@@ -55,7 +55,7 @@ abstract class CommonRugProductionsParser extends PathExpressionParser with Comm
 
   protected def parameterName: Parser[String]
 
-  protected def pathExpressionBlock: Parser[PathExpressionValue] = "$(" ~ pathExpression ~ ")" ~
+  protected def pathExpressionBlock: Parser[PathExpressionValue] = "$(" ~ absolutePathExpression ~ ")" ~
     opt("." ~> identifierRefString(ReservedWordsToAvoidInBody, ident)) ^^ {
     case _ ~ pe ~ _ ~ prop => PathExpressionValue(pe, prop)
   }

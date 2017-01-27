@@ -245,7 +245,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
     repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
     issue.addField(repo)
-    val expr = """/Issue()[@state='open'][/belongsTo::Repo()[@name2='rug-cli']]"""
+    val expr = """/Issue()[@state='open'][belongsTo::Repo()[@name2='rug-cli']]"""
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
@@ -258,11 +258,82 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
     repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
     issue.addField(repo)
-    val expr = """/Issue()[@state='open'][/nonsense::Repo()[@name2='rug-cli']]"""
+    val expr = """/Issue()[@state='open'][nonsense::Repo()[@name2='rug-cli']]"""
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
     rtn.right.get should equal (Nil)
   }
 
+  it should "match with an optional predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val expr = """/Issue()[@state='open']?"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "match with a non-matching optional predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val expr = """/Issue()[@state='closed']?"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "match with a required and an optional predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    val expr = """/Issue()[@state='open'][belongsTo::Repo()[@name2='rug-cli']]?"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "match with a required and a non-matching optional predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    val expr = """/Issue()[@state='open'][nonsense::Repo()[@name2='rug-cli']]?"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "match with an optional nested predicate" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    val expr = """/Issue()[@state='open'][belongsTo::Repo()[@name2='rug-cli']?]"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
+
+  it should "match with a non-matching optional nested predicate that does not" in {
+    val issue = new ContainerTreeNodeImpl("Issue", "Issue")
+    issue.addField(SimpleTerminalTreeNode("state", "open"))
+    val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
+    repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
+    issue.addField(repo)
+    val expr = """/Issue()[@state='open'][belongsTo::Repo()[@name2='rig-cli']?]"""
+    val parent = new ContainerTreeNodeImpl("root", "root")
+    parent.addField(issue)
+    val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
+    rtn.right.get should equal (Seq(issue))
+  }
 }

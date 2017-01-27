@@ -101,6 +101,34 @@ case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
 }
 
 /**
+  * Predicate that may or may not exist.  This is typically used with
+  * NestedPathExpressionPredicates so they get materialized in the returned
+  * node tree.
+  *
+  * @param p
+  */
+case class OptionalPredicate(p: Predicate) extends Predicate {
+  override def toString: String = p.name + "?"
+
+  /**
+    * Always returns true.
+    *
+    * @param root
+    * @param returnedNodes all nodes returned. This argument is
+    *                      often ignored, but can be used to discern the index of the target node.
+    * @param ee
+    * @param typeRegistry
+    * @param nodePreparer
+    * @return
+    */
+  override def evaluate(root: TreeNode,
+                        returnedNodes: Seq[TreeNode],
+                        ee: ExpressionEngine,
+                        typeRegistry: TypeRegistry,
+                        nodePreparer: Option[NodePreparer]): Boolean = true
+}
+
+/**
   * Test for the index of the given node among all returned nodes.
   * XPath indexes from 1, and unfortunately we need to do that also.
   */
@@ -121,7 +149,7 @@ case class IndexPredicate(i: Int) extends Predicate {
 
 case class PropertyValuePredicate(property: String, expectedValue: String) extends Predicate {
 
-  override def toString: String = s"$property=[$expectedValue]"
+  override def toString: String = s"@$property=$expectedValue"
 
   override def evaluate(n: TreeNode,
                         returnedNodes: Seq[TreeNode],
@@ -149,7 +177,7 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
 
 case class NodeNamePredicate(expectedName: String) extends Predicate {
 
-  override def toString: String = s"name=[$expectedName]"
+  override def toString: String = s"@name=$expectedName"
 
   override def evaluate(n: TreeNode,
                         returnedNodes: Seq[TreeNode],
@@ -161,7 +189,7 @@ case class NodeNamePredicate(expectedName: String) extends Predicate {
 
 case class NodeTypePredicate(expectedType: String) extends Predicate {
 
-  override def toString: String = s"type=[$expectedType]"
+  override def toString: String = s"@type=$expectedType"
 
   override def evaluate(n: TreeNode,
                         returnedNodes: Seq[TreeNode],

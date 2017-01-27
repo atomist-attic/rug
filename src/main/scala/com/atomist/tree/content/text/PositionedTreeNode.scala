@@ -29,4 +29,7 @@ trait PositionedTreeNode extends TreeNode with Positioned {
     *                      case we should pad after known structures
     */
   def pad(initialSource: String, topLevel: Boolean = false): Unit
+
+  def hasSamePositionAs(that: PositionedTreeNode): Boolean =
+    this.startPosition.offset == that.startPosition.offset
 }

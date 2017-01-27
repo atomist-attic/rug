@@ -50,7 +50,7 @@ class ModelBuildingListener(
           logger.debug("\t" + ctx)
         }
       case _ =>
-        // Ignore this production
+      // Ignore this production
     }
   }
 
@@ -108,17 +108,42 @@ class ModelBuildingListener(
   private def deduplicate(fields: Seq[TreeNode]): Seq[TreeNode] = {
     val lexerPred: TreeNode => Boolean = f => f.nodeName(0).isUpper
     val lexerFields = fields.filter(lexerPred)
-    val positionedParserFields = fields.filter(!lexerPred(_)) collect {
+
+    val positionedParserFields = fields
+      .filter(!lexerPred(_)) collect {
       case pv: PositionedTreeNode => pv
     }
 
+    // There should be no overlap between these collections
+    require(!lexerFields.exists(positionedParserFields.contains(_)))
+
     def theresAnAliasFieldWithProvablySamePosition(what: TreeNode) = what match {
       case pf: PositionedTreeNode =>
-        positionedParserFields.exists(ppf => ppf.startPosition.offset == pf.startPosition.offset)
+        positionedParserFields.exists(ppf => pf.hasSamePositionAs(ppf))
       case _ => false
     }
 
-    fields.filter(f => !(lexerFields.contains(f) && theresAnAliasFieldWithProvablySamePosition(f)))
+    // We don't want lexer fields that have an alias field with the same position
+    val deduped = fields.filter(f => !(lexerFields.contains(f) &&
+      theresAnAliasFieldWithProvablySamePosition(f))
+    )
+
+    def unwantedDuplicates(fields: Seq[TreeNode]): Seq[TreeNode] =
+      if (fields.size <= 1) Nil
+      else fields.head match {
+        case pm: PositionedTreeNode =>
+          fields.tail.collect {
+            case pm2: PositionedTreeNode if pm.hasSamePositionAs(pm2) =>
+              pm2
+          }
+        case _ => unwantedDuplicates(fields.tail)
+      }
+
+    val unwanted = unwantedDuplicates(deduped)
+    val filtered = deduped.filterNot(unwanted.contains(_))
+    require(unwantedDuplicates(filtered).isEmpty)
+
+    filtered
   }
 
   private def position(tok: Token): InputPosition = {

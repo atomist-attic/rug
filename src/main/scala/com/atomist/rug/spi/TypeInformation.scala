@@ -103,6 +103,7 @@ object TypeOperation {
     new ReflectiveStaticTypeInformation(classOf[TreeNode])
 
   val TreeNodeType = new Typed {
+    override val name = "TreeNode"
     override def description: String = "TreeNode operations"
     override def typeInformation: TypeInformation = TreeNodeTypeInformation
   }

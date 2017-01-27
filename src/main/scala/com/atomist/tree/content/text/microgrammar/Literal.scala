@@ -13,7 +13,7 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def name: String = named.getOrElse("literal")
 
-  override def matchPrefixInternal(inputState: InputState): Either[DismatchReport, PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val (matched, is) = inputState.take(literal.length)
     if (matched == literal) {
       val nodeOption = named.map { name => val node =

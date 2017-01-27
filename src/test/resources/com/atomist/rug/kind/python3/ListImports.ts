@@ -13,12 +13,12 @@ class Imports implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
 
-    eng.with<TreeNode>(project, "//File()/PythonRawFile()//import_from()//dotted_name", n => {
+    eng.with<TreeNode>(project, "//File()/PythonFile()//import_from()//dotted_name", n => {
         console.log(`The FROM value is '${n.value()}'`)
       })
 
       let count = 0
-      eng.with<File>(project, "//File()[/PythonRawFile()//import_from()//dotted_name[@value='flask']]", n => {
+      eng.with<File>(project, "//File()[/PythonFile()//import_from()//dotted_name[@value='flask']]", n => {
         console.log(`The file path is '${n.path()}'`)
         count++
       })

@@ -41,10 +41,13 @@ class CSharpFileType
 }
 
 
+/**
+  * Special type to hold top level methods on CSharp files
+  * @param n
+  * @param f
+  */
 class CSharpFileMutableView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView)
   extends MutableContainerMutableView(n, f) {
-
-  println(s"Created new ${getClass}")
 
   override def nodeType: Set[String] = super.nodeType ++ Set("CSharpFile")
 

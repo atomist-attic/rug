@@ -13,7 +13,7 @@ class ChangeImports implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
       let count = 0
-      eng.with<TreeNode>(project, "//File()/PythonRawFile()//import_from()//dotted_name[@value='flask']", n => {
+      eng.with<TreeNode>(project, "//File()/PythonFile()//import_from()//dotted_name[@value='flask']", n => {
         console.log(`The import was '${n.value()}'`)
         n.update("newImport")
         count++

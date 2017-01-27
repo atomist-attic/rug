@@ -1,56 +1,5 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.tree.content.text.MutableContainerTreeNode
-import org.scalatest.{FlatSpec, Matchers}
-
-
-class Python3ParserTest extends FlatSpec with Matchers {
-
-  lazy val parser = new Python3Parser
-
-  import Python3ParserTest._
-
-  //  it should "parse simple file and find imports" in pendingUntilFixed {
-  //    val parsed = parser.parse(setupDotPy)
-  //    val imports = findByName("import_name", parsed)
-  //
-  //    imports.size should be (5)
-  //  }
-
-  def stringShowingIndices(s: String) = {
-    val z = s.zipWithIndex
-    "len=" + s.length + " :" + z.mkString(",")
-  }
-
-  it should "parse simplest file and write out unchanged" in {
-    parseAndVerifyValueCanBeWrittenOutUnchanged(simplestDotPy)
-  }
-
-  it should "parse simplest file with initial newline and write out unchanged" in {
-    parseAndVerifyValueCanBeWrittenOutUnchanged(simplestDotPyWithInitialNewLine)
-  }
-
-  it should "parse simple file and write out unchanged" in
-    parseAndVerifyValueCanBeWrittenOutUnchanged(setupDotPy)
-
-  it should "parse simple script and write out unchanged" in
-    parseAndVerifyValueCanBeWrittenOutUnchanged(dateParserDotPy)
-
-  private def parseAndVerifyValueCanBeWrittenOutUnchanged(pyProg: String): MutableContainerTreeNode = {
-    if (pyProg.lines.exists(_.trim.startsWith("|")))
-      fail(s"Probably a test error. Did you forget to call stripMargin?")
-    val parsed = parser.parse(pyProg).get
-
-    val writtenOut = parsed.value
-    val comp = s"Result: --------------\n[$writtenOut]\nExpected: -----------\n[$pyProg]"
-    withClue(comp) {
-      writtenOut should equal(pyProg)
-    }
-    parsed
-  }
-
-}
-
 object Python3ParserTest {
 
   val simplestDotPy =

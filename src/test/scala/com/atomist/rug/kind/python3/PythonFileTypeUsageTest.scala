@@ -1,14 +1,14 @@
 package com.atomist.rug.kind.python3
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.rug.TestUtils
+import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
 
-class PythonFileTypeUsageTest extends FlatSpec with Matchers {
+class PythonFileTypeUsageTest extends AntlrRawFileTypeTest {
+
+  override protected val typeBeingTested = new PythonFileType
 
   import Python3ParserTest._
 
@@ -17,43 +17,18 @@ class PythonFileTypeUsageTest extends FlatSpec with Matchers {
       StringFileArtifact("setup.py", setupDotPy)
     ))
 
-  val Flask1: ArtifactSource = new SimpleFileBasedArtifactSource("name",
+  val Flask1: ArtifactSource = Simple + new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("hello.py", flask1)
     ))
 
-  def executePython(program: String, as: ArtifactSource, params: Map[String,String] = Map()): ModificationAttempt = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.createFromString(program)
-    eds.size should be(1)
-    val pe = eds.head.asInstanceOf[ProjectEditor]
+  def executePython(tsFilename: String, as: ArtifactSource, params: Map[String,String] = Map()): ModificationAttempt = {
+    val pe = TestUtils.editorInSideFile(this, tsFilename)
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
 
-  import PythonFileType._
-
-  def modifyPythonAndReparseSuccessfully(program: String, as: ArtifactSource, params: Map[String,String] = Map()): ArtifactSource = {
-    val parser = new Python3Parser
-    executePython(program, as, params) match {
-      case sm: SuccessfulModification =>
-        sm.result.allFiles
-          .filter(_.name.endsWith(PythonExtension))
-          .flatMap(py => parser.parse(py.content))
-          .map(tree => tree.childNodes.nonEmpty)
-        sm.result
-    }
-  }
-
-  it should "enumerate imports in simple file" in {
-    val prog =
-      """
-        |editor ImportBrowser
-        |
-        |with PythonFile
-        | with import imp
-        |   do eval { 4 + 4 }
-      """.stripMargin
-    val r = executePython(prog, Simple)
+  it should "enumerate imports in simple project" in {
+    val r = executePython("ListImports.ts", Flask1)
     r match {
       case nmn: NoModificationNeeded =>
       case sm: SuccessfulModification =>
@@ -62,17 +37,9 @@ class PythonFileTypeUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "modify imports in simple file" in {
-    val prog =
-      """
-        |editor ImportUpdater
-        |
-        |with PythonFile
-        | with import
-        |   do setName "newImport"
-      """.stripMargin
-    val r = modifyPythonAndReparseSuccessfully(prog, Simple)
-    val f = r.findFile("setup.py").get
+  it should "modify imports in single file" in {
+    val r = modifyAndReparseSuccessfully("ChangeImports.ts", Flask1)
+    val f = r.findFile("hello.py").get
     f.content.contains("newImport") should be(true)
   }
 
@@ -83,6 +50,7 @@ class PythonFileTypeUsageTest extends FlatSpec with Matchers {
       |    return "Hello World!"
     """.stripMargin
 
+  /*
   it should "add Flask route to Python file" in {
     val prog =
       """
@@ -104,4 +72,5 @@ class PythonFileTypeUsageTest extends FlatSpec with Matchers {
     // reparsed.f
   }
 
+*/
 }

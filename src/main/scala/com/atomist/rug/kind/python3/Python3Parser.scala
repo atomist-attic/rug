@@ -10,38 +10,7 @@ import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
 import org.springframework.core.io.DefaultResourceLoader
 
-/**
-  * Python3 parser. Uses Antlr.
-  */
-class Python3Parser extends Parser {
 
-  import Python3Parser._
-
-  val cp = new DefaultResourceLoader()
-
-  val r = cp.getResource("classpath:grammars/antlr/Python3.g4")
-
-  val g4 = withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
-
-  private lazy val pythonGrammar = new AntlrGrammar("file_input", g4)
-
-  private val removeNewlines: TreeOperation =
-    removeProductionsNamed(Set("NEWLINE"))
-
-  private val stripPythonReservedWords: TreeOperation =
-    removeReservedWordTokens(PythonReservedWords)
-
-  override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
-    rawTree(input, ml).map(raw => {
-      val ast = (stripPythonReservedWords andThen removeNewlines andThen RemovePadding andThen Prune) (raw)
-      ast
-    })
-  }
-
-  def rawTree(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
-    pythonGrammar.parse(input, ml)
-  }
-}
 
 object Python3Parser {
 

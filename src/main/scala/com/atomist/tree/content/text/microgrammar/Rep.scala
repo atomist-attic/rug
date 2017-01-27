@@ -46,7 +46,7 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
           // Do nothing. The nasty vars are already being updated. Nasty vars
         }
 
-        val pos = latestInputState.inputPosition
+        val pos = inputState.inputPosition
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
         val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
         Right(

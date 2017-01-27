@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.ContainerTreeNode
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{PositionedTreeNode, SimpleMutableContainerTreeNode}
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
@@ -24,20 +25,20 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
 
   import Concat.logger
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val l = left.matchPrefix(inputState)
     l match {
-      case None =>
+      case Left(no) =>
         // We're done. It cannot match.
-        None
-      case Some(leftMatch) =>
+        Left(no.andSo("left didn't match"))
+      case Right(leftMatch) =>
         // So far so good
         right.matchPrefix(leftMatch.resultingInputState) match {
-          case None =>
+          case Left(noOnTheRight) =>
             // We're done. Right doesn't match.
             logger.debug(s"We matched OK on [$left]->[${leftMatch}] but failed on [$right], next 20 characters were [${leftMatch.resultingInputState.take(20)}]")
-            None
-          case Some(rightMatch) =>
+            Left(noOnTheRight.andSo("Concat: left matched, right didn't").withPriorMatch(leftMatch))
+          case Right(rightMatch) =>
             // Both match.
             val mergedTree: Option[PositionedTreeNode] = (leftMatch.node, rightMatch.node) match {
               case (None, None) => None
@@ -53,7 +54,7 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
                 })
                 Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition))
             }
-            Some(PatternMatch(mergedTree,
+            Right(PatternMatch(mergedTree,
               leftMatch.matched + rightMatch.matched,
               rightMatch.resultingInputState,
               this.toString))

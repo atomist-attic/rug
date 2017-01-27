@@ -13,7 +13,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   it should "parse and update complete match" in {
     val g: MatcherMicrogrammar = thingGrammar
     val input = "This is a test"
-    val m = g.strictMatch(input)
+    val Right(m) = g.strictMatch(input)
     m.count should be >= 1
     m.childrenNamed("thing").head match {
       case sm: MutableTerminalTreeNode =>
@@ -28,8 +28,8 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   }
 
   it should "parse 1 match of 2 parts in whole string" in {
-    val matches = aWasaB.strictMatch("Henry was aged 19")
-    matches.count should be (2)
+    val Right(matches) = aWasaB.strictMatch("Henry was aged 19")
+    matches.count should be(2)
     matches.childrenNamed("name").head match {
       case sm: MutableTerminalTreeNode =>
         sm.value should equal("Henry")
@@ -45,11 +45,10 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     */
 
 
-
   it should "parse 1 match of 2 parts in whole string and replace both keys" in {
     val g = aWasaB
     val input = "Henry was aged 19"
-    val matches = g.strictMatch(input)
+    val Right(matches) = g.strictMatch(input)
     matches.value should equal(input)
     matches.count should be >= 2
     matches.dirty should be(false)
@@ -485,7 +484,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
          |}
       """.stripMargin
     printlns.matcher.matchPrefix(InputState(input)) match {
-      case Some(pm) =>
+      case Right(pm) =>
         pm.matched should be (p1)
         p1.contains(pm.node.get.value) should be (true)
     }

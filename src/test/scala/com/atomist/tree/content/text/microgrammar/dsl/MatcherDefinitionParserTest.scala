@@ -105,8 +105,8 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         mgp.parseMatcher("x", v) match {
           case cat: Concat =>
             cat.matchPrefix(InputState(v)) match {
-              case Some(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
-              case None => fail(s"Failed to match on [$v]")
+              case Right(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
+              case Left(report) => fail(s"Failed to match on [$v]" + report)
             }
         }
       }
@@ -133,9 +133,9 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         validInputs.foreach { in =>
           parsedMatcher.matchPrefix(
             InputState(in)) match {
-            case Some(pe) =>
+            case Right(pe) =>
             //pe.matched should be ("foo\"")
-            case None => fail(s"[$in] didn't match and should have done")
+            case Left(report) => fail(s"[$in] didn't match and should have done: " + report)
           }
         }
     }
@@ -148,7 +148,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         println(parsedMatcher)
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
-          case Some(pe) =>
+          case Right(pe) =>
         }
     }
   }
@@ -169,7 +169,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         println(parsedMatcher)
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
-          case Some(pe) =>
+          case Right(pe) =>
         }
     }
   }
@@ -194,8 +194,8 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
           println(parsedMatcher)
           parsedMatcher.matchPrefix(
             InputState(s"""<tr class="emoji_row">THIS OTHER STUFF<span data-original="${suffix}$postsuffix""")) match {
-            case Some(pe) =>
-            case None => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not")
+            case Right(pe) =>
+            case Left(report) => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not: " + report)
           }
       }
     }

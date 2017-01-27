@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
 /**
@@ -12,7 +13,7 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def name: String = named.getOrElse("literal")
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val (matched, is) = inputState.take(literal.length)
     if (matched == literal) {
       val nodeOption = named.map { name => val node =
@@ -20,14 +21,15 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
         node.addType(name)
         node
       }
-      Some(PatternMatch(
+      Right(PatternMatch(
         nodeOption,
         literal,
         is,
         this.toString))
     }
-    else
-      None
+    else {
+      Left(DismatchReport(s"Literal: <$literal> != <$matched>").at(OffsetInputPosition(inputState.offset), OffsetInputPosition(inputState.offset + literal.length)))
+    }
   }
 
 }
@@ -42,13 +44,13 @@ object Literal {
   */
 case class Remainder(name: String = "remainder") extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] = {
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     if (inputState.exhausted)
-      None
+      Left(DismatchReport("There is nothing here")) // Why would this stop a match?
     else {
       val (matched, is) = inputState.takeAll
-      Some(
-        PatternMatch(node = null,
+      Right(
+        PatternMatch(None,
           matched,
           is, this.toString)
       )
@@ -62,7 +64,7 @@ case class Remainder(name: String = "remainder") extends Matcher {
   */
 case class RestOfLine(name: String = "restOfLine") extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     ???
 
   // Some(PatternMatch(null, offset, s.toString, ""))
@@ -73,6 +75,6 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
   */
 case class Reference(delegate: Matcher, name: String) extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
-    delegate.matchPrefix(inputState).map(m => m.copy(node = ???))
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
+    delegate.matchPrefix(inputState).right.map(m => m.copy(node = ???))
 }

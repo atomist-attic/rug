@@ -8,7 +8,7 @@ class RegexTest extends FlatSpec with Matchers {
     val name = "foobar"
     val l = Regex(name, "[a-zA-Z]+")
     l.matchPrefix(InputState("thingxxxY")) match {
-      case Some(PatternMatch(tn, "thingxxxY", InputState("thingxxxY", _, _), _)) =>
+      case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY", _, _), _)) =>
         tn.get.nodeName should be (name)
     }
   }
@@ -17,7 +17,7 @@ class RegexTest extends FlatSpec with Matchers {
     val name = "foobar"
     val l = Regex(name, "[a-zA-Z]+")
     l.matchPrefix(InputState("thingxxxY0")) match {
-      case Some(PatternMatch(tn, "thingxxxY", InputState("thingxxxY0", _, _), _)) =>
+      case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY0", _, _), _)) =>
         tn.get.nodeName should be (name)
     }
   }

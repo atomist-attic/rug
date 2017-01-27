@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, OffsetInputPosition, SimpleMutableContainerTreeNode}
 
 /**
@@ -18,15 +19,15 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
     case Some(sep) => Discard(sep) ~? m
   }
 
-  override def matchPrefixInternal(inputState: InputState): Option[PatternMatch] =
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState) match {
-      case None =>
+      case Left(_) =>
         // We can match zero times. Put in an empty node.
         val pos = inputState.inputPosition
-        Some(
+        Right(
           PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
             matched = "", inputState, this.toString))
-      case Some(initialMatch) =>
+      case Right(initialMatch) =>
         // We matched once. Let's keep going
         //println(s"Found initial match for $initialMatch")
         var matched = initialMatch.matched
@@ -34,8 +35,8 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
         var nodes = initialMatch.node.toSeq
         //println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
         while (secondaryMatch.matchPrefix(latestInputState) match {
-          case None => false
-          case Some(lastMatch) =>
+          case Left(_) => false
+          case Right(lastMatch) =>
             //println(s"Made it to secondary match [$lastMatch]")
             matched += lastMatch.matched
             nodes ++= lastMatch.node.toSeq
@@ -48,7 +49,7 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
         val pos = latestInputState.inputPosition
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
         val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
-        Some(
+        Right(
           PatternMatch(node = Some(combinedNode),
             matched, latestInputState, this.toString)
         )

@@ -15,11 +15,13 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
   // Transformation to run on matched nodes
   private val transform = collapse(
     ctn => ctn.nodeName.equals(Concat.DefaultConcatName)
-  ) andThen RemovePadding andThen Prune
+    , "it's a concat") andThen RemovePadding andThen Prune
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val matches = findMatchesInternal(input, l)
-    val processedNodes = matches.map{ case (m, o) => outputNode(input)(m,o)}
+    val processedNodes = matches.map { case (m, o) =>
+      outputNode(input)(m, o)
+    }
     processedNodes
   }
 

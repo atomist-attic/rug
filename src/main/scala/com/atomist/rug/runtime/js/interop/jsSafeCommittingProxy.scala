@@ -48,7 +48,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
           case sobtn: ScriptObjectBackedTreeNode =>
             sobtn.invoke(name)
           case _ => throw new RugRuntimeException(null,
-            s"Attempt to invoke method [$name] on type [${typ.name}]: No exported method with that name: Found $possibleOps")
+            s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
         }
       }
       else
@@ -56,7 +56,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
 
     case _ =>
       // No static type information
-      throw new IllegalStateException(s"No static type information is available for type [${typ.name}]: Probably an internal error")
+      throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
   }
 
   // Nashorn proxy for a method invocation that delegates using reflection
@@ -73,7 +73,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
               c.invokeOn(node)
             case _ =>
               throw new RugRuntimeException(null,
-                s"Attempt to invoke method [$name] on type [${typ.name}] with ${args.size} arguments: No matching signature")
+                s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
           }
         case Some(op) =>
           // Reflective invocation

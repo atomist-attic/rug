@@ -9,7 +9,7 @@ import org.scalacheck.Prop._
 class PadPropertyTest extends FlatSpec with Checkers {
 
   implicit override val generatorDrivenConfig =
-    PropertyCheckConfig(minSuccessful = 10)
+    PropertyCheckConfiguration(minSuccessful = 10)
 
   import PositionedTreeNodeGenerators._
 

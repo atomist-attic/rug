@@ -75,7 +75,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
         case Some(ed: ProjectEditor) =>
           executeAgainst(test, ed, testResources)
         case Some(gen: ProjectGenerator) =>
-          executeGenerator(test, gen)
+          executeGenerator(test, gen, testResources)
       }
     })
     TestReport(executedTests)
@@ -149,7 +149,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     }
   }
 
-  private def executeGenerator(test: TestScenario, gen: ProjectGenerator): ExecutedTest = {
+  private def executeGenerator(test: TestScenario, gen: ProjectGenerator, testResources: ArtifactSource): ExecutedTest = {
     val eventLog = new TestEventLog
     try {
       // TODO should publish events rather than sysout
@@ -162,25 +162,24 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
         ??? // not implemented
       }
 
-          println("I see a generator!")
-          val result = gen.generate(test.name, poa)
-          verifyOutput(test, null, result, eventLog) // That null thing is probably used
+      val result = gen.generate(test.name, poa)
+      verifyOutput(test, testResources, result, eventLog)
     }
     catch {
       case mp: MissingParametersException =>
         test.outcome.assertions match {
           case Seq(ShouldBeMissingParametersAssertion) =>
             ExecutedTest(test.name,
-              Seq(TestedAssertion(result = true, s"Editor was missing parameters: ${mp.getMessage}")), eventLog)
+              Seq(TestedAssertion(result = true, s"Generator was missing parameters: ${mp.getMessage}")), eventLog)
           case _ =>
-            ExecutedTest.failure(test.name, s"Editor failed due to missing parameters: ${mp.getMessage}", eventLog)
+            ExecutedTest.failure(test.name, s"Generator failed due to missing parameters: ${mp.getMessage}", eventLog)
         }
       case ivp: InvalidParametersException =>
         test.outcome.assertions match {
           case Seq(ShouldBeInvalidParametersAssertion) =>
-            ExecutedTest(test.name, Seq(TestedAssertion(result = true, s"Editor had invalid parameters: ${ivp.getMessage}")), eventLog)
+            ExecutedTest(test.name, Seq(TestedAssertion(result = true, s"Generator had invalid parameters: ${ivp.getMessage}")), eventLog)
           case _ =>
-            ExecutedTest.failure(test.name, s"Editor failed due to invalid parameters: ${ivp.getMessage}", eventLog)
+            ExecutedTest.failure(test.name, s"Generator failed due to invalid parameters: ${ivp.getMessage}", eventLog)
         }
     }
   }

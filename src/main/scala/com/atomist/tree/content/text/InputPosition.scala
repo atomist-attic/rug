@@ -10,9 +10,9 @@ trait InputPosition {
     */
   def offset: Int
 
-  def -(that: InputPosition) = this.offset - that.offset
+  def -(that: InputPosition): Int = this.offset - that.offset
 
-  def -(n: Int) = OffsetInputPosition(this.offset - n)
+  def -(n: Int): OffsetInputPosition = OffsetInputPosition(this.offset - n)
 
   /**
     * Advance by a number of characters
@@ -42,7 +42,7 @@ case class OffsetInputPosition(offset: Int) extends InputPosition {
 
   override def show: String = s"offset=$offset"
 
-  override def toString = show
+  override def toString: String = show
 }
 
 case class LineHoldingOffsetInputPosition(input: String, offset: Int) extends InputPosition {
@@ -51,7 +51,7 @@ case class LineHoldingOffsetInputPosition(input: String, offset: Int) extends In
 
   override def show: String = s"${input.take(offset)}  HERE [${input.drop(offset)}] : offset=$offset"
 
-  override def toString = show
+  override def toString: String = show
 }
 
 object OffsetInputPosition {

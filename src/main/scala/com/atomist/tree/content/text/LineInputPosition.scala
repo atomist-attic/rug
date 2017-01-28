@@ -8,7 +8,7 @@ trait LineInputPosition extends InputPosition {
 
   def input: String
 
-  override def show = {
+  override def show: String = {
     val lines = input.lines.toSeq
     val gotoLine = Integer.min(lineFrom1 - 1, lines.size - 1)
     val badLine = lines(gotoLine)

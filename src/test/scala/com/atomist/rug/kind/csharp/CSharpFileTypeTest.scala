@@ -1,9 +1,10 @@
 package com.atomist.rug.kind.csharp
 
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.ConsoleMatchListener
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 import org.scalatest.{FlatSpec, Matchers}
@@ -30,6 +31,53 @@ object CSharpFileTypeTest {
       |}
     """.stripMargin
 
+  val Exceptions =
+    """
+      |/*
+      | * C# Program to Demonstrate IndexOutOfRange Exception
+      | */
+      |using System;
+      |using System.Collections.Generic;
+      |using System.Linq;
+      |using System.Text;
+      |namespace differnce
+      |{
+      |    class arrayoutofindex
+      |    {
+      |        public void calculatedifference()
+      |        {
+      |            int difference=0;
+      |            int [] number= new int[5] {1,2,3,4,5};
+      |            try
+      |            {
+      |                for (int init =1; init <=5; init++)
+      |                {
+      |                    difference= difference -  number[init];
+      |                }
+      |                Console.WriteLine("The difference of the array is:" + difference);
+      |            }
+      |            catch (IndexOutOfRangeException e)
+      |            {
+      |                Console.WriteLine(e.Message);
+      |            }
+      |            //catch
+      |            //{
+      |            //    Console.WriteLine("Catch it")
+      |            //}
+      |        }
+      |    }
+      |    class classmain
+      |    {
+      |        static void Main(string [] args)
+      |    {
+      |        arrayoutofindex obj = new arrayoutofindex();
+      |        obj.calculatedifference();
+      |        Console.ReadLine();
+      |    }
+      |}
+      |}
+    """.stripMargin
+
   val HelloWorldSources =
     SimpleFileBasedArtifactSource(StringFileArtifact("src/hello.cs", HelloWorld))
 
@@ -37,6 +85,9 @@ object CSharpFileTypeTest {
 
   val ProjectWithBogusCSharp = new ProjectMutableView(EmptyArtifactSource(),
     HelloWorldSources + StringFileArtifact("bogus.cs", "And this is nothing like C#"))
+
+  val ExceptionProject =
+    SimpleFileBasedArtifactSource(StringFileArtifact("src/exception.cs", Exceptions))
 
 }
 
@@ -52,12 +103,12 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     val cs = new CSharpFileType
     val csharps = cs.findAllIn(ProjectWithBogusCSharp)
     // Should have silently ignored the bogus file
-    csharps.size should be (1)
+    csharps.size should be(1)
   }
 
   it should "parse hello world" in {
     val csharps = csFileType.findAllIn(HelloWorldProject)
-    csharps.size should be (1)
+    csharps.size should be(1)
   }
 
   it should "parse hello world and write out correctly" in {
@@ -70,12 +121,11 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val csharps = csFileType.findAllIn(HelloWorldProject)
-    csharps.size should be (1)
+    csharps.size should be(1)
     csharps.head.head match {
       case mtn: MutableContainerMutableView =>
-        val n = mtn.currentBackingObject
         val content = mtn.value
-        content should equal (HelloWorldProject.files.get(0).content)
+        content should equal(HelloWorldProject.files.get(0).content)
     }
   }
 
@@ -83,6 +133,32 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     val expr = "/src//CSharpFile()"
     val rtn = ee.evaluate(HelloWorldProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
+  }
+
+  it should "find specification exception class" in {
+    val csharps: Option[Seq[TreeNode]] = csFileType.findAllIn(new ProjectMutableView(EmptyArtifactSource(), ExceptionProject))
+    csharps.size should be(1)
+    val csharpFileNode = csharps.get.head.asInstanceOf[MutableContainerMutableView]
+
+    val expr = "//specific_catch_clause//class_type[@value='IndexOutOfRangeException']"
+    ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        for (n <- nodes) {
+          println(n.value)
+        }
+    }
+
+    csharpFileNode.value should equal(Exceptions)
+  }
+
+  it should "find file that catches exception class" in {
+    val project = new ProjectMutableView(EmptyArtifactSource(), ExceptionProject)
+    val expr = "/src//*[CSharpFile()//specific_catch_clause//class_type[@value='IndexOutOfRangeException']]"
+    ee.evaluate(project, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
+      case Right(Seq(fileCatchingIndexOutOfRange: FileArtifactBackedMutableView)) =>
+        println(s"File [${fileCatchingIndexOutOfRange.path}] catches IndexOutOfRangeException")
+        fileCatchingIndexOutOfRange.path should equal(ExceptionProject.allFiles.head.path)
+    }
   }
 
 }

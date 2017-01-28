@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text
 
-import com.atomist.tree.{MutableTreeNode, TreeNode}
+import com.atomist.tree.TreeNode
 
 trait Positioned {
 

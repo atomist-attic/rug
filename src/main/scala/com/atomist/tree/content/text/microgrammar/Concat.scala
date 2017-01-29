@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
-import com.atomist.tree.content.text.{PositionedTreeNode, SimpleMutableContainerTreeNode}
+import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode, SimpleMutableContainerTreeNode}
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
 

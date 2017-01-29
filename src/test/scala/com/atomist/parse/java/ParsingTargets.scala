@@ -16,4 +16,5 @@ object ParsingTargets {
   val MultiPomProject: ArtifactSource = ClassPathArtifactSource.toArtifactSource("spring-parsing-targets")
 
   val ElmStartStaticPage: ArtifactSource = ClassPathArtifactSource.toArtifactSource("elm-start-static-page")
+
 }

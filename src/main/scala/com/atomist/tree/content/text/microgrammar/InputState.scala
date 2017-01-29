@@ -14,7 +14,8 @@ import scala.annotation.tailrec
 case class InputState(
                        input: CharSequence,
                        predicates: Map[String, StatePredicate[_]] = Map(),
-                       offset: Int = 0)
+                       offset: Int = 0,
+                       knownMatchers: Map[String, Matcher] = Map())
   extends InputConsumer {
 
   import InputState._
@@ -63,7 +64,7 @@ case class InputState(
     val updatedPredicates: Map[String, StatePredicate[_]] = predicates.map {
       case (k, v) => (k, v.consume(c))
     }.toMap
-    InputState(input, updatedPredicates, offset + 1)
+    InputState(input, updatedPredicates, offset + 1, knownMatchers)
   }
 
   def valueOf[R](predicateName: String): Option[R] = predicates.get(predicateName).map(p => p.state) match {
@@ -74,6 +75,12 @@ case class InputState(
   }
 
   override def toString: String = s"InputState(Offset ${offset} in input of length ${input.length} with predicates ${predicates})"
+}
+
+object InputState2 {
+
+  def unapply(inputState: InputState): Option[(CharSequence, Map[String, StatePredicate[_]], Int)] =
+    Some((inputState.input, inputState.predicates, inputState.offset))
 }
 
 object InputState {

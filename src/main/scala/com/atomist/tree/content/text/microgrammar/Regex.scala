@@ -7,7 +7,7 @@ import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 /**
   * Matches a regex.
   */
-case class Regex(regex: String, givenName: Option[String], config: MatcherConfig = MatcherConfig())
+case class Regex(regex: String, givenName: Option[String] = None, config: MatcherConfig = MatcherConfig())
   extends ConfigurableMatcher {
 
   private val rex = regex.r

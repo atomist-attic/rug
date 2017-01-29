@@ -31,71 +31,40 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   private def literal: Parser[Literal] = delimitedLiteral | singleWordLiteral
 
-  private def rex(implicit matcherName: String): Parser[Regex] =
-    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(r, Some(matcherName)))
+  private def rex: Parser[Regex] =
+    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(r))
 
   /**
     * Skip till this clause
     *
     * @return
     */
-  private def break(implicit matcherName: String, registry: MatcherRegistry): Parser[Break] =
+  private def break: Parser[Break] =
     BreakOpenToken ~> matcherExpression <~ BreakCloseToken ^^ (m => Break(m))
 
-  private def predicateValue: Parser[String] = "true" | "false" | "\\d+".r
-
-  // Applies to a boxed clause
-  // [curlyDepth=1]
-  private def predicate(implicit matcherName: String, registry: MatcherRegistry): Parser[StatePredicateTest] =
-  PredicateOpenToken ~> ident ~ "=" ~ predicateValue <~ PredicateCloseToken ^^ {
-    case predicateName ~ "=" ~ predicateVal => StatePredicateTest(predicateName, predicateVal)
-  }
-
-  // There is a deeper level to this game
-  // The boxed clause should be a subnode of this node, rather than have its fields added directly
-  private def descendantClause(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] = "▶" ~> variableReference() ^^ (
-    vr => Wrap(vr, vr.name)
-    )
-
-  private def matcherTerm(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
+  private def matcherTerm: Parser[Matcher] =
     rex |
       break |
       literal |
-      variableReference() |
       inlineReference()
 
-  private def concatenation(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
+  private def concatenation: Parser[Matcher] =
     matcherTerm ~ opt(whitespaceSep) ~ matcherExpression ^^ {
       case left ~ _ ~ right =>
         //left ~? right
-        Concat(Concat(left, Whitespace.?()), right, matcherName)
+        Concat(Concat(left, Whitespace.?()), right)
     }
 
-  // TODO mixin that adds predicate check to a matcher
-
-  // $name:Identifier
-  private def variableReference()(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
-    "$" ~> opt(ident) ~ ":" ~ ident ~ opt(predicate) ^^ {
-      case Some(name) ~ _ ~ kind ~ predicate =>
-        registry
-          .find(kind)
-          .map(m => Reference(m, name))
-          .getOrElse(throw new BadRugException(
-            s"Cannot find referenced matcher of type [$kind] in $registry") {})
-      case None ~ _ ~ kind ~ predicate =>
-        registry
-          .find(kind)
-          .getOrElse(throw new BadRugException(s"Cannot find referenced matcher of type [$kind] in $registry") {})
-    }
+  private def variableName: Parser[String] = ident.filter(!_.contains(VariableDeclarationToken))
 
   // $name:[.*]
-  private def inlineReference()(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
-    VariableDeclarationToken ~> ident ~ ":" ~ rex ^^ {
-      case newName ~ _ ~ regex => regex.copy(givenName = Some(newName))
+  private def inlineReference(): Parser[Matcher] =
+    VariableDeclarationToken ~> variableName ~ opt(":" ~ rex) ^^ {
+      case newName ~ Some(_ ~ regex) => Wrap(regex, newName)
+      case matcherName ~ None => Reference(matcherName)
     }
 
-  private def matcherExpression(implicit matcherName: String, registry: MatcherRegistry): Parser[Matcher] =
-    descendantClause |
+  private def matcherExpression: Parser[Matcher] =
       concatenation |
       matcherTerm
 
@@ -105,18 +74,15 @@ class MatcherDefinitionParser extends CommonTypesParser {
     *
     * @param name       for the matcher
     * @param matcherDef definition
-    * @param mRegistry  known matchers
     * @return matcher definition
     */
   @throws[BadRugException]
-  def parseMatcher(name: String, matcherDef: String, mRegistry: MatcherRegistry = EmptyMatcherRegistry): Matcher = matcherDef match {
+  def parseMatcher(name: String, matcherDef: String): Matcher = matcherDef match {
     case null =>
       throw new BadRugException(s"The null string is not a valid microgrammar") {}
     case _ =>
-      implicit val matcherName: String = name
-      implicit val registry: MatcherRegistry = mRegistry
       val m = parseTo(StringFileArtifact("<input>", matcherDef), phrase(matcherExpression))
-      m
+      Wrap(m, name)
   }
 
 }
@@ -127,7 +93,6 @@ object MatcherDefinitionParser {
   val BreakCloseToken = "¡"
   val RegexpOpenToken = "§"
   val RegexpCloseToken = "§"
-  val DescendToken = "▶"
   val PredicateOpenToken = "["
   val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
@@ -143,7 +108,6 @@ object MatcherDefinitionParser {
 
   val AnythingButReservedCharacters: ScalaRegex =
     anythingBut(Set(
-      DescendToken,
       """\s""", // whitespace
       escape(PredicateOpenToken),
       escape(PredicateCloseToken),

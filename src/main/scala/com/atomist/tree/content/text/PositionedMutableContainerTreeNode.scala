@@ -166,8 +166,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
       _fieldValues.insert(idx + 1, newField)
   }
 
-  def length: Int = endPosition - startPosition
-
   private var dirtied = false
 
   override def dirty: Boolean = super.dirty || dirtied

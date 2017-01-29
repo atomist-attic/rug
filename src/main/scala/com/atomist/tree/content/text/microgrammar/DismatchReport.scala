@@ -14,7 +14,7 @@ case class DismatchReport(why: String,
   }
 
   def lengthOfClosestMatch: Int = {
-    val priorMatchLen = priorMatch.map(_.node.value.length)
+    val priorMatchLen = priorMatch.map(_.node.length)
     (Seq(0) ++ causes.map(_.lengthOfClosestMatch) ++ priorMatchLen).max
   }
 

@@ -1,11 +1,12 @@
 package com.atomist.rug.runtime
 
 import java.util.Collections
+import javax.script.SimpleBindings
 
-import com.atomist.rug.TestUtils
+import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry}
-import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.js.interop.{AtomistFacade, NamedJavaScriptEventHandlerTest, jsMatch, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptHandlerFinder}
+import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.SimpleTerminalTreeNode
@@ -18,29 +19,29 @@ class HandlerTest extends FlatSpec with Matchers {
 
     val subscription =
       s"""
-        |import {Atomist} from "@atomist/rug/operations/Handler"
-        |import {Project,File} from "@atomist/rug/model/Core"
-        |
+         |import {Atomist} from "@atomist/rug/operations/Handler"
+         |import {Project,File} from "@atomist/rug/model/Core"
+         |
         |declare var atomist: Atomist  // <= this is for the compiler only
-        |
+         |
         |declare var print: any
-        |
+         |
         |atomist.messageBuilder().say("This is a test").on("channel").send()
-        |
+         |
         |atomist.on<Project,File>('/src/main//*.java', m => {
-        |   //print(`in handler with $${m}`)
-        |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
-        |})
+         |   //print(`in handler with $${m}`)
+         |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
+         |})
       """.stripMargin
     val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/handlers/sub1.ts", subscription)
     ))
 
-    val jsc = new JavaScriptContext()
+    val bindings = new SimpleBindings()
+    bindings.put("atomist", TestAtomistFacade)
+    val jsc = new JavaScriptContext(r, DefaultAtomistConfig, bindings)
 
-    jsc.engine.put("atomist", TestAtomistFacade)
 
-    jsc.load(r)
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       //TODO - call compiler
       //jsc.eval(ts)
@@ -49,12 +50,10 @@ class HandlerTest extends FlatSpec with Matchers {
   }
 
   it should "find and invoke other style of handler" in {
-
-      val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram, NamedJavaScriptEventHandlerTest.issuesStuff))
-      val jsc = new JavaScriptContext()
-
-      jsc.load(r)
-    }
+    val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram, NamedJavaScriptEventHandlerTest.issuesStuff))
+    val ctx = new JavaScriptHandlerContext(null,null,null)
+    JavaScriptHandlerFinder.fromJavaScriptArchive(r,ctx)
+  }
 }
 
 object TestAtomistFacade extends AtomistFacade {
@@ -66,7 +65,7 @@ object TestAtomistFacade extends AtomistFacade {
       case som: ScriptObjectMirror =>
         val arg = jsMatch(SimpleTerminalTreeNode("root", "x"), Collections.emptyList())
         val args = Seq(arg)
-        som.call("apply", args:_*)
+        som.call("apply", args: _*)
     }
   }
 

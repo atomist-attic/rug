@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Support for @parameter TS class field decorators as per
+        https://github.com/atomist/rug/issues/229
+
 -   Support for a new TS (JS) Handler programming model as per
     https://github.com/atomist/rug/issues/105
 
@@ -35,6 +38,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     https://github.com/atomist/rug/issues/199
 
 ### Changed
+
+-   We now create a new JS rug for each thread for safety.
+    https://github.com/atomist/rug/issues/78
 
 -   **BREAKING** all JS based Rugs must export (a la Common-JS) vars implementing
     the associated interfaces. Previously we scanned for all top level vars.

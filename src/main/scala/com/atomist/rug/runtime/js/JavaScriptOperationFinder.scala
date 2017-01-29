@@ -33,16 +33,8 @@ object JavaScriptOperationFinder {
     * @param rugAs archive to look into
     * @return a sequence of instantiated operations backed by JavaScript
     */
-  def fromJavaScriptArchive(rugAs: ArtifactSource,
-                            context: JavaScriptContext = null): Seq[ProjectOperation] = {
-    val jsc: JavaScriptContext =
-      if (context == null)
-        new JavaScriptContext()
-      else
-        context
-
-    jsc.load(rugAs)
-    operationsFromVars(rugAs, jsc)
+  def fromJavaScriptArchive(rugAs: ArtifactSource): Seq[ProjectOperation] = {
+    operationsFromVars(rugAs, new JavaScriptContext(rugAs))
   }
 
   // TODO clean up this dispatch/signature stuff - too coupled

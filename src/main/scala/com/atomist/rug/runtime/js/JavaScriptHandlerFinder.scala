@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js
 
+import javax.script.SimpleBindings
+
 import com.atomist.event.SystemEventHandler
 import com.atomist.param.Tag
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
@@ -16,7 +18,7 @@ import scala.util.Try
 object JavaScriptHandlerFinder {
 
   /**
-    * Find and handlers operations in the given Rug archive
+    * Find handler operations in the given Rug archive
     *
     * @param rugAs   archive to look into
     * @param atomist facade to Atomist
@@ -26,24 +28,18 @@ object JavaScriptHandlerFinder {
   def registerHandlers(rugAs: ArtifactSource,
                        atomist: AtomistFacade,
                        atomistConfig: AtomistConfig = DefaultAtomistConfig): Unit = {
-    val jsc = new JavaScriptContext()
 
     //TODO - remove this when new Handler model put in
-    jsc.engine.put("atomist", atomist)
-    jsc.load(rugAs)
+    val bindings = new SimpleBindings()
+    bindings.put("atomist", atomist)
+    new JavaScriptContext(rugAs,atomistConfig,bindings)
   }
 
   def fromJavaScriptArchive(rugAs: ArtifactSource,
-                            ctx: JavaScriptHandlerContext,
-                            context: Option[JavaScriptContext]): Seq[SystemEventHandler] = {
+                            ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
 
-    val jsc: JavaScriptContext =
-      if (context.isEmpty)
-        new JavaScriptContext()
-      else
-        context.get
+    val jsc = new JavaScriptContext(rugAs)
 
-    jsc.load(rugAs)
     handlersFromVars(rugAs, jsc, ctx)
   }
 

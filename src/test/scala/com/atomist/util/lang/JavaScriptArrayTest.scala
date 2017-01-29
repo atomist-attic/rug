@@ -20,23 +20,14 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |
       |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
       |
-      |
-      |declare var Java
-      |
-      |var ArrayList = Java.type("java.util.ArrayList");
-      |var jlist = new ArrayList;
-      |jlist.add("blah");
-      |var FancyList = Java.type("com.atomist.util.lang.JavaScriptArray");
-      |var javaList = new FancyList(jlist);
-      |
       |class ConstructedEditor implements ProjectEditor {
       |    name: string = "Constructed"
       |    description: string = "A nice little editor"
       |    parameters: Parameter[] = [{name: "packageName", description: "The java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
       |    lyst: string[]
-      |    edit(project: Project, {packageName}: {packageName: string}) {
+      |    edit(project: Project, {packageName, strings}: {packageName: string, strings: string[]}) {
       |
-      |       this.lyst = javaList as string[];
+      |       this.lyst = strings
       |
       |       this.lyst[0].toString()
       |
@@ -246,26 +237,17 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
   private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val ctx = new JavaScriptContext(Set("java.util.ArrayList","com.atomist.util.lang.JavaScriptArray"))
-    ctx.load(as)
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as, ctx).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     jsed.name should be("Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
+    val lyzt = new util.ArrayList[String]()
+    lyzt.add("blah")
+    jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed", "strings" -> new JavaScriptArray(lyzt)))) match {
       case sm: NoModificationNeeded =>
       sm.comment.contains("OK") should be(true)
     }
     jsed
-  }
-
-  object TemporaryRegistry extends UserModelContext{
-
-    val lyst = new util.ArrayList[String]()
-    lyst.add("blah")
-    override val registry = Map(
-      "PathExpressionEngine" -> new JavaScriptArray[String](lyst)
-    )
   }
 }

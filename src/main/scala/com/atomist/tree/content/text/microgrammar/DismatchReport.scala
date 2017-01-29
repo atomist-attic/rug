@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode}
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 import com.atomist.tree.content.text.{OffsetInputPosition, PositionedTreeNode}
 
 case class DismatchReport(why: String,
@@ -71,7 +71,11 @@ object DismatchReport {
           pf
       }
 
-    insertCharacter("[", startOffset,
+    val name = if(node.significance == TreeNode.Explicit)
+      s"${node.nodeName}="
+    else
+       ""
+    insertCharacter(s"[$name", startOffset,
       markChildren(
         insertCharacter("]", endOffset, input)))
 

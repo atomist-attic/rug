@@ -65,9 +65,6 @@ class ModelBuildingListener(
     val endPos = // position(rc.stop) + rc.getStop.getText.size
       OffsetInputPosition(rc.getStop.getStopIndex + 1)
 
-    // Create an empty model node that we'll fill
-    val tn = new SimpleMutableContainerTreeNode(rule, Nil, startPos, endPos)
-    tn.addType(rule)
 
     // We only want methods on the generated class itself
     val valueMethods = rc.getClass
@@ -103,11 +100,7 @@ class ModelBuildingListener(
     }
 
     val deduped = deduplicate(fieldsToAdd)
-    for {
-      f <- deduped
-    }
-      tn.insertFieldCheckingPosition(f)
-    tn
+    new SimpleMutableContainerTreeNode(rule, deduped, startPos, endPos, Set(rule))
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case

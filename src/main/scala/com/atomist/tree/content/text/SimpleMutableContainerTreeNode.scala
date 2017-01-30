@@ -8,9 +8,12 @@ class SimpleMutableContainerTreeNode(
                                       val initialFieldValues: Seq[TreeNode],
                                       val startPosition: InputPosition,
                                       val endPosition: InputPosition,
-                                      override val significance: Significance = TreeNode.Noise
+                                      override val significance: Significance = TreeNode.Noise,
+                                      val additionalTypes: Set[String] = Set()
                                     )
   extends AbstractMutableContainerTreeNode(name) {
+
+  additionalTypes.foreach(addType(_))
 
   initialFieldValues.foreach(insertFieldCheckingPosition)
 

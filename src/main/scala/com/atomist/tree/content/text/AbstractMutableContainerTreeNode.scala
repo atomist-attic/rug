@@ -21,6 +21,8 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   private var _padded = false
 
+  protected def markPadded = _padded = true
+
   override def padded: Boolean = _padded
 
   final override def childNodes: Seq[TreeNode] = _fieldValues
@@ -254,6 +256,8 @@ class MutableButNotPositionedContainerTreeNode(
   initialFieldValues.foreach(insertFieldCheckingPosition)
 
   override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+
+  markPadded
 
   var endPosition: InputPosition = _
 

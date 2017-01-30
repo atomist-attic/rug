@@ -12,7 +12,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.grammar.antlr.AntlrGrammar
+import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, AstNodeNamingStrategy}
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
 import org.springframework.core.io.DefaultResourceLoader
@@ -27,6 +27,7 @@ import scala.collection.JavaConverters._
   */
 abstract class AntlrRawFileType(
                                  topLevelProduction: String,
+                                 namingStrategy: AstNodeNamingStrategy,
                                  grammars: String*
                                )
   extends Type(DefaultEvaluator)
@@ -39,7 +40,7 @@ abstract class AntlrRawFileType(
     resources.map(r => withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8)))
   }
 
-  private lazy val antlrGrammar = new AntlrGrammar(topLevelProduction, g4s: _*)
+  private lazy val antlrGrammar = new AntlrGrammar(topLevelProduction, namingStrategy, g4s: _*)
 
   final override def resolvesFromNodeTypes = Set("Project", "File")
 

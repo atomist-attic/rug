@@ -24,7 +24,8 @@ object Excludes {
   */
 class ModelBuildingListener(
                              matchRule: String,
-                             ml: Option[MatchListener])
+                             ml: Option[MatchListener],
+                             namingStrategy: AstNodeNamingStrategy)
   extends DefaultListener with LazyLogging {
 
   private val results = new ListBuffer[MutableContainerTreeNode]()
@@ -65,7 +66,6 @@ class ModelBuildingListener(
     val endPos = // position(rc.stop) + rc.getStop.getText.size
       OffsetInputPosition(rc.getStop.getStopIndex + 1)
 
-
     // We only want methods on the generated class itself
     val valueMethods = rc.getClass
       .getDeclaredMethods
@@ -79,7 +79,7 @@ class ModelBuildingListener(
           case p: PositionedTreeNode if ptn.hasSamePositionAs(p) => true
           case _ => false
         })
-        fieldsToAdd.append(f)
+          fieldsToAdd.append(f)
       case tn =>
         fieldsToAdd.append(tn)
     }
@@ -100,7 +100,13 @@ class ModelBuildingListener(
     }
 
     val deduped = deduplicate(fieldsToAdd)
-    new SimpleMutableContainerTreeNode(rule, deduped, startPos, endPos, Set(rule))
+    new SimpleMutableContainerTreeNode(
+      namingStrategy.nameForContainer(rule, deduped),
+      deduped,
+      startPos,
+      endPos,
+      TreeNode.Undeclared,
+      namingStrategy.tagsForContainer(rule, deduped))
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case
@@ -190,6 +196,29 @@ class ModelBuildingListener(
     r
   }
 }
+
+/**
+  * Enables us to rename nodes from the grammar.
+  */
+trait AstNodeNamingStrategy {
+
+  def nameForContainer(rule: String, fields: Seq[TreeNode]): String
+
+  def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String]
+
+}
+
+/**
+  * Default implementation of AstNodeNamingStrategy that takes node names from
+  * underlying Antlr grammar
+  */
+object FromGrammarNamingStrategy extends AstNodeNamingStrategy {
+
+  override def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
+
+  override def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] = Set(rule)
+}
+
 
 /**
   * Empty container field value including fieldName information about possible fields,

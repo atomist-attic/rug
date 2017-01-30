@@ -60,7 +60,7 @@ function main() {
             mvn_deploy_args=-DaltDeploymentRepository=public-atomist-dev::default::https://atomist.jfrog.io/atomist/libs-dev-local
         fi
 
-        if ! $mvn deploy -DskipTests $mvn_deploy_args; then
+        if ! $mvn deploy -DskipTests $mvn_deploy_args -P npm-release; then
             err "maven deploy failed"
             return 1
         fi

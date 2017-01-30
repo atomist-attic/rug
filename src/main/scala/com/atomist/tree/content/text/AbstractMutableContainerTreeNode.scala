@@ -33,7 +33,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
   override def childNodeTypes: Set[String] = childNodeNames
   
   override def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
-    val hatched = AbstractMutableContainerTreeNode.pad(this, initialSource, topLevel)
+    val (hatched, _) = AbstractMutableContainerTreeNode.pad(this, initialSource, topLevel)
     _fieldValues = ListBuffer.empty[TreeNode]
     _fieldValues.append(hatched.childNodes:_*)
     _padded = true
@@ -140,8 +140,12 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
 
 object AbstractMutableContainerTreeNode {
+  type Report = Seq[String]
 
-  def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): MutableTreeNode = {
+  def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): (MutableTreeNode, Report) = {
+
+    var report: Seq[String] = Seq()
+    def say(s: String) = report = s +: report
 
       // Number of characters of fields to show in padding field names
       val show = 40
@@ -168,6 +172,7 @@ object AbstractMutableContainerTreeNode {
         fieldResults.append(padding(0, pupae.startPosition.offset))
       }
 
+      say(s"Processing ${pupae.childNodes.length} children")
       var lastEndOffset = pupae.startPosition.offset
       for {
         fv <- pupae.childNodes
@@ -192,7 +197,7 @@ object AbstractMutableContainerTreeNode {
               fieldResults.append(sm)
             }
             else {
-              //println(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
+              say(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
             }
           case mttn: PositionedTreeNode =>
             // This one is not actually positioned now is it
@@ -201,7 +206,9 @@ object AbstractMutableContainerTreeNode {
             // It's harmless. Keep it as it may be queried. It won't be updateable
             // Because we probably don't know where it lives.
             fieldResults.append(f)
-          case _ =>
+            say(s"Keeping empty node $f")
+          case other =>
+            say(s"Ignoring node: $other")
           // Ignore it. Let padding do its work
         }
       }
@@ -218,7 +225,7 @@ object AbstractMutableContainerTreeNode {
           fieldResults.append(pn)
         }
       }
-    new MutableButNotPositionedContainerTreeNode(pupae.nodeName, fieldResults)
+    (new MutableButNotPositionedContainerTreeNode(pupae.nodeName, fieldResults), report)
   }
 }
 

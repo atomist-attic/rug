@@ -105,10 +105,10 @@ case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
   * NestedPathExpressionPredicates so they get materialized in the returned
   * node tree.
   *
-  * @param p
+  * @param optionalPredicate
   */
-case class OptionalPredicate(p: Predicate) extends Predicate {
-  override def toString: String = p.name + "?"
+case class OptionalPredicate(optionalPredicate: Predicate) extends Predicate {
+  override def toString: String = optionalPredicate.name + "?"
 
   /**
     * Always returns true.

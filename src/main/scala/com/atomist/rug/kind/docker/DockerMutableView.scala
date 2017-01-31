@@ -131,4 +131,10 @@ class DockerMutableView(originalBackingObject: FileArtifact, pmv: ProjectMutable
     description = "The contents of the CMD directive") cmdContents: String) {
     _content.addOrUpdateCmd(cmdContents)
   }
+
+  @ExportFunction(readOnly = false, description = "Add or update HEALTHCHECK directive")
+  def addOrUpdateHealthcheck(@ExportFunctionParameterDescription(name = "healthcheckContent",
+    description = "The contents of the HEALTHCHECK directive") healthcheckContent: String) {
+    _content.addOrUpdateHealthcheck(healthcheckContent)
+  }
 }

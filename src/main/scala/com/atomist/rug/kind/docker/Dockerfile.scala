@@ -11,7 +11,7 @@ class Dockerfile(val lines: Seq[DockerfileLine]) {
 
   object Command extends Enumeration(initial = 0) {
     type Command = Value
-    val COMMENT, FROM, MAINTAINER, LABEL, RUN, ADD, COPY, ARG, ENV, EXPOSE, ONBUILD, STOPSIGNAL, USER, VOLUME, WORKDIR, ENTRYPOINT, CMD = Value
+    val COMMENT, FROM, MAINTAINER, LABEL, RUN, ADD, COPY, ARG, ENV, EXPOSE, ONBUILD, STOPSIGNAL, USER, VOLUME, WORKDIR, ENTRYPOINT, CMD, HEALTHCHECK = Value
   }
 
   import Command._
@@ -101,6 +101,11 @@ class Dockerfile(val lines: Seq[DockerfileLine]) {
 
   def addOrUpdateCmd(arg: String): this.type = {
     addOrUpdate(CMD, arg)
+    this
+  }
+
+  def addOrUpdateHealthcheck(arg: String): this.type = {
+    addOrUpdate(HEALTHCHECK, arg)
     this
   }
 

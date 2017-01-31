@@ -58,6 +58,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         |begin
         |	do addOrUpdateExpose "8081"
         | do addOrUpdateFrom "java:8-jre"
+        | do addOrUpdateHealthcheck "--interval=5s --timeout=3s CMD curl --fail http://localhost:8080/ || exit 1"
         |end
       """.stripMargin
     val rp = new DefaultRugPipeline
@@ -84,6 +85,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         df.content.contains("EXPOSE 8081") should be (true)
         df.content.contains("EXPOSE 8080") should be (false)
         df.content.contains("FROM java:8-jre") should be (true)
+        df.content.contains("HEALTHCHECK --interval=5s --timeout=3s CMD curl --fail http://localhost:8080/ || exit 1") should be (true)
     }
   }
 

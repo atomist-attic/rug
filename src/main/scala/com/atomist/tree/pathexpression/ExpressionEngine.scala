@@ -21,7 +21,7 @@ object ExecutionResult {
     case Left(err) => s"[$err]"
   }
 
-  def show(n: TreeNode) = {
+  def show(n: TreeNode): String = {
     s"${n.nodeName}:${n.nodeType}"
   }
 

@@ -13,6 +13,9 @@ import com.atomist.tree.pathexpression.PathExpressionEngine
 import com.atomist.tree.utils.TreeNodeFinders._
 import com.atomist.tree.{MutableTreeNode, TreeNode}
 
+/**
+  * Type for JSON files
+  */
 class JsonType(
                 evaluator: Evaluator
               )
@@ -24,7 +27,7 @@ class JsonType(
 
   private def jsonParser = new JsonParser
 
-  override def description = "package.json configuration file"
+  override def description = "JSON file"
 
   override val resolvesFromNodeTypes: Set[String] =
     Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType])
@@ -109,7 +112,7 @@ class JsonMutableView(
                      )
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  private var currentParsed = originalParsed
+  private val currentParsed = originalParsed
 
   override def dirty = true
 

@@ -13,7 +13,7 @@ import org.springframework.core.io.DefaultResourceLoader
 /**
   * JavaScript parser. Uses Antlr.
   */
-class JsonParser extends Parser {
+private [json] class JsonParser extends Parser {
 
   val g4: String = {
     val cp = new DefaultResourceLoader()

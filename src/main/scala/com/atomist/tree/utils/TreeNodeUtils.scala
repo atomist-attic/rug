@@ -1,6 +1,6 @@
 package com.atomist.tree.utils
 
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, PositionedTreeNode, ViewTree}
+import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedMutableContainerTreeNode$, PositionedTreeNode, ViewTree}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
@@ -33,7 +33,7 @@ object TreeNodeUtils {
 
     def showValue(n: TreeNode, cutoff: Int) = inlineReturns(
       n match {
-        case cn: AbstractMutableContainerTreeNode if !cn.padded => ""
+        case cn: PositionedMutableContainerTreeNode if !cn.padded => ""
         case n if n.value.length < cutoff => n.value
         case n => n.value.take(cutoff) + "..."
       })

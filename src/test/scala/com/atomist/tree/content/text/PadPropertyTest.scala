@@ -25,7 +25,7 @@ class PadPropertyTest extends FlatSpec with Checkers {
     check {
       Prop.forAll(ContainerNodeAndInputGen)({ case (node, inputText) =>
         val input = inputText.content
-        val (padded, report) = AbstractMutableContainerTreeNode.pad(node, input, topLevel = true)
+        val (padded, report) = PositionedMutableContainerTreeNode.pad(node, input, topLevel = true)
         val inputTerminals = collectTerminalNodes(node)
         val outputTerminals = collectTerminalNodes(padded)
         // no input terminals are missing from the output terminals

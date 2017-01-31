@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar.matchers.Break
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, MutableTerminalTreeNode, PositionedTreeNode}
+import com.atomist.tree.content.text._
 import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
@@ -419,7 +419,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
         pm.matched should be(p1)
         pm.node match {
           case Some(positionedNode) =>
-            val (hatched, _) = AbstractMutableContainerTreeNode.pad(positionedNode, input)
+            val (hatched, _) = PositionedMutableContainerTreeNode.pad(positionedNode, input)
             p1.contains(hatched.value) should be(true)
           case _ => fail
         }
@@ -432,14 +432,14 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       s"""
          |class Foo {
          |
-        |   $p1
+         |   $p1
          |
-        |   println("The second thing")
+         |   println("The second thing")
          |
-        |   println(s"And this");
+         |   println(s"And this");
          |
-        |}
-      """.stripMargin
+         |}
+         |""".stripMargin
     val m = printlns.findMatches(input)
     m.size should be(3)
     //println(TreeNodeUtils.toShortString(m.head))

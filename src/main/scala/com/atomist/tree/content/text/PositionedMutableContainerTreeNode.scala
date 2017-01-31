@@ -11,7 +11,7 @@ import scala.collection.mutable.ListBuffer
   *
   * @param nodeName name of the node
   */
-abstract class AbstractMutableContainerTreeNode(val nodeName: String)
+abstract class PositionedMutableContainerTreeNode(val nodeName: String)
   extends MutableContainerTreeNode
     with PositionedTreeNode {
 
@@ -21,7 +21,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   private var _padded = false
 
-  protected def markPadded = _padded = true
+  protected def markPadded(): Unit = _padded = true
 
   override def padded: Boolean = _padded
 
@@ -33,9 +33,9 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 
   // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
-  
+
   override def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
-    val (hatched, _) = AbstractMutableContainerTreeNode.pad(this, initialSource, topLevel)
+    val (hatched, _) = PositionedMutableContainerTreeNode.pad(this, initialSource, topLevel)
     _fieldValues = ListBuffer.empty[TreeNode]
     _fieldValues.append(hatched.childNodes:_*)
     _padded = true
@@ -141,7 +141,7 @@ abstract class AbstractMutableContainerTreeNode(val nodeName: String)
 }
 
 
-object AbstractMutableContainerTreeNode {
+object PositionedMutableContainerTreeNode {
   type Report = Seq[String]
 
   def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): (MutableTreeNode, Report) = {
@@ -185,7 +185,7 @@ object AbstractMutableContainerTreeNode {
             // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
             // but that whitespace appears to be appended to the previous node maybe? because if we add those
             // whitespace nodes here it gets doubled.
-            if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[AbstractMutableContainerTreeNode]) {
+            if (sm.startPosition.offset >= lastEndOffset || sm.isInstanceOf[PositionedMutableContainerTreeNode]) {
               try {
                 sm.pad(initialSource)
               }
@@ -251,13 +251,13 @@ class MutableButNotPositionedContainerTreeNode(
                                        name: String,
                                        val initialFieldValues: Seq[TreeNode]
                                      )
-  extends AbstractMutableContainerTreeNode(name) {
+  extends PositionedMutableContainerTreeNode(name) {
 
   initialFieldValues.foreach(insertFieldCheckingPosition)
 
   override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
 
-  markPadded
+  markPadded()
 
   var endPosition: InputPosition = _
 

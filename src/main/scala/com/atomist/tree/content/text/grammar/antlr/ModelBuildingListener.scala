@@ -56,7 +56,7 @@ class ModelBuildingListener(
   }
 
   // Use reflection to extract information from the generated methods and fields in this class
-  private def treeToContainerField(rc: ParserRuleContext): AbstractMutableContainerTreeNode = {
+  private def treeToContainerField(rc: ParserRuleContext): PositionedMutableContainerTreeNode = {
     val rule = this.getRuleByKey(rc.getRuleIndex)
 
     if (rc.exception != null) throw rc.exception

@@ -221,7 +221,7 @@ object ElmFunctionHelpers {
   }
 
   trait IHaveAMutableBody {
-    self: AbstractMutableContainerTreeNode =>
+    self: PositionedMutableContainerTreeNode =>
 
     private var _body: ElmExpression = _
 

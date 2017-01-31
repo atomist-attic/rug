@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableTerminalTreeNode}
+import com.atomist.tree.content.text.{MutableTerminalTreeNode, PositionedMutableContainerTreeNode, PositionedMutableContainerTreeNode$}
 import com.atomist.rug.kind.elm.ElmModel.ElmDeclarationModels._
 import com.atomist.rug.kind.elm.ElmModel.ElmExpressionModels._
 import com.atomist.rug.kind.elm.ElmModel.ElmTypeModels._
@@ -375,7 +375,7 @@ private[elm] object ElmParserCombinator
   parse(parser, input) match {
     case Success(matched, _) =>
       matched match {
-        case soo: AbstractMutableContainerTreeNode => soo.pad(input)
+        case soo: PositionedMutableContainerTreeNode => soo.pad(input)
         case _ =>
       }
       matched

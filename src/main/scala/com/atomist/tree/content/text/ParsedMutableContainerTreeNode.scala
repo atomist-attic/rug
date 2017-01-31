@@ -11,7 +11,7 @@ import com.atomist.tree.TreeNode
   * @param nodeName name
   */
 class ParsedMutableContainerTreeNode(nodeName: String)
-  extends AbstractMutableContainerTreeNode(nodeName) {
+  extends PositionedMutableContainerTreeNode(nodeName) {
 
   var startPosition: InputPosition = _
 

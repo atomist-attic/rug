@@ -10,7 +10,7 @@ class SimpleMutableContainerTreeNode(
                                       val endPosition: InputPosition,
                                       override val significance: Significance = TreeNode.Noise,
                                       val additionalTypes: Set[String] = Set())
-  extends AbstractMutableContainerTreeNode(name) {
+  extends PositionedMutableContainerTreeNode(name) {
 
   additionalTypes.foreach(addType(_))
 

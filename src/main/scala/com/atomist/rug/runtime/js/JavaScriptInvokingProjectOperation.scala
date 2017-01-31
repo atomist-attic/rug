@@ -1,6 +1,8 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{AllowedValue, Parameter, Tag}
+import javax.script.{ScriptContext, SimpleBindings}
+
+import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
@@ -12,7 +14,7 @@ import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -21,12 +23,12 @@ import scala.util.Try
   * Superclass for all operations that delegate to JavaScript.
   *
   * @param jsc       JavaScript context
-  * @param jsVar     var reference in Nashorn
+  * @param _jsVar     var reference in Nashorn
   * @param rugAs     backing artifact source for the Rug archive
   */
 abstract class JavaScriptInvokingProjectOperation(
                                                    jsc: JavaScriptContext,
-                                                   jsVar: ScriptObjectMirror,
+                                                   _jsVar: ScriptObjectMirror,
                                                    rugAs: ArtifactSource
                                                  )
   extends ProjectOperationParameterSupport
@@ -34,6 +36,9 @@ abstract class JavaScriptInvokingProjectOperation(
     with LazyLogging {
 
   private val typeRegistry: TypeRegistry = DefaultTypeRegistry
+
+  //visible for test
+  private[js] val jsVar = _jsVar
 
   private val projectType = typeRegistry.findByName("Project")
     .getOrElse(throw new TypeNotPresentException("Project", null))
@@ -47,6 +52,8 @@ abstract class JavaScriptInvokingProjectOperation(
   override def setContext(ctx: Seq[ProjectOperation]): Unit = {
     _context = ctx
   }
+
+
 
   protected def context: Seq[ProjectOperation] = {
     _context
@@ -66,15 +73,60 @@ abstract class JavaScriptInvokingProjectOperation(
     * @return result of the invocation
     */
   protected def invokeMemberWithParameters(member: String, args: Object*): Any = {
+
+    val clone = cloneVar(jsVar)
+
     // Translate parameters if necessary
-    val processedArgs = args.foldLeft(Seq[Object]())(
-      (acc: Seq[Object], cur: Object) => cur match {
-        case poa: ProjectOperationArguments =>
-          acc :+ poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
-        case x => acc :+ x
+    val processedArgs = args.collect {
+      case poa: ProjectOperationArguments => {
+        val params = poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
+        setParamsIfDecorated(clone,params)
+        params
       }
-    )
-    jsVar.callMember(member,processedArgs: _* )
+      case x => x
+    }
+
+    clone.asInstanceOf[ScriptObjectMirror].callMember(member,processedArgs: _* )
+  }
+
+  /**
+    * Separate for test
+    * @param jsVar
+    * @return
+    */
+  private[js] def cloneVar (jsVar: ScriptObjectMirror) : ScriptObjectMirror = {
+    val bindings = new SimpleBindings()
+    bindings.put("rug",jsVar)
+
+    //TODO - why do we need this?
+    jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach{
+      case (k: String, v: AnyRef) => bindings.put(k,v)
+    }
+    jsc.engine.eval("Object.create(rug);", bindings).asInstanceOf[ScriptObjectMirror]
+  }
+  /**
+    * Make sure we only set fields if they've been decorated with @parameter
+    * @param clone
+    * @param params
+    */
+  private def setParamsIfDecorated(clone: ScriptObjectMirror, params: java.util.Map[String, AnyRef]): Unit = {
+    val decoratedParamNames: Set[String] = clone.get("parameters") match {
+      case ps: ScriptObjectMirror if !ps.isEmpty => {
+        ps.asScala.collect {
+          case (_, details: ScriptObjectMirror) if details.get("decorated").asInstanceOf[Boolean] => {
+            details.get("name").asInstanceOf[String]
+          }
+        }.toSet[String]
+      }
+      case _ => Set()
+    }
+    params.asScala.foreach {
+      case (k: String, v: AnyRef) => {
+        if(decoratedParamNames.contains(k)){
+          clone.put(k,v)
+        }
+      }
+    }
   }
 
   protected def readTagsFromMetadata(someVar: ScriptObjectMirror): Seq[Tag] = {
@@ -90,65 +142,71 @@ abstract class JavaScriptInvokingProjectOperation(
     }.getOrElse(Nil)
   }
 
+  /**
+    * Either read the parameters field or look for annotated parameters
+    * @return
+    */
   protected def readParametersFromMetadata: Seq[Parameter] = {
-
-    val pvar = jsVar.get("parameters").asInstanceOf[ScriptObjectMirror]
-    if(pvar == null || pvar.asScala.isEmpty){
-      return Nil
+      jsVar.get("parameters") match {
+      case ps: ScriptObjectMirror if !ps.isEmpty => {
+        ps.asScala.collect {
+          case (_, details: ScriptObjectMirror) => parameterVarToParameter(jsVar, details)
+        }.toSeq
+      }
+      case _ => Seq()
     }
-    val values = pvar.asScala.collect {
-      case (_, _details: AnyRef) =>
-        val details = _details.asInstanceOf[ScriptObjectMirror]
-
-        val pName = details.get("name").asInstanceOf[String]
-        val pPattern = details.get("pattern").asInstanceOf[String]
-        val p = Parameter(pName, pPattern)
-        p.setDisplayName(details.get("displayName").asInstanceOf[String])
-
-        details.get("maxLength") match {
-          case x: AnyRef => p.setMaxLength(x.asInstanceOf[Int])
-          case _ => p.setMaxLength(-1)
-        }
-        details.get("minLength") match {
-          case x: AnyRef => p.setMinLength(x.asInstanceOf[Int])
-          case _ => p.setMinLength(-1)
-        }
-
-        p.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
-        val disp = details.get("displayable")
-        p.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
-        p.setRequired(details.get("required").asInstanceOf[Boolean])
-
-        p.addTags(readTagsFromMetadata(details))
-
-        p.setValidInputDescription(details.get("validInput").asInstanceOf[String])
-        p.describedAs(details.get("description").asInstanceOf[String])
-
-        pPattern match {
-          case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
-            case Left(_) =>
-              throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern for parameter $pName: $s")
-            case Right(pat) => p.setPattern(pat)
-          }
-          case s: String if !s.startsWith("^") || !s.endsWith("$") =>
-            throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
-          case s: String => p.setPattern(s)
-          case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
-        }
-
-        details.get("default") match {
-          case x: String =>
-            if (!p.isValidValue(x))
-              throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $p")
-            p.setDefaultValue(x)
-          case _ =>
-        }
-
-        p
-    }
-    values.toSeq
   }
 
+  protected def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror) : Parameter = {
+
+    val pName = details.get("name").asInstanceOf[String]
+    val pPattern = details.get("pattern").asInstanceOf[String]
+    val parameter = Parameter(pName, pPattern)
+    parameter.setDisplayName(details.get("displayName").asInstanceOf[String])
+
+    details.get("maxLength") match {
+      case x: AnyRef => parameter.setMaxLength(x.asInstanceOf[Int])
+      case _ => parameter.setMaxLength(-1)
+    }
+    details.get("minLength") match {
+      case x: AnyRef => parameter.setMinLength(x.asInstanceOf[Int])
+      case _ => parameter.setMinLength(-1)
+    }
+
+    parameter.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
+    val disp = details.get("displayable")
+    parameter.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
+    parameter.setRequired(details.get("required").asInstanceOf[Boolean])
+
+    parameter.addTags(readTagsFromMetadata(details))
+
+    parameter.setValidInputDescription(details.get("validInput").asInstanceOf[String])
+    parameter.describedAs(details.get("description").asInstanceOf[String])
+
+    pPattern match {
+      case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
+        case Left(_) =>
+          throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern for parameter $pName: $s")
+        case Right(pat) => parameter.setPattern(pat)
+      }
+      case s: String if !s.startsWith("^") || !s.endsWith("$") =>
+        throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
+      case s: String => parameter.setPattern(s)
+      case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
+    }
+
+    details.get("default") match {
+      case x: String =>
+        if (!parameter.isValidValue(x))
+          throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $parameter")
+        parameter.setDefaultValue(x)
+      case _ =>
+    }
+    if(details.get("decorated").asInstanceOf[Boolean] && rug.hasMember(pName)){
+      parameter.setDefaultValue(rug.getMember(pName).toString)
+    }
+    parameter
+  }
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
     *
@@ -158,5 +216,4 @@ abstract class JavaScriptInvokingProjectOperation(
   protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
     new jsSafeCommittingProxy(projectType, pmv)
   }
-
 }

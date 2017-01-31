@@ -42,7 +42,7 @@ class HandlerArchiveReader(
     if (handlers.nonEmpty) {
       handlers
     } else {
-      JavaScriptHandlerFinder.fromJavaScriptArchive(rugArchive, new JavaScriptHandlerContext(teamId, treeMaterializer, messageBuilder), None)
+      JavaScriptHandlerFinder.fromJavaScriptArchive(rugArchive, new JavaScriptHandlerContext(teamId, treeMaterializer, messageBuilder))
     }
   }
 }

@@ -1,14 +1,14 @@
 package com.atomist.rug.runtime.js
 
 import java.util.regex.Pattern
-import javax.script.{ScriptContext, ScriptException}
+import javax.script._
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.{RugJavaScriptException, RugRuntimeException}
+import com.atomist.rug.RugJavaScriptException
 import com.atomist.source.ArtifactSource
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
-import jdk.nashorn.api.scripting.{ClassFilter, NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
 
 import scala.collection.JavaConverters._
 
@@ -17,48 +17,57 @@ import scala.collection.JavaConverters._
   * Creates a Nashorn ScriptEngineManager and can evaluate files and JavaScript fragments,
   * exposing the known vars in a typesafe way so we partly avoid the horrific detyped
   * Nashorn API.
+  *
+  * One of these per rug please, or else they may stomp on one-another
   */
-class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomistConfig: AtomistConfig = DefaultAtomistConfig) extends LazyLogging {
+class JavaScriptContext(rugAs: ArtifactSource,
+                        atomistConfig: AtomistConfig = DefaultAtomistConfig,
+                        bindings: Bindings = new SimpleBindings()) extends LazyLogging {
 
-  private val commonOptions = Array("--optimistic-types", "--language=es6")
-
-  /**
-    * At the time of writing, allowedClasses were only used for test.
-    *
-    * If you do need to expose some classes to JS, then make sure you configure to use a locked down classloader and security manager
-    */
   val engine: NashornScriptEngine =
-    new NashornScriptEngineFactory().getScriptEngine(
-      if (allowedClasses.isEmpty) commonOptions :+ "--no-java" else commonOptions,
-      if (allowedClasses.isEmpty) null else Thread.currentThread().getContextClassLoader, //TODO - do we need our own loader here?
-      new ClassFilter {
-        override def exposeToScripts(s: String): Boolean = {
-          allowedClasses.contains(s)
-        }
-      }
-    ).asInstanceOf[NashornScriptEngine]
+    new NashornScriptEngineFactory()
+      .getScriptEngine("--optimistic-types", "--language=es6", "--no-java")
+      .asInstanceOf[NashornScriptEngine]
 
-  def load(rugAs: ArtifactSource) : Unit = {
+  engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
 
-    configureEngine(engine, rugAs)
-    val filtered = atomistConfig.atomistContent(rugAs)
-      .filter(d => true,
-        f => atomistConfig.isJsSource(f))
+  private val consoleJs =
+    """
+      |console = {
+      |   log: print,
+      |   warn: print,
+      |   error: print
+      |};
+    """.stripMargin
 
-    //require all the atomist stuff
-    for (f <- filtered.allFiles) {
-      val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
-      try {
-        engine.eval(s"exports.$varName = require('./${f.path.dropRight(3)}');") //because otherwise the loader doesn't know about the paths and can't resolve relative modules
-      } catch {
-        case x: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}",x)
-        case x: RuntimeException => x.getCause match {
-          case c: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}",c)
-          case c => throw x
-        }
+  //so we can print stuff out from TS
+  engine.eval(consoleJs)
+
+  try {
+    Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
+  } catch {
+    case e: Exception =>
+      throw new RuntimeException("Unable to set up ArtifactSource based module loader", e)
+  }
+
+  private val filtered = atomistConfig.atomistContent(rugAs)
+    .filter(d => true,
+      f => atomistConfig.isJsSource(f))
+
+  //require all the atomist stuff
+  for (f <- filtered.allFiles) {
+    val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
+    try {
+      engine.eval(s"exports.$varName = require('./${f.path.dropRight(3)}');") //because otherwise the loader doesn't know about the paths and can't resolve relative modules
+    } catch {
+      case x: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", x)
+      case x: RuntimeException => x.getCause match {
+        case c: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", c)
+        case c => throw x
       }
     }
   }
+
 
   /**
     * Information about a JavaScript var exposed in the project scripts
@@ -66,8 +75,7 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     * @param key                name of the var
     * @param scriptObjectMirror interface for working with Var
     */
-  case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {
-  }
+  case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {}
 
   /**
     * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key
@@ -93,25 +101,6 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
     }).toSeq
   }
 
-  private def configureEngine(scriptEngine: NashornScriptEngine, rugAs: ArtifactSource): Unit = {
-    //so we can print stuff out from TS
-    val consoleJs =
-      """
-        |console = {
-        |   log: print,
-        |   warn: print,
-        |   error: print
-        |};
-      """.stripMargin
-    scriptEngine.eval(consoleJs)
-    try{
-      Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
-  }catch {
-      case e: Exception =>
-        throw new RuntimeException("Unable to set up ArtifactSource based module loader", e)
-    }
-  }
-
   private class ArtifactSourceBasedFolder private(val artifacts: ArtifactSource, val parent: Folder, val path: String) extends AbstractFolder(parent, path) {
 
     private val commentPattern: Pattern = Pattern.compile("^//.*$", Pattern.MULTILINE)
@@ -133,4 +122,5 @@ class JavaScriptContext(allowedClasses: Set[String] = Set.empty[String], atomist
       new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
     }
   }
+
 }

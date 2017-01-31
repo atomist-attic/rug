@@ -207,6 +207,15 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "create two separate js objects for each operation" in {
+    val tsf = StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val v1 = jsed.cloneVar(jsed.jsVar)
+    v1.put("name", "dude")
+    jsed.jsVar.get("name") should be ("Simple")
+  }
+
   private def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]

@@ -13,7 +13,7 @@ class JavaScriptContextTest extends FlatSpec with Matchers {
   it should "throw an exception containing the JS file name if there are error during eval" in {
     val filename = ".atomist/editors/SimpleEditor.js"
     val caught = intercept[RugJavaScriptException] {
-      new JavaScriptContext().load(SimpleFileBasedArtifactSource(StringFileArtifact(filename, SimpleEditorWithoutParameters)))
+      new JavaScriptContext(SimpleFileBasedArtifactSource(StringFileArtifact(filename, SimpleEditorWithoutParameters)))
     }
     caught.getMessage should include(filename)
   }

@@ -8,7 +8,7 @@ class SimpleMutableContainerTreeNode(
                                       val initialFieldValues: Seq[TreeNode],
                                       val startPosition: InputPosition,
                                       val endPosition: InputPosition,
-                                      override val significance: Significance = TreeNode.Structural
+                                      override val significance: Significance = TreeNode.Noise
                                     )
   extends AbstractMutableContainerTreeNode(name) {
 
@@ -43,7 +43,7 @@ object SimpleMutableContainerTreeNode {
     * @param kids nodes to wrap
     * @return wrapper node containing the single child
     */
-  def wrap(name: String, kids: Seq[PositionedTreeNode], significance: Significance = TreeNode.Structural): SimpleMutableContainerTreeNode = {
+  def wrap(name: String, kids: Seq[PositionedTreeNode], significance: Significance = TreeNode.Noise): SimpleMutableContainerTreeNode = {
     require(kids.nonEmpty, "Must have children to wrap")
     val moo = new SimpleMutableContainerTreeNode(name, kids, kids.head.startPosition, kids.last.endPosition, significance)
     moo
@@ -56,5 +56,5 @@ object SimpleMutableContainerTreeNode {
     * @return wrapper node containing the single child
     */
   def wrap(name: String, tn: PositionedTreeNode): SimpleMutableContainerTreeNode =
-    wrap(name, Seq(tn), significance = TreeNode.Explicit) // we wouldn't be wrapping one node without a reason
+    wrap(name, Seq(tn), significance = TreeNode.Signal) // we wouldn't be wrapping one node without a reason
 }

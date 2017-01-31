@@ -14,8 +14,8 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
 
   // Transformation to run on matched nodes
   private val transform = collapse(
-    ctn => ctn.significance == TreeNode.Structural
-    , "it's a concat") andThen RemovePadding andThen RemoveStructuralLiterals andThen Prune
+    ctn => ctn.significance == TreeNode.Noise
+    , "it's a concat") andThen RemovePadding andThen RemoveNoise andThen Prune
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val (matches, dismatches) = findMatchesInternal(input, l)
@@ -76,7 +76,7 @@ private class MicrogrammarNode(name: String,
                                 startPosition: InputPosition,
                                 endPosition: InputPosition)
   extends SimpleMutableContainerTreeNode(
-    name: String, fields, startPosition, endPosition, significance = TreeNode.Explicit) {
+    name: String, fields, startPosition, endPosition, significance = TreeNode.Signal) {
 
   addType(typ)
   addType(MicrogrammarNode.MicrogrammarNodeType)

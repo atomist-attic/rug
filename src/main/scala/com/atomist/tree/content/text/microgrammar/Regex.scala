@@ -15,7 +15,7 @@ case class Regex(regex: String, givenName: Option[String], config: MatcherConfig
 
   private val rex = regex.r
 
-  private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Explicit else TreeNode.Structural
+  private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Signal else TreeNode.Noise
   val name = givenName.getOrElse(DefaultRegexName)
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =

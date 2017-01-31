@@ -19,7 +19,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = Literal("thing")
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(Some(node), "thing", is, value)) =>
-        node.significance should be(TreeNode.Structural)
+        node.significance should be(TreeNode.Noise)
         value should be(l.toString)
         is.offset should be(5)
     }

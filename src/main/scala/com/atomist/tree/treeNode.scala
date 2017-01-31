@@ -87,8 +87,8 @@ trait TreeNode extends Visitable {
 
 object TreeNode {
   sealed trait Significance
-  case object Structural extends Significance
-  case object Explicit extends Significance
+  case object Noise extends Significance
+  case object Signal extends Significance
   case object Undeclared extends Significance
 }
 

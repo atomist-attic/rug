@@ -24,7 +24,7 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
           node.addType(name)
           node
         case None =>
-          new MutableTerminalTreeNode(LiteralDefaultName, literal, inputState.inputPosition, significance = TreeNode.Structural)
+          new MutableTerminalTreeNode(LiteralDefaultName, literal, inputState.inputPosition, significance = TreeNode.Noise)
       }
       Right(PatternMatch(
         Some(node),

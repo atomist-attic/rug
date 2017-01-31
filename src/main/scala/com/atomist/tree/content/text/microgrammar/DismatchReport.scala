@@ -71,7 +71,7 @@ object DismatchReport {
           pf
       }
 
-    val name = if(node.significance == TreeNode.Explicit)
+    val name = if(node.significance == TreeNode.Signal)
       s"${node.nodeName}="
     else
        ""

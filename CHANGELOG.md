@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
--   **BREAKING** `TreeNode.nodeType` renamed `TreeNode.tags`.
+-   **BREAKING** `TreeNode.nodeType` renamed to `TreeNode.nodeTags`.
 
 -   We now create a new JS rug for each thread for safety.
     https://github.com/atomist/rug/issues/78

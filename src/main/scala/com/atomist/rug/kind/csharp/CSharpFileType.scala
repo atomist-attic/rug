@@ -6,6 +6,7 @@ import com.atomist.rug.kind.grammar.{AntlrRawFileType, RawNodeUnderFileMutableVi
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text.grammar.antlr.FromGrammarNamingStrategy
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionParser}
 
 object CSharpFileType {
@@ -15,6 +16,7 @@ object CSharpFileType {
 
 class CSharpFileType
   extends AntlrRawFileType(topLevelProduction = "compilation_unit",
+    FromGrammarNamingStrategy,
     "classpath:grammars/antlr/CSharpLexer.g4",
     "classpath:grammars/antlr/CSharpParser.g4"
   ) {

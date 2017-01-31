@@ -241,7 +241,7 @@ class K8Test extends FlatSpec with Matchers {
     )
     val service = "project-operation"
     val newSha = "666aabb"
-    val pipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(), new RugTranspiler()))
+    val pipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler, new RugTranspiler()))
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(prog), prog)) + TypeScriptBuilder.userModel
     val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "service" -> service,

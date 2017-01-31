@@ -2,7 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
-import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.rug.{CompilerChainPipeline, RugPipeline}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -12,7 +12,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
   import ElmTypeScriptEditorTestResources._
 
   val typeScriptPipeline: RugPipeline =
-    new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler()))
+    new CompilerChainPipeline(Seq(new RugTranspiler(), TypeScriptBuilder.compiler))
 
   it should "produce a README with a link" in {
     val projectName = "Elminess"

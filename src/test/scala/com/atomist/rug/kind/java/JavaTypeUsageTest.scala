@@ -85,7 +85,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaTypeUsageTest._
 
-  private val tsPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler()))
+  private val tsPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler))
 
   it should "find boot package using let and rug" in {
     val program =

@@ -4,6 +4,7 @@ import _root_.java.io.File
 
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.atomist.source.filter.ArtifactFilter
@@ -14,7 +15,7 @@ import com.atomist.source.filter.ArtifactFilter
   */
 object TypeScriptBuilder {
 
-  val compiler = new TypeScriptCompiler()
+  val compiler = new TypeScriptCompiler(CompilerFactory.create(true))
 
   val userModel: ArtifactSource = {
     val generator = new TypeScriptInterfaceGenerator

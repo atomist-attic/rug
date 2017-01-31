@@ -13,7 +13,7 @@ import org.scalatest.Matchers
 trait TypeScriptEditorTestHelper extends Matchers {
 
   val typeScriptPipeline: RugPipeline =
-    new CompilerChainPipeline(Seq(new RugTranspiler(), new TypeScriptCompiler()))
+    new CompilerChainPipeline(Seq(new RugTranspiler(), TypeScriptBuilder.compiler))
 
   def executeTypescript(editorName: String, program: String,
                                       target: ArtifactSource,

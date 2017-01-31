@@ -12,7 +12,7 @@ object TypeScriptRugReviewerTest {
 
   val ContentPattern = "^Anders .*$"
 
-  val compiler = new TypeScriptCompiler()
+  val compiler = TypeScriptBuilder.compiler
 
   val ParameterContent = "Anders Hjelsberg is God"
 

@@ -15,7 +15,7 @@ object TypeScriptRugEditorTest {
 
   val ContentPattern = "^Anders .*$"
 
-  val compiler = new TypeScriptCompiler()
+  val compiler = TypeScriptBuilder.compiler
 
   val SimpleEditorWithoutParameters =
     """

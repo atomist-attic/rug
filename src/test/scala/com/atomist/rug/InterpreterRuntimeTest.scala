@@ -1,9 +1,8 @@
 package com.atomist.rug
 
-import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
-import com.atomist.rug.compiler.typescript.{TypeScriptCompilationException, TypeScriptCompiler}
+import com.atomist.rug.compiler.typescript.TypeScriptCompilationException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.ts.RugTranspiler
+import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 
 /**
@@ -11,7 +10,7 @@ import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, String
   */
 class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
-  override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(new TypeScriptCompiler(), new RugTranspiler()))
+  override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler, new RugTranspiler()))
 
   // Note that we do not support .endsWith
   it should "execute simple program with parameters, simple JavaScript file function and transform function using default type" in {

@@ -105,7 +105,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     val ls = parsed.locationSteps.head
     ls.axis should be(Child)
     ls.predicateToEvaluate should be(TruePredicate)
-    ls.test should be(ObjectType("Issue"))
+    ls.test should be(NodesWithTag("Issue"))
   }
 
   it should "parse an index predicate" in {

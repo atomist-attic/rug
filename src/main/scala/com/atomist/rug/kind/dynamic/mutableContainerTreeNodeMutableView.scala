@@ -35,7 +35,7 @@ class MutableContainerMutableView(
   extends ContainerTreeNodeView[MutableContainerTreeNode](originalBackingObject, parent)
     with LazyLogging {
 
-  override def nodeType: Set[String] = originalBackingObject.nodeType ++ Set("MutableContainer")
+  override def nodeTags: Set[String] = originalBackingObject.nodeTags ++ Set("MutableContainer")
 
   override def dirty: Boolean = originalBackingObject.dirty
 

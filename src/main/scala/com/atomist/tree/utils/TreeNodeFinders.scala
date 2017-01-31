@@ -10,7 +10,7 @@ object TreeNodeFinders {
   def requiredSingleChild(parent: TreeNode): TreeNode = {
     if (parent.childNodes.size != 1)
       throw new IllegalArgumentException(s"Found ${parent.childNodes.size} matches rather than 1 under " +
-        s"${parent.nodeName}:${parent.nodeType}[${parent.value}] with children [${parent.childNodeNames.mkString(",")}]")
+        s"${parent.nodeName}:${parent.nodeTags}[${parent.value}] with children [${parent.childNodeNames.mkString(",")}]")
     else parent.childNodes.head
   }
 
@@ -18,7 +18,7 @@ object TreeNodeFinders {
     val hits = parent.childrenNamed(name)
     if (hits.size != 1)
       throw new IllegalArgumentException(s"Found ${hits.size} matches rather than 1 for [$name] in " +
-        s"${parent.nodeName}:${parent.nodeType}[${parent.value}] with children [${parent.childNodeNames.mkString(",")}]")
+        s"${parent.nodeName}:${parent.nodeTags}[${parent.value}] with children [${parent.childNodeNames.mkString(",")}]")
     else hits.head
   }
 

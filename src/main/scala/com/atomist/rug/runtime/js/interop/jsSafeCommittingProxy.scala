@@ -40,7 +40,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
         op => name.equals(op.name))
 
       if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-        if (node.nodeType.contains(MicrogrammarNode.MicrogrammarNodeType)) {
+        if (node.nodeTags.contains(MicrogrammarNode.MicrogrammarNodeType)) {
           // Navigation on a node
           new FixedReturnProxy(name, node)
         }

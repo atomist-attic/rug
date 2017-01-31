@@ -31,8 +31,8 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
     nodes.size should be(1)
-    withClue(s"Type was ${nodes.head.nodeType}") {
-      nodes.head.nodeType.contains("modelVersion") should be(true)
+    withClue(s"Type was ${nodes.head.nodeTags}") {
+      nodes.head.nodeTags.contains("modelVersion") should be(true)
     }
     nodes.head match {
       case mtn: MutableTreeNode =>

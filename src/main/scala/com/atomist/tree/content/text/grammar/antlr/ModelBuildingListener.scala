@@ -233,7 +233,7 @@ case class EmptyAntlrContainerTreeNode(nodeName: String,
 
   override def childrenNamed(key: String): Seq[TreeNode] = Nil
 
-  override def nodeType: Set[String] = Set("empty") ++ types
+  override def nodeTags: Set[String] = Set("empty") ++ types
 
   override def childNodeTypes: Set[String] = Set()
 

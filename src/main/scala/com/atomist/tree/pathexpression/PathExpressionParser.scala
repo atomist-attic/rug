@@ -24,7 +24,7 @@ trait PathExpressionParser extends CommonTypesParser {
   private def navigationAxis: Parser[AxisSpecifier] = identifierRefString(StandardAxes, ident) <~ "::" ^^
     (s => NavigationAxis(s))
 
-  private def nodeTypeTest: Parser[ObjectType] = objectType <~ "()" ^^ (p => ObjectType(p))
+  private def nodeTypeTest: Parser[NodesWithTag] = objectType <~ "()" ^^ (p => NodesWithTag(p))
 
   private def propertyTest: Parser[Predicate] =
     "@" ~> nodeName ~ EqualsToken ~ (singleQuotedString | doubleQuotedString) ^^ {

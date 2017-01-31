@@ -19,7 +19,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def nodeName: String = currentBackingObject.nodeName
 
-  override def nodeType: Set[String] = currentBackingObject.nodeType
+  override def nodeTags: Set[String] = currentBackingObject.nodeTags
 
   @ExportFunction(readOnly = true, description = "Value")
   override def value: String = currentBackingObject.value
@@ -70,7 +70,7 @@ class ScalarValueView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  addTypes(currentBackingObject.nodeType ++ Set("MutableTerminal"))
+  addTypes(currentBackingObject.nodeTags ++ Set("MutableTerminal"))
 
   override def nodeName: String = originalBackingObject.nodeName
 

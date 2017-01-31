@@ -192,7 +192,7 @@ class jsPathExpressionEngine(
     val cr: CommandRegistry = DefaultCommandRegistry
 
     def nodeTypes(node: TreeNode): Set[Typed] =
-      node.nodeType.flatMap(t => typeRegistry.findByName(t))
+      node.nodeTags.flatMap(t => typeRegistry.findByName(t))
 
     def proxify(n: TreeNode): Object = n match {
       case _ => new jsSafeCommittingProxy(nodeTypes(n), n, cr)

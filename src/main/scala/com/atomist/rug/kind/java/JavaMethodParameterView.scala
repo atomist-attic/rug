@@ -11,7 +11,7 @@ class JavaMethodParameterView(originalBackingObject: Parameter, parent: JavaMeth
 
   override def childNodeNames: Set[String] = Set()
 
-  override def nodeType: Set[String] = Set(JavaTypeType.MethodAlias)
+  override def nodeTags: Set[String] = Set(JavaTypeType.MethodAlias)
 
   @ExportFunction(readOnly = true, description = "Return the name of the parameter")
   def name: String = currentBackingObject.getId.getName

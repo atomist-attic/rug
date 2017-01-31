@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.ContainerTreeNode
+import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{PositionedTreeNode, SimpleMutableContainerTreeNode}
 import com.typesafe.scalalogging.Logger
@@ -46,13 +46,13 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
               case (None, Some(r)) => Some(r)
               case (Some(l), Some(r)) =>
                 val mergedFields = (l match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
+                  case ctn: ContainerTreeNode if ctn.significance != TreeNode.Signal => ctn.childNodes
                   case n => Seq(n)
                 }) ++ (r match {
-                  case ctn: ContainerTreeNode => ctn.childNodes
+                  case ctn: ContainerTreeNode if ctn.significance != TreeNode.Signal => ctn.childNodes
                   case n => Seq(n)
                 })
-                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition))
+                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition, significance = TreeNode.Noise))
             }
             Right(PatternMatch(mergedTree,
               leftMatch.matched + rightMatch.matched,

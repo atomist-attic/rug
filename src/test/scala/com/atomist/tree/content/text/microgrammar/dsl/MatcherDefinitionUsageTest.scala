@@ -15,9 +15,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     }
   }
 
-  // TODO this is a debatable case. Why wouldn't we just match with a regex or literal string
-  // if there's nothing dynamic in the content? No nodes are created
-  it should "match literal using microgrammar" in pendingUntilFixed {
+  it should "match literal using microgrammar" in {
     val matcher = mgp.parseMatcher("lit", "def foo")
     val mg = new MatcherMicrogrammar(matcher)
     mg.findMatches("def foo bar").size should be(1)
@@ -68,8 +66,10 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val matches = mg.findMatches(html)
     matches.size should be(1)
 
-    matches.head.fieldValues.head.value should be ("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
-    matches.head.fieldValues(1).value should be ("lazy emoji-wrapper")
+    withClue(matches) {
+      matches.head.fieldValues.head.value should be("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+      matches.head.fieldValues(1).value should be("lazy emoji-wrapper")
+    }
   }
 
 }

@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode}
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 import com.atomist.tree.content.text.{OffsetInputPosition, PositionedTreeNode}
 
 case class DismatchReport(why: String,
@@ -11,6 +11,13 @@ case class DismatchReport(why: String,
 
   def at(startOffset: OffsetInputPosition, endOffset: OffsetInputPosition) = {
     copy(startOffset = Some(startOffset), endOffset = Some(endOffset))
+  }
+
+  def lengthOfClosestMatch: Int = {
+    val priorMatchLen =
+    for { m <- priorMatch
+          n <- m.node } yield n.value.length
+    (Seq(0) ++ causes.map(_.lengthOfClosestMatch) ++ priorMatchLen).max
   }
 
   def andSo(consequence: String): DismatchReport = DismatchReport(consequence, Seq(this), startOffset = startOffset, endOffset = endOffset)
@@ -64,7 +71,11 @@ object DismatchReport {
           pf
       }
 
-    insertCharacter("[", startOffset,
+    val name = if(node.significance == TreeNode.Signal)
+      s"${node.nodeName}="
+    else
+       ""
+    insertCharacter(s"[$name", startOffset,
       markChildren(
         insertCharacter("]", endOffset, input)))
 

@@ -14,8 +14,8 @@ class DismatchReportTest extends FlatSpec with Matchers {
 
     withClue(output) {
       output.startsWith(
-        """ [[Tony] was aged [24]]{.} Alice was aged 16. And they are both gone""") should be(true)
-      // Christian suggests this instead, and it is better:
+        """ [[name=Tony] [was aged] [age=24]]{.} Alice was aged 16. And they are both gone""") should be(true)
+      // Christian suggests this instead of {.}, and it is better:
       //    """ [[Tony] was aged [24]]. Alice was aged 16. And they are both gone
       //      |                       ~""".stripMargin) should be(true)
     }

@@ -1,7 +1,8 @@
 package com.atomist.tree.content.text
 
 import com.atomist.rug.spi.{ExportFunction, TypeProvider}
-import com.atomist.tree.{MutableTreeNode, TerminalTreeNode}
+import com.atomist.tree.TreeNode.{Signal, Significance, Noise, Undeclared}
+import com.atomist.tree.{MutableTreeNode, TerminalTreeNode, TreeNode}
 
 class MutableTerminalTreeNodeTypeProvider
   extends TypeProvider(classOf[MutableTerminalTreeNode]) {
@@ -14,10 +15,10 @@ class MutableTerminalTreeNodeTypeProvider
   *
   * @param nodeName name of the field
   */
-class MutableTerminalTreeNode(
-                               val nodeName: String,
-                               val initialValue: String,
-                               val startPosition: InputPosition)
+class MutableTerminalTreeNode(val nodeName: String,
+                              val initialValue: String,
+                              val startPosition: InputPosition,
+                              override val significance: Significance = TreeNode.Signal)
   extends TerminalTreeNode
     with PositionedTreeNode
     with MutableTreeNode {
@@ -46,6 +47,12 @@ class MutableTerminalTreeNode(
   def longString =
     s"scalar:${getClass.getSimpleName}: $nodeName=[$currentValue], position=$startPosition"
 
-  override def toString =
-    s"[scalar:name='$nodeName'; value='$currentValue'; $startPosition]"
+  override def toString = {
+    val sig = significance match {
+      case Noise => "noise "
+      case Signal => "signal "
+      case Undeclared => ""
+    }
+    s"[${sig}scalar:name='$nodeName'; value='$currentValue'; $startPosition]"
+  }
 }

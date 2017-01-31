@@ -1,6 +1,7 @@
 package com.atomist.tree
 
 import com.atomist.rug.spi.{ExportFunction, Typed}
+import com.atomist.tree.TreeNode.Significance
 import com.atomist.util.{Visitable, Visitor}
 
 /**
@@ -75,6 +76,20 @@ trait TreeNode extends Visitable {
     */
   def childrenNamed(key: String): Seq[TreeNode]
 
+  /**
+    * Is this tree node here to help other nodes
+    * hang together, or does it have significance
+    * to the user and the outside world?
+    */
+  def significance: Significance = TreeNode.Undeclared
+
+}
+
+object TreeNode {
+  sealed trait Significance
+  case object Noise extends Significance
+  case object Signal extends Significance
+  case object Undeclared extends Significance
 }
 
 /**

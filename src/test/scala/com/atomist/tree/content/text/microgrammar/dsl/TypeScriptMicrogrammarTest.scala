@@ -1,9 +1,8 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, SuccessfulModification}
+import com.atomist.project.edit.SuccessfulModification
 import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
-import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -110,9 +109,11 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |export let editor = new MgEditor()
       | """.stripMargin
 
-  it should "run use microgrammar defined in TypeScript" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+  it should "run microgrammar defined in TypeScript" in pendingUntilFixed {
+    val (originalPomContent, editedPomContent) = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))
+    editedPomContent.contains("<modelVersion>Foo bar</modelVersion>") should be(true)
+    originalPomContent.replace("<modelVersion>4.0.0</modelVersion>", "<modelVersion>Foo bar</modelVersion>") should be(editedPomContent)
   }
 
   it should "run use microgrammar defined in TypeScript in 2 consts" in {
@@ -173,6 +174,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed
   }
 
+
   it should "navigate nested using property" in {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingProperty)))
@@ -185,14 +187,16 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     val target = ParsingTargets.NewStartSpringIoProject
+    val before = target.findFile("pom.xml").get.content
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
+        val after = sm.result.findFile("pom.xml").get.content
+        (before, after)
     }
-    jsed
   }
 }

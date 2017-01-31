@@ -70,7 +70,7 @@ class ScalarValueView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  addTypes(currentBackingObject.nodeType)
+  addTypes(currentBackingObject.nodeType ++ Set("MutableTerminal"))
 
   override def nodeName: String = originalBackingObject.nodeName
 

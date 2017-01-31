@@ -2,7 +2,8 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.grammar.{AbstractMatchListener, MatchListener, PositionalString}
 import com.atomist.tree.content.text.microgrammar.matchers.Break
-import com.atomist.tree.content.text.{MutableContainerTreeNode, MutableTerminalTreeNode, PositionedTreeNode}
+import com.atomist.tree.content.text.{AbstractMutableContainerTreeNode, MutableContainerTreeNode, MutableTerminalTreeNode, PositionedTreeNode}
+import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -157,13 +158,13 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   //  params : param_def (',' param_def)*;
   //  method : 'def' name=IDENTIFIER LPAREN params? RPAREN ':' type=IDENTIFIER;
   protected def matchScalaMethodHeaderRepsep: Microgrammar = {
-    val identifier = Regex("identifier", "[a-zA-Z0-9]+")
+    val identifier = Regex("[a-zA-Z0-9]+", Some("identifier"))
     val paramDef = Wrap(
-      identifier.copy(name = "name") ~? ":" ~? identifier.copy(name = "type"),
+      identifier.copy(givenName = Some("name")) ~? ":" ~? identifier.copy(givenName = Some("type")),
       "param_def")
     val params = Repsep(paramDef, ",", "params")
-    val method = "def" ~~ identifier.copy(name = "name") ~? "(" ~?
-      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(name = "type")
+    val method = "def" ~~ identifier.copy(givenName = Some("name")) ~? "(" ~?
+      Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(givenName = Some("type"))
     new MatcherMicrogrammar(method)
   }
 
@@ -396,76 +397,6 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     values.head.value should equal("travis-mvn-deploy")
   }
 
-  it should "handle simple rep" in {
-    val repTest: Microgrammar = {
-      val key: Matcher = Regex("key", "[A-Za-z_]+,")
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Rep(key, "keys")
-      new MatcherMicrogrammar(sentence)
-    }
-    val input =
-      """
-        |keys: a,b,cde,f,
-        |And this is unrelated
-        |   bollocks
-        |      keys: x,y,
-      """.stripMargin
-    val m = repTest.findMatches(input)
-    m.size should be(2)
-    val firstMatch = m.head
-//    println(s"First match in its entirely was [${firstMatch.value}]")
-//    println(s"First match=\n${TreeNodeUtils.toShortString(firstMatch)}")
-//    println(s"The child names under firstMatch are ${firstMatch.childNodeNames.mkString(",")}")
-    val keys: Seq[TreeNode] = m.head.childrenNamed("key")
-    keys.size should be(4)
-    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
-  }
-
-  it should "handle simple rep with wrap" in pendingUntilFixed {
-    val repTest: Microgrammar = {
-      val key: Matcher = Regex("key", "[A-Za-z_]+,")
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, "keys"), "keys")
-      new MatcherMicrogrammar(sentence)
-    }
-    val input =
-      """
-        |keys: a,b,cde,f,
-        |And this is unrelated
-        |   bollocks
-        |      keys: x,y,
-      """.stripMargin
-    val m = repTest.findMatches(input)
-    m.size should be(2)
-    val firstMatch = m.head
-//    println(s"First match in its entirely was [${firstMatch.value}]")
-//    println(s"First match=\n${TreeNodeUtils.toShortString(firstMatch)}")
-//    println(s"The child names under firstMatch are ${firstMatch.childNodeNames.mkString(",")}")
-    firstMatch.childrenNamed("keys").size should be(1)
-    val keys: Seq[TreeNode] = m.head.childrenNamed("keys").head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
-    keys.size should be(4)
-    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
-  }
-
-  it should "handle simple repsep" in {
-    val repsep: Microgrammar = {
-      val key: Matcher = Regex("key", "[A-Za-z_]+")
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Repsep(key, ",", "keys")
-      new MatcherMicrogrammar(sentence)
-    }
-    val input =
-      """
-        |keys: a,b,cde,f
-        |And this is unrelated
-        |   bollocks
-        |      keys: x,y
-      """.stripMargin
-    val m = repsep.findMatches(input)
-    m.size should be(2)
-    //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-//    m.head.childrenNamed("keys").size should be(1)
-    val keys: Seq[TreeNode] = m.head.childrenNamed("key") //.head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
-    keys.size should be(4)
-    keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
-  }
 
   private val printlns: MatcherMicrogrammar = {
     val printlns = "println(" ~ Break(")", Some("content"))
@@ -485,8 +416,13 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       """.stripMargin
     printlns.matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
-        pm.matched should be (p1)
-        p1.contains(pm.node.get.value) should be (true)
+        pm.matched should be(p1)
+        pm.node match {
+          case Some(positionedNode) =>
+            val (hatched, _) = AbstractMutableContainerTreeNode.pad(positionedNode, input)
+            p1.contains(hatched.value) should be(true)
+          case _ => fail
+        }
     }
   }
 
@@ -494,24 +430,24 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     val p1 = "println(\"The first thing\")"
     val input =
       s"""
-        |class Foo {
-        |
+         |class Foo {
+         |
         |   $p1
-        |
+         |
         |   println("The second thing")
-        |
+         |
         |   println(s"And this");
-        |
+         |
         |}
       """.stripMargin
     val m = printlns.findMatches(input)
     m.size should be(3)
     //println(TreeNodeUtils.toShortString(m.head))
-    m.head.value should be (p1)
+    m.head.value should be(p1)
     val newThing = s"""/* $p1 */"""
     m.head.update(newThing)
-    m.head.dirty should be (true)
-    m.head.value should be (newThing)
+    m.head.dirty should be(true)
+    m.head.value should be(newThing)
   }
 
   protected def thingGrammar: MatcherMicrogrammar = {
@@ -528,7 +464,6 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     new MatcherMicrogrammar(
       Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+")
     )
-
 
 
   protected def matchAnnotatedJavaFields: Microgrammar = {
@@ -550,4 +485,78 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     new MatcherMicrogrammar(envList)
   }
 
+}
+
+class RepMatcherTest extends FlatSpec with Matchers {
+
+  it should "handle simple rep" in {
+    val repTest: Microgrammar = {
+      val key: Matcher = Regex("key", "[A-Za-z_]+,")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Rep(key, "keys")
+      new MatcherMicrogrammar(sentence)
+    }
+    val input =
+      """
+        |keys: a,b,cde,f,
+        |And this is unrelated
+        |   bollocks
+        |      keys: x,y,
+      """.stripMargin
+    val m = repTest.findMatches(input)
+    m.size should be(2)
+    val firstMatch = m.head
+    println(TreeNodeUtils.toShortString(firstMatch))
+    //    println(s"First match in its entirely was [${firstMatch.value}]")
+    //    println(s"First match=\n${TreeNodeUtils.toShortString(firstMatch)}")
+    //    println(s"The child names under firstMatch are ${firstMatch.childNodeNames.mkString(",")}")
+    val keys: Seq[TreeNode] = m.head.childrenNamed("key")
+    keys.size should be(4)
+    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
+  }
+
+  it should "handle simple rep with wrap" in {
+
+    val repTest: Microgrammar = {
+      val key: Matcher = Regex("key", "[A-Za-z_]+,")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, "key"), "feet")
+      new MatcherMicrogrammar(sentence, "findKeys")
+    }
+    val input =
+      """
+        |keys: a,b,cde,f,
+        |And this is unrelated
+        |   bollocks
+        |      keys: x,y,
+      """.stripMargin
+    val m = repTest.findMatches(input)
+    m.size should be(2)
+    val firstMatch = m.head
+    val feet = firstMatch.childrenNamed("feet")
+    feet.size should be(1)
+    val keys = feet.head.childrenNamed("key")
+    keys.size should be(4)
+    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
+  }
+
+  it should "handle simple repsep" in {
+    val repsep: Microgrammar = {
+      val key: Matcher = Regex("key", "[A-Za-z_]+")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Repsep(key, Literal(","), "keys")
+      new MatcherMicrogrammar(sentence)
+    }
+    val input =
+      """
+        |keys: a,b,cde,f
+        |And this is unrelated
+        |   bollocks
+        |      keys: x,y
+      """.stripMargin
+    val m = repsep.findMatches(input)
+    m.size should be(2)
+    //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
+    //    m.head.childrenNamed("keys").size should be(1)
+    val keys: Seq[TreeNode] = m.head.childrenNamed("key") //.head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
+    keys.size should be(4)
+    keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))
+  }
 }

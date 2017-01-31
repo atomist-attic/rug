@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
 
@@ -10,19 +11,23 @@ import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPositi
   * @param named   name (optional) if we are returning a node
   */
 case class Literal(literal: String, named: Option[String] = None) extends Matcher {
+  import Literal._
 
-  override def name: String = named.getOrElse("literal")
+  override def name: String = named.getOrElse(LiteralDefaultName)
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val (matched, is) = inputState.take(literal.length)
     if (matched == literal) {
-      val nodeOption = named.map { name => val node =
-        new MutableTerminalTreeNode(name, literal, inputState.inputPosition)
-        node.addType(name)
-        node
+      val node = named match {
+        case Some(name) =>
+          val node = new MutableTerminalTreeNode(name, literal, inputState.inputPosition)
+          node.addType(name)
+          node
+        case None =>
+          new MutableTerminalTreeNode(LiteralDefaultName, literal, inputState.inputPosition, significance = TreeNode.Noise)
       }
       Right(PatternMatch(
-        nodeOption,
+        Some(node),
         literal,
         is,
         this.toString))
@@ -35,6 +40,8 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 }
 
 object Literal {
+
+  val LiteralDefaultName = ".literal"
 
   implicit def stringToMatcher(s: String): Matcher = Literal(s)
 }

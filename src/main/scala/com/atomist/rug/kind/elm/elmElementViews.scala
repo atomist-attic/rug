@@ -13,7 +13,7 @@ class ElmFunctionMutableView(
                               parent: ElmModuleMutableView)
   extends ViewSupport[CanBeThoughtOfAsAFunction](ef, parent) {
 
-  override def nodeType: Set[String] = Set("CanBeThoughtOfAsAFunction")
+  override def tags: Set[String] = Set("CanBeThoughtOfAsAFunction")
 
   override def childNodeTypes: Set[String] = childNodeNames
 
@@ -121,7 +121,7 @@ class ElmImportMutableView(
                           parent: ElmModuleMutableView)
   extends TreeViewSupport[ElmModel.Import](imp, parent) {
 
-  override def nodeType: Set[String] = Set(ElmModuleType.ImportAlias)
+  override def tags: Set[String] = Set(ElmModuleType.ImportAlias)
 
   override def childNodeTypes: Set[String] = childNodeNames
 

@@ -207,7 +207,7 @@ private class PairMutableView(
     }
   }
 
-  override def toString = s"${currentBackingObject.nodeName}:${currentBackingObject.nodeType}:[${currentBackingObject.value}]"
+  override def toString = s"${currentBackingObject.nodeName}:${currentBackingObject.tags}:[${currentBackingObject.value}]"
 }
 
 /**
@@ -221,7 +221,7 @@ private class JsonStringView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  addTypes(currentBackingObject.nodeType)
+  addTypes(currentBackingObject.tags)
 
   override def nodeName: String = originalBackingObject.nodeName
 

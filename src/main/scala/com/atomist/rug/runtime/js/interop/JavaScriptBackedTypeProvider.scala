@@ -46,14 +46,14 @@ class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
       case som: ScriptObjectMirror => new ScriptObjectBackedTreeNode(som)
     }
 
-  override def nodeType: Set[String] =
+  override def tags: Set[String] =
     toScalaSeq(som.callMember("nodeType")).map(s => Objects.toString(s)).toSet
 
   override def value: String = stringFunction(som, "value")
 
   override def childNodeNames: Set[String] = kids.map(k => k.nodeName).toSet
 
-  override def childNodeTypes: Set[String] = kids.flatMap(k => k.nodeType).toSet
+  override def childNodeTypes: Set[String] = kids.flatMap(k => k.tags).toSet
 
   override def childrenNamed(key: String): Seq[TreeNode] =
     kids.filter(k => k.nodeName == key)

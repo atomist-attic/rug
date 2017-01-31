@@ -196,7 +196,7 @@ case class NodeTypePredicate(expectedType: String) extends Predicate {
                         ee: ExpressionEngine,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): Boolean =
-    n.nodeType.contains(expectedType)
+    n.tags.contains(expectedType)
 
 }
 

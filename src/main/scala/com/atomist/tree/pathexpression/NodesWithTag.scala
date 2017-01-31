@@ -9,19 +9,19 @@ import com.atomist.util.misc.SerializationFriendlyLazyLogging
 /**
   * Return all nodes of the given type
   *
-  * @param typeName name of the type we're looking into
+  * @param tag name of the type we're looking into
   */
-case class ObjectType(typeName: String)
+case class NodesWithTag(tag: String)
   extends NodeTest
     with SerializationFriendlyLazyLogging {
 
   private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
-    typeRegistry.findByName(typeName) match {
+    typeRegistry.findByName(tag) match {
       case Some(cr: ChildResolver) => Some(cr)
       case _ => None
     }
 
-  private val eligibleNode: TreeNode => Boolean = n => n.nodeType.contains(typeName)
+  private val eligibleNode: TreeNode => Boolean = n => n.tags.contains(tag)
 
   // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =

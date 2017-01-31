@@ -29,12 +29,13 @@ trait TreeNode extends Visitable {
   def nodeName: String
 
   /**
-    * Type of the node, such as "File" or "JavaType". There may be multiple
-    * nodes in a tree with the same type.
-    * @return the type of the node.
+    * Tags for the node, such as "File" or "JavaType". There may be multiple
+    * nodes in a tree with the same tags, and multiple tags on the one node.
+    * A common use of tags is type.
+    * @return tags for the node.
     */
-  @ExportFunction(readOnly = true, description = "Type of the node")
-  def nodeType: Set[String] = Set(Typed.typeToTypeName(getClass))
+  @ExportFunction(readOnly = true, description = "Tags attached to the node")
+  def tags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   /**
     * All nodes have values: Either a terminal value or the

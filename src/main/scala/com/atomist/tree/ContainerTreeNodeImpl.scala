@@ -3,11 +3,11 @@ package com.atomist.tree
 /**
   * Simple implementation of ContainerTreeNode allowing fields to be added
   * @param nodeName node name
-  * @param nodeType node type
+  * @param tags node type
   */
 class ContainerTreeNodeImpl(
                              val nodeName: String,
-                             override val nodeType: Set[String])
+                             override val tags: Set[String])
   extends ContainerTreeNode {
 
   def this(nodeName: String, nt: String) =
@@ -21,11 +21,11 @@ class ContainerTreeNodeImpl(
 
   override def childNodeNames: Set[String] = kids.map(_.nodeName).toSet
 
-  override def childNodeTypes: Set[String] = kids.flatMap(_.nodeType).toSet
+  override def childNodeTypes: Set[String] = kids.flatMap(_.tags).toSet
 
   override def childrenNamed(key: String): Seq[TreeNode] = kids.filter(_.nodeName.equals(key))
 
   override def value: String = s"$nodeName:${kids.mkString(",")}"
 
-  override def toString = s"$nodeName:$nodeType(${kids.size})"
+  override def toString = s"$nodeName:$tags(${kids.size})"
 }

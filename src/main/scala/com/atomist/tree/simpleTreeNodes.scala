@@ -11,7 +11,7 @@ case class SimpleTerminalTreeNode(nodeName: String,
                                   types: Set[String] = Set())
   extends TerminalTreeNode {
 
-  override val nodeType: Set[String] = super.nodeType ++ types
+  override val tags: Set[String] = super.tags ++ types
 }
 
 /**

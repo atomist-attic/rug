@@ -74,6 +74,6 @@ abstract class TreeViewSupport[T <: TreeNode](originalBackingObject: T, parent: 
 
   override def value: String = currentBackingObject.value
 
-  override def tags: Set[String] = currentBackingObject.tags
+  override def nodeTags: Set[String] = currentBackingObject.nodeTags
 
 }

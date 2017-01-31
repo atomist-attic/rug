@@ -22,7 +22,7 @@ object ExecutionResult {
   }
 
   def show(n: TreeNode): String = {
-    s"${n.nodeName}:${n.tags}"
+    s"${n.nodeName}:${n.nodeTags}"
   }
 
 }

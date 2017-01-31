@@ -35,7 +35,7 @@ trait TreeNode extends Visitable {
     * @return tags for the node.
     */
   @ExportFunction(readOnly = true, description = "Tags attached to the node")
-  def tags: Set[String] = Set(Typed.typeToTypeName(getClass))
+  def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   /**
     * All nodes have values: Either a terminal value or the

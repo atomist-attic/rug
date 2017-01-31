@@ -101,7 +101,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
 
 private class LinkableContainerTreeNode(
                                          val nodeName: String,
-                                         override val tags: Set[String],
+                                         override val nodeTags: Set[String],
                                          private var fieldValues: Seq[TreeNode]
                                )
   extends ContainerTreeNode {
@@ -116,7 +116,7 @@ private class LinkableContainerTreeNode(
     fieldValues.map(f => f.nodeName).toSet
 
   override def childNodeTypes: Set[String] =
-    fieldValues.flatMap(f => f.tags).toSet
+    fieldValues.flatMap(f => f.nodeTags).toSet
 
   override def value: String = ???
 

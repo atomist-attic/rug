@@ -45,11 +45,11 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode], val descri
 
   override def fieldValues: Seq[TreeNode] = filtered
 
-  override def childNodeTypes: Set[String] = filtered.flatMap(fv => fv.tags).toSet
+  override def childNodeTypes: Set[String] = filtered.flatMap(fv => fv.nodeTags).toSet
 
   override def nodeName: String = of.nodeName
 
-  addTypes(of.tags)
+  addTypes(of.nodeTags)
 
   override def value: String = of.value
 
@@ -58,7 +58,7 @@ class ViewTree(of: MutableContainerTreeNode, filtered: Seq[TreeNode], val descri
   override def appendField(newField: TreeNode): Unit = of.appendField(newField)
 
   override def toString =
-    s"${getClass.getSimpleName}($nodeName:$tags){${childNodes.mkString(",")}}"
+    s"${getClass.getSimpleName}($nodeName:$nodeTags){${childNodes.mkString(",")}}"
 
   override def dirty: Boolean = of.dirty
 

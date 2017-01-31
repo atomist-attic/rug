@@ -21,7 +21,7 @@ case class NodesWithTag(tag: String)
       case _ => None
     }
 
-  private val eligibleNode: TreeNode => Boolean = n => n.tags.contains(tag)
+  private val eligibleNode: TreeNode => Boolean = n => n.nodeTags.contains(tag)
 
   // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =

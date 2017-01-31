@@ -12,7 +12,7 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
 
   override def nodeName: String = currentBackingObject.getName
 
-  override def tags: Set[String] = Set(JavaTypeAlias)
+  override def nodeTags: Set[String] = Set(JavaTypeAlias)
 
   override def childNodeNames: Set[String] = Set(ConstructorAlias, MethodAlias, FieldAlias)
 

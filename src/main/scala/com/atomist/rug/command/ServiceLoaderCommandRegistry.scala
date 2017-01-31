@@ -23,13 +23,13 @@ class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
   }.toSeq
 
   override def findByNodeAndName(treeNode: TreeNode, name: String): Option[Command[TreeNode]] = {
-    val nodeTypes = treeNode.tags
+    val nodeTypes = treeNode.nodeTags
     val candidates = commands.filter(c => c.name == name && JavaConversions.asScalaSet(c.nodeTypes).exists(t => nodeTypes.contains(t)))
     candidates.length match {
       case 1 => Option(candidates.head)
       case 0 => None
       case x =>
-        throw new RugRuntimeException("CommandType", s"Multiple Commands $x registered for '$name' on treeNode '${treeNode.tags}'")
+        throw new RugRuntimeException("CommandType", s"Multiple Commands $x registered for '$name' on treeNode '${treeNode.nodeTags}'")
     }
   }
 }

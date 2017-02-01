@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Implement JsonBackedContainerTreeNode, allows a ContainerTreeNode to 
+-   Implement JsonBackedContainerTreeNode, allows a ContainerTreeNode to
     maintain the Json is was generated from
 
 -   Add correlationId to Message, allows handler to define
@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Yml type can now be instantiated from ProjectMutableView,
     DirectoryMutableView, and FileMutableView,
     https://github.com/atomist/rug/issues/250
+
+-   Handle YAML files with multiple documents, but only first is
+    parsed and addressable.
 
 ### Changed
 

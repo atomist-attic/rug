@@ -65,16 +65,14 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
   it should "find key in simple yml" in {
     val simpleYml =
       """
-    name:
-      test1
-
-    description:
-      A template of profound illustrative power.
-      """
+         |name:
+         |  test1
+         |
+         |description:
+         |  A template of profound illustrative power.
+      """.stripMargin
     val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
-    //    val ic = SimpleFunctionInvocationContext("p", yv, as, null, Map(),
-    //      SimpleProjectOperationArguments.Empty, Nil)
     yv.valueOf("name") should be("test1")
   }
 
@@ -163,5 +161,20 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     yv.content.contains(firstComment)
     yv.content.contains(secondComment)
     yv.content.contains(thirdComment)
+  }
+
+  it should "find first key in multiple document yml" in {
+    val doubleYml =
+      """
+        |---
+        |name: test1
+        |description: A template of profound illustrative power.
+        |---
+        |name: test2
+        |description: Ignored less powerful template.
+      """.stripMargin
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", doubleYml),
+      new ProjectMutableView(EmptyArtifactSource(""), as))
+    yv.valueOf("name") should be("test1")
   }
 }

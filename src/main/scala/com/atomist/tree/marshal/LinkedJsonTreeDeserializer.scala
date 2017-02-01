@@ -144,7 +144,7 @@ private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContain
   * @param innerNode The ContainerTreeNode that we are encapsulating
   * @param backingJson the json string that also represents this object tree
   */
-private class JsonBackedContainerTreeNode(val innerNode: LinkableContainerTreeNode,
+class JsonBackedContainerTreeNode(val innerNode: LinkableContainerTreeNode,
                                           val backingJson: String)
   extends ContainerTreeNode {
 

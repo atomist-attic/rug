@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.10.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.11.0...HEAD
+
+## [0.11.0]
+
+[0.11.0]: https://github.com/atomist/rug/compare/0.10.0...0.11.0
 
 ### Added
 
@@ -18,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     how Messages are correlated
 
 -   Support for @parameter TS class field decorators as per
-        https://github.com/atomist/rug/issues/229
+     https://github.com/atomist/rug/issues/229
 
 -   Support for a new TS (JS) Handler programming model as per
     https://github.com/atomist/rug/issues/105

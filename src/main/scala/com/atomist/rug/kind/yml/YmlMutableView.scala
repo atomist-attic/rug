@@ -63,8 +63,8 @@ private[yml] class YmlModel(val yml: String) {
 
   val y = new Yaml()
 
-  val map: scala.collection.mutable.Map[String, Object] = y.load(new StringReader(yml)) match {
-    case map: java.util.Map[String @unchecked, Object @unchecked] => map.asScala
+  val map: scala.collection.mutable.Map[String, Object] = y.loadAll(new StringReader(yml)).asScala.headOption match {
+    case Some(map: java.util.Map[String @unchecked, Object @unchecked]) => map.asScala
     case _ => throw new IllegalStateException(s"Unrecognized result parsing yml '$yml'")
   }
 

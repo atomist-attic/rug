@@ -24,7 +24,10 @@ class YmlType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description = "YML file"
+  override def description =
+    """
+      |YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable.
+    """.stripMargin
 
   override def viewManifest: Manifest[YmlMutableView] = manifest[YmlMutableView]
 

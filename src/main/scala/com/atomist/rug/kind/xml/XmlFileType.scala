@@ -1,8 +1,12 @@
 package com.atomist.rug.kind.xml
 
+import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
+import com.atomist.tree.TreeNode.Significance
+import com.atomist.tree.content.text.{MutableContainerTreeNode, TreeNodeOperations}
 import com.atomist.tree.content.text.grammar.antlr.{AstNodeNamingStrategy, FromGrammarNamingStrategy}
 
 object XmlFileType {
@@ -25,6 +29,9 @@ class XmlFileType
   override def isOfType(f: FileArtifact): Boolean =
     f.name.endsWith(XmlExtension)
 
+  override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableContainerMutableView = {
+    super.createView(TreeNodeOperations.Flatten(n), f)
+  }
 }
 
 
@@ -40,6 +47,8 @@ private object XmlNamingStrategy extends AstNodeNamingStrategy {
     case x => x
   }
 
-  override def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] =
-    Set(rule)
+  override def significance(rule: String, fields: Seq[TreeNode]): Significance = rule match {
+    case "content" => TreeNode.Noise
+    case _ => TreeNode.Undeclared
+  }
 }

@@ -86,8 +86,9 @@ object ElmDeclarationModels {
         s"type $typeName\n" +
           s"    = $contents"
       val newNode = ElmParserCombinator.parseProduction(ElmParserCombinator.elmUnionType, wholeUnionType)
+      newNode.pad(contents)
 
-      replaceFields(newNode.childNodes)
+      replaceFields(newNode.fieldValues)
     }
 
     def add(elmTypeWithParametersAsString: String): Unit = {

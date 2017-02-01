@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
-import com.atomist.tree.content.text.{OffsetInputPosition, PositionedTreeNode}
+import com.atomist.tree.content.text.{OffsetInputPosition, PositionedMutableContainerTreeNode, PositionedTreeNode}
 
 case class DismatchReport(why: String,
                            causes: Seq[DismatchReport] = Seq(),
@@ -54,6 +54,10 @@ object DismatchReport {
     in.substring(0, where) + what + in.substring(where)
 
   def printMatching(node: PositionedTreeNode, input: String): String = {
+    node match {
+      case n: PositionedMutableContainerTreeNode => n.pad(input)
+      case _ =>
+    }
     val startOffset = node.startPosition.offset
     val endOffset = node.endPosition.offset
 

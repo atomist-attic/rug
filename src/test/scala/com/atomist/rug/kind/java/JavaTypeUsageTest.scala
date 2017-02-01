@@ -95,11 +95,13 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |
         |let spb = $(/SpringBootProject())
         |
-        |with spb p do eval { print("appPackage=" + p.applicationClassPackage()) }
+        |with spb p do eval {
+        | //print("appPackage=" + p.applicationClassPackage())
+        |}
       """.stripMargin
 
     attemptToModify(program, "editors/PackageFinder.rug", NewSpringBootProject, Map()) match {
-      case nmn: NoModificationNeeded => // Ok
+      case _: NoModificationNeeded => // Ok
       case _ => ???
     }
   }

@@ -25,7 +25,7 @@ private [json] class JsonParser extends Parser {
 
   override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
     jsGrammar.parse(input, ml).map(raw => {
-      val r = (RemovePadding andThen Prune) (raw)
+      val r = (raw)
       r
     })
   }

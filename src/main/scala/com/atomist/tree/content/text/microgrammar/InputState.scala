@@ -72,6 +72,8 @@ case class InputState(
       println(s"Warning: No predicate value or bad value found for [$predicateName]($x)")
       None
   }
+
+  override def toString: String = s"InputState(Offset ${offset} in input of length ${input.length} with predicates ${predicates})"
 }
 
 object InputState {

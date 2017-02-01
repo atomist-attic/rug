@@ -767,7 +767,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   }
 }
 
-object ElmTypeUsageTest extends LazyLogging {
+object ElmTypeUsageTest extends FlatSpec {
 
   class TestDidNotModifyException extends RuntimeException
 
@@ -792,11 +792,13 @@ object ElmTypeUsageTest extends LazyLogging {
         } {
           // Parse it to see its content is OK
           try {
-            ElmParser.parse(f.content)
+            withClue(s"Content was: ${f.content}") {
+              ElmParser.parse(f.content)
+            }
           }
           catch {
             case e: Exception =>
-              logger.debug(s"Failed to pass [${f.path}] after edit(s). Source is[\n${f.content}]")
+              println(s"Failed to pass [${f.path}] after edit(s). Source is[\n${f.content}]")
               throw e
           }
         }

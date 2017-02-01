@@ -170,7 +170,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     val paramDef = Wrap(
       identifier.copy(givenName = Some("name")) ~? ":" ~? identifier.copy(givenName = Some("type")),
       "param_def")
-    val params = Repsep(paramDef, ",", "params")
+    val params = Repsep(paramDef, ",", None)
     val method = "def" ~~ identifier.copy(givenName = Some("name")) ~? "(" ~?
       Wrap(params, "params") ~? ")" ~? ":" ~? identifier.copy(givenName = Some("type"))
     new MatcherMicrogrammar(method)
@@ -405,17 +405,26 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
         |  - secure: nnWB6oO1NDgLHLCpiDiuWHnfh3t66KkE0K6Z1rbYv/uGMAMP+8R/YkrRJFpRRB2YoOCTJ+nxefjeEJTqlXlz9+tNLO90ctxyabH6QMnCT+KC/S237GxjczXXP1eFI5r8PKuY1Hdf7G1YIFhH9RKS8lFJjDbV4IX70hFJynj6lQhu/eLhjh6CRFpWPCFHrZd1k3OVVQ4WHfumKpBxHp/0hAe+BFLO3HlIuZYbyChLWzvYpc0yPRTOd82i2jZ+JUotlQcZ5ttyvCj4QjCNjPvg6zjcpPo+qK7Oh9R5wvYHmDkOmjSPO83COz0uvFO1XBKuINLJM6Iwc7Aw8wptmDxTlxcKbf7wPB8r7KWq6uT2WdrG/euUtI76k137SZOx4BmgJARuUr6FXyOjzoba10531O3T9bzIgXbxcR50NU5UWpMLqjgYfNTezs9PtQLXZMBxMYeCsVt6VwxCYhDR8lPcq3+EjOS8iMxO3jnIqY2qawOMYE4iofY/wUv/uMWP5z+A5YE8fjjvrVV1kGCLK/1OBAfcnA2OktD3OrwNmz9kPulwn5f+YHyLQHCZHsbyovrGwOahN/qV1I+/zMAiRsevrI67JiOerAf6efQCvtPKmi8ZvM6YMksjbwZvQqiANi+dOMk5W7zr0GVmO2QiZ+5gFRB/Nr486jo+Xm0/ZZwzlj0=
         |
       """.stripMargin
+    val ymlKeys: Microgrammar = {
+      val key: Matcher = Regex("[A-Za-z_]+", Some("key"))
+      val value = Regex("[A-Za-z0-9\\-]+", Some("value"))
+      val pair = "-" ~? key ~? Alternate(":", "=") ~? value
+      val envList = "env:" ~~ "global:" ~~ Repsep(pair, WhitespaceOrNewLine, None) //"keys")
+      new MatcherMicrogrammar(envList)
+    }
     val m = ymlKeys.findMatches(input)
     m.size should be(1)
-    //println(TreeNodeUtils.toShortString(m.head))
-    val keys = m.head.childrenNamed("key")
-    val values = m.head.childrenNamed("value")
-    keys.size should be(2)
-    val k1 = keys.head
-    k1.value should equal("CI_DEPLOY_USERNAME")
-    values.head.value should equal("travis-mvn-deploy")
+//    println(TreeNodeUtils.toShorterString(m.head))
+//    println(s"Has ${m.head.fieldValues.size} field values: ${m.head.fieldValues}")
+    withClue(s"Didn't expect to find match ${TreeNodeUtils.toShorterString(m.head)} with ${m.head.childNodes.size} children and fields=${m.head.fieldValues}\n") {
+      val keys = m.head.childrenNamed("key")
+      val values = m.head.childrenNamed("value")
+      keys.size should be(2)
+      val k1 = keys.head
+      k1.value should equal("CI_DEPLOY_USERNAME")
+      values.head.value should equal("travis-mvn-deploy")
+    }
   }
-
 
   private val printlns: MatcherMicrogrammar = {
     val printlns = "println(" ~ Break(")", Some("content"))
@@ -476,13 +485,13 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   }
 
   protected def matchPrivateJavaFields: Microgrammar = {
-    val field = "private" ~~  Regex("[a-zA-Z0-9]+", Some("type")) ~~  Regex("[a-zA-Z0-9]+", Some("name"))
+    val field = "private" ~~ Regex("[a-zA-Z0-9]+", Some("type")) ~~ Regex("[a-zA-Z0-9]+", Some("name"))
     new MatcherMicrogrammar(field)
   }
 
   protected def aWasaB: MatcherMicrogrammar =
     new MatcherMicrogrammar(
-       Regex("[A-Z][a-z]+", Some("name")) ~? Literal("was aged") ~?  Regex("[0-9]+", Some("age"))
+      Regex("[A-Z][a-z]+", Some("name")) ~? Literal("was aged") ~? Regex("[0-9]+", Some("age"))
     )
 
 
@@ -493,18 +502,6 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     new MatcherMicrogrammar(field)
   }
 
-  //  KEY: [A-Za-z_]+;
-  //  VALUE: [A-Za-z0-9\-]+;
-  //  keys: '-' KEY (':' | '=') VALUE ;
-  //  env_list: 'env:' 'global:' key=keys*;
-  protected def ymlKeys: Microgrammar = {
-    val key: Matcher = Regex("[A-Za-z_]+", Some("key"))
-    val value = Regex("[A-Za-z0-9\\-]+", Some("value"))
-    val pair = "-" ~? key ~? Alternate(":", "=") ~? value
-    val envList = "env:" ~~ "global:" ~~ Repsep(pair, WhitespaceOrNewLine, "keys")
-    new MatcherMicrogrammar(envList)
-  }
-
 }
 
 class RepMatcherTest extends FlatSpec with Matchers {
@@ -512,7 +509,7 @@ class RepMatcherTest extends FlatSpec with Matchers {
   it should "handle simple rep" in {
     val repTest: Microgrammar = {
       val key: Matcher = Regex("[A-Za-z_]+,", Some("key"))
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Rep(key, "keys")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Rep(key, None) //"keys")
       new MatcherMicrogrammar(sentence)
     }
     val input =
@@ -530,15 +527,17 @@ class RepMatcherTest extends FlatSpec with Matchers {
     //println(s"First match=\n${TreeNodeUtils.toShortString(firstMatch)}")
     //println(s"The child names under firstMatch are ${firstMatch.childNodeNames.mkString(",")}")
     val keys: Seq[TreeNode] = m.head.childrenNamed("key")
-    keys.size should be(4)
-    keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
+    withClue(s"Didn't expect ${TreeNodeUtils.toShorterString(m.head)}") {
+      keys.size should be(4)
+      keys.map(k => k.value) should equal(Seq("a,", "b,", "cde,", "f,"))
+    }
   }
 
   it should "handle simple rep with wrap" in {
 
     val repTest: Microgrammar = {
       val key: Matcher = Regex("[A-Za-z_]+,", Some("key"))
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, "key"), "feet")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Wrap(Rep(key, None) /*"key")*/ , "feet")
       new MatcherMicrogrammar(sentence, "findKeys")
     }
     val input =
@@ -561,7 +560,7 @@ class RepMatcherTest extends FlatSpec with Matchers {
   it should "handle simple repsep" in {
     val repsep: Microgrammar = {
       val key: Matcher = Regex("[A-Za-z_]+", Some("key"))
-      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Repsep(key, Literal(","), "keys")
+      val sentence: Matcher = Literal("keys:", Some("prefix")) ~? Repsep(key, Literal(","), None) //keys
       new MatcherMicrogrammar(sentence)
     }
     val input =

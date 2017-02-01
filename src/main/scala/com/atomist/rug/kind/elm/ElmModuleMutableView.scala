@@ -2,7 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.LazyFileArtifactBackedMutableView
-import com.atomist.rug.kind.elm.ElmModel.{AllExposing, FunctionNamesExposing}
+import com.atomist.rug.kind.elm.ElmModel.{AllExposing, ElmModule, FunctionNamesExposing}
 import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
 import com.atomist.source.FileArtifact
 import com.atomist.util.Utils.StringImprovements
@@ -20,7 +20,7 @@ class ElmModuleMutableView(
 
   private lazy val em = ElmParser.parse(originalBackingObject.content)
 
-  def currentView = em
+  def currentView: ElmModule = em
 
   override protected def currentContent: String = {
     em.currentSource.toSystem
@@ -43,7 +43,7 @@ class ElmModuleMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Return the name of the module")
-  def name = {
+  def name: String = {
     // Use the filename to avoid forcing parsing the file if we haven't yet done soCompuç
     val n = currentBackingObject.name.dropRight(ElmModuleType.ElmExtension.length)
     n

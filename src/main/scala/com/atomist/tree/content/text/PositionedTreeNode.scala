@@ -25,10 +25,13 @@ trait PositionedTreeNode extends TreeNode with Positioned {
     * Must be called before value method is invoked.
     *
     * @param initialSource entire source
+    * @param noiseFilter function that determines whether a node is noise
     * @param topLevel      whether this is a top level element, in which
     *                      case we should pad after known structures
     */
-  def pad(initialSource: String, topLevel: Boolean = false): Unit
+  def pad(initialSource: String,
+          noiseFilter: TreeNode => Boolean = n => n.significance == TreeNode.Noise,
+          topLevel: Boolean = false): Unit
 
   def hasSamePositionAs(that: PositionedTreeNode): Boolean =
     this.startPosition.offset == that.startPosition.offset

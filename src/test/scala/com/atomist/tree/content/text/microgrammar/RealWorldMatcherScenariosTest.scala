@@ -35,7 +35,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
 
   it should "match Scala method header with and without args in whole input" in {
     val arg = javaIdentifier("name") ~? Literal(":") ~? javaIdentifier("type")
-    val args  = Repsep(arg, Literal(","), "args")
+    val args  = Repsep(arg, Literal(","), None)//"args"
     val scalaMethodHeader =
       Literal("def") ~~ javaIdentifier("returnType") ~? Literal("(") ~? args ~? Literal(")") ~? Literal(":") ~? javaIdentifier("returnType")
 

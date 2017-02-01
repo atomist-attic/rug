@@ -1,5 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.TreeNode
+import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, OffsetInputPosition, SimpleMutableContainerTreeNode}
 
@@ -8,16 +10,19 @@ import com.atomist.tree.content.text.{InputPosition, MutableTerminalTreeNode, Of
   * We create a new subnode with the given name
   *
   * @param m         matcher that may match 0 or more times
-  * @param name      name of the matcher
   * @param separator separator. If this is supplied, this is handled as a repsep rather than a straight rep
   */
-case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = None)
+case class Rep(m: Matcher, givenName: Option[String] = None, separator: Option[Matcher] = None)
   extends Matcher {
+
+  def name: String = givenName.getOrElse(".rep")
 
   private val secondaryMatch: Matcher = separator match {
     case None => m
     case Some(sep) => Discard(sep) ~? m
   }
+
+  private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Signal else TreeNode.Noise
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState) match {
@@ -48,7 +53,7 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
 
         val pos = inputState.inputPosition
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
-        val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos)
+        val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos, treeNodeSignificance)
         Right(
           PatternMatch(node = Some(combinedNode),
             matched, latestInputState, this.toString)
@@ -58,12 +63,13 @@ case class Rep(m: Matcher, name: String = "rep", separator: Option[Matcher] = No
 
 object Repsep {
 
-  def apply(m: Matcher, sep: Matcher, name: String): Matcher =
+  def apply(m: Matcher, sep: Matcher, name: Option[String]): Matcher =
     Rep(m, name, Some(sep))
 }
 
-private case class EmptyContainerTreeNode(name: String, pos: InputPosition)
-  extends MutableTerminalTreeNode(name, "", pos) {
+private case class EmptyContainerTreeNode(name: String, pos: InputPosition, override val significance: Significance = TreeNode.Undeclared)
+  extends MutableTerminalTreeNode(name, "", pos, significance) {
+  // TODO: why does container extend terminal this is bad
 
   override def endPosition: InputPosition = startPosition
 

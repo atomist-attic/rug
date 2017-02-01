@@ -1,7 +1,6 @@
 package com.atomist.tree.content.text.grammar
 
 import com.atomist.tree.content.text.MutableContainerTreeNode
-import com.atomist.tree.content.text.TreeNodeOperations.{NodeTransformer, TreeOperation}
 
 /**
   * Interface for parsers that can parse input into a MutableContainerTreeNode,

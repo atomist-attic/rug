@@ -20,7 +20,7 @@ class ElmModuleType(
 
   def this() = this(DefaultEvaluator)
 
-  override val resolvesFromNodeTypes: Set[String] = Set("project", "file", "directory")
+  override val resolvesFromNodeTypes: Set[String] = Set("Project", "File", "Directory")
 
   override def description = "Elm module"
 

@@ -5,6 +5,21 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
 
+  it should "return correct value after pad" in {
+    val inputA = "foo"
+    val inputB = "bar"
+    val padding = "werowiueoriwuer"
+    val line = inputA + padding + inputB
+
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + padding.length))
+
+    val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
+    soo.pad(line)
+
+    soo.value should equal (line)
+  }
+
   it should "refuse to find format info for child node without pad" in {
     val inputA = "foo"
     val inputB = "bar"

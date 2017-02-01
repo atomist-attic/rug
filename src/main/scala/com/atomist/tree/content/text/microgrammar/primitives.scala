@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
+import com.atomist.tree.utils.TreeNodeUtils
 
 /**
   * Try first to match the left pattern, then the right
@@ -50,7 +51,9 @@ case class Wrap(m: Matcher, name: String)
         val wrappedNode = matched.node.map {
           SimpleMutableContainerTreeNode.wrap(name, _)
         }
-        matched.copy(node = wrappedNode)
+        val wrapped = matched.copy(node = wrappedNode)
+        //println(s"Wrapped = ${TreeNodeUtils.toShorterString(wrappedNode.get)}")
+        wrapped
     }
 }
 

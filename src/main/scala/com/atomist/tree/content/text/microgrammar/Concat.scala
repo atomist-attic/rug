@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.{PositionedTreeNode, SimpleMutableContainerTreeNode}
 import com.typesafe.scalalogging.Logger
@@ -40,21 +40,14 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
             Left(noOnTheRight.andSo("Concat: left matched, right didn't").withPriorMatch(leftMatch))
           case Right(rightMatch) =>
             // Both match.
-            val mergedTree: Option[PositionedTreeNode] = (leftMatch.node, rightMatch.node) match {
-              case (None, None) => None
-              case (Some(l), None) => Some(l)
-              case (None, Some(r)) => Some(r)
-              case (Some(l), Some(r)) =>
-                val mergedFields = (l match {
-                  case ctn: ContainerTreeNode if ctn.significance != TreeNode.Signal => ctn.childNodes
-                  case n => Seq(n)
-                }) ++ (r match {
-                  case ctn: ContainerTreeNode if ctn.significance != TreeNode.Signal => ctn.childNodes
-                  case n => Seq(n)
-                })
-                Some(new SimpleMutableContainerTreeNode(name, mergedFields, l.startPosition, r.endPosition, significance = TreeNode.Noise))
-            }
-            Right(PatternMatch(mergedTree,
+            val mergedTree: PositionedTreeNode =
+              new SimpleMutableContainerTreeNode(name,
+                leftMatch.node.toSeq ++ rightMatch.node,
+                startPosition = leftMatch.startPosition,
+                endPosition = rightMatch.endPosition,
+                significance = TreeNode.Noise)
+            Right(PatternMatch(
+              Some(mergedTree),
               leftMatch.matched + rightMatch.matched,
               rightMatch.resultingInputState,
               this.toString))

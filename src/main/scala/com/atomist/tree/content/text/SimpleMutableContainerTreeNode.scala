@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.tree.TreeNode
-import com.atomist.tree.TreeNode.Significance
+import com.atomist.tree.TreeNode.{Noise, Signal, Significance, Undeclared}
 
 class SimpleMutableContainerTreeNode(
                                       name: String,
@@ -16,7 +16,19 @@ class SimpleMutableContainerTreeNode(
 
   initialFieldValues.foreach(insertFieldCheckingPosition)
 
-  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+  override def toString: String = {
+      val sig = significance match {
+        case Noise => "noise "
+        case Signal => "signal "
+        case Undeclared => ""
+      }
+    val description =
+      if (padded)
+        s"value=$value"
+      else
+        s"startPositioned=$startPosition"
+      s"[${sig}container:name='$nodeName'; $description; children[${childNodes.mkString("\n")}]"
+  }
 
 }
 

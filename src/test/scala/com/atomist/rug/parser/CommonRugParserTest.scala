@@ -205,7 +205,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val vis = new SaveAllDescendantsVisitor
     rp.accept(vis, 0)
     vis.descendants collect {
-      case l: SimpleLiteral[String] => l.value === """regex\s*with\s*"quotes[^"]+""""
+      case l: SimpleLiteral[String @unchecked] => l.value === """regex\s*with\s*"quotes[^"]+""""
     }
   }
 
@@ -309,7 +309,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.withs.size should be(1)
     parsed.withs.head.predicate match {
       case AndExpression(a: EqualsExpression, b: AndExpression) =>
-        a.b.isInstanceOf[Literal[Int]] should be(true)
+        a.b.isInstanceOf[Literal[Int@unchecked]] should be(true)
         b.a.isInstanceOf[ParsedRegisteredFunctionPredicate] should be(true)
         b.b.isInstanceOf[ParsedRegisteredFunctionPredicate] should be(true)
     }
@@ -335,7 +335,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.withs.size should be(1)
     parsed.withs.head.predicate match {
       case AndExpression(a: EqualsExpression, b: AndExpression) =>
-        a.b.isInstanceOf[Literal[Int]] should be(true)
+        a.b.isInstanceOf[Literal[Int@unchecked]] should be(true)
         b.a.isInstanceOf[ParsedRegisteredFunctionPredicate] should be(true)
         b.b.isInstanceOf[ParsedRegisteredFunctionPredicate] should be(true)
     }
@@ -365,7 +365,9 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         fd.args(1) match {
           case WrappedFunctionArg(p: ParsedRegisteredFunctionPredicate, _) =>
             p.args.size should be(2)
+          case _ => ???
         }
+      case _ => ???
     }
   }
 
@@ -386,7 +388,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.withs.size should be(1)
     parsed.withs.head.predicate match {
       case EqualsExpression(a, b) =>
-        b.isInstanceOf[Literal[Boolean]] should be(true)
+        b.isInstanceOf[Literal[Boolean@unchecked]] should be(true)
     }
   }
 
@@ -518,6 +520,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.withs.size should be(1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
+      case _ => ???
     }
   }
 
@@ -540,6 +543,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.actions.head.isInstanceOf[With] should be(true)
     parsed.actions(1) match {
       case r: RunOtherOperation => r.name should equal("EditorA")
+      case _ => ???
     }
   }
 
@@ -570,7 +574,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
          |do
          | Append "foobar"
       """.stripMargin
-    an[BadRugSyntaxException] should be thrownBy (ri.parse(prog))
+    an[BadRugSyntaxException] should be thrownBy ri.parse(prog)
   }
 
   it should "not permit parameter names with upper case" in {
@@ -721,6 +725,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       case dds: FunctionDoStep =>
         dds.function should equal("append")
         dds.target should equal(Some("f"))
+      case _ => ???
     }
   }
 
@@ -759,7 +764,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val p = ri.parse(prog).head
     val comp = p.computations.head
     comp.te match {
-      case sl: SimpleLiteral[String] =>
+      case sl: SimpleLiteral[String@unchecked] =>
         sl.value should equal("elm-stuff\ntarget")
     }
   }

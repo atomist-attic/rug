@@ -9,14 +9,13 @@ import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
   */
 case class Regex(regex: String, givenName: Option[String], config: MatcherConfig = MatcherConfig())
   extends ConfigurableMatcher {
-  import Regex._
 
   // TODO look at greedy
 
   private val rex = regex.r
 
   private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Signal else TreeNode.Noise
-  val name = givenName.getOrElse(DefaultRegexName)
+  val name: String = givenName.getOrElse(".regex")
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
@@ -33,13 +32,6 @@ case class Regex(regex: String, givenName: Option[String], config: MatcherConfig
     }
     else
       Left(DismatchReport("we have reached the end"))
-}
-
-object Regex {
-  @deprecated
-  def apply(name: String, regex: String): Regex = Regex(regex, Some(name))
-
-  val DefaultRegexName = ".regex"
 }
 
 /**
@@ -61,4 +53,4 @@ class Placeholder extends Matcher {
 
 object Whitespace extends Discard(Regex("""\s+""", None))
 
-object WhitespaceOrNewLine extends Discard(Regex("whitespace-or-newline", """[\s\n]+"""))
+object WhitespaceOrNewLine extends Discard(Regex("""[\s\n]+""", Some("whitespace-or-newline")))

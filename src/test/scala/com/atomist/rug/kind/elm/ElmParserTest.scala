@@ -111,6 +111,7 @@ class ElmParserTest extends FlatSpec with Matchers {
     em.nodeName should equal("Deeter")
     em.functions.head.body match {
       case ElmTuple(innards) => "yay"
+      case _ => ???
     }
   }
 

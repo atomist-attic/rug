@@ -21,6 +21,7 @@ class FailureModeTest extends FlatSpec with Matchers {
       """.stripMargin
     tryMod(prog) match {
       case n: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -36,6 +37,7 @@ class FailureModeTest extends FlatSpec with Matchers {
       """.stripMargin
     tryMod(prog) match {
       case f: FailedModificationAttempt if f.failureExplanation == msg =>
+      case _ => ???
     }
   }
 

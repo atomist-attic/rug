@@ -803,6 +803,7 @@ object ElmTypeUsageTest extends LazyLogging {
         sm.result
       case nmn: NoModificationNeeded =>
         throw new TestDidNotModifyException
+      case _ => ???
 
     }
   }

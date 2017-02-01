@@ -12,6 +12,7 @@ class RepTest extends FlatSpec with Matchers {
     l.matchPrefix(InputState(input)) match {
       case Right(PatternMatch(Some(tn), "", InputState(input, _, _), _)) =>
         tn.nodeName should be ("rep")
+      case _ => ???
     }
   }
 
@@ -22,6 +23,7 @@ class RepTest extends FlatSpec with Matchers {
       case Right(PatternMatch(Some(tn: ContainerTreeNode), "thing", InputState(thing2, _, _), _)) =>
         tn.nodeName should be ("rep")
         tn.childNodes.size should be (1)
+      case _ => ???
     }
   }
 
@@ -37,12 +39,12 @@ class RepTest extends FlatSpec with Matchers {
         val tn = pe.node.get.asInstanceOf[ContainerTreeNode]
         tn.nodeName should be ("rep")
         tn.childNodes.size should be (2)
-
+      case _ => ???
     }
   }
 
   it should "handle rep of regex with two instances" in {
-    val l1 = Regex("thing", "t...g")
+    val l1 = new Regex("thing", Some("t...g"))
     val namedRep = Rep(l1, "myReppyName")
     val input = "thingthing2"
     namedRep.matchPrefix(InputState(input)) match {
@@ -53,10 +55,9 @@ class RepTest extends FlatSpec with Matchers {
         val tn = pe.node.get.asInstanceOf[ContainerTreeNode]
         tn.nodeName should be (namedRep.name)
         tn.childNodes.size should be (2)
-
+      case _ => ???
     }
   }
-
 }
 
 

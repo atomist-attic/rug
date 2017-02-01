@@ -125,6 +125,7 @@ class ParserCombinatorRugParser(
   private def simpleWithDoStep: Parser[DoStep] = (doDoStep | withBlock(simpleWithDoStep)) ^^ {
     case d: DoStep => d
     case w: With => WithDoStep(w)
+    case _ => ???
   }
 
   private def compoundDoStep: Parser[Seq[DoStep]] = BeginToken ~> rep1(simpleWithDoStep) <~ EndToken
@@ -248,6 +249,7 @@ class ParserCombinatorRugParser(
     (executionEditorCallDoStep | executionReviewerCallDoStep | withBlock(simpleExecutionDoStep)) ^^ {
       case d: DoStep => d
       case w: With => WithDoStep(w)
+      case _ => ???
     }
 
   protected def rugProgram: Parser[RugProgram] =

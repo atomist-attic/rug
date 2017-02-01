@@ -96,6 +96,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         //show(sm.result)
         sm.result
+      case _ => ???
     }
   }
 

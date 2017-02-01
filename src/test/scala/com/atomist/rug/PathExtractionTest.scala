@@ -33,6 +33,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
         f.content should equal("foo=bar")
+      case _ => ???
     }
   }
 
@@ -59,6 +60,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
         f.content.contains("main") should be (true)
+      case _ => ???
     }
   }
 
@@ -85,33 +87,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
         f.content.contains("main") should be (true)
+      case _ => ???
     }
   }
-
-//  it should "save node value and move on" in {
-//    val project = ParsingTargets.NewStartSpringIoProject
-//    val prog =
-//      """
-//        |editor First
-//        |
-//        |let m = `src/main/java//{java.class}$[name='DemoApplication']/[type='method']`
-//        |let name = m.
-//        |
-//        |with m begin
-//        |  do eval { print ("****** " + m) }
-//        |  do eval { print("-----" + m.name()) }
-//        |end
-//      """.stripMargin
-//    val rp = new DefaultRugPipeline
-//    val ed = rp.createFromString(prog).head
-//    // Check it works OK with these parameters
-//    ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty)
-//    //    match {
-//    //      case sm: NoModificationNeeded =>
-//    ////        val f = sm.result.findFile("src/main/resources/application.properties").get
-//    ////        println(f.content)
-//    ////        f.content should equal("foo=bar")
-//    //    }
-//  }
-
 }

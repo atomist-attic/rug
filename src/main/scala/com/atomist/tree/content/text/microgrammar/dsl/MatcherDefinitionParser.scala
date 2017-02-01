@@ -32,7 +32,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
   private def literal: Parser[Literal] = delimitedLiteral | singleWordLiteral
 
   private def rex(implicit matcherName: String): Parser[Regex] =
-    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(matcherName, r))
+    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(r, Some(matcherName)))
 
   /**
     * Skip till this clause

@@ -42,6 +42,7 @@ class RugDrivenProjectPredicate(
         val idm = buildIdentifierMap(project, poa)
         executedSelectedBlock(
           rugAs, wb, as, reviewContext, project, poa, identifierMap = idm)
+      case _ => ???
     }
     reviewContext.comments.nonEmpty
   }

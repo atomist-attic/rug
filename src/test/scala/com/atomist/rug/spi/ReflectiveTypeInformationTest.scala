@@ -9,6 +9,7 @@ class ReflectiveTypeInformationTest extends FlatSpec with Matchers {
     DefaultTypeRegistry.findByName("File").get.typeInformation match {
       case st: StaticTypeInformation =>
         st.operations.find(op => op.name.equals("name")) shouldBe (defined)
+      case _ => ???
     }
   }
 }

@@ -43,9 +43,9 @@ abstract class RawNodeUnderFileMutableView(topLevelNode: MutableContainerTreeNod
               //println(s"Matched mutable node '${mtn.value}'")
               f(mtn)
               //println(s"Changed value to '${mtn.value}'")
-            case n => ???
           }
         }
+      case Left(_) => ???
     }
   }
 

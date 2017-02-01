@@ -22,16 +22,18 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val validLiterals = Seq("a", "aa", "a&a", "woiurwieur", "def")
     for (v <- validLiterals) mgp.parseMatcher("v", v) match {
       case Literal(`v`, None) =>
+      case _ => fail(s"failed to parse $v")
     }
   }
 
   it should "accept valid regex" in {
     val validLiterals = Seq(
-      s"${RegexpOpenToken}a$RegexpCloseToken",
+      s"${RegexpOpenToken}y$RegexpCloseToken",
       s"$RegexpOpenToken[.*]$RegexpCloseToken",
       s"$RegexpOpenToken[.]$RegexpCloseToken")
     for (v <- validLiterals) mgp.parseMatcher("y", v) match {
-      case Regex(rex, Some("y"), _) =>
+      case Regex(_, Some("y"), _) =>
+      case _ => fail(s"failed to parse $v")
     }
   }
 
@@ -55,6 +57,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val validDescendantPhrases = Seq("▶$:cat", "▶$d:dog")
     for (v <- validDescendantPhrases) mgp.parseMatcher("v", v, mr) match {
       case w: Wrap =>
+      case _ => fail(s"failed to parse $v")
     }
   }
 
@@ -78,6 +81,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
     for (v <- validUseOfVars) mgp.parseMatcher("t", v, mr) match {
       case m: Matcher =>
+      case _ => fail(s"failed to parse $v")
     }
   }
 
@@ -107,6 +111,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
             cat.matchPrefix(InputState(v)) match {
               case Right(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
               case Left(report) => fail(s"Failed to match on [$v]" + report)
+              case _ => fail(s"failed to parse/match $v")
             }
         }
       }
@@ -124,7 +129,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val f = s"""<div id="$BreakOpenToken"${BreakCloseToken}"""
     mgp.parseMatcher("f", f) match {
       case parsedMatcher: Matcher =>
-        println(parsedMatcher)
         val validInputs = Seq(
           """<div id="foo" """,
           """<div          id="fom o" """,
@@ -136,6 +140,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
             case Right(pe) =>
             //pe.matched should be ("foo\"")
             case Left(report) => fail(s"[$in] didn't match and should have done: " + report)
+            case _ => ???
           }
         }
     }
@@ -145,10 +150,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val f = s"""<tr class="emoji_row">$BreakOpenToken<span data-original="${BreakCloseToken}and now for something completely different"""
     mgp.parseMatcher("f", f) match {
       case parsedMatcher: Matcher =>
-        println(parsedMatcher)
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
           case Right(pe) =>
+          case _ => ???
         }
     }
   }
@@ -159,6 +164,7 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     parsed.name should be(".literal")
     parsed match {
       case Literal("xxxx", _) =>
+      case _ => ???
     }
   }
 
@@ -166,10 +172,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}"""
     mgp.parseMatcher("f", f) match {
       case parsedMatcher: Matcher =>
-        println(parsedMatcher)
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
           case Right(pe) =>
+          case _ => ???
         }
     }
   }
@@ -191,11 +197,11 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}${StrictLiteralOpen}$suffix${StrictLiteralClose}$postsuffix"""
       mgp.parseMatcher("f", f) match {
         case parsedMatcher: Matcher =>
-          println(parsedMatcher)
           parsedMatcher.matchPrefix(
             InputState(s"""<tr class="emoji_row">THIS OTHER STUFF<span data-original="${suffix}$postsuffix""")) match {
             case Right(pe) =>
             case Left(report) => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not: " + report)
+            case _ => ???
           }
       }
     }

@@ -495,6 +495,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         val f = sm.result.findFile("src/main/java/Dog.java").get
         f.content.lines.size should be > (0)
         f.content.lines.forall(_.startsWith("// ")) should be(true)
+      case _ => ???
     }
   }
 

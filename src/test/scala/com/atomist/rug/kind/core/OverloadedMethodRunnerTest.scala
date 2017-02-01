@@ -34,8 +34,8 @@ class OverloadedMethodRunnerTest extends FlatSpec with Matchers with RugTestRunn
 
   private def doIt(prog: String) {
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case nmn: SuccessfulModification => {
-      }
+      case nmn: SuccessfulModification =>
+      case _ => ???
     }
   }
 

@@ -53,6 +53,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
         badFileContent.contains("nonsense") should be(true)
         nmn.result.findFile("newroot/src/test/java/com/atomist/test1/Test1WebIntegrationTests.java").get.content.contains("otherstuff") should be(true)
       }
+      case _ => ???
     }
   }
 
@@ -76,6 +77,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTe
         nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("otherstuff") should be(true)
         nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("com.atomist.wassom") should be(true)
       }
+      case _ => ???
     }
   }
 

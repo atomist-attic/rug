@@ -13,12 +13,14 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
     val r = modify("ListImports.ts", HelloWorldSources)
     r match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
   it should "enumerate usings in simple project with ill-formed C#" in {
     modify("ListImports.ts", ProjectWithBogusCSharp.currentBackingObject) match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -31,7 +33,6 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   it should "add using and verify" in {
     val r = modifyAndReparseSuccessfully("AddImport.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
-    println(f.content)
     f.content.contains("using System;") should be(true)
     f.content.contains("using System.Linq;") should be(true)
   }
@@ -40,6 +41,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
     val r = modify("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "System")) match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -47,7 +49,6 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
     val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "Thing"))
     val f = r.findFile("src/hello.cs").get
-    println(f.content)
     f.content.contains("using System;") should be(true)
     f.content.contains("using Thing;") should be(true)
   }

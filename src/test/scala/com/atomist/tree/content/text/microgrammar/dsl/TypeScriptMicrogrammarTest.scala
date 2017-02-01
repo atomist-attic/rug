@@ -129,6 +129,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.content.contains("_x"))
+      case _ => ???
     }
     jsed
   }
@@ -170,6 +171,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
         withClue(e.getMessage) {
           e.getMessage.contains("setBanana") should be(true)
         }
+      case _: Throwable => ???
     }
     jsed
   }
@@ -183,6 +185,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.content.contains("_x"))
+      case _ => ???
     }
     jsed
   }
@@ -197,6 +200,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
         sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
         val after = sm.result.findFile("pom.xml").get.content
         (before, after)
+      case _ => ???
     }
   }
 }

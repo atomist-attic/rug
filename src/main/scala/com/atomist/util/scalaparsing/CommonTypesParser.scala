@@ -233,6 +233,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
           else
             Success[IdentifierRef](IdentifierRef(succ.get), succ.next)
         case f: Failure => f
+        case _ => ???
       }
     }
   }
@@ -251,6 +252,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
           else
             succ
         case f: Failure => f
+        case _ => ???
       }
     }
   }

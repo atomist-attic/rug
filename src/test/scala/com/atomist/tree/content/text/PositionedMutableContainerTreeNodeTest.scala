@@ -33,12 +33,14 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
       case Some(fi) =>
         fi.offset should be(f1.startPosition.offset)
         fi.lineNumberFrom1 should be(1)
+      case _ => ???
     }
 
     soo.formatInfoEnd(f1) match {
       case Some(fi) =>
         fi.offset should be(f1.endPosition.offset)
         fi.lineNumberFrom1 should be(1)
+      case _ => ???
     }
   }
 

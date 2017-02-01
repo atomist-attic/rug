@@ -76,6 +76,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
           executeAgainst(test, ed, testResources)
         case Some(gen: ProjectGenerator) =>
           executeGenerator(test, gen, testResources)
+        case _ => ???
       }
     })
     TestReport(executedTests)

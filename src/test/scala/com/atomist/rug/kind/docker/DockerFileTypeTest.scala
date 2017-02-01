@@ -46,6 +46,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         df.content.contains("EXPOSE 8081") should be (true)
         df.content.contains("EXPOSE 8080") should be (true)
         df.content.contains("FROM java:8-jre") should be (true)
+      case _ => ???
     }
   }
 
@@ -86,6 +87,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         df.content.contains("EXPOSE 8080") should be (false)
         df.content.contains("FROM java:8-jre") should be (true)
         df.content.contains("HEALTHCHECK --interval=5s --timeout=3s CMD curl --fail http://localhost:8080/ || exit 1") should be (true)
+      case _ => ???
     }
   }
 
@@ -127,6 +129,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
         df.content.contains("EXPOSE 8181") should be (true)
         df.content.contains("EXPOSE 8080") should be (false)
         df.content.contains("FROM java:8-jre") should be (true)
+      case _ => ???
     }
   }
 }

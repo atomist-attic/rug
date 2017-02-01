@@ -81,6 +81,6 @@ class FakeCommand extends Command[FileMutableView] {
 class AnotherFakeCommand {
 
   def really(s: String): Unit = {
-    println(s)
+    //println(s)
   }
 }

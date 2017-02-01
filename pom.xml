@@ -277,6 +277,10 @@
                         <!-- work-around for https://issues.scala-lang.org/browse/SI-8358 -->
                         <arg>-nobootcp</arg>
                         <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                        <arg>-language:existentials</arg>
+                        <arg>-language:implicitConversions</arg>
+                        <arg>-Xfatal-warnings</arg>
                     </args>
                 </configuration>
             </plugin>
@@ -442,6 +446,46 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>allow-warnings</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.2</version>
+                        <executions>
+                            <execution>
+                                <id>scala-compile-first</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scala-test-compile</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
+                            <args>
+                                <!-- work-around for https://issues.scala-lang.org/browse/SI-8358 -->
+                                <arg>-nobootcp</arg>
+                                <arg>-deprecation</arg>
+                                <arg>-feature</arg>
+                                <arg>-language:existentials</arg>
+                                <arg>-language:implicitConversions</arg>
+                            </args>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

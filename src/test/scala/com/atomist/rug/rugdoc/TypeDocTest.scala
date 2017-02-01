@@ -35,6 +35,7 @@ class TypeDocTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         sm.result.allFiles.size should be(1)
         val d = sm.result.allFiles.head
+      case _ => ???
     }
   }
 
@@ -53,6 +54,7 @@ class TypeDocTest extends FlatSpec with Matchers {
         sm.result.allFiles.size should be(1)
         val d = sm.result.allFiles.head
         d.contentLength should be > (20)
+      case _ => ???
     }
   }
 }

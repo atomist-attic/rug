@@ -163,11 +163,8 @@ class TypeScriptInterfaceGenerator(
         } {
           val params =
             for (p <- op.parameters)
-              yield {
-                if (p.name.startsWith("arg"))
-                  System.err.println(s"WARNING: Parameter [${p.name}] on operation ${t.name}.${op.name} has no name annotation")
+              yield
                 MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType))
-              }
 
           methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType))
         }

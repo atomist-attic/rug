@@ -12,6 +12,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val matcher = mgp.parseMatcher("foo", "def foo")
     matcher.matchPrefix(InputState("def foo thing")) match {
       case Right(pm) =>
+      case _ => ???
     }
   }
 
@@ -27,6 +28,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val input = "def foo bar"
     matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
+      case _ => ???
     }
     mg.findMatches(input).size should be(1)
   }

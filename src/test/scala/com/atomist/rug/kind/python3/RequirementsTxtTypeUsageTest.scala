@@ -33,6 +33,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
           .map(py => RequirementsTxtParser.parseFile(py.content))
           .map(tree => tree.childNodes.nonEmpty)
         sm.result
+      case _ => ???
     }
   }
 
@@ -50,6 +51,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("requirements.txt").get
         f.content.contains("2.5") should be(true)
+      case _ => ???
     }
   }
 
@@ -71,6 +73,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("other.txt").get
         f.content.contains("2.5") should be(true)
+      case _ => ???
     }
   }
 
@@ -90,7 +93,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
     val r = exec(prog, bad)
     r match {
       case nm: NoModificationNeeded =>
-        // Ok
+      case _ => ???
     }
   }
 

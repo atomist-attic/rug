@@ -44,6 +44,7 @@ class RugDrivenProjectReviewer(
         val rr = runReviewer(run, rugAs, as, poa)
         for (comment <- rr.comments)
           reviewContext.comment(comment)
+      case _ => ???
     }
     ReviewResult(s"Reviewer $name: $description", reviewContext.comments)
   }

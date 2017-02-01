@@ -5,7 +5,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class DismatchReportTest extends FlatSpec with Matchers {
   it should "print something cool when it doesn't match" in {
     val aWasaByeah = new MatcherMicrogrammar(
-      Regex("name", "[A-Z][a-z]+") ~? Literal("was aged") ~? Regex("age", "[0-9]+") ~ Literal("!")
+      Regex("[A-Z][a-z]+", Some("name")) ~? Literal("was aged") ~? Regex("[0-9]+", Some("age")) ~ Literal("!")
     )
     val input = "Tony was aged 24. Alice was aged 16. And they are both gone"
 

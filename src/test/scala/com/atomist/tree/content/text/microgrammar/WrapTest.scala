@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class WrapTest extends FlatSpec with Matchers {
 
   it should "handle wrap of regex" in {
-    val l1 = Regex("thing", "t...g")
+    val l1 = Regex("thing", Some("t...g"))
     val l = Wrap(l1, "higherLevel")
     val input = "thingthing2"
     l.matchPrefix(InputState(input)) match {
@@ -18,11 +18,12 @@ class WrapTest extends FlatSpec with Matchers {
         val tn = pe.node.get.asInstanceOf[ContainerTreeNode]
         tn.nodeName should be ("higherLevel")
         tn.childNodes.size should be (1)
+      case _ => ???
     }
   }
 
   it should "handle rep of regex with two instances" in {
-    val l1 = Regex("thing", "t...g")
+    val l1 = Regex("thing", Some("t...g"))
     val rl = Rep(l1, "reppyreprep")
     val l = Wrap(rl, "higherLevel")
     val input = "thingthing2"
@@ -37,6 +38,7 @@ class WrapTest extends FlatSpec with Matchers {
         //println(TreeNodeUtils.toShortString(tn))
         tn.childNodes.size should be (1)
         tn.childNodes.head.nodeName should be (rl.name)
+      case _ => ???
     }
   }
 

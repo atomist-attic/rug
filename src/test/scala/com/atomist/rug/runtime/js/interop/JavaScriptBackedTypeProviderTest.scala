@@ -13,6 +13,7 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -21,6 +22,7 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -30,6 +32,7 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.name.endsWith(".java") && f.content.startsWith("I am evil!"))
+      case _ => ???
     }
   }
 

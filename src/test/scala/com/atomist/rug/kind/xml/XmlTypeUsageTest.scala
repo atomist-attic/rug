@@ -8,7 +8,7 @@ import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class XmlUsageTest extends FlatSpec with Matchers {
+class XmlTypeUsageTest extends FlatSpec with Matchers {
 
   import com.atomist.rug.TestUtils._
 

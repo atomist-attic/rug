@@ -33,6 +33,8 @@ com.atomist.rug.kind.service.ServicesType
 
 com.atomist.rug.kind.xml.XmlType
 
+com.atomist.rug.kind.xml.XmlFileType
+
 com.atomist.rug.kind.yml.YmlType
 
 # Non public types

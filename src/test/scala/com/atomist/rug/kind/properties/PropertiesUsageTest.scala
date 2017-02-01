@@ -24,6 +24,7 @@ class PropertiesUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case success: SuccessfulModification =>
+      case _ =>
     }
   }
 
@@ -38,6 +39,7 @@ class PropertiesUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case success: SuccessfulModification =>
+      case _ =>
     }
   }
 

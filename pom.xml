@@ -277,6 +277,9 @@
                         <!-- work-around for https://issues.scala-lang.org/browse/SI-8358 -->
                         <arg>-nobootcp</arg>
                         <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                        <arg>-language:existentials</arg>
+                        <arg>-language:implicitConversions</arg>
                     </args>
                 </configuration>
             </plugin>

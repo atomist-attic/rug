@@ -85,6 +85,7 @@ class UsesTest extends FlatSpec with Matchers {
         sm.result.totalFileCount should be(1)
         // Check that both editors ran
         sm.result.findFile("filename").get.content should equal("foo bar")
+      case _ => ???
     }
   }
 
@@ -112,6 +113,7 @@ class UsesTest extends FlatSpec with Matchers {
         sm.result.totalFileCount should be(1)
         // Check that both editors ran
         sm.result.findFile("filename").get.content should equal("foo bar")
+      case _ => ???
     }
   }
 
@@ -144,6 +146,7 @@ class UsesTest extends FlatSpec with Matchers {
         sm.result.totalFileCount should be(1)
         // Check that both editors ran
         sm.result.findFile("filename").get.content should equal("foo baz")
+      case _ => ???
     }
   }
 
@@ -176,6 +179,7 @@ class UsesTest extends FlatSpec with Matchers {
         sm.result.totalFileCount should be(1)
         // Check that both editors ran
         sm.result.findFile("filename").get.content should equal("foo bar")
+      case _ => ???
     }
   }
 
@@ -377,6 +381,7 @@ class UsesTest extends FlatSpec with Matchers {
     // Check it works OK with these parameters
     ed.modify(new EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "test"))) match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("src/main/java/com/atomist/springrest/Dog.java",
       """
@@ -385,6 +390,7 @@ class UsesTest extends FlatSpec with Matchers {
       """.stripMargin))
     ed.modify(as, SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "com.foo"))) match {
       case sm: SuccessfulModification =>
+      case _ => ???
     }
   }
 
@@ -413,6 +419,7 @@ class UsesTest extends FlatSpec with Matchers {
     red.program.withs.size should be(0)
     ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleProjectOperationArguments("", Map[String, String]())) match {
       case sm: SuccessfulModification =>
+      case _ => ???
     }
   }
 
@@ -441,6 +448,7 @@ class UsesTest extends FlatSpec with Matchers {
     catch {
       case rrt: RugRuntimeException =>
         rrt.getMessage.contains(gloriouslyBogusName)
+      case _: Throwable => ???
     }
   }
 

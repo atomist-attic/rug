@@ -71,6 +71,7 @@ class RugDrivenProjectEditor(
               case fm: FailedModificationAttempt =>
                 throw new InstantEditorFailureException(s"Editor ${roo.name} failed: ${fm.failureExplanation}")
             }
+          case _ =>
         }
 
         if (program.postcondition.isDefined) {

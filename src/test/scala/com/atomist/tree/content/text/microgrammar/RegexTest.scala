@@ -6,19 +6,21 @@ class RegexTest extends FlatSpec with Matchers {
 
   it should "match greedy regex" in {
     val name = "foobar"
-    val l = Regex(name, "[a-zA-Z]+")
+    val l = Regex("[a-zA-Z]+", Some(name))
     l.matchPrefix(InputState("thingxxxY")) match {
       case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY", _, _), _)) =>
         tn.get.nodeName should be (name)
+      case _ =>
     }
   }
 
   it should "match greedy regex followed by other content" in {
     val name = "foobar"
-    val l = Regex(name, "[a-zA-Z]+")
+    val l = Regex("[a-zA-Z]+", Some(name))
     l.matchPrefix(InputState("thingxxxY0")) match {
       case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY0", _, _), _)) =>
         tn.get.nodeName should be (name)
+      case _ =>
     }
   }
 }

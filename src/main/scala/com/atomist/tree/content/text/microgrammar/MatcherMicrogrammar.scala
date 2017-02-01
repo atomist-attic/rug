@@ -22,6 +22,8 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     val processedNodes = matches.map { case (m, o) =>
       outputNode(input)(m, o)
     }
+
+    //TODO this is super useful!! println(DismatchReport.detailedReport(dismatches.maxBy(_.lengthOfClosestMatch), input.toString))
     processedNodes
   }
 
@@ -39,6 +41,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
         new MicrogrammarNode(name, name, Seq(one), startOffset, endOffset)
       case Some(container: MutableContainerTreeNode) =>
         new MicrogrammarNode(name, name, container.childNodes, startOffset, endOffset)
+      case _ => ???
     }
     matchedNode.pad(input.toString)
     transform(matchedNode)

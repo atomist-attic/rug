@@ -64,6 +64,7 @@ object JavaTypeUsageTest extends Matchers {
       case sm: SuccessfulModification =>
         verifyJavaIsWellFormed(sm.result)
         sm.result
+      case _ => ???
     }
   }
 
@@ -99,6 +100,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     attemptToModify(program, "editors/PackageFinder.rug", NewSpringBootProject, Map()) match {
       case nmn: NoModificationNeeded => // Ok
+      case _ =>
     }
   }
 
@@ -124,24 +126,9 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     attemptToModify(program, "editors/PackageFinder.ts", NewSpringBootProject, Map(), runtime = tsPipeline) match {
       case nmn: NoModificationNeeded => // Ok
+      case _ =>
     }
   }
-
-  // TODO need to move to path expressions
-//  it should "allow project root view" in {
-//    val program =
-//      """
-//        |@description "I add Foobar annotation"
-//        |editor ClassAnnotated
-//        |
-//        |with java.project p when { p.fileCount() > 1 }
-//        | with JavaSource j when typeCount = 1
-//        |   with JavaType c when true
-//        |     do
-//        |      addAnnotation "com.foo" "FooBar"
-//      """.stripMargin
-//    annotateClass(program)
-//  }
 
   it should "annotate class using JavaScript" in {
     val program =

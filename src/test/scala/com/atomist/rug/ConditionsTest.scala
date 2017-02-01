@@ -56,12 +56,14 @@ class ConditionsTest extends FlatSpec with Matchers {
     unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case sm: SuccessfulModification =>
+      case _ => ???
     }
     val guarded = create(prog(true))
     guarded.applicability(simpleAs).canApply should be(false)
     guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case nmn: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -123,6 +125,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       ja.modify(simpleAs, SimpleProjectOperationArguments.Empty)
       match {
         case sm: SuccessfulModification =>
+        case _ => ???
       }
     }
 
@@ -132,6 +135,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       nein.modify(simpleAs, SimpleProjectOperationArguments.Empty)
       match {
         case nmn: NoModificationNeeded =>
+        case _ => ???
       }
     }
   }
@@ -257,6 +261,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     unguarded.meetsPostcondition(simpleAs) should be(false)
     unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
+      case _ => ???
     }
   }
 
@@ -266,6 +271,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     guarded.meetsPostcondition(simpleAs) should be(false)
     guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case fm: FailedModificationAttempt =>
+      case _ => ???
     }
   }
 
@@ -276,6 +282,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
         guarded2.meetsPostcondition(sm.result) should be(true)
+      case _ => ???
     }
   }
 
@@ -285,6 +292,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     guarded2.meetsPostcondition(simpleAs) should be(true)
     guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: NoModificationNeeded =>
+      case _ => ???
     }
   }
 

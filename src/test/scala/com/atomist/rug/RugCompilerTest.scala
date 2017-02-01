@@ -53,6 +53,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     catch {
       case ut: UndefinedRugTypeException =>
         ut.getMessage.contains(bogusType) should be(true)
+      case _ : Throwable => ???
     }
   }
 
@@ -70,6 +71,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
       case ut: UndefinedRugFunctionsException =>
         ut.getMessage.contains(absquatulate) should be(true)
         ut.getMessage.contains("File") should be(true)
+      case _: Throwable => ???
     }
   }
 
@@ -168,6 +170,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
         //show(sm.result)
         val f = sm.result.findFile("src/main/java/Dog.java").get
         f.content.endsWith(extraText) should be(true)
+      case _ => ???
     }
   }
 

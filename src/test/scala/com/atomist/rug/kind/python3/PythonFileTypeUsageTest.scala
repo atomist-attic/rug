@@ -34,6 +34,7 @@ class PythonFileTypeUsageTest extends AntlrRawFileTypeTest {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("setup.py").get
         fail
+      case _ => ???
     }
   }
 

@@ -12,6 +12,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
       case Right(PatternMatch(tn, "thing", InputState("thing", _, _), `ls`)) =>
         tn.get.nodeName should be ("x")
         tn.get.value should be ("thing")
+      case _ => ???
     }
   }
 
@@ -22,6 +23,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
         node.significance should be(TreeNode.Noise)
         value should be(l.toString)
         is.offset should be(5)
+      case _ => ???
     }
   }
 
@@ -31,6 +33,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState(thing2, _, _), _)) =>
+      case _ => ???
     }
   }
 
@@ -40,6 +43,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Left(_) =>
+      case _ => ???
     }
   }
 
@@ -49,15 +53,19 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 | l2
     l.matchPrefix(InputState("thing")) match {
       case Right(PatternMatch(_, "thing", InputState("thing", _, _), _)) =>
+      case _ => ???
     }
     l2.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
+      case _ => ???
     }
     l.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
+      case _ => ???
     }
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing", InputState("thing2", _, _), _)) =>
+      case _ => ???
     }
   }
 
@@ -66,6 +74,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1.?
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(_, "thing", InputState("thing2", _, 5), _)) =>
+      case _ => ???
     }
   }
 
@@ -75,15 +84,19 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1.? ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
+      case _ => ???
     }
     l.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(tn, "2", InputState("2", _, _), _)) =>
+      case _ => ???
     }
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
+      case _ => ???
     }
     l.matchPrefix(InputState("xthing2")) match {
       case Left(_) =>
+      case _ => ???
     }
   }
 }

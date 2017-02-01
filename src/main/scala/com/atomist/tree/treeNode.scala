@@ -28,7 +28,7 @@ trait TreeNode extends Visitable {
   @ExportFunction(readOnly = true, description = "Name of the node")
   def nodeName: String
 
-  @deprecated
+  @deprecated("Please don't use this", "0.10.0")
   @ExportFunction(readOnly = true, description = "Tags attached to the node")
   def nodeType: Set[String] = nodeTags
 

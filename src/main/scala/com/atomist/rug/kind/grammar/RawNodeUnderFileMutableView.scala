@@ -46,6 +46,7 @@ abstract class RawNodeUnderFileMutableView(topLevelNode: MutableContainerTreeNod
             case n => ???
           }
         }
+      case _ => ???
     }
   }
 

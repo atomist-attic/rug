@@ -33,7 +33,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
 
   private def toListOfMaps(json: String): List[Map[String, Object]] = {
     val l = mapper.readValue(json, classOf[List[Map[String, Object]]])
-    println(mapper.writeValueAsString(l))
+//    println(mapper.writeValueAsString(l))
     l
   }
 
@@ -48,6 +48,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
         val nodeType: String = m.get(Type) match {
           case Some(l: Seq[_]) => l.last.toString
           case None => throw new IllegalArgumentException(s"Type is required")
+          case _ => ???
         }
         val nodeName = nodeType
         val simpleFields =

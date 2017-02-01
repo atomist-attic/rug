@@ -74,7 +74,9 @@ class RugEditorTest extends FlatSpec with Matchers {
           case _: NoModificationNeeded => //yay
           case sm: SuccessfulModification =>
             fail("That should not have reported modification")
+          case _ => ???
         }
+      case _ => ???
     }
     red
   }

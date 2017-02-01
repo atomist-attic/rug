@@ -67,7 +67,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
     if (!testResult.passed) {
-       println(testResult.toString)
+//       println(testResult.toString)
     }
     testResult.passed should be(true)
 
@@ -100,7 +100,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
     if (!testResult.passed) {
-      println(testResult.toString)
+//      println(testResult.toString)
     }
     testResult.passed should be(true)
 

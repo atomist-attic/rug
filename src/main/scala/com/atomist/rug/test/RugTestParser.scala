@@ -74,9 +74,9 @@ object RugTestParser
   private def testProgram: Parser[TestScenario] = scenarioName ~ debug ~
     rep(uses) ~ rep(letStatement) ~
     givenFiles ~ opt(givenOperations ~ WhenToken | WhenToken) ~ runOtherOperation ~ andThen ^^ {
-    case name ~ debug ~ uses ~ computations ~ gf ~ Some((go: Seq[RunOtherOperation]) ~ whenToken) ~ roo ~ andThen =>
+    case name ~ debug ~ uses ~ computations ~ gf ~ Some((go: Seq[RunOtherOperation @unchecked]) ~ _) ~ roo ~ andThen =>
       TestScenario(name, debug, uses, computations, gf, go, roo, andThen)
-    case name ~ debug ~ uses ~ computations ~ gf ~ Some(whenToken) ~ roo ~ andThen =>
+    case name ~ debug ~ uses ~ computations ~ gf ~ Some(_) ~ roo ~ andThen =>
       TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)
     case name ~ debug ~ uses ~ computations ~ gf ~ None ~ roo ~ andThen =>
       TestScenario(name, debug, uses, computations, gf, Seq(), roo, andThen)

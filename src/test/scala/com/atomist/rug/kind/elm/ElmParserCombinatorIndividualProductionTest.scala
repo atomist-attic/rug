@@ -10,6 +10,7 @@ class ElmParserCombinatorIndividualProductionTest extends FlatSpec with Matchers
     val result = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.stringConstant, input)
     result match {
       case sc: StringConstant => sc.s should be ("Foo")
+      case _ => ???
     }
   }
 
@@ -39,6 +40,7 @@ class ElmParserCombinatorIndividualProductionTest extends FlatSpec with Matchers
     val e = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.expression, input)
     e match {
       case fa: ElmFunctionApplication => fa.parameters.size should be(1)
+      case _ => ???
     }
   }
 

@@ -281,6 +281,7 @@ object ElmTextInputTest {
     r match {
       case sm: SuccessfulModification =>
         sm.result
+      case _ => ???
     }
   }
 }

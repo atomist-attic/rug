@@ -51,6 +51,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     val as = toArchive(Seq(f))
     tryMod(as, "Redeploy", as) match {
       case n: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -69,6 +70,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     val as = toArchive(Seq(f))
     tryMod(as, "AddSomeCaspar", as) match {
       case sm: SuccessfulModification =>
+      case _ => ???
     }
   }
 
@@ -87,6 +89,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     val as = toArchive(Seq(f))
     tryMod(as, "Redeploy", as) match {
       case n: NoModificationNeeded =>
+      case _ => ???
     }
   }
 
@@ -125,10 +128,12 @@ class ArchiveTest extends FlatSpec with Matchers {
     tryMod(as, "Dude", as) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("dude.txt").isDefined
+      case _ => ???
     }
     tryMod(as, "Donny", as) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("donny.txt").isDefined
+      case _ => ???
     }
   }
 

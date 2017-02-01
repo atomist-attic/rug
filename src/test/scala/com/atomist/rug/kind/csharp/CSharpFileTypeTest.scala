@@ -144,7 +144,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         for (n <- nodes) {
-          println(n.value)
+//          println(n.value)
         }
     }
 
@@ -156,7 +156,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     val expr = "/src//*[CSharpFile()//specific_catch_clause//class_type[@value='IndexOutOfRangeException']]"
     ee.evaluate(project, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
       case Right(Seq(fileCatchingIndexOutOfRange: FileArtifactBackedMutableView)) =>
-        println(s"File [${fileCatchingIndexOutOfRange.path}] catches IndexOutOfRangeException")
+//        println(s"File [${fileCatchingIndexOutOfRange.path}] catches IndexOutOfRangeException")
         fileCatchingIndexOutOfRange.path should equal(ExceptionProject.allFiles.head.path)
     }
   }

@@ -38,6 +38,7 @@ abstract class AntlrRawFileTypeTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         validateResultContainsValidFiles(sm.result)
         sm.result
+      case _ => ???
     }
   }
 }

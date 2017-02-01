@@ -247,6 +247,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed", "strings" -> new JavaScriptArray(lyzt)))) match {
       case sm: NoModificationNeeded =>
       sm.comment.contains("OK") should be(true)
+      case _ => ???
     }
     jsed
   }

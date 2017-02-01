@@ -23,6 +23,7 @@ object TestUtils extends Matchers {
     attemptModification(program, as, backingAs, poa, pipeline) match {
       case sm: SuccessfulModification =>
         sm.result
+      case _ => ???
     }
   }
 

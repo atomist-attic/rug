@@ -28,6 +28,10 @@ trait TreeNode extends Visitable {
   @ExportFunction(readOnly = true, description = "Name of the node")
   def nodeName: String
 
+  @deprecated
+  @ExportFunction(readOnly = true, description = "Tags attached to the node")
+  def nodeType: Set[String] = nodeTags
+
   /**
     * Tags for the node, such as "File" or "JavaType". There may be multiple
     * nodes in a tree with the same tags, and multiple tags on the one node.

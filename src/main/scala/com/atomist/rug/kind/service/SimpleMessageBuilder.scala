@@ -1,7 +1,6 @@
 package com.atomist.rug.kind.service
 
 import java.util
-import java.util.Collections
 
 import com.atomist.tree.TreeNode
 
@@ -27,7 +26,8 @@ case class ImmutableMessage(
                              node: TreeNode = null,
                              message: String = null,
                              address: String = null,
-                             actions: java.util.List[Action] = new util.ArrayList[Action]())
+                             actions: java.util.List[Action] = new util.ArrayList[Action](),
+                             correlationId: String = null)
   extends Message {
 
   // We use null for interop and JSON
@@ -58,6 +58,8 @@ case class ImmutableMessage(
 
   def on(channelId: String): Message = address(channelId)
 
+  def withCorrelationId(cId: String): Message = copy(correlationId = cId)
+
 }
 
 object EmptyActionRegistry extends ActionRegistry {
@@ -73,3 +75,4 @@ class ConsoleMessageBuilder(teamId: String, actionRegistry: ActionRegistry)
   m => println(m),
   actionRegistry
 )
+

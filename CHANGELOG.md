@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Implement JsonBackedContainerTreeNode, allows a ContainerTreeNode to 
+    maintain the Json is was generated from
+
+-   Add correlationId to Message, allows handler to define
+    how Messages are correlated
+
 -   Support for @parameter TS class field decorators as per
         https://github.com/atomist/rug/issues/229
 

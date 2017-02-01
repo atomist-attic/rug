@@ -46,6 +46,8 @@ trait Message {
 
   def withActionNamed(a: String): Message
 
+  def withCorrelationId(correlationId: String): Message
+
   def send(): Unit
 
   /**

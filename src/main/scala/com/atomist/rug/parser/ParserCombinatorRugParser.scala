@@ -84,7 +84,6 @@ class ParserCombinatorRugParser(
           case EditorToken => Editor
           case PredicateToken => Predicate
           case ReviewerToken => Reviewer
-          case GeneratorToken => Generator
         }
         var ed = OperationSpec(o, name, Nil, name, None, imports)
         for (annotation <- annotations) annotation match {
@@ -200,6 +199,11 @@ class ParserCombinatorRugParser(
           compBlock, actions)
     }
 
+  private def rugExecutorIsNoLongerSupported: Parser[RugReviewer] =
+    rep(annotation) ~ ExecutorTokenWhichIsNoLongerSupported ~ capitalizedIdentifier ^^ {
+      _ => throw new BadRugException("The Rug DSL no longer supports executors. Try writing it in TypeScript!") {}
+    }
+
   object TrueDoStep extends ToEvaluateDoStep(TruePredicate)
 
   private def predicateWithBlock: Parser[With] =
@@ -250,7 +254,8 @@ class ParserCombinatorRugParser(
     rugPredicate |
       rugGenerator |
       rugEditor |
-      rugReviewer
+      rugReviewer |
+      rugExecutorIsNoLongerSupported
 
   private def rugPrograms: Parser[Seq[RugProgram]] = phrase(rep1(rugProgram))
 

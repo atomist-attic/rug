@@ -8,6 +8,7 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text.{MutableContainerTreeNode, TreeNodeOperations}
 import com.atomist.tree.content.text.grammar.antlr.{AstNodeNamingStrategy, FromGrammarNamingStrategy}
+import com.atomist.tree.utils.TreeNodeUtils
 
 object XmlFileType {
 
@@ -23,6 +24,7 @@ class XmlFileType
   ) {
 
   import XmlFileType._
+  import TreeNodeOperations._
 
   override def description = "XML file"
 
@@ -30,7 +32,9 @@ class XmlFileType
     f.name.endsWith(XmlExtension)
 
   override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableContainerMutableView = {
-    super.createView(TreeNodeOperations.Flatten(n), f)
+    val transformed = super.createView(collapse("content")(n), f)
+    println(s"Transformed tree from ${TreeNodeUtils.toShorterString(n)} to ####\n${TreeNodeUtils.toShorterString(transformed)}")
+    transformed
   }
 }
 
@@ -48,7 +52,9 @@ private object XmlNamingStrategy extends AstNodeNamingStrategy {
   }
 
   override def significance(rule: String, fields: Seq[TreeNode]): Significance = rule match {
-    case "content" => TreeNode.Noise
+    case "content" =>
+      //println(s"I HATE content nodes! Relegated one to noise")
+      TreeNode.Noise
     case _ => TreeNode.Undeclared
   }
 }

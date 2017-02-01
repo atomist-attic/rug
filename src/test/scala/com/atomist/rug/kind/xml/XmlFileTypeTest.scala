@@ -22,48 +22,66 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be(1)
     rtn.right.get.foreach {
       case n: ContainerTreeNode =>
-        n.value should equal (proj.findFile("pom.xml").get.content)
+        n.value should equal(proj.findFile("pom.xml").get.content)
     }
   }
 
-  it should "drill down to named XML element using path expression with name" in {
+  it should "drill down using names" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "//XmlFile()//plugin"
+    val expr = "//XmlFile()/project/dependencies/dependency"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
-    rtn.right.get.foreach {
-      case n: TreeNode if n.value.nonEmpty =>
-        //println(n.value)
-      case x => println(s"Was empty: $x")
-    }
-  }
-
-  it should "drill down to named XML element using path expression with name predicate" in {
-    val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "//XmlFile()//element()[@name='plugin']"
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be (1)
-    rtn.right.get.foreach {
-      case n: TreeNode if n.value.nonEmpty =>
-        //println(n.value)
-      case x => println(s"Was empty: $x")
-    }
-  }
-
-  it should "drill down to named XML element" in {
-    val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/*[@name='pom.xml']/XmlFile()/project/groupId" // Works with content
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    println(TreeNodeUtils.toShortString(rtn.right.get.head))
-
-    rtn.right.get.size should be (1)
+    rtn.right.get.size should be(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
       //println(n.value)
       case x => println(s"Was empty: $x")
     }
   }
+
+  it should "drill down to named XML elements using path expression with name" in
+    drillToGroupIds("//XmlFile()//groupId")
+
+  it should "drill down to named XML elements using path expression with name predicate" in
+    drillToGroupIds("//XmlFile()//element()[@name='groupId']")
+
+  private def drillToGroupIds(expr: String): Unit = {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    println(TreeNodeUtils.toShorterString(rtn.right.get.head))
+    rtn.right.get.size should be(5)
+    rtn.right.get.head.value should be ("<groupId>com.example</groupId>")
+  }
+
+  it should "drill down to named XML element" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/*[@name='pom.xml']/XmlFile()/project/groupId"
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    println(TreeNodeUtils.toShortString(rtn.right.get.head))
+
+    rtn.right.get.size should be(1)
+    rtn.right.get.foreach {
+      case n: TreeNode if n.value.nonEmpty =>
+      //println(n.value)
+      case x => println(s"Was empty: $x")
+    }
+  }
+
+  it should "double drill down to named XML element" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/*[@name='pom.xml']/XmlFile()//groupId"
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    println(TreeNodeUtils.toShortString(rtn.right.get.head))
+
+    rtn.right.get.size should be(1)
+    rtn.right.get.foreach {
+      case n: TreeNode if n.value.nonEmpty =>
+      //println(n.value)
+      case x => println(s"Was empty: $x")
+    }
+  }
+
 }

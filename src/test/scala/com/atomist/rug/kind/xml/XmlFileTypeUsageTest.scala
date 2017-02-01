@@ -17,15 +17,16 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
       """
         |editor Xit
         |
-        |let pe = $(/*[@name='pom.xml']/XmlFile()/project/group/groupId)
+        |let pe = $(/*[@name='pom.xml']/XmlFile()/project/groupId)
         |
         |with pe
-        |  do update "not-atomist"
+        |  do update "<groupId>not-atomist</groupId>"
         |""".stripMargin
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
+        //println(outputxml.content)
         outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
     }
   }

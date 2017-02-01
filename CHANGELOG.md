@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Retain all changes from an editor
     https://github.com/atomist/rug/issues/199
 
+-   Yml type can now be instantiated from ProjectMutableView,
+    DirectoryMutableView, and FileMutableView,
+    https://github.com/atomist/rug/issues/250
+
 ### Changed
 
 -   **BREAKING** `TreeNode.nodeType` renamed to `TreeNode.nodeTags`.

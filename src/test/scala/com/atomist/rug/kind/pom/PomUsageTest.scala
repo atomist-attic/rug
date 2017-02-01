@@ -19,7 +19,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
         |editor PomEdit
         |
         |with Pom x when path = "pom.xml"
-        |do groupId
+        |  do groupId
       """.stripMargin
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {

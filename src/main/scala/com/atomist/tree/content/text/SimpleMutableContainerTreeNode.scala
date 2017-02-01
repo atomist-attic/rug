@@ -12,7 +12,7 @@ class SimpleMutableContainerTreeNode(
                                       val additionalTypes: Set[String] = Set())
   extends PositionedMutableContainerTreeNode(name) {
 
-  additionalTypes.foreach(addType(_))
+  additionalTypes.foreach(addType)
 
   initialFieldValues.foreach(insertFieldCheckingPosition)
 

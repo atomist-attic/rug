@@ -144,7 +144,8 @@ private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContain
   * @param backingJson the json string that also represents this object tree
   */
 class JsonBackedContainerTreeNode(val innerNode: ContainerTreeNode,
-                                  val backingJson: String)
+                                  val backingJson: String,
+                                  val version: String)
   extends ContainerTreeNode {
 
   override def value: String = ???
@@ -158,6 +159,4 @@ class JsonBackedContainerTreeNode(val innerNode: ContainerTreeNode,
   override def childrenNamed(key: String): Seq[TreeNode] = innerNode.childrenNamed(key)
 
   def jsonRepresentation: String = backingJson
-
-  def version: String = version
 }

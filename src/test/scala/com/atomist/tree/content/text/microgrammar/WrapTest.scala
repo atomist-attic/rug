@@ -18,7 +18,7 @@ class WrapTest extends FlatSpec with Matchers {
         val tn = pe.node.get.asInstanceOf[ContainerTreeNode]
         tn.nodeName should be ("higherLevel")
         tn.childNodes.size should be (1)
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -38,7 +38,7 @@ class WrapTest extends FlatSpec with Matchers {
         //println(TreeNodeUtils.toShortString(tn))
         tn.childNodes.size should be (1)
         tn.childNodes.head.nodeName should be (rl.name)
-      case _ =>
+      case _ => ???
     }
   }
 

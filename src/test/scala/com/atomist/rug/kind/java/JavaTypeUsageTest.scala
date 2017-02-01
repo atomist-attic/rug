@@ -100,7 +100,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     attemptToModify(program, "editors/PackageFinder.rug", NewSpringBootProject, Map()) match {
       case nmn: NoModificationNeeded => // Ok
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -126,7 +126,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     attemptToModify(program, "editors/PackageFinder.ts", NewSpringBootProject, Map(), runtime = tsPipeline) match {
       case nmn: NoModificationNeeded => // Ok
-      case _ =>
+      case _ => ???
     }
   }
 

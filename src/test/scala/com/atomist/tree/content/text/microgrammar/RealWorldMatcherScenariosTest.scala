@@ -10,7 +10,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
   it should "match JavaIdentifiers" in {
     javaIdentifier("foo").matchPrefix(InputState("uuuuer23")) match {
       case Right(m) =>
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -29,7 +29,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       scalaMethodHeader.matchPrefix(InputState(noArgs)) match {
         case Right(PatternMatch(tn, matched, InputState(`noArgs`, _, _), _)) =>
         //println(s"Successfully parsed [$matched]")
-        case _ =>
+        case _ => ???
       })
   }
 
@@ -51,7 +51,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       scalaMethodHeader.matchPrefix(InputState(input)) match {
         case Right(PatternMatch(tn, matched, InputState(`input`, _, _), _)) =>
         case Left(report) => fail(s"Failed to match input [$input]" + report)
-        case _ =>
+        case _ => ???
       })
   }
 
@@ -66,7 +66,7 @@ class RealWorldMatcherScenariosTest extends FlatSpec with Matchers {
       pattern.matchPrefix(InputState(input)) match {
         case Right(PatternMatch(tn, matched, InputState(`input`, _, _), _)) =>
         //println(s"Successfully parsed [$matched]")
-        case _ =>
+        case _ => ???
       })
 
   }

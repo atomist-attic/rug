@@ -33,7 +33,6 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   it should "add using and verify" in {
     val r = modifyAndReparseSuccessfully("AddImport.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
-//    println(f.content)
     f.content.contains("using System;") should be(true)
     f.content.contains("using System.Linq;") should be(true)
   }
@@ -50,7 +49,6 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
     val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "Thing"))
     val f = r.findFile("src/hello.cs").get
-//    println(f.content)
     f.content.contains("using System;") should be(true)
     f.content.contains("using Thing;") should be(true)
   }

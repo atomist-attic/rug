@@ -70,6 +70,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     so that the build is not dependent on network or later maven
     phases until deployment
 
+-   Scala compiler warnings are now fatal by default, use `-P
+    allow-warnings` profile to have the old behavior.  The Travis CI
+    build uses the allow-warnings profile.
+
 ### Deprecated
 
 -   The `@generator` has been deprecated in favor of the `generator`

@@ -365,9 +365,9 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         fd.args(1) match {
           case WrappedFunctionArg(p: ParsedRegisteredFunctionPredicate, _) =>
             p.args.size should be(2)
-          case _ =>
+          case _ => ???
         }
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -520,7 +520,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.withs.size should be(1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -543,7 +543,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     parsed.actions.head.isInstanceOf[With] should be(true)
     parsed.actions(1) match {
       case r: RunOtherOperation => r.name should equal("EditorA")
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -725,7 +725,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       case dds: FunctionDoStep =>
         dds.function should equal("append")
         dds.target should equal(Some("f"))
-      case _ =>
+      case _ => ???
     }
   }
 

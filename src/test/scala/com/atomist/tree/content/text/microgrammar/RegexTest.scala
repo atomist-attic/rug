@@ -10,7 +10,7 @@ class RegexTest extends FlatSpec with Matchers {
     l.matchPrefix(InputState("thingxxxY")) match {
       case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY", _, _), _)) =>
         tn.get.nodeName should be (name)
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -20,7 +20,7 @@ class RegexTest extends FlatSpec with Matchers {
     l.matchPrefix(InputState("thingxxxY0")) match {
       case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY0", _, _), _)) =>
         tn.get.nodeName should be (name)
-      case _ =>
+      case _ => ???
     }
   }
 }

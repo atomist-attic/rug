@@ -28,7 +28,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val input = "def foo bar"
     matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
-      case _ =>
+      case _ => ???
     }
     mg.findMatches(input).size should be(1)
   }

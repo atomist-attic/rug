@@ -531,7 +531,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         sm.result.totalFileCount should be(2)
         sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
-      case _ =>
+      case _ => ???
     }
     jsed
   }
@@ -554,9 +554,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
           case _: NoModificationNeeded => //yay
           case sm: SuccessfulModification =>
               fail("That should not have reported modification")
-          case _ =>
+          case _ => ???
         }
-      case _ =>
+      case _ => ???
     }
     jsed
   }

@@ -23,7 +23,7 @@ class XmlUsageTest extends FlatSpec with Matchers {
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: NoModificationNeeded =>
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -40,7 +40,7 @@ class XmlUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
         outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -57,7 +57,7 @@ class XmlUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
         outputxml.content.contains("<artifactId>our-great-plugin</artifactId>") should be(true)
-      case _ =>
+      case _ => ???
     }
   }
 

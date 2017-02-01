@@ -34,7 +34,6 @@ class RawPython3Test extends FlatSpec with Matchers {
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
-        //println(n.value)
       case x => //println(s"Was empty: $x")
     }
   }
@@ -47,8 +46,6 @@ class RawPython3Test extends FlatSpec with Matchers {
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
-//        println(n.value)
-//        println(n)
       case x => //println(s"Was empty: $x")
     }
   }

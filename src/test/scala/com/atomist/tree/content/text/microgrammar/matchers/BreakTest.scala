@@ -9,7 +9,7 @@ class BreakTest extends FlatSpec with Matchers {
     val l = Literal("thing") ~ Break(Literal("Y"))
     l.matchPrefix(InputState("thingxxxY")) match {
       case Right(PatternMatch(tn, "thingxxxY", InputState("thingxxxY", _, _), _)) =>
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -19,7 +19,7 @@ class BreakTest extends FlatSpec with Matchers {
       case Right(pe: PatternMatch) =>
         pe.matched should be ("thingxxxY")
         pe.resultingInputState.input should equal("thingxxxYzzz--")
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -27,7 +27,7 @@ class BreakTest extends FlatSpec with Matchers {
     val l = Literal("thing") ~ Break(Literal("Y"))
     l.matchPrefix(InputState("thingxxx")) match {
       case Left(_) =>
-      case _ =>
+      case _ => ???
     }
   }
 
@@ -38,7 +38,7 @@ class BreakTest extends FlatSpec with Matchers {
     l.matchPrefix(InputState(s"$s1 and all this nonsense and then $s2 and more garbage")) match {
       case Right(pm) =>
         pm.matched should be (s"$s1 and all this nonsense and then $s2")
-      case _ =>
+      case _ => ???
     }
   }
 }

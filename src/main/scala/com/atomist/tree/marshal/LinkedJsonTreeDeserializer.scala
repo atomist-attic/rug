@@ -32,9 +32,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
   }
 
   private def toListOfMaps(json: String): List[Map[String, Object]] = {
-    val l = mapper.readValue(json, classOf[List[Map[String, Object]]])
-//    println(mapper.writeValueAsString(l))
-    l
+    mapper.readValue(json, classOf[List[Map[String, Object]]])
   }
 
   private def nodeify(l: List[Map[String, Object]]): ContainerTreeNode = {

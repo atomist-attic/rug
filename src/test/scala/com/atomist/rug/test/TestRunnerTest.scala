@@ -66,11 +66,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
-    if (!testResult.passed) {
-//       println(testResult.toString)
-    }
     testResult.passed should be(true)
-
   }
 
   it should "test a generator" in {
@@ -99,11 +95,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
     executedTests.tests.size should be(1)
     val testResult = executedTests.tests.head
-    if (!testResult.passed) {
-//      println(testResult.toString)
-    }
     testResult.passed should be(true)
-
   }
 
   it should "pass with passing editor and file created inline" in {

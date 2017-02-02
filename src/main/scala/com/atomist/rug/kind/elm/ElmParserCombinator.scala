@@ -15,7 +15,7 @@ private[elm] object ElmParserCombinator
 
   import ElmTokens._
 
-  val ElmMultilineComment = """\{\-([^*]|[\r\n|\n]|(\*+([^*/]|[\r\n|\n])))*\-+\}"""
+  val ElmMultilineComment = """\{\-([^*]|[\r\n|\n]|(\*+([^*/]|[\r\n|\n])))*?\-+\}"""
 
   val DashDashLineComment = """\-\-.*[\r\n|\n]"""
 

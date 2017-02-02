@@ -24,7 +24,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: NoModificationNeeded =>
-      case _ => ???
+      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
 

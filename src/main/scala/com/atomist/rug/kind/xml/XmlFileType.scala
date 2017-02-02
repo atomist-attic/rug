@@ -42,8 +42,9 @@ private object XmlNamingStrategy extends AstNodeNamingStrategy {
 
   override def significance(rule: String, fields: Seq[TreeNode]): Significance = rule match {
     case "content" =>
-      //println(s"I HATE content nodes! Relegated one to noise")
+      // We want to flatten this layer
       TreeNode.Noise
-    case _ => TreeNode.Undeclared
+    case _ =>
+      TreeNode.Signal
   }
 }

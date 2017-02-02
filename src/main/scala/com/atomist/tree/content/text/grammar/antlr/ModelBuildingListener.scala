@@ -209,7 +209,7 @@ trait AstNodeNamingStrategy {
   def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] = Set(rule)
 
   def significance(rule: String, fields: Seq[TreeNode]): TreeNode.Significance =
-    TreeNode.Undeclared
+    TreeNode.Signal
 
 }
 

@@ -34,7 +34,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
-      //println(n.value)
+      n.value.contains("org.springframework.boot") should be (true)
       case x => fail(s"Was empty: $x")
     }
   }

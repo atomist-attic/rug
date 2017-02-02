@@ -26,27 +26,10 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
-        //println(outputxml.content)
         outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
-      case _ => ???
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
-
-//  it should "add a new child block with native Rug function" in {
-//    val prog =
-//      """
-//        |editor Xit
-//        |
-//        |with Xml x when path = "pom.xml"
-//        |do addOrReplaceNode "/project/build/plugins" "/project/build/plugins/plugin" "plugin" "<plugin><groupId>com.atomist</groupId><artifactId>our-great-plugin</artifactId></plugin>"
-//      """.stripMargin
-//
-//    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-//      case sm: SuccessfulModification =>
-//        val outputxml = sm.result.findFile("pom.xml").get
-//        outputxml.content.contains("<artifactId>our-great-plugin</artifactId>") should be(true)
-//    }
-//  }
 
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {

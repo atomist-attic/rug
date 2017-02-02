@@ -47,7 +47,7 @@ class PropertiesMutableView(
       val regexp = s"$key=(.*)"
       this.properties = content.replaceFirst(regexp, s"$key=$newValue")
     } else {
-      val newPropertyString = s"$key=$newValue"
+      val newPropertyString = s"$key=$newValue\n"
       this.properties = content.concat(newPropertyString)
     }
   }

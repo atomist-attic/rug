@@ -33,7 +33,15 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
 
   override def childNodeNames: Set[String] = childNodes.map(f => f.nodeName).toSet
 
-  // TODO is this right
+  override protected def formatInfoFor(child: TreeNode, start: Boolean): Option[FormatInfo] = {
+    if (!_padded)
+      throw new IllegalStateException(s"Call pad before trying to get format info from $this")
+    else
+      super.formatInfoFor(child, start)
+  }
+
+
+    // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
 
   override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName == key)
@@ -78,41 +86,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
     else {
       //println(s"Not collapsing ${n.nodeName}:${n.nodeTags}")
       Seq(n)
-    }
-  }
-
-  /**
-    * Return formatInfo for the start of this child node. We can obtain
-    * line and column and formatting information.
-    *
-    * @param child child of this node
-    * @return Some if the child is found
-    */
-  def formatInfoStart(child: TreeNode): Option[FormatInfo] =
-    formatInfoFor(child, start = true)
-
-  /**
-    * Return formatInfo for the end of this child node. We can obtain
-    * line and column and formatting information.
-    *
-    * @param child child of this node
-    * @return Some if the child is found
-    */
-  def formatInfoEnd(child: TreeNode): Option[FormatInfo] =
-    formatInfoFor(child, start = false)
-
-  private def formatInfoFor(child: TreeNode, start: Boolean): Option[FormatInfo] = {
-    if (!_padded)
-      throw new IllegalStateException(s"Call pad before trying to get format info from $this")
-    if (!_fieldValues.contains(child))
-      None
-    else {
-      // Build string to the left
-      val leftFields = _fieldValues.takeWhile(f => f != child) ++ (if (start) Nil else Seq(child))
-      val stringToLeft = leftFields.map(_.value).mkString("")
-      val fi = FormatInfo.contextInfo(stringToLeft)
-      //println(s"Found $fi from left string [$stringToLeft] with start=$start")
-      Some(fi)
     }
   }
 

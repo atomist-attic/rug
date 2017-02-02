@@ -3,7 +3,7 @@ package com.atomist.rug.spi
 import com.atomist.rug.kind.core.{ChangeCounting, FileArtifactBackedMutableView}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.PositionedMutableContainerTreeNode
+import com.atomist.tree.content.text.{MutableContainerTreeNode, PositionedMutableContainerTreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -29,7 +29,7 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
 
   // Implementation of FormatInfoProvider relevant if subclasses choose to
   // implement that trait
-  protected def rootNode: Option[PositionedMutableContainerTreeNode] = {
+  protected def rootNode: Option[MutableContainerTreeNode] = {
     def highestNodeWithinFile(mv: MutableView[_]): Option[MutableView[_]] = {
       //println(s"Looking at node $mv with parent ${mv.parent}")
       if (mv.parent == null) None // We failed

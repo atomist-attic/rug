@@ -26,6 +26,6 @@ trait FormatInfoProvider {
   /**
     * Root container
     */
-  protected def rootNode: Option[PositionedMutableContainerTreeNode]
+  protected def rootNode: Option[MutableContainerTreeNode]
 
 }

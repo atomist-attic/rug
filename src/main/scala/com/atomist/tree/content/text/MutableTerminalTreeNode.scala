@@ -31,7 +31,7 @@ class MutableTerminalTreeNode(val nodeName: String,
 
   override def padded: Boolean = true
 
-  override def pad(initialSource: String, topLevel: Boolean): Unit = {}
+  override def pad(initialSource: String, noiseFilter: TreeNode => Boolean, topLevel: Boolean): Unit = {}
 
   @ExportFunction(readOnly = false, description = "Update the node value")
   override def update(newValue: String): Unit =
@@ -47,7 +47,7 @@ class MutableTerminalTreeNode(val nodeName: String,
   def longString =
     s"scalar:${getClass.getSimpleName}: $nodeName=[$currentValue], position=$startPosition"
 
-  override def toString = {
+  override def toString: String = {
     val sig = significance match {
       case Noise => "noise "
       case Signal => "signal "

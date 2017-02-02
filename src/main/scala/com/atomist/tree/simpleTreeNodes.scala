@@ -1,4 +1,5 @@
 package com.atomist.tree
+import com.atomist.tree.TreeNode.Significance
 
 /**
   * Convenient terminal node implementation.
@@ -21,6 +22,8 @@ case class SimpleTerminalTreeNode(nodeName: String,
   */
 case class PaddingTreeNode(description: String, value: String)
   extends TerminalTreeNode {
+
+  override def significance: Significance = TreeNode.Noise
 
   override def nodeName = s"padding:$description"
 

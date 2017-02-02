@@ -1,6 +1,6 @@
 package com.atomist.tree.utils
 
-import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedMutableContainerTreeNode$, PositionedTreeNode, ViewTree}
+import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 /**
@@ -42,10 +42,6 @@ object TreeNodeUtils {
       s"${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
 
     def toShortStr(fv: TreeNode, depth: Int, shown: TreeNode => Boolean): String = fv match {
-      case vt: ViewTree =>
-        val contents = vt.delegate
-        def stillShown(c: TreeNode) = vt.childNodes.contains(c) && shown(c)
-        tabs(depth) + info(vt) + s" because '${vt.description}' around \n" + toShortStr(contents, depth + 1, stillShown)
       case ctn: ContainerTreeNode =>
         def star(c: TreeNode) = if (shown(c)) "*" else ""
         tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")
@@ -54,4 +50,17 @@ object TreeNodeUtils {
 
     toShortStr(tn, 0, _ => true)
   }
+
+  private def toShorterStringInternal(tn: TreeNode): Seq[String] = {
+    val shorterString = s"${tn.nodeName}:[${tn.nodeTags.mkString(",")}]"
+    val lines = shorterString +:
+      tn.childNodes.flatMap (toShorterStringInternal)
+    lines.map(" " + _)
+  }
+
+  /**
+    * Return a string showing the structure of the tree but not the content
+    */
+  def toShorterString(tn: TreeNode): String = toShorterStringInternal(tn).mkString("\n")
+
 }

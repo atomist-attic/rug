@@ -10,11 +10,10 @@ import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 case class Regex(regex: String, givenName: Option[String], config: MatcherConfig = MatcherConfig())
   extends ConfigurableMatcher {
 
-  // TODO look at greedy
-
   private val rex = regex.r
 
   private val treeNodeSignificance = if (givenName.isDefined) TreeNode.Signal else TreeNode.Noise
+
   val name: String = givenName.getOrElse(".regex")
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
@@ -34,22 +33,6 @@ case class Regex(regex: String, givenName: Option[String], config: MatcherConfig
       Left(DismatchReport("we have reached the end"))
 }
 
-/**
-  * Matcher that returns an empty placeholder.
-  */
-class Placeholder extends Matcher {
-
-  override def name: String = "placeholder"
-
-  // what does this accomplish if we can't name it?
-
-  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
-    if (!inputState.exhausted) {
-      Right(PatternMatch(None, "", inputState, this.toString))
-    }
-    else
-      Left(DismatchReport("no input remains")) // why can't we put a placeholder at the very end?
-}
 
 object Whitespace extends Discard(Regex("""\s+""", None))
 

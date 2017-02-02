@@ -69,8 +69,8 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     matches.size should be(1)
 
     withClue(matches) {
-      matches.head.fieldValues.head.value should be("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
-      matches.head.fieldValues(1).value should be("lazy emoji-wrapper")
+      matches.head.childNodes.head.value should be("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+      matches.head.childNodes(1).value should be("lazy emoji-wrapper")
     }
   }
 

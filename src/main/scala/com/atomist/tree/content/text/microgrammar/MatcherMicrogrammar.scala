@@ -1,7 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.TreeNodeOperations._
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
 
@@ -12,15 +11,11 @@ import scala.collection.mutable.ListBuffer
   */
 class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMicrogrammar") extends Microgrammar {
 
-  // Transformation to run on matched nodes
-  private val transform = collapse(
-    ctn => ctn.significance == TreeNode.Noise
-    , "it's a concat") andThen RemovePadding andThen RemoveNoise andThen Prune
-
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
     val (matches, dismatches) = findMatchesInternal(input, l)
-    val processedNodes = matches.map { case (m, o) =>
-      outputNode(input)(m, o)
+    val processedNodes = matches.map {
+      case (m, o) =>
+        outputNode(input)(m, o)
     }
 
     //TODO this is super useful!! println(DismatchReport.detailedReport(dismatches.maxBy(_.lengthOfClosestMatch), input.toString))
@@ -32,7 +27,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     result.right.map(matched => outputNode(input)(matched, OffsetInputPosition(0)))
   }
 
-  private [microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = OffsetInputPosition(0)) = {
+  private[microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = OffsetInputPosition(0)) = {
     val endOffset = startOffset + matchFound.matched.length
     val matchedNode = matchFound.node match {
       case None =>
@@ -44,7 +39,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
       case _ => ???
     }
     matchedNode.pad(input.toString)
-    transform(matchedNode)
+    matchedNode
   }
 
 
@@ -59,7 +54,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
           dismatches.append(dismatchReport)
           is = is.advance
         case Right(matchFound) =>
-          listeners.foreach(l => matchFound.node.map(l.onMatch(_)))
+          listeners.foreach(l => matchFound.node.foreach(l.onMatch))
           val thisStartedAt = OffsetInputPosition(is.offset)
           matches.append(matchFound -> thisStartedAt)
           is = matchFound.resultingInputState
@@ -74,10 +69,10 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
 }
 
 private class MicrogrammarNode(name: String,
-                                typ: String,
-                                fields: Seq[TreeNode],
-                                startPosition: InputPosition,
-                                endPosition: InputPosition)
+                               typ: String,
+                               fields: Seq[TreeNode],
+                               startPosition: InputPosition,
+                               endPosition: InputPosition)
   extends SimpleMutableContainerTreeNode(
     name: String, fields, startPosition, endPosition, significance = TreeNode.Signal) {
 

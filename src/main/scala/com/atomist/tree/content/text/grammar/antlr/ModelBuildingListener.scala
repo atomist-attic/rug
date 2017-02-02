@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.grammar.antlr
 
+import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
@@ -228,6 +229,8 @@ case class EmptyAntlrContainerTreeNode(nodeName: String,
                                        override val childNodeNames: Set[String],
                                        types: Set[String] = Set())
   extends ContainerTreeNode {
+
+  override def significance: Significance = TreeNode.Noise
 
   override def childNodes: Seq[TreeNode] = Nil
 

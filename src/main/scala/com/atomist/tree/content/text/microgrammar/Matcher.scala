@@ -71,7 +71,7 @@ object Matcher {
 
   type MatchPrefixResult = Either[DismatchReport, PatternMatch]
 
-  def prettyPrint(m: Matcher) = prettyPrintLines(m).mkString("\n")
+  def prettyPrint(m: Matcher): String = prettyPrintLines(m).mkString("\n")
 
   private def prettyPrintLines(m: Matcher): Seq[String] = {
 

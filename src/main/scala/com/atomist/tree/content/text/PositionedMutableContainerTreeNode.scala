@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{MutableTreeNode, PaddingTreeNode, SimpleTerminalTreeNode, TreeNode}
+import com.atomist.tree._
 
 import scala.collection.mutable.ListBuffer
 
@@ -25,20 +25,60 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
 
   override def padded: Boolean = _padded
 
-  final override def childNodes: Seq[TreeNode] = _fieldValues
+  final override def childNodes: Seq[TreeNode] =
+    if (padded) fieldValues.filterNot(n => n.significance == TreeNode.Noise)
+    else fieldValues
 
   override def fieldValues: Seq[TreeNode] = _fieldValues
 
-  override def childNodeNames: Set[String] = _fieldValues.map(f => f.nodeName).toSet
+  override def childNodeNames: Set[String] = childNodes.map(f => f.nodeName).toSet
 
   // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
 
-  override def pad(initialSource: String, topLevel: Boolean = false): Unit = if (!_padded) {
-    val (hatched, _) = PositionedMutableContainerTreeNode.pad(this, initialSource, topLevel)
-    _fieldValues = ListBuffer.empty[TreeNode]
-    _fieldValues.append(hatched.childNodes: _*)
-    _padded = true
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName == key)
+
+  override def pad(initialSource: String, isNoise: TreeNode => Boolean, topLevel: Boolean = false): Unit =
+    if (!_padded) {
+      removeNoise(isNoise)
+      val (hatched, _) = PositionedMutableContainerTreeNode.pad(this, initialSource, topLevel)
+      _fieldValues = ListBuffer.empty[TreeNode]
+      _fieldValues.append(hatched.fieldValues: _*)
+      _padded = true
+    }
+
+
+  // We're not yet padded. Screen out noise
+  private def removeNoise(isNoise: TreeNode => Boolean): Unit = {
+    if (padded)
+      throw new IllegalArgumentException(s"Cannot remove noise from $this as it's already padded")
+    val newFieldValues = ListBuffer.empty[TreeNode]
+    for {
+      f <- _fieldValues
+    } {
+      newFieldValues.appendAll(collapse(isNoise, f))
+    }
+    _fieldValues = newFieldValues
+  }
+
+  /**
+    * Get rid of this level, pulling up its children
+    */
+  private def collapse(isNoise: TreeNode => Boolean, n: TreeNode): Seq[TreeNode] = {
+    val collapse2: TreeNode => Seq[TreeNode] = collapse(isNoise, _)
+    if (isNoise(n)) n match {
+      case mtn: MutableContainerTreeNode =>
+        // Pull up the children
+        // We need to look in the field values, not the child nodes, as the child nodes will be noise free
+        val collapsed = mtn.fieldValues.flatMap(collapse2)
+        //println(s"COLLAPSED ${n.nodeName}:${n.nodeTags}(${n.childNodes.size}) into ${collapsed.mkString}")
+        collapsed
+      case _ => Nil
+    }
+    else {
+      //println(s"Not collapsing ${n.nodeName}:${n.nodeTags}")
+      Seq(n)
+    }
   }
 
   /**
@@ -64,11 +104,11 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
   private def formatInfoFor(child: TreeNode, start: Boolean): Option[FormatInfo] = {
     if (!_padded)
       throw new IllegalStateException(s"Call pad before trying to get format info from $this")
-    if (!fieldValues.contains(child))
+    if (!_fieldValues.contains(child))
       None
     else {
       // Build string to the left
-      val leftFields = fieldValues.takeWhile(f => f != child) ++ (if (start) Nil else Seq(child))
+      val leftFields = _fieldValues.takeWhile(f => f != child) ++ (if (start) Nil else Seq(child))
       val stringToLeft = leftFields.map(_.value).mkString("")
       val fi = FormatInfo.contextInfo(stringToLeft)
       //println(s"Found $fi from left string [$stringToLeft] with start=$start")
@@ -172,15 +212,19 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
   }
 
   override def toString =
-    s"${getClass.getSimpleName}($nodeName)[$startPosition-$endPosition]: {${childNodes.mkString(",")}}"
+    s"${
+      getClass.getSimpleName
+    }($nodeName)[$startPosition-$endPosition]: {${
+      childNodes.mkString(",")
+    }}"
 }
 
 
 object PositionedMutableContainerTreeNode {
   type Report = Seq[String]
 
-  def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): (MutableTreeNode, Report) = {
 
+  def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): (MutableContainerTreeNode, Report) = {
     var report: Seq[String] = Seq()
 
     def say(s: String) = report = s +: report

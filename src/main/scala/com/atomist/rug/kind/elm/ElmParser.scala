@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.elm
 
 import com.atomist.rug.kind.elm.ElmModel.ElmModule
+import com.atomist.tree.TreeNode
 
 object ElmParser {
 
@@ -53,7 +54,7 @@ object ElmParser {
   def parse(elmSource: String): ElmModule = {
     val modifiedSource = markLinesThatAreLessIndented(elmSource)
     val em = ElmParserCombinator.parse(modifiedSource)
-    em.pad(initialSource = modifiedSource,  true)
+    em.pad(initialSource = modifiedSource,  isNoise = n => n.significance == TreeNode.Noise, topLevel = true)
     em
   }
 

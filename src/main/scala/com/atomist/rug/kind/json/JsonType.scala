@@ -112,11 +112,13 @@ class JsonMutableView(
                      )
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  private val currentParsed = originalParsed
+  private val currentParsed: MutableContainerTreeNode = originalParsed
 
   override def dirty = true
 
   override def value: String = currentParsed.value
+
+  //println(TreeNodeUtils.toShorterString(currentParsed))
 
   // There's just one value
   /*
@@ -161,13 +163,14 @@ private class PairMutableView(
   private val kids: Seq[MutableView[_]] =
     singleChild(currentBackingObject, "value") match {
       case Some(value) =>
-        requiredSingleChild(value) match {
-          case s: MutableTerminalTreeNode if "STRING".equals(s.nodeName) =>
+        value.childNodes match {
+          case Seq(s: MutableTerminalTreeNode) if "STRING".equals(s.nodeName) =>
             Seq(new JsonStringView(s, this))
-          case mv: MutableContainerTreeNode if "object" equals mv.nodeName =>
+          case Seq(mv: MutableContainerTreeNode) if "object" equals mv.nodeName =>
             findPairsInValueNode(this, mv)
-          case arr: MutableContainerTreeNode if "array".equals(arr.nodeName) =>
+          case Seq(arr: MutableContainerTreeNode) if "array".equals(arr.nodeName) =>
             Nil
+          case Nil => Nil
         }
       case None => requiredSingleChild(currentBackingObject, "STRING") match {
         case s: MutableTerminalTreeNode if "STRING".equals(s.nodeName) =>

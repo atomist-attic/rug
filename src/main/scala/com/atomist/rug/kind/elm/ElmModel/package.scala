@@ -74,7 +74,7 @@ package object ElmModel {
     initialImports.foreach(insertFieldCheckingPosition(_))
     declarations.foreach(insertFieldCheckingPosition(_))
 
-    def moduleName = nameField.value
+    def moduleName: String = nameField.value
 
     /**
       * Current source, after modifications

@@ -1,6 +1,6 @@
 package com.atomist.tree.utils
 
-import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
+import com.atomist.tree.{TerminalTreeNode, TreeNode}
 
 /**
   * Utility methods to find things within a TreeNode structure

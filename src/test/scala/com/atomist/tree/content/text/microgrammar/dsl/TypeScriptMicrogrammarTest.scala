@@ -79,10 +79,10 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
       |        n.update('Foo bar')
-      |        let fi = n.formatInfoStart()
+      |        let fi = n.formatInfo()
       |        if (fi == null)
       |         throw new Error("FormatInfo was null")
-      |        if (fi.lineNumberFrom1 < 10)
+      |        if (fi.start.lineNumberFrom1 < 10)
       |         throw new Error(`I don't like ${fi}`)
       |        //console.log(fi)
       |      })

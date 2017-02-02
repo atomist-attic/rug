@@ -33,11 +33,11 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
 
   override def childNodeNames: Set[String] = childNodes.map(f => f.nodeName).toSet
 
-  override protected def formatInfoFor(child: TreeNode, start: Boolean): Option[FormatInfo] = {
+  override def formatInfo(child: TreeNode): Option[FormatInfo] = {
     if (!_padded)
       throw new IllegalStateException(s"Call pad before trying to get format info from $this")
     else
-      super.formatInfoFor(child, start)
+      super.formatInfo(child)
   }
 
 

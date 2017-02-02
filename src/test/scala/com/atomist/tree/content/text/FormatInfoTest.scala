@@ -44,7 +44,7 @@ class FormatInfoTest extends FlatSpec with Matchers {
     fi.usesTabs should be (true)
   }
 
-  private def testIndent(indent: String): FormatInfo = {
+  private def testIndent(indent: String): PointFormatInfo = {
     val input =
       s"""
         |public class Foobar {

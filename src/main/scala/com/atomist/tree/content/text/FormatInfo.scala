@@ -7,7 +7,7 @@ object FormatInfo {
   /**
     * Given the left input, derive position information.
     */
-  def contextInfo(leftInput: String): FormatInfo = {
+  def contextInfo(leftInput: String): PointFormatInfo = {
 
     def findLeadingWhitespace(s: String): String =
       s.takeWhile(c => c.isWhitespace)
@@ -33,7 +33,7 @@ object FormatInfo {
     val indentDepth = findLeadingWhitespace(currentLine).length /
       { if (indent.isEmpty) 1 else indent.length }
 
-    FormatInfo(
+    PointFormatInfo(
       offs,
       lineNumberFrom1,
       currentLine.length + 1,
@@ -45,13 +45,21 @@ object FormatInfo {
 
 
 /**
-  * Information about the format in the file
+  * Information about the format of a node within a file
+  */
+case class FormatInfo(
+                     start: PointFormatInfo,
+                     end: PointFormatInfo
+                     )
+
+/**
+  * Information about the format in the file at a particular point
   *
   * @param indentDepth indent depth at the beginning of this line. Number of times
   *                    the indent appears at the beginning of this line
   * @param indent      indent used in the file.
   */
-case class FormatInfo(
+case class PointFormatInfo(
                        offset: Int,
                        lineNumberFrom1: Int,
                        columnNumberFrom1: Int,

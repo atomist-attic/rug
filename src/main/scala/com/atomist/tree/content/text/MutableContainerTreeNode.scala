@@ -25,36 +25,23 @@ trait MutableContainerTreeNode
     }).nonEmpty
 
   /**
-    * Return formatInfo for the start of this child node. We can obtain
+    * Return formatInfo for the child node. We can obtain
     * line and column and formatting information.
     *
     * @param child child of this node
     * @return Some if the child is found
     */
-  def formatInfoStart(child: TreeNode): Option[FormatInfo] =
-    formatInfoFor(child, start = true)
-
-  /**
-    * Return formatInfo for the end of this child node. We can obtain
-    * line and column and formatting information.
-    *
-    * @param child child of this node
-    * @return Some if the child is found
-    */
-  def formatInfoEnd(child: TreeNode): Option[FormatInfo] =
-    formatInfoFor(child, start = false)
-
-  protected def formatInfoFor(child: TreeNode, start: Boolean): Option[FormatInfo] = {
+  def formatInfo(child: TreeNode): Option[FormatInfo] =
     if (!fieldValues.contains(child))
       None
     else {
       // Build string to the left
-      val leftFields = fieldValues.takeWhile(f => f != child) ++ (if (start) Nil else Seq(child))
+      val leftFields = fieldValues.takeWhile(f => f != child)
       val stringToLeft = leftFields.map(_.value).mkString("")
-      val fi = FormatInfo.contextInfo(stringToLeft)
+      val leftPoint = FormatInfo.contextInfo(stringToLeft)
+      val rightPoint = FormatInfo.contextInfo(stringToLeft + child.value)
       //println(s"Found $fi from left string [$stringToLeft] with start=$start")
-      Some(fi)
+      Some(FormatInfo(leftPoint, rightPoint))
     }
-  }
 
 }

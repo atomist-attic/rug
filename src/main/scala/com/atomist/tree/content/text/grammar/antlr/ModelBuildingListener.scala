@@ -106,7 +106,7 @@ class ModelBuildingListener(
       deduped,
       startPos,
       endPos,
-      TreeNode.Undeclared,
+      namingStrategy.significance(rule, deduped),
       namingStrategy.tagsForContainer(rule, deduped))
   }
 
@@ -200,12 +200,16 @@ class ModelBuildingListener(
 
 /**
   * Enables us to rename nodes from the grammar.
+  * Contains default implementation
   */
 trait AstNodeNamingStrategy {
 
-  def nameForContainer(rule: String, fields: Seq[TreeNode]): String
+  def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
 
-  def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String]
+  def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] = Set(rule)
+
+  def significance(rule: String, fields: Seq[TreeNode]): TreeNode.Significance =
+    TreeNode.Signal
 
 }
 
@@ -213,12 +217,7 @@ trait AstNodeNamingStrategy {
   * Default implementation of AstNodeNamingStrategy that takes node names from
   * underlying Antlr grammar
   */
-object FromGrammarNamingStrategy extends AstNodeNamingStrategy {
-
-  override def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
-
-  override def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] = Set(rule)
-}
+object FromGrammarNamingStrategy extends AstNodeNamingStrategy
 
 
 /**

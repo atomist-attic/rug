@@ -23,7 +23,7 @@ class XmlTypeUsageTest extends FlatSpec with Matchers {
 
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case nmn: NoModificationNeeded =>
-      case _ => ???
+      case wtf =>  fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
 
@@ -40,7 +40,7 @@ class XmlTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
         outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
-      case _ => ???
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
@@ -57,16 +57,14 @@ class XmlTypeUsageTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
         outputxml.content.contains("<artifactId>our-great-plugin</artifactId>") should be(true)
-      case _ => ???
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
-
     val newName = "Foo"
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-
     attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
       "new_name" -> newName
     )))

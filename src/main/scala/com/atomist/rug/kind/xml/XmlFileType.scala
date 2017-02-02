@@ -1,14 +1,10 @@
 package com.atomist.rug.kind.xml
 
-import com.atomist.rug.kind.core.FileArtifactBackedMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.Significance
-import com.atomist.tree.content.text.{MutableContainerTreeNode, TreeNodeOperations}
-import com.atomist.tree.content.text.grammar.antlr.{AstNodeNamingStrategy, FromGrammarNamingStrategy}
-import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.content.text.grammar.antlr.AstNodeNamingStrategy
 
 object XmlFileType {
 
@@ -24,18 +20,12 @@ class XmlFileType
   ) {
 
   import XmlFileType._
-  import TreeNodeOperations._
 
   override def description = "XML file"
 
   override def isOfType(f: FileArtifact): Boolean =
     f.name.endsWith(XmlExtension)
 
-  override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableContainerMutableView = {
-    val transformed = super.createView(collapse("content")(n), f)
-    println(s"Transformed tree from ${TreeNodeUtils.toShorterString(n)} to ####\n${TreeNodeUtils.toShorterString(transformed)}")
-    transformed
-  }
 }
 
 
@@ -47,7 +37,6 @@ private object XmlNamingStrategy extends AstNodeNamingStrategy {
         case Some(nameField) => nameField.value
         case None => "element"
       }
-
     case x => x
   }
 

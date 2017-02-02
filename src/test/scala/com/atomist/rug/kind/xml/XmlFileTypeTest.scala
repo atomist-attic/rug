@@ -35,7 +35,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
       //println(n.value)
-      case x => println(s"Was empty: $x")
+      case x => fail(s"Was empty: $x")
     }
   }
 
@@ -45,13 +45,22 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
   it should "drill down to named XML elements using path expression with name predicate" in
     drillToGroupIds("//XmlFile()//element()[@name='groupId']")
 
-  private def drillToGroupIds(expr: String): Unit = {
+  it should "drill down to named XML elements using path expression and type //" in
+    drillToGroupIds("//XmlFile()//element()", tn => tn.nodeName == "groupId")
+
+  private def drillToGroupIds(expr: String, filter: TreeNode => Boolean = tn => true): Unit = {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    println(TreeNodeUtils.toShorterString(rtn.right.get.head))
-    rtn.right.get.size should be(5)
-    rtn.right.get.head.value should be ("<groupId>com.example</groupId>")
+    val results = rtn.right.get.filter(filter)
+    results.size should be(5)
+    // TODO note that we can't presently rely on ordering
+//    println(results.map(TreeNodeUtils.toShortString))
+//    println(results.map(n => n.asInstanceOf[MutableContainerMutableView].currentBackingObject.asInstanceOf[PositionedTreeNode].startPosition))
+//    results.tail.head.value should be ("<groupId>org.springframework.boot</groupId>")
+//    results.head.value should be ("<groupId>com.example</groupId>")
+    results.exists(r => r.value == "<groupId>org.springframework.boot</groupId>") should be (true)
+    results.exists(r => r.value == "<groupId>com.example</groupId>") should be (true)
   }
 
   it should "drill down to named XML element" in {
@@ -59,29 +68,24 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/*[@name='pom.xml']/XmlFile()/project/groupId"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    println(TreeNodeUtils.toShortString(rtn.right.get.head))
 
     rtn.right.get.size should be(1)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
       //println(n.value)
-      case x => println(s"Was empty: $x")
+      case x => fail(s"Was empty: $x")
     }
   }
 
   it should "double drill down to named XML element" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr = "/*[@name='pom.xml']/XmlFile()//groupId"
+    val expr = "/*[@name='pom.xml']/XmlFile()/project/dependencies/dependency/scope//TEXT"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    println(TreeNodeUtils.toShortString(rtn.right.get.head))
+    //println(TreeNodeUtils.toShortString(rtn.right.get.head))
 
     rtn.right.get.size should be(1)
-    rtn.right.get.foreach {
-      case n: TreeNode if n.value.nonEmpty =>
-      //println(n.value)
-      case x => println(s"Was empty: $x")
-    }
+    rtn.right.get.head.value should equal ("test")
   }
 
 }

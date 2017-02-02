@@ -28,6 +28,7 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
         val outputxml = sm.result.findFile("pom.xml").get
         //println(outputxml.content)
         outputxml.content.contains("<groupId>not-atomist</groupId>") should be(true)
+      case _ => ???
     }
   }
 

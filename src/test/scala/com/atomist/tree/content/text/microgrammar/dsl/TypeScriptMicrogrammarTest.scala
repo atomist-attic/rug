@@ -59,6 +59,38 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |export let editor = new MgEditor()
       | """.stripMargin
 
+  val RequiresFormatInfo: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses 2 microgrammars"
+      |
+      |    edit(project: Project) {
+      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
+      |
+      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
+      |        if (n.value() != "4.0.0") project.fail("" + n.value())
+      |        n.update('Foo bar')
+      |        let fi = n.formatInfo()
+      |        if (fi == null)
+      |         throw new Error("FormatInfo was null")
+      |        if (fi.start.lineNumberFrom1 < 10)
+      |         throw new Error(`I don't like ${fi}`)
+      |        //console.log(fi)
+      |      })
+      |    }
+      |  }
+      |export let editor = new MgEditor()
+      | """.stripMargin
+
   val NavigatesNestedUsingPathExpression: String =
     """import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -116,9 +148,14 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     originalPomContent.replace("<modelVersion>4.0.0</modelVersion>", "<modelVersion>Foo bar</modelVersion>") should be(editedPomContent)
   }
 
-  it should "run use microgrammar defined in TypeScript in 2 consts" in {
+  it should "use microgrammar defined in TypeScript in 2 consts" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammarSplitInto2))
+  }
+
+  it should "use editor requiring FormatInfo" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+      RequiresFormatInfo))
   }
 
   it should "navigate nested using path expression" in {

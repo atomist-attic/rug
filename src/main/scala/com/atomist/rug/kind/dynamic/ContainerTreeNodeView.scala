@@ -7,15 +7,12 @@ import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 /**
   * Allows select (with/from) navigation over any structured data that can
   * be put into our TreeNode tree structure
-  *
-  * @param originalBackingObject
-  * @param parent
-  * @tparam O
   */
 class ContainerTreeNodeView[O <: ContainerTreeNode](
                                                      originalBackingObject: O,
                                                      parent: MutableView[_])
-  extends ViewSupport[O](originalBackingObject, parent) {
+  extends ViewSupport[O](originalBackingObject, parent)
+    with FormatInfoProvider {
 
   override def nodeName: String = currentBackingObject.nodeName
 
@@ -25,6 +22,8 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
   override def value: String = currentBackingObject.value
 
   override def dirty: Boolean = false
+
+  override protected def focusNode: TreeNode = currentBackingObject
 
   @ExportFunction(readOnly = true, description = "Return the value of the given key")
   def valueOf(@ExportFunctionParameterDescription(name = "name",
@@ -44,10 +43,10 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
     currentBackingObject.childrenNamed(fieldName) collect {
-    case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
-    case o: ContainerTreeNode => viewFrom(o)
-    case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)
-  }
+      case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
+      case o: ContainerTreeNode => viewFrom(o)
+      case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)
+    }
 
   /**
     * Subclasses can override this if they want to return mutable views
@@ -66,11 +65,14 @@ class ScalarValueView(
                        originalBackingObject: MutableTerminalTreeNode,
                        parent: MutableView[_])
   extends ViewSupport[MutableTerminalTreeNode](originalBackingObject, parent)
-    with MutableTreeNode {
+    with MutableTreeNode
+    with FormatInfoProvider {
 
   override def dirty: Boolean = originalBackingObject.dirty
 
   addTypes(currentBackingObject.nodeTags ++ Set("MutableTerminal"))
+
+  override protected def focusNode: TreeNode = currentBackingObject
 
   override def nodeName: String = originalBackingObject.nodeName
 

@@ -30,7 +30,7 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
 
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
 
-    an[IllegalStateException] should be thrownBy soo.formatInfoStart(f1)
+    an[IllegalStateException] should be thrownBy soo.formatInfo(f1)
   }
 
   it should "find format info for child node" in {
@@ -44,17 +44,12 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
 
-    soo.formatInfoStart(f1) match {
+    soo.formatInfo(f1) match {
       case Some(fi) =>
-        fi.offset should be(f1.startPosition.offset)
-        fi.lineNumberFrom1 should be(1)
-      case _ => ???
-    }
-
-    soo.formatInfoEnd(f1) match {
-      case Some(fi) =>
-        fi.offset should be(f1.endPosition.offset)
-        fi.lineNumberFrom1 should be(1)
+        fi.start.offset should be(f1.startPosition.offset)
+        fi.start.lineNumberFrom1 should be(1)
+        fi.end.offset should be(f1.endPosition.offset)
+        fi.end.lineNumberFrom1 should be(1)
       case _ => ???
     }
   }
@@ -70,7 +65,7 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1), startOf(line), endOf(line))
     soo.pad(line)
 
-    soo.formatInfoStart(f2) should be(empty)
+    soo.formatInfo(f2) should be(empty)
   }
 
 }

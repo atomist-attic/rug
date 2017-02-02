@@ -13,7 +13,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   /**
     * Convert the block to a JsDoc style comment.
     */
-  def toJsDoc(block: String) = {
+  def toJsDoc(block: String): String = {
     s"""
        |/**
        |   ${indented(block, 1)}
@@ -44,6 +44,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "FileArtifactMutableView" => "File"   // TODO this is nasty
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
+      case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }

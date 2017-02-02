@@ -6,7 +6,7 @@ import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.ConsoleMatchListener
-import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
+import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import org.scalatest.{FlatSpec, Matchers}
 
 object CSharpFileTypeTest {

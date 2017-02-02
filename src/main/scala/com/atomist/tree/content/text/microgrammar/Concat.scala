@@ -42,12 +42,12 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
             // Both match.
             val mergedTree: PositionedTreeNode =
               new SimpleMutableContainerTreeNode(name,
-                leftMatch.node.toSeq ++ rightMatch.node,
+                Seq(leftMatch.node, rightMatch.node),
                 startPosition = leftMatch.startPosition,
                 endPosition = rightMatch.endPosition,
                 significance = TreeNode.Noise)
             Right(PatternMatch(
-              Some(mergedTree),
+              mergedTree,
               leftMatch.matched + rightMatch.matched,
               rightMatch.resultingInputState,
               this.toString))

@@ -14,9 +14,7 @@ case class DismatchReport(why: String,
   }
 
   def lengthOfClosestMatch: Int = {
-    val priorMatchLen =
-    for { m <- priorMatch
-          n <- m.node } yield n.value.length
+    val priorMatchLen = priorMatch.map(_.node.value.length)
     (Seq(0) ++ causes.map(_.lengthOfClosestMatch) ++ priorMatchLen).max
   }
 
@@ -40,11 +38,7 @@ object DismatchReport {
         }).getOrElse(input)
 
     val whatDidMatch =
-      for {pm <- dr.priorMatch
-           node <- pm.node}
-        yield {
-          printMatching(node, display)
-        }
+      dr.priorMatch.map(pm => printMatching(pm.node, display))
     val lines = whatDidMatch.toSeq ++ Seq(dr.why) ++ dr.causes.flatMap(detailedReportLines(_, display))
 
     lines.map(" " + _)

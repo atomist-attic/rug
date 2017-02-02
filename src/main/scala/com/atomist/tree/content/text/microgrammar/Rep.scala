@@ -30,21 +30,21 @@ case class Rep(m: Matcher, givenName: Option[String] = None, separator: Option[M
         // We can match zero times. Put in an empty node.
         val pos = inputState.inputPosition
         Right(
-          PatternMatch(node = Some(EmptyContainerTreeNode(name, pos)),
+          PatternMatch(node = EmptyContainerTreeNode(name, pos),
             matched = "", inputState, this.toString))
       case Right(initialMatch) =>
         // We matched once. Let's keep going
         //println(s"Found initial match for $initialMatch")
         var matched = initialMatch.matched
         var latestInputState = initialMatch.resultingInputState
-        var nodes = initialMatch.node.toSeq
+        var nodes = Seq(initialMatch.node)
         //println(s"Trying secondary match $secondaryMatch against [${s.toString.substring(upToOffset)}]")
         while (secondaryMatch.matchPrefix(latestInputState) match {
           case Left(_) => false
           case Right(lastMatch) =>
             //println(s"Made it to secondary match [$lastMatch]")
             matched += lastMatch.matched
-            nodes ++= lastMatch.node.toSeq
+            nodes ++= Seq(lastMatch.node)
             latestInputState = lastMatch.resultingInputState
             true
         }) {
@@ -55,7 +55,7 @@ case class Rep(m: Matcher, givenName: Option[String] = None, separator: Option[M
         val endpos = if (nodes.isEmpty) pos else nodes.last.endPosition
         val combinedNode = new SimpleMutableContainerTreeNode(name, nodes, pos, endpos, treeNodeSignificance)
         Right(
-          PatternMatch(node = Some(combinedNode),
+          PatternMatch(node = combinedNode,
             matched, latestInputState, this.toString)
         )
     }

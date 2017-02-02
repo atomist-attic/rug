@@ -29,7 +29,7 @@ class JavaScriptInvokingProjectReviewer(
 
       invokeMemberWithParameters("review",
         wrapProject(pmv),
-        poa) match {
+        addDefaultParameterValues(poa)) match {
         case m: ScriptObjectMirror =>
           m
       }

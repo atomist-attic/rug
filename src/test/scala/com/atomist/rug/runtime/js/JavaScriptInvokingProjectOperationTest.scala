@@ -25,6 +25,26 @@ object JavaScriptInvokingProjectOperationTest {
        |export let editor = new SimpleEditor()
     """.stripMargin
 
+  val SimpleEditorWithDefaultParameterValue: String =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleEditor implements ProjectEditor {
+       |    name: string = "Simple"
+       |    description: string = "A nice little editor"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100, default: "http://t.co"}]
+       |    edit(project: Project, {content} : {content: string}) {
+       |       if(content != "http://t.co"){
+       |          throw new Error("Content was not as expected");
+       |       }
+       |    }
+       |  }
+       |export let editor = new SimpleEditor()
+    """.stripMargin
+
   val SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
@@ -170,6 +190,15 @@ object JavaScriptInvokingProjectOperationTest {
 class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
 
   import JavaScriptInvokingProjectOperationTest._
+
+  it should "Set the default value of a parameter correctly" in {
+    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithDefaultParameterValue)
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    jsed.name should be("Simple")
+    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
+    jsed.modify(target, SimpleProjectOperationArguments.Empty)
+  }
 
   it should "run simple editor compiled from TypeScript and validate the pattern correctly" in {
     invokeAndVerifySimpleEditor(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters))

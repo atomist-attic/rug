@@ -26,7 +26,7 @@ object Excludes {
 class ModelBuildingListener(
                              matchRule: String,
                              ml: Option[MatchListener],
-                             namingStrategy: AstNodeNamingStrategy)
+                             namingStrategy: AstNodeCreationStrategy)
   extends DefaultListener with LazyLogging {
 
   private val results = new ListBuffer[MutableContainerTreeNode]()
@@ -199,10 +199,11 @@ class ModelBuildingListener(
 }
 
 /**
-  * Enables us to rename nodes from the grammar.
-  * Contains default implementation
+  * Enables us to rename, tag and determine significance of nodes from an Antlr grammar.
+  * Contains default implementation. Subclasses can simply override the
+  * methods they care about
   */
-trait AstNodeNamingStrategy {
+trait AstNodeCreationStrategy {
 
   def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
 
@@ -217,7 +218,7 @@ trait AstNodeNamingStrategy {
   * Default implementation of AstNodeNamingStrategy that takes node names from
   * underlying Antlr grammar
   */
-object FromGrammarNamingStrategy extends AstNodeNamingStrategy
+object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
 
 
 /**

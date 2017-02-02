@@ -25,7 +25,7 @@ class WrapTest extends FlatSpec with Matchers {
 
   it should "handle rep of regex with two instances" in {
     val l1 = Regex("t...g", Some("thing"))
-    val rl = Rep(l1, None)//"reppyreprep")
+    val rl = Rep(l1, None)
     val l = Wrap(rl, "higherLevel")
     val input = "thingthing2"
 
@@ -36,18 +36,15 @@ class WrapTest extends FlatSpec with Matchers {
         pe.resultingInputState.offset should be ("thingthing".length)
         val tn = pe.node.asInstanceOf[PositionedMutableContainerTreeNode]
         tn.nodeName should be (l.name)
-//        println("Before pad: " + TreeNodeUtils.toShortString(tn))
-//        println(tn.childNodes)
 
         tn.pad(input)
 
         //println("After pad: " + TreeNodeUtils.toShortString(tn))
-
-        println(tn.childNodes)
+        //println(tn.childNodes)
         tn.childNodes.size should be (2)
        // tn.childNodes.head.nodeName should be (rl.name)
       case Left(dr) =>
-        println(DismatchReport.detailedReport(dr, input))
+        //println(DismatchReport.detailedReport(dr, input))
         fail
     }
   }

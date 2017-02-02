@@ -2,7 +2,7 @@ package com.atomist.rug.kind.python3
 
 import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
-import com.atomist.tree.content.text.grammar.antlr.FromGrammarNamingStrategy
+import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
 
 object PythonFileType {
 
@@ -12,7 +12,7 @@ object PythonFileType {
 
 class PythonFileType
   extends AntlrRawFileType("file_input",
-    FromGrammarNamingStrategy,
+    FromGrammarAstNodeCreationStrategy,
     "classpath:grammars/antlr/Python3.g4") {
 
   import PythonFileType._

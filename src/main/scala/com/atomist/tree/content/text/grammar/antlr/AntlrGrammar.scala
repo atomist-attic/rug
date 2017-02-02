@@ -14,7 +14,7 @@ import org.snt.inmemantlr.GenericParser
   */
 class AntlrGrammar(
                     production: String,
-                    namingStrategy: AstNodeNamingStrategy,
+                    nodeCreationStrategy: AstNodeCreationStrategy,
                     grammars: String*)
   extends AbstractInMemAntlrGrammar
     with Parser {
@@ -27,7 +27,7 @@ class AntlrGrammar(
 
   override def parse(input: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
     logger.debug(s"Using grammars:\n$grammars")
-    val l = new ModelBuildingListener(production, ml, namingStrategy)
+    val l = new ModelBuildingListener(production, ml, nodeCreationStrategy)
     try {
       val parser = config.parser
       parser.setListener(l)

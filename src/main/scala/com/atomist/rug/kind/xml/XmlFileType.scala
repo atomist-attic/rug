@@ -4,7 +4,7 @@ import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.Significance
-import com.atomist.tree.content.text.grammar.antlr.AstNodeNamingStrategy
+import com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy
 
 object XmlFileType {
 
@@ -14,7 +14,7 @@ object XmlFileType {
 
 class XmlFileType
   extends AntlrRawFileType("document",
-    XmlNamingStrategy,
+    XmlAstNodeCreationStrategy,
     "classpath:grammars/antlr/XMLParser.g4",
     "classpath:grammars/antlr/XMLLexer.g4"
   ) {
@@ -29,7 +29,7 @@ class XmlFileType
 }
 
 
-private object XmlNamingStrategy extends AstNodeNamingStrategy {
+private object XmlAstNodeCreationStrategy extends AstNodeCreationStrategy {
 
   override def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule match {
     case "element" =>

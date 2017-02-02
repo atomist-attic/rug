@@ -2,7 +2,7 @@ package com.atomist.rug.kind.json
 
 import java.nio.charset.StandardCharsets
 
-import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, FromGrammarNamingStrategy}
+import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, FromGrammarAstNodeCreationStrategy}
 import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.TreeNodeOperations._
@@ -21,7 +21,7 @@ private [json] class JsonParser extends Parser {
     withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8))
   }
 
-  private lazy val jsGrammar = new AntlrGrammar("json", FromGrammarNamingStrategy, g4)
+  private lazy val jsGrammar = new AntlrGrammar("json", FromGrammarAstNodeCreationStrategy, g4)
 
   override def parse(input: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
     jsGrammar.parse(input, ml).map(raw => {

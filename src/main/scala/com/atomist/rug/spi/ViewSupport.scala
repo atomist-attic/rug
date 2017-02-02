@@ -1,8 +1,9 @@
 package com.atomist.rug.spi
 
-import com.atomist.rug.kind.core.ChangeCounting
+import com.atomist.rug.kind.core.{ChangeCounting, FileArtifactBackedMutableView}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.PositionedMutableContainerTreeNode
 
 import scala.collection.mutable.ListBuffer
 
@@ -25,6 +26,26 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
   override def changeCount: Int = _changeCount
 
   override def dirty: Boolean = changeCount > 0
+
+  // Implementation of FormatInfoProvider relevant if subclasses choose to
+  // implement that trait
+  protected def rootNode: Option[PositionedMutableContainerTreeNode] = {
+    def highestNodeWithinFile(mv: MutableView[_]): Option[MutableView[_]] = {
+      //println(s"Looking at node $mv with parent ${mv.parent}")
+      if (mv.parent == null) None // We failed
+      else if (mv.parent.isInstanceOf[FileArtifactBackedMutableView]) {
+        Some(mv)
+      }
+      else highestNodeWithinFile(mv.parent)
+    }
+
+    val hnwf = highestNodeWithinFile(this)
+    //println(s"HNWF=$hnwf")
+    hnwf.flatMap(mv => mv.originalBackingObject match {
+      case pmct: PositionedMutableContainerTreeNode => Some(pmct)
+      case _ => None
+    })
+  }
 
   /**
     * Subclasses can call this to update the state of this object.

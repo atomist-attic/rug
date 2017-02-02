@@ -30,7 +30,7 @@ abstract class RawNodeUnderFileMutableView(topLevelNode: MutableContainerTreeNod
   override def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   /**
-    *
+    * Convenient method to operate on nodes selected by a path expression
     * @param pexpr Path expression under this node
     * @param f     function on TreeNode
     */

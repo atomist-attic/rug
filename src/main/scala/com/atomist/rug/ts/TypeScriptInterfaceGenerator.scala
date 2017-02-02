@@ -204,7 +204,7 @@ case class InterfaceGenerationConfig(
 
   val imports: String =
     """
-      |import {TreeNode,PathExpressionEngine} from '../tree/PathExpression'
+      |import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
       |import {ProjectContext} from '../operations/ProjectEditor' """
       .stripMargin
 

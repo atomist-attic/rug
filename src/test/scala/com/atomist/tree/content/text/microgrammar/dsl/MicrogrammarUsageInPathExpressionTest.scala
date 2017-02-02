@@ -4,12 +4,11 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
-import com.atomist.tree.{MutableTreeNode, TreeNode}
-import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, Microgrammar, MicrogrammarTypeProvider}
+import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
+import com.atomist.tree.{MutableTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

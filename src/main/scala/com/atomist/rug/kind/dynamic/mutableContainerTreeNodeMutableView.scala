@@ -24,10 +24,7 @@ class MutableContainerTypeProvider extends TypeProvider(classOf[MutableContainer
 }
 
 /**
-  * Fronts any view with hierarchy
-  *
-  * @param originalBackingObject
-  * @param parent
+  * Fronts any mutable view
   */
 class MutableContainerMutableView(
                                    originalBackingObject: MutableContainerTreeNode,

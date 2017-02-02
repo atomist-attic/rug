@@ -29,6 +29,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
             |interface ProjectContext {}
             |interface PathExpressionEngine {}
             |interface TreeNode {}
+            |interface FormatInfo {}
           """.stripMargin))
     }
 

@@ -169,7 +169,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= helper.indented(actionCode(ed, a, config.projectVarName, 1), 1)
       ts ++= config.separator
     }
-    ts ++= helper.indented(s"return new Result(Status.Success, 'Editor [${ed.name}] executed OK')\n", 1)
     ts.toString
   }
 
@@ -346,7 +345,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
       |
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |

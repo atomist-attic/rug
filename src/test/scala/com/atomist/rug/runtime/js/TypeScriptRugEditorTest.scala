@@ -21,7 +21,6 @@ object TypeScriptRugEditorTest {
     """
       |import {Project} from '@atomist/rug/model/Core';
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor';
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation';
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple";
@@ -37,13 +36,14 @@ object TypeScriptRugEditorTest {
     s"""
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
       |    description: string = "My simple editor"
-      |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "$ContentPattern"}]
       |
+      |    @parameter({description: "Content", pattern: "$ContentPattern"})
+      |    content: string
       |    edit(project: Project)  {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
@@ -55,7 +55,6 @@ object TypeScriptRugEditorTest {
     """
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |export let editor: ProjectEditor  = {
       |    name: "Simple",
@@ -88,7 +87,6 @@ object TypeScriptRugEditorTest {
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
-      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleEditor implements ProjectEditor {
       |    name: string = "Simple"
@@ -106,14 +104,18 @@ object TypeScriptRugEditorTest {
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {parameter} from '@atomist/rug/operations/RugOperation'
        |
        |class SimpleEditor implements ProjectEditor {
        |    name: string = "Simple"
        |    description: string = "My simple editor"
        |    tags: string[] = ["java", "maven"]
-       |    parameters: Parameter[] = [{name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]}]
-       |    edit(project: Project, {content} : {content: string}) {
+       |
+       |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]})
+       |    content: string
+       |
+       |
+       |    edit(project: Project) {
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |    }
        |  }
@@ -124,13 +126,13 @@ object TypeScriptRugEditorTest {
     """
       |import {ProjectGenerator} from '@atomist/rug/operations/ProjectGenerator'
       |import {Project} from '@atomist/rug/model/Core'
-      |import {Status,Result} from '@atomist/rug/operations/RugOperation'
       |
       |class SimpleGenerator implements ProjectGenerator {
       |     description: string = "My simple Generator"
       |     name: string = "SimpleGenerator"
-      |     populate(project: Project, {content} : {content: string}) {
-      |        let len: number = content.length;
+      |     content: string = ""
+      |     populate(project: Project) {
+      |        let len: number = this.content.length;
       |        if(project.name() != "woot"){
       |           throw Error(`Project name should be woot, but was ${project.name()}`)
       |        }
@@ -144,7 +146,7 @@ object TypeScriptRugEditorTest {
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-       |import {Parameter, Result, Status} from '@atomist/rug/operations/RugOperation'
+       |import {parameter} from '@atomist/rug/operations/RugOperation'
        |import {File} from '@atomist/rug/model/Core'
        |
        |class SimpleEditor implements ProjectEditor {
@@ -152,13 +154,15 @@ object TypeScriptRugEditorTest {
        |    name: string = "Simple"
        |    description: string = "A nice little editor"
        |    tags: string[] = ["java", "maven"]
-       |    parameters: Parameter[] = [
-       |        {name: "content", description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, default: "Anders is ?", displayable: false},
-       |        {name: "num", description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100, default: "10"}
-       |    ]
        |
-       |    edit(project: Project, {content, num }: {content: string, num: number}) {
-       |      project.addFile("src/from/typescript", content)
+       |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, displayable: false})
+       |    content: string = "Anders is ?"
+       |
+       |    @parameter({description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100})
+       |    num: number = 10
+       |
+       |    edit(project: Project) {
+       |      project.addFile("src/from/typescript", this.content)
        |    }
        |  }
        |export let myeditor = new SimpleEditor()
@@ -202,7 +206,7 @@ object TypeScriptRugEditorTest {
         |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |import {Match} from '@atomist/rug/tree/PathExpression'
         |import {File} from '@atomist/rug/model/Core'
-        |import {Parameter} from '@atomist/rug/operations/RugOperation'
+        |import {parameter} from '@atomist/rug/operations/RugOperation'
         |
         |class PomFile extends PathExpression<Project,File> {
         |
@@ -214,13 +218,15 @@ object TypeScriptRugEditorTest {
         |    name: string = "Constructed"
         |    description: string = "A nice little editor"
         |    tags: string[] = ["java", "maven"]
-        |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
-        |    edit(project: Project, {packageName } : {packageName: string}) {
+        |
+        |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+        |    packageName: string;
+        |    edit(project: Project) {
         |
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let m = eng.evaluate<Project,File>(project, new PomFile())
         |
-        |      var t: string = `param=${packageName},filecount=${m.root().fileCount()}`
+        |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
         |      for (let n of m.matches()) {
         |        t += `Matched file=${n.path()}`;
         |        n.append("randomness")
@@ -244,21 +250,24 @@ object TypeScriptRugEditorTest {
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
       |import {File} from '@atomist/rug/model/Core'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {parameter} from '@atomist/rug/operations/RugOperation'
       |
       |class ConstructedEditor implements ProjectEditor {
       |
       |    name: string = "Constructed"
       |    description: string = "A nice little editor"
       |    tags: string[] = ["java", "maven"]
-      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
-      |    edit(project: Project, {packageName } : {packageName: string}) {
+      |
+      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    packageName: string;
+      |
+      |    edit(project: Project) {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
-      |      var t: string = `param=${packageName},filecount=${m.root().fileCount()}`
+      |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
       |      for (let n of m.matches()) {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")

@@ -1,7 +1,7 @@
 package com.atomist.project.common.support
 
-import com.atomist.param.ParameterizedSupport
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.{Parameter, ParameterizedSupport, SimpleParameterValue}
+import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.project.common.{IllformedParametersException, InvalidParametersException, MissingParametersException}
 
 /**
@@ -11,6 +11,21 @@ trait ProjectOperationParameterSupport
   extends ParameterizedSupport
     with ProjectOperationSupport {
 
+  /**
+    * Fill out any default values not present in pvs but are required
+    * @param pvs parameters so far
+    * @return with defaults
+    */
+  def addDefaultParameterValues(pvs: ProjectOperationArguments) : ProjectOperationArguments = {
+    val toDefault = parameters.filter(p => !pvs.parameterValueMap.contains(p.getName) && p.getDefaultValue != "")
+    toDefault match {
+      case parms: Seq[Parameter] if parms.nonEmpty => {
+        val newParams = parms.map(p => SimpleParameterValue(p.getName,p.getDefaultValue))
+        new SimpleProjectOperationArguments(pvs.name, newParams ++ pvs.parameterValues)
+      }
+      case _ => pvs
+    }
+  }
   /**
     * Validate the given arguments, throwing an exception if they're invalid.
     *

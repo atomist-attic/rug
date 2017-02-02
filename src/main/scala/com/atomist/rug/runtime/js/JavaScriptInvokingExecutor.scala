@@ -19,7 +19,6 @@ class JavaScriptInvokingExecutor(
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
     val smv = new ServicesMutableView(rugAs, serviceSource)
     val wsmv = new jsSafeCommittingProxy(new ServicesType, smv)
-    //val reviewContext = new ReviewContext
-    invokeMemberWithParameters("execute", wsmv, poa)
+    invokeMemberWithParameters("execute", wsmv, addDefaultParameterValues(poa))
   }
 }

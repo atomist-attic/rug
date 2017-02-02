@@ -36,7 +36,7 @@ trait ProjectEditorSupport
       } else if (meetsPostcondition(as)) {
         NoModificationNeeded(s"Artifact source meets postcondition already")
       } else {
-        modifyInternal(as, poa)
+        modifyInternal(as, addDefaultParameterValues(poa))
       }
 
     // We may need to make it fail-fast

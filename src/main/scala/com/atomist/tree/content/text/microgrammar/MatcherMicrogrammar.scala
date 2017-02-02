@@ -30,11 +30,9 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
   private[microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch, startOffset: InputPosition = OffsetInputPosition(0)) = {
     val endOffset = startOffset + matchFound.matched.length
     val matchedNode = matchFound.node match {
-      case None =>
-        new MicrogrammarNode(name, name, Seq(), startOffset, endOffset)
-      case Some(one: MutableTerminalTreeNode) =>
+      case one: MutableTerminalTreeNode =>
         new MicrogrammarNode(name, name, Seq(one), startOffset, endOffset)
-      case Some(container: MutableContainerTreeNode) =>
+      case  container: MutableContainerTreeNode =>
         new MicrogrammarNode(name, name, container.childNodes, startOffset, endOffset)
       case _ => ???
     }
@@ -54,7 +52,7 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
           dismatches.append(dismatchReport)
           is = is.advance
         case Right(matchFound) =>
-          listeners.foreach(l => matchFound.node.foreach(l.onMatch))
+          listeners.foreach(l => l.onMatch(matchFound.node))
           val thisStartedAt = OffsetInputPosition(is.offset)
           matches.append(matchFound -> thisStartedAt)
           is = matchFound.resultingInputState

@@ -27,10 +27,8 @@ trait Matcher {
   final def matchPrefix(is: InputState): MatchPrefixResult = {
     val matchedOption = matchPrefixInternal(is)
 
-    for {matchFound <- matchedOption.right
-         node <- matchFound.node
-    } {
-      node.asInstanceOf[MutableTreeNode].addType(name)
+    matchedOption.right.foreach { matchFound =>
+      matchFound.node.asInstanceOf[MutableTreeNode].addType(name)
     }
     matchedOption
   }
@@ -97,8 +95,6 @@ object Matcher {
             prettyPrintLines(right))
       case Discard(m, name) =>
         mkSeq(s"Discard($name", prettyPrintLines(m), ")")
-      case Remainder(name) =>
-        Seq(s"Remainder($name)")
       case Wrap(m, name) =>
         mkSeq(s"Wrap($name", prettyPrintLines(m), ")")
       case RestOfLine(name) =>
@@ -132,7 +128,7 @@ trait ConfigurableMatcher extends Matcher {
   * @param resultingInputState resulting InputState
   */
 case class PatternMatch(
-                         node: Option[PositionedTreeNode],
+                         node: PositionedTreeNode,
                          matched: String,
                          resultingInputState: InputState,
                          matcherId: String)

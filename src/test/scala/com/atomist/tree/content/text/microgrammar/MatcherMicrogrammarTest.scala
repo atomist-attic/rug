@@ -414,8 +414,8 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     }
     val m = ymlKeys.findMatches(input)
     m.size should be(1)
-//    println(TreeNodeUtils.toShorterString(m.head))
-//    println(s"Has ${m.head.fieldValues.size} field values: ${m.head.fieldValues}")
+    //    println(TreeNodeUtils.toShorterString(m.head))
+    //    println(s"Has ${m.head.fieldValues.size} field values: ${m.head.fieldValues}")
     withClue(s"Didn't expect to find match ${TreeNodeUtils.toShorterString(m.head)} with ${m.head.childNodes.size} children and fields=${m.head.fieldValues}\n") {
       val keys = m.head.childrenNamed("key")
       val values = m.head.childrenNamed("value")
@@ -445,13 +445,10 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     printlns.matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
         pm.matched should be(p1)
-        pm.node match {
-          case Some(positionedNode) =>
-            val (hatched, _) = PositionedMutableContainerTreeNode.pad(positionedNode, input)
-            p1.contains(hatched.value) should be(true)
-          case _ => fail
-        }
-      case _ => ???
+        val positionedNode = pm.node
+        val (hatched, _) = PositionedMutableContainerTreeNode.pad(positionedNode, input)
+        p1.contains(hatched.value) should be(true)
+      case Left(boo) => fail(DismatchReport.detailedReport(boo, input))
     }
   }
 

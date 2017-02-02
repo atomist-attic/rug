@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar.matchers
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableTerminalTreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.content.text.microgrammar.{DismatchReport, InputState, Matcher, PatternMatch}
@@ -32,10 +33,10 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
         case Left(no) =>
           Left(no.andSo("not anywhere in the rest of the input"))
         case Right(terminatingMatch) =>
+          val significance = if (named.isDefined) TreeNode.Signal else TreeNode.Noise
           val (eaten, resultingIs) = inputState.take(terminatingMatch.endPosition.offset - inputState.offset)
           val returnedMatch = PatternMatch(
-            named.map(n =>
-              new MutableTerminalTreeNode(n, eaten, inputState.inputPosition)),
+              new MutableTerminalTreeNode(name, eaten, inputState.inputPosition, significance = significance),
             eaten,
             terminatingMatch.resultingInputState,
             this.toString)

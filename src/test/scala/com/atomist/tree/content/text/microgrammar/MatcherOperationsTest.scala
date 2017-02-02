@@ -10,8 +10,8 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val ls = l.toString
     l.matchPrefix(InputState("thing")) match {
       case Right(PatternMatch(tn, "thing", InputState("thing", _, _), `ls`)) =>
-        tn.get.nodeName should be ("x")
-        tn.get.value should be ("thing")
+        tn.nodeName should be ("x")
+        tn.value should be ("thing")
       case _ => ???
     }
   }
@@ -19,7 +19,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
   it should "match literal in partial string" in {
     val l = Literal("thing")
     l.matchPrefix(InputState("thing2")) match {
-      case Right(PatternMatch(Some(node), "thing", is, value)) =>
+      case Right(PatternMatch(node, "thing", is, value)) =>
         node.significance should be(TreeNode.Noise)
         value should be(l.toString)
         is.offset should be(5)

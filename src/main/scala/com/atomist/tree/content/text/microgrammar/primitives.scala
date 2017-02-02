@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
+import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition, SimpleMutableContainerTreeNode}
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
 import com.atomist.tree.utils.TreeNodeUtils
 
@@ -27,12 +27,12 @@ case class Alternate(a: Matcher, b: Matcher, name: String = "alternate") extends
   * Match but discard the node output of the matcher
   *
   * @param m    matcher whose node result we'll discard
-  * @param name name of this discarding matcher
+  * @param name name of this discarding matcher (useless)
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
-    m.matchPrefix(inputState).right.map(matched => matched.copy(node = None))
+    m.matchPrefix(inputState).right.map(matched => matched.copy(node = new MutableTerminalTreeNode(name, matched.node.value, matched.node.startPosition, significance = TreeNode.Noise)))
 
 }
 
@@ -48,22 +48,26 @@ case class Wrap(m: Matcher, name: String)
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState).right.map {
       matched =>
-        val wrappedNode = matched.node.map {
-          SimpleMutableContainerTreeNode.wrap(name, _)
-        }
+        val wrappedNode =
+          SimpleMutableContainerTreeNode.wrap(name, matched.node)
         val wrapped = matched.copy(node = wrappedNode)
         //println(s"Wrapped = ${TreeNodeUtils.toShorterString(wrappedNode.get)}")
         wrapped
     }
 }
 
-case class Optional(m: Matcher, name: String = "optional") extends Matcher {
+case class Optional(m: Matcher, name: String = Optional.DefaultOptionalName) extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
-    m.matchPrefix(inputState) match {
-      case Left(no) =>
-        Right(PatternMatch(None, matched = "", inputState, this.toString))
-      case Right(there) =>
-        Right(there)
-    }
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
+    val significance = if (name == Optional.DefaultOptionalName) TreeNode.Noise else TreeNode.Signal
+      m.matchPrefix(inputState) match {
+        case Left(no) =>
+          Right(PatternMatch(EmptyContainerTreeNode(name, OffsetInputPosition(inputState.offset), significance =significance), matched = "", inputState, this.toString))
+        case Right(there) =>
+          Right(there)
+      }
+  }
+}
+object Optional {
+  val DefaultOptionalName = ".optional"
 }

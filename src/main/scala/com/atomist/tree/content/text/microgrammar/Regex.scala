@@ -21,8 +21,7 @@ case class Regex(regex: String, givenName: Option[String], config: MatcherConfig
       rex.anchored.findPrefixMatchOf(inputState.remainder) match {
         case Some(m) =>
           Right(PatternMatch(
-            Some(
-              new MutableTerminalTreeNode(name, m.matched, inputState.inputPosition, significance = treeNodeSignificance)),
+              new MutableTerminalTreeNode(name, m.matched, inputState.inputPosition, significance = treeNodeSignificance),
             m.matched,
             inputState.take(m.matched.length)._2,
             this.toString))

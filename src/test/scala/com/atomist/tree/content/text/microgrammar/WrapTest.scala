@@ -16,7 +16,7 @@ class WrapTest extends FlatSpec with Matchers {
         pe.matched should be ("thing")
         pe.resultingInputState.input should be (input)
         pe.resultingInputState.offset should be ("thing".length)
-        val tn = pe.node.get.asInstanceOf[ContainerTreeNode]
+        val tn = pe.node.asInstanceOf[ContainerTreeNode]
         tn.nodeName should be ("higherLevel")
         tn.childNodes.size should be (1)
       case _ => ???
@@ -34,7 +34,7 @@ class WrapTest extends FlatSpec with Matchers {
         pe.matched should be ("thingthing")
         pe.resultingInputState.input should be (input)
         pe.resultingInputState.offset should be ("thingthing".length)
-        val tn = pe.node.get.asInstanceOf[PositionedMutableContainerTreeNode]
+        val tn = pe.node.asInstanceOf[PositionedMutableContainerTreeNode]
         tn.nodeName should be (l.name)
 //        println("Before pad: " + TreeNodeUtils.toShortString(tn))
 //        println(tn.childNodes)

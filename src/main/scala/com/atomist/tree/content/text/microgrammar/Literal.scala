@@ -27,7 +27,7 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
           new MutableTerminalTreeNode(LiteralDefaultName, literal, inputState.inputPosition, significance = TreeNode.Noise)
       }
       Right(PatternMatch(
-        Some(node),
+        node,
         literal,
         is,
         this.toString))
@@ -44,26 +44,6 @@ object Literal {
   val LiteralDefaultName = ".literal"
 
   implicit def stringToMatcher(s: String): Matcher = Literal(s)
-}
-
-/**
-  * Remainder of the the input
-  */
-case class Remainder(name: String = "remainder") extends Matcher {
-
-  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
-    if (inputState.exhausted)
-      Left(DismatchReport("There is nothing here")) // Why would this stop a match?
-    else {
-      val (matched, is) = inputState.takeAll
-      Right(
-        PatternMatch(None,
-          matched,
-          is, this.toString)
-      )
-    }
-  }
-
 }
 
 /**

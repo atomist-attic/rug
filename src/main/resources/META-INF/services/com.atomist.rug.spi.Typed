@@ -30,6 +30,8 @@ com.atomist.rug.kind.properties.PropertiesType
 
 com.atomist.rug.kind.js.PackageJsonType
 
+com.atomist.rug.kind.scala.ScalaFileType
+
 com.atomist.rug.kind.service.ServiceTypeProvider
 com.atomist.rug.kind.service.ServicesType
 

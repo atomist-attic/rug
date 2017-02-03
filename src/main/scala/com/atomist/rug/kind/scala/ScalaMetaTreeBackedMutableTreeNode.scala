@@ -8,11 +8,9 @@ import scala.meta._
 
 /**
   * Uses copy on write pattern to expose an updateable tree node
-  *
   * @param initialTree initial tree. May be replaced
   */
-class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
-  extends MutableContainerTreeNode {
+class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree) extends MutableContainerTreeNode {
 
   private var currentTree: Tree = initialTree
 
@@ -34,9 +32,7 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
   override def update(to: String): Unit = {
     currentTree match {
       case n: ({def copy(s: String): Tree})@unchecked =>
-        println(s"Parent of $currentTree is ${currentTree.parent}")
         currentTree = n.copy(to)
-
     }
   }
 
@@ -47,5 +43,4 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
   override def appendField(newField: TreeNode): Unit = ???
 
   override def toString: String = s"$nodeName:${nodeTags.mkString(",")}:[$value]"
-
 }

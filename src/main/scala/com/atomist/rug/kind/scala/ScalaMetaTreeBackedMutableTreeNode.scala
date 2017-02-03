@@ -1,16 +1,16 @@
 package com.atomist.rug.kind.scala
 
-import com.atomist.tree.{MutableTreeNode, TreeNode}
-
-import scala.meta._
-import scala.meta.common.Convert
+import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.MutableContainerTreeNode
 
 import scala.language.reflectiveCalls
+import scala.meta._
 
-
-// TODO need to have PositionedTreeNode trait separate
-
-class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree) extends MutableTreeNode {
+/**
+  * Uses copy on write pattern to expose an updateable tree node
+  * @param initialTree initial tree. May be replaced
+  */
+class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree) extends MutableContainerTreeNode {
 
   private var currentTree: Tree = initialTree
 
@@ -37,6 +37,10 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree) extends MutableTreeN
   }
 
   override def dirty: Boolean = currentTree != initialTree
+
+  override def fieldValues: Seq[TreeNode] = childNodes
+
+  override def appendField(newField: TreeNode): Unit = ???
 
   override def toString: String = s"$nodeName:${nodeTags.mkString(",")}:[$value]"
 }

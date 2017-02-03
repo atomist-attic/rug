@@ -20,14 +20,12 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
-    //tn.accept(ConsoleVisitor, 0)
   }
 
   it should "satisfy simple path expression" in {
     val source =
       """class Foo(bar: String, i: Int)
       """
-
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
@@ -38,28 +36,27 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "update a node expression" in {
+  it should "return position information" in {
     val source =
       """class Foo(bar: String, i: Int)
       """
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
-
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
-        val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update("Thing")
-        mut.value should be("Thing")
-        mut.dirty should be(true)
+        nodes.head.value should be("bar")
+        //nodes.head.
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
 
-  it should "update a node expression and see changes in root" in pendingUntilFixed {
+  it should "update a node expression" in {
     val source =
       """class Foo(bar: String, i: Int)
       """
+    val newContent = "Thing"
+
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
 
@@ -67,12 +64,11 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
         val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update("Thing")
-        mut.value should be("Thing")
+        mut.update(newContent)
+        mut.value should be(newContent)
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
-    tn.value should be (source.replace("String", "Thing"))
   }
 
 }

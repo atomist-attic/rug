@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.scala
 
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text.{MutableContainerTreeNode, PositionedTreeNode}
 
 import scala.language.reflectiveCalls
 import scala.meta._
@@ -12,7 +12,7 @@ import scala.meta._
   * @param initialTree initial tree. May be replaced
   */
 class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
-  extends MutableContainerTreeNode {
+  extends MutableContainerTreeNode with PositionedTreeNode {
 
   private var currentTree: Tree = initialTree
 
@@ -21,13 +21,9 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
     fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
   }
 
-  override def value: String =
-    currentTree.tokens.map(_.syntax).mkString("")
-    //currentTree.syntax
-//    childNodes match {
-//      case Nil => currentTree.syntax
-//      case l => l.map(_.value).mkString("")
-//    }
+
+
+  override def value: String = currentTree.syntax
 
   def childNodeNames: Set[String] = children.map(_.nodeName).toSet
 
@@ -42,10 +38,6 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
       case n: ({def copy(s: String): Tree})@unchecked =>
         println(s"Parent of $currentTree is ${currentTree.parent}")
         currentTree = n.copy(to)
-
-        currentTree.parent.foreach(t => {
-          ???
-        })
     }
   }
 

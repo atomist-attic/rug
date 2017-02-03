@@ -70,14 +70,13 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
     scalaFileNode.value should equal(Exceptions.content)
   }
 
-  it should "find and modify specific exception catch" in pendingUntilFixed {
+  it should "find and modify specific exception catch" in {
     val proj = ExceptionsProject
     val scalas: Option[Seq[TreeNode]] = scalaType.findAllIn(proj)
     scalas.size should be(1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
-    //println(TreeNodeUtils.toShorterString(scalaFileNode))
 
-    val newException = "ere"
+    val newException = "MicturationException"
 
     val expr = "//TermTryWithCases/Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
     ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {

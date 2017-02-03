@@ -21,12 +21,7 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
     fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
   }
 
-  override def value: String =
-    currentTree.syntax
-//    childNodes match {
-//      case Nil => currentTree.syntax
-//      case l => l.map(_.value).mkString("")
-//    }
+  override def value: String = currentTree.syntax
 
   def childNodeNames: Set[String] = children.map(_.nodeName).toSet
 
@@ -42,9 +37,6 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
         println(s"Parent of $currentTree is ${currentTree.parent}")
         currentTree = n.copy(to)
 
-        currentTree.parent.foreach(t => {
-          ???
-        })
     }
   }
 
@@ -55,4 +47,5 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
   override def appendField(newField: TreeNode): Unit = ???
 
   override def toString: String = s"$nodeName:${nodeTags.mkString(",")}:[$value]"
+
 }

@@ -42,6 +42,8 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     val source =
       """class Foo(bar: String, i: Int)
       """
+    val newContent = "Thing"
+
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
 
@@ -49,30 +51,31 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
         val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update("Thing")
-        mut.value should be("Thing")
+        mut.update(newContent)
+        mut.value should be(newContent)
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
 
-  it should "update a node expression and see changes in root" in pendingUntilFixed {
+  it should "update a node expression and see changes in root" in {
     val source =
       """class Foo(bar: String, i: Int)
       """
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
+    val newContent = "Thing"
 
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
         val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update("Thing")
-        mut.value should be("Thing")
+        mut.update(newContent)
+        mut.value should be(newContent)
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
-    tn.value should be (source.replace("String", "Thing"))
+    tn.value should be (source.replace("String", newContent))
   }
 
 }

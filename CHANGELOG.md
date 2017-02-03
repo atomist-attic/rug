@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.11.0...HEAD
 
+-   Fix: Elm parser failed on files with two multiline comments
+     https://github.com/atomist/rug/issues/268 
+
 ## [0.11.0]
 
 [0.11.0]: https://github.com/atomist/rug/compare/0.10.0...0.11.0

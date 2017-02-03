@@ -245,7 +245,22 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       dependency,
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId></dependency>""")
 
-  @ExportFunction(readOnly = false, description = "Add or replace a dependency, providing version")
+  @ExportFunction(readOnly = false, description = "Add or replace a dependency")
+  def addOrReplaceDependency(@ExportFunctionParameterDescription(name = "groupId",
+    description = "The value of the dependency's groupId")
+                             groupId: String,
+                             @ExportFunctionParameterDescription(name = "artifactId",
+                               description = "The value of the dependency's artifactId")
+                             artifactId: String,
+                             @ExportFunctionParameterDescription(name = "scope",
+                               description = "The value of the dependency's scope")
+                             scope: String): Unit =
+    addOrReplaceNode(dependenciesBaseXPath,
+      s"/project/dependencies/dependency/artifactId[text()='$artifactId' and ../groupId[text() = '$groupId']]/..",
+      dependency,
+      s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><scope>$scope</scope></dependency>""")
+
+  @ExportFunction(readOnly = false, description = "Add or replace a dependency, providing version and scope")
   def addOrReplaceDependencyOfVersion(@ExportFunctionParameterDescription(name = "groupId",
     description = "The value of the dependency's groupId")
                              groupId: String,
@@ -259,6 +274,24 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       s"/project/dependencies/dependency/artifactId[text()='$artifactId' and ../groupId[text() = '$groupId']]/..",
       dependency,
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>$version</version></dependency>""")
+
+  @ExportFunction(readOnly = false, description = "Add or replace a dependency, providing version and scope")
+  def addOrReplaceDependencyOfVersion(@ExportFunctionParameterDescription(name = "groupId",
+    description = "The value of the dependency's groupId")
+                                      groupId: String,
+                                      @ExportFunctionParameterDescription(name = "artifactId",
+                                        description = "The value of the dependency's artifactId")
+                                      artifactId: String,
+                                      @ExportFunctionParameterDescription(name = "newVersion",
+                                        description = "The value of the dependency's version to be set")
+                                      version: String,
+                                      @ExportFunctionParameterDescription(name = "scope",
+                                        description = "The value of the dependency's scope to be set")
+                                      scope: String): Unit =
+    addOrReplaceNode(dependenciesBaseXPath,
+      s"/project/dependencies/dependency/artifactId[text()='$artifactId' and ../groupId[text() = '$groupId']]/..",
+      dependency,
+      s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>$version</version><scope>$scope</scope></dependency>""")
 
   @ExportFunction(readOnly = false, description = "Add or replace a dependency's version")
   def addOrReplaceDependencyVersion(@ExportFunctionParameterDescription(name = "groupId",

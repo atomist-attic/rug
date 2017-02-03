@@ -345,6 +345,41 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
   }
 
+  it should "add a dependency with scope" in {
+    val dependencyArtifactId = "atomist-artifact"
+    val dependencyGroupId = "com.atomist"
+    val dependencyScope = "compile"
+
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (false)
+
+    validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId, dependencyScope)
+
+    validPomUut.dirty should be (true)
+
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
+
+    validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be ("compile")
+  }
+
+  it should "add a dependency with version and scope" in {
+    val dependencyArtifactId = "atomist-artifact"
+    val dependencyGroupId = "com.atomist"
+    val dependencyVersion = "0.1.0"
+    val dependencyScope = "compile"
+
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (false)
+
+    validPomUut.addOrReplaceDependencyOfVersion(dependencyGroupId, dependencyArtifactId, dependencyVersion, dependencyScope)
+
+    validPomUut.dirty should be (true)
+
+    validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
+
+    validPomUut.dependencyVersion(dependencyGroupId, dependencyArtifactId) should be ("0.1.0")
+
+    validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be ("compile")
+  }
+
   it should "not add a further dependency if the dependency already exists" in {
     val dependencyArtifactId = "spring-boot-starter-web"
     val dependencyGroupId = "org.springframework.boot"

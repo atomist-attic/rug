@@ -4,7 +4,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{MutableTreeNode, TreeNode}
 import com.atomist.tree.content.text.ConsoleMatchListener
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
 import com.atomist.tree.utils.TreeNodeUtils
@@ -54,18 +54,45 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be(1)
   }
 
-  it should "find specification exception class" in {
+  it should "find specific exception catch" in {
     val scalas: Option[Seq[TreeNode]] = scalaType.findAllIn(ExceptionsProject)
     scalas.size should be(1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
     //println(TreeNodeUtils.toShorterString(scalaFileNode))
 
     val expr = "//TermTryWithCases/Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
-    ee.evaluate(scalaFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
+    ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
+        nodes.size should be (1)
+        nodes.head.value should be("ThePlaneHasFlownIntoTheMountain")
     }
 
     scalaFileNode.value should equal(Exceptions.content)
+  }
+
+  it should "find and modify specific exception catch" in {
+    val proj = ExceptionsProject
+    val scalas: Option[Seq[TreeNode]] = scalaType.findAllIn(proj)
+    scalas.size should be(1)
+    val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
+    //println(TreeNodeUtils.toShorterString(scalaFileNode))
+
+    val newException = "ere"
+
+    val expr = "//TermTryWithCases/Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
+    ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        nodes.size should be (1)
+        val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
+        mut.update(newException)
+    }
+
+    val newContent = Exceptions.content.replace("ThePlaneHasFlownIntoTheMountain", newException)
+    scalaFileNode.value should equal(newContent)
+
+    val updatedFile = proj.findFile(Exceptions.path)
+    updatedFile.dirty should be (true)
+    updatedFile.content should be (newContent)
   }
 
 }

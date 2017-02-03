@@ -8,9 +8,11 @@ import scala.meta._
 
 /**
   * Uses copy on write pattern to expose an updateable tree node
+  *
   * @param initialTree initial tree. May be replaced
   */
-class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree) extends MutableContainerTreeNode {
+class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
+  extends MutableContainerTreeNode {
 
   private var currentTree: Tree = initialTree
 

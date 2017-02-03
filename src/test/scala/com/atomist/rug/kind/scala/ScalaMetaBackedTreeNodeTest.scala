@@ -47,9 +47,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     val source =
       """class Foo(bar: String, i: Int)
       """
-
     val str: Parsed[Source] = source.parse[Source]
-
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
 
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
@@ -61,6 +59,25 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
+  }
+
+  it should "update a node expression and see changes in root" in {
+    val source =
+      """class Foo(bar: String, i: Int)
+      """
+    val str: Parsed[Source] = source.parse[Source]
+    val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
+
+    ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        nodes.size should be(1)
+        val mut = nodes.head.asInstanceOf[MutableTreeNode]
+        mut.update("Thing")
+        mut.value should be("Thing")
+        mut.dirty should be(true)
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+    tn.value should be (source.replace("String", "Thing"))
   }
 
 }

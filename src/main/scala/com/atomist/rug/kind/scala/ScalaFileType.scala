@@ -6,7 +6,7 @@ import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
 
 import scala.meta._
-import scala.util.Try
+import scala.meta.parsers.Parsed.Success
 
 class ScalaFileType extends TypeUnderFile {
 
@@ -15,10 +15,10 @@ class ScalaFileType extends TypeUnderFile {
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(".scala")
 
   override def contentToRawNode(content: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
-    val str: Parsed[Source] = content.parse[Source]
-    Try {
-      new ScalaMetaTreeBackedMutableTreeNode(str.get)
-    }.toOption
+    content.parse[Source] match {
+      case Success(ast) => Some(new ScalaMetaTreeBackedMutableTreeNode(ast))
+      case _ => None
+    }
   }
 
 }

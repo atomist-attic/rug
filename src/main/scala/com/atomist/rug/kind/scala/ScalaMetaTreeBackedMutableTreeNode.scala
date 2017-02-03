@@ -22,7 +22,8 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
   }
 
   override def value: String =
-    currentTree.syntax
+    currentTree.tokens.map(_.syntax).mkString("")
+    //currentTree.syntax
 //    childNodes match {
 //      case Nil => currentTree.syntax
 //      case l => l.map(_.value).mkString("")

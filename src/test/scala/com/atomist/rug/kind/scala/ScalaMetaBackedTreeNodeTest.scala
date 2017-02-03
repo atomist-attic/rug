@@ -3,6 +3,7 @@ package com.atomist.rug.kind.scala
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.tree.MutableTreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
+import com.atomist.util.ConsoleVisitor
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.meta._
@@ -13,14 +14,16 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-  it should "parse simple class without error" in {
+  it should "expose simple class" in {
     val source =
       """class Foo(bar: String, i: Int)
       """
 
     val str: Parsed[Source] = source.parse[Source]
+
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
-    //tn.accept(ConsoleVisitor, 0)
+
+    tn.accept(ConsoleVisitor, 0)
   }
 
   it should "satisfy simple path expression" in {
@@ -29,7 +32,9 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       """
 
     val str: Parsed[Source] = source.parse[Source]
+
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
+
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
@@ -42,8 +47,6 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     val source =
       """class Foo(bar: String, i: Int)
       """
-    val newContent = "Thing"
-
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
 
@@ -51,8 +54,8 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
         val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update(newContent)
-        mut.value should be(newContent)
+        mut.update("Thing")
+        mut.value should be("Thing")
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
@@ -64,18 +67,17 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       """
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedMutableTreeNode(str.get)
-    val newContent = "Thing"
 
     ee.evaluate(tn, "//TermParam[/TypeName[@value='String']]/TermName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
         val mut = nodes.head.asInstanceOf[MutableTreeNode]
-        mut.update(newContent)
-        mut.value should be(newContent)
+        mut.update("Thing")
+        mut.value should be("Thing")
         mut.dirty should be(true)
       case wtf => fail(s"Unexpected: $wtf")
     }
-    tn.value should be (source.replace("String", newContent))
+    tn.value should be (source.replace("String", "Thing"))
   }
 
 }

@@ -8,7 +8,7 @@ import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.{ArtifactSource, FileArtifact}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.grammar.antlr.FromGrammarNamingStrategy
+import com.atomist.tree.content.text.grammar.antlr.{FromGrammarAstNodeCreationStrategy}
 
 class EditorType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
@@ -38,7 +38,7 @@ class EditorType(evaluator: Evaluator) extends Type(evaluator) with Reflectively
 class RugFileType
   extends AntlrRawFileType(
     topLevelProduction = "rug_file",
-    namingStrategy = FromGrammarNamingStrategy,
+    nodeCreationStrategy = FromGrammarAstNodeCreationStrategy,
     grammars = "classpath:grammars/antlr/Rug.g4") {
 
   override def description = "Rug DSL file"

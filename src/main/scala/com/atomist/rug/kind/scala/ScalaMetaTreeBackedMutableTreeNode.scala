@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.scala
 
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.{MutableContainerTreeNode, PositionedTreeNode}
+import com.atomist.tree.content.text.{InputPosition, MutableContainerTreeNode, OffsetInputPosition, PositionedTreeNode}
 
 import scala.language.reflectiveCalls
 import scala.meta._
@@ -21,7 +21,9 @@ class ScalaMetaTreeBackedMutableTreeNode(initialTree: Tree)
     fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
   }
 
+  override def startPosition: InputPosition = OffsetInputPosition(currentTree.pos.start.offset)
 
+  override def endPosition: InputPosition = OffsetInputPosition(currentTree.pos.end.offset)
 
   override def value: String = currentTree.syntax
 

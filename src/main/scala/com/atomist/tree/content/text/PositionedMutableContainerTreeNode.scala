@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
   */
 abstract class PositionedMutableContainerTreeNode(val nodeName: String)
   extends MutableContainerTreeNode
-    with PositionedTreeNode {
+    with PositionedPaddableTreeNode {
 
   def endPosition: InputPosition
 
@@ -233,7 +233,7 @@ object PositionedMutableContainerTreeNode {
       fv <- pupae.childNodes
     } {
       fv match {
-        case sm: PositionedTreeNode if sm.initialized =>
+        case sm: PositionedPaddableTreeNode if sm.initialized =>
           // This condition isn't pretty, is it? No. I suspect we are not testing the right conditions.
           // Perhaps we mean "if this node isn't a bunch of whitespace" (that's a thing in Python)
           // but that whitespace appears to be appended to the previous node maybe? because if we add those

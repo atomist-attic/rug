@@ -20,7 +20,7 @@ class MutableTerminalTreeNode(val nodeName: String,
                               val startPosition: InputPosition,
                               override val significance: Significance = TreeNode.Signal)
   extends TerminalTreeNode
-    with PositionedTreeNode
+    with PositionedPaddableTreeNode
     with MutableTreeNode {
 
   def this(other: MutableTerminalTreeNode) = {

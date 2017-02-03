@@ -11,16 +11,6 @@ class PadPropertyTest extends FlatSpec with Checkers {
   implicit override val generatorDrivenConfig =
     PropertyCheckConfiguration(minSuccessful = 10)
 
-  import PositionedTreeNodeGenerators._
-
-  it should "Terminal tree nodes do not change their value when padded" in {
-    check { (tn: PositionedTreeNode with TerminalTreeNode) =>
-      // in the metamorphosis future, this would be
-      // tn.value == pad(tn, _).value
-      tn.padded
-    }
-  }
-
   it should "still have all terminal tree nodes after padding" is pending
 //  {
 //    check {

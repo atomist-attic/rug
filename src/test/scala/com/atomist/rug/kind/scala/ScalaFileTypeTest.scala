@@ -85,7 +85,33 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
         val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
         mut.update(newException)
       case wtf =>
-//        println(scalaFileNode.childNodes.head)
+        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+    }
+
+    val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
+    scalaFileNode.value should equal(newContent)
+
+    scalaFileNode.dirty should be (true)
+    val updatedFile = proj.findFile(Exceptions.path)
+    updatedFile.content should be(newContent)
+    //updatedFile.dirty should be(true)
+  }
+
+  it should "find and modify multiple points" in {
+    val proj = ExceptionsProject
+    val scalas: Option[Seq[TreeNode]] = scalaType.findAllIn(proj)
+    scalas.size should be(1)
+    val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
+
+    val newException = "MicturationException"
+
+    val expr = "//Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
+    ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        nodes.size should be(1)
+        val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
+        mut.update(newException)
+      case wtf =>
         fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
     }
 
@@ -97,8 +123,6 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
     updatedFile.content should be(newContent)
     //updatedFile.dirty should be(true)
   }
-
-  it should "find and modify many points" is pending
 
 }
 
@@ -128,6 +152,12 @@ object ScalaFileTypeTest {
       |   catch {
       |     case p: ThePlaneHasFlownIntoTheMountain =>
       |        println("thing")
+      |   }
+      |
+      |   val s: Object = null
+      |   s match {
+      |     case p: ThePlaneHasFlownIntoTheMountain =>
+      |       println("Foo bar")
       |   }
       | }
       |}

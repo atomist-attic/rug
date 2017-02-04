@@ -18,7 +18,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "enumerate usings in simple project with ill-formed C#" in {
-    modify("ListImports.ts", ProjectWithBogusCSharp.currentBackingObject) match {
+    modify("ListImports.ts", projectWithBogusCSharp.currentBackingObject) match {
       case nmn: NoModificationNeeded =>
       case _ => ???
     }

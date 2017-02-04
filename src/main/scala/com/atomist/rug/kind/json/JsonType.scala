@@ -1,14 +1,11 @@
 package com.atomist.rug.kind.json
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core._
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.kind.json.JsonType._
-import com.atomist.rug.parser.Selected
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.kind.grammar.TypeUnderFile
 import com.atomist.rug.spi.{ExportFunction, _}
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text._
+import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.pathexpression.PathExpressionEngine
 import com.atomist.tree.utils.TreeNodeFinders._
 import com.atomist.tree.{MutableTreeNode, TreeNode}
@@ -16,55 +13,25 @@ import com.atomist.tree.{MutableTreeNode, TreeNode}
 /**
   * Type for JSON files
   */
-class JsonType(
-                evaluator: Evaluator
-              )
-  extends Type(evaluator)
-    with ContextlessViewFinder
-    with ReflectivelyTypedType {
+class JsonType
+  extends TypeUnderFile {
 
-  def this() = this(DefaultEvaluator)
+  import JsonType._
 
   private def jsonParser = new JsonParser
 
   override def description = "JSON file"
 
-  override val resolvesFromNodeTypes: Set[String] =
-    Typed.typeClassesToTypeNames(classOf[ProjectType], classOf[FileType])
-
   override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
-      case pmv: ProjectMutableView =>
-        Some(pmv.currentBackingObject
-          .allFiles
-          .filter(f => f.name.endsWith(Extension))
-          .map(f => (f, jsonParser.parse(f.content)))
-          .filter(tup => tup._2.nonEmpty)
-          .map(tup => new JsonMutableView(tup._1, pmv, tup._2.get))
-        )
-      case f: FileArtifactBackedMutableView =>
-        Some(Seq(f)
-          .filter(f => f.filename.endsWith(Extension))
-          .map(f => (f, jsonParser.parse(f.content)))
-          .filter(tup => tup._2.nonEmpty)
-          .map(tup => new JsonMutableView(tup._1.currentBackingObject, tup._1.parent, tup._2.get))
-        )
-      case dmv: DirectoryMutableView =>
-        Some(dmv.currentBackingObject
-          .allFiles
-          .filter(f => f.name.endsWith(Extension))
-          .map(f => (f, jsonParser.parse(f.content)))
-          .filter(tup => tup._2.nonEmpty)
-          .map(tup => new JsonMutableView(tup._1, dmv.parent, tup._2.get))
-        )
-      case _ => None
-    }
+  override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(Extension)
+
+  override def contentToRawNode(content: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
+    jsonParser.parse(content, ml)
+  }
+
+  override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
+    new JsonMutableView(f.currentBackingObject, f.parent, n)
   }
 }
 

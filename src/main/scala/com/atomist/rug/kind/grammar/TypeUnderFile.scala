@@ -57,7 +57,11 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
     rawNode.map(n => {
       val mtn = createView(n, f)
       // Ensure the file is updated based on any changes to the underlying AST at any level
-      f.registerUpdater(new MutableTreeNodeUpdater(mtn.currentBackingObject))
+      mtn match {
+        case m: MutableContainerMutableView =>
+          f.registerUpdater(new MutableTreeNodeUpdater(m.currentBackingObject))
+        case _ =>
+      }
       mtn
     })
   }
@@ -68,7 +72,7 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
     *
     * @return new mutable view
     */
-  protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableContainerMutableView = {
+  protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
     new MutableContainerMutableView(n, f)
   }
 

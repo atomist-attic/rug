@@ -40,7 +40,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
       super.formatInfo(child)
   }
 
-
     // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
 
@@ -254,9 +253,16 @@ object PositionedMutableContainerTreeNode {
           else {
             say(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
           }
-        case mttn: PositionedTreeNode =>
-          // This one is not actually positioned now is it
-          ???
+        case sm: PositionedTreeNode =>
+          if (sm.startPosition.offset >= lastEndOffset) {
+            val smoffset = sm.startPosition.offset
+            if (smoffset > lastEndOffset) fieldResults.append(padding(lastEndOffset, smoffset))
+            lastEndOffset = sm.endPosition.offset
+            fieldResults.append(sm)
+          }
+          else {
+            say(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
+          }
         case f: TreeNode if "".equals(f.value) =>
           // It's harmless. Keep it as it may be queried. It won't be updateable
           // Because we probably don't know where it lives.
@@ -297,9 +303,6 @@ object PositionedMutableContainerTreeNode {
   * and MutableTreeNode are conflated, and the pad method actually updates the instance.
   *
   * As of its creation, it will only be used for tests.
-  *
-  * @param name
-  * @param initialFieldValues
   */
 class MutableButNotPositionedContainerTreeNode(
                                                 name: String,

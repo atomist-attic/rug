@@ -71,4 +71,30 @@ object SimpleMutableContainerTreeNode {
     */
   def wrap(name: String, tn: PositionedTreeNode): SimpleMutableContainerTreeNode =
     wrap(name, Seq(tn), significance = TreeNode.Signal) // we wouldn't be wrapping one node without a reason
+
+
+  /**
+    * Create a padded, mutable tree from the given tree and complete input.
+    * Ignore non PositionedTreeNode descendants.
+    * Note that updating nodes will lose any structure below them, as the node
+    * will be replaced with plain text.
+    */
+  def makeMutable(ptn: PositionedTreeNode, input: String): SimpleMutableContainerTreeNode = {
+    val mut = makeMutable(ptn)
+    mut.pad(input, topLevel = true)
+    mut
+  }
+
+  /**
+    * Convert this tree to a mutable tree. Ignore non PositionedTreeNode descendants.
+    * Returns nodes that will need padding
+    */
+  private def makeMutable(ptn: PositionedTreeNode): SimpleMutableContainerTreeNode = {
+    val kids = ptn.childNodes collect {
+      case ptn: PositionedTreeNode =>
+        makeMutable(ptn)
+    }
+    new SimpleMutableContainerTreeNode(ptn.nodeName, kids, ptn.startPosition, ptn.endPosition, significance = TreeNode.Signal)
+  }
+
 }

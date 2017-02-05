@@ -12,7 +12,16 @@ private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
   extends TreeNode with PositionedTreeNode {
 
   override val nodeName: String = {
+    // Map the name of the backing ScalaMeta node class
+    // to a usable node name. ScalaMeta full class names are of the form
+    // "scala.meta.Type$Name$TypeNameImpl"
+    // We want to strip the layers of inner classes and the trailing "Impl"
+    // to get a result like "TypeName"
+    // We cannot use Class.getSimpleName() as ScalaMeta uses some creative
+    // class names with ` that are illegal Java class names according to java.Class
+    // (but what would it know)
     val fqn = smTree.getClass.getName
+    println(fqn)
     fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
   }
 

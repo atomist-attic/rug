@@ -19,7 +19,7 @@ class Imports implements ProjectEditor {
 
       let count = 0
       eng.with<File>(project, "//File()[/PythonFile()//import_from()//dotted_name[@value='flask']]", n => {
-        console.log(`The file path is '${n.path()}'`)
+        //console.log(`The file path is '${n.path()}'`)
         count++
       })
 

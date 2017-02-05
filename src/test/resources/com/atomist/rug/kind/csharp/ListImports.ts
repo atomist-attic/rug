@@ -15,7 +15,7 @@ class Imports implements ProjectEditor {
 
       let count = 0
       eng.with<File>(project, "//File()[/CSharpFile()//using_directive]", n => {
-        console.log(`The file path is '${n.path()}'`)
+        //console.log(`The file path is '${n.path()}'`)
         count++
       })
 

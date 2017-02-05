@@ -27,7 +27,7 @@ abstract class RawNodeUnderFileMutableView(topLevelNode: MutableContainerTreeNod
     *
     * @return the type of the node.
     */
-  override def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
+  override def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass), TreeNode.Dynamic)
 
   /**
     * Convenient method to operate on nodes selected by a path expression

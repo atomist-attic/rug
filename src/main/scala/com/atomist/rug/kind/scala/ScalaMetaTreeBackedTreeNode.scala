@@ -21,7 +21,6 @@ private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
     // class names with ` that are illegal Java class names according to java.Class
     // (but what would it know)
     val fqn = smTree.getClass.getName
-    println(fqn)
     fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
   }
 

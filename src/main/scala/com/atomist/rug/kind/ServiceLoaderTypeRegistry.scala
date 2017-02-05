@@ -6,7 +6,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConverters._
+import _root_.scala.collection.JavaConverters._
 
 /**
   * Use JDK ServiceLocator to load Type classes. Each

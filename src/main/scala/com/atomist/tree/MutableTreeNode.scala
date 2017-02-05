@@ -8,7 +8,7 @@ trait AnnotatableTreeNode extends TreeNode {
 
   private var types: Set[String] = Set()
 
-  override final def nodeTags: Set[String] = types
+  override def nodeTags: Set[String] = types
 
   /**
     * Add an additional type to this node. It's impossible

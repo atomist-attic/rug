@@ -11,7 +11,7 @@ case class OffsetInputPosition(offset: Int) extends InputPosition {
 
 object OffsetInputPosition {
 
-  def startOf(s: String) = LineHoldingOffsetInputPosition(s, 0)
+  def startOf(s: String): InputPosition = LineHoldingOffsetInputPosition(s, 0)
 
-  def endOf(s: String) = LineHoldingOffsetInputPosition(s, s.length)
+  def endOf(s: String): InputPosition = LineHoldingOffsetInputPosition(s, s.length)
 }

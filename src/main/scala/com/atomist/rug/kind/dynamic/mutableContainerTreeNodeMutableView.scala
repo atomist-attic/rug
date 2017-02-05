@@ -30,6 +30,7 @@ class MutableContainerMutableView(
                                    originalBackingObject: MutableContainerTreeNode,
                                    parent: MutableView[_])
   extends ContainerTreeNodeView[MutableContainerTreeNode](originalBackingObject, parent)
+    with MutableTreeNode
     with LazyLogging {
 
   override def nodeTags: Set[String] = originalBackingObject.nodeTags ++ Set("MutableContainer")
@@ -71,7 +72,7 @@ class MutableContainerMutableView(
     originalBackingObject match {
       case msoo: MutableTreeNode =>
         msoo.update(newValue)
-        //println(s"Updated to $msoo")
+      //println(s"Updated to $msoo")
       case other => throw new Exception(s"waaah I don't know what to do with a ${other}")
     }
     require(dirty)

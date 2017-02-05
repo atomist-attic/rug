@@ -9,7 +9,7 @@ import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.pathexpression.{PathExpressionEngine, PathExpressionParser}
 import org.scalatest.{FlatSpec, Matchers}
 
-class RawPython3Test extends FlatSpec with Matchers {
+class PythonFileTypeTest extends FlatSpec with Matchers {
 
   import Python3ParserTest._
 

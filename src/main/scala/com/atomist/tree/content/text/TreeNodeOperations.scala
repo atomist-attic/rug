@@ -4,7 +4,7 @@ import com.atomist.tree.TreeNode
 import org.springframework.util.ReflectionUtils
 
 /**
-  * Operations on TreeNodes such as tree pruning.
+  * Operations on TreeNodes
   */
 object TreeNodeOperations {
 
@@ -20,5 +20,13 @@ object TreeNodeOperations {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).find(m => m.getName.equals(methodName) && m.getParameterCount == args.size)
       .map(m => m.invoke(n, args: _*).asInstanceOf[T])
   }
+
+  /**
+    * Return all the terminals under the given tree node.
+    * Return the node itself if it's terminal
+    */
+  def terminals(tn: TreeNode): Seq[TreeNode] =
+    if (tn.childNodes.isEmpty) Seq(tn)
+    else tn.childNodes.flatMap(kid => terminals(kid))
 
 }

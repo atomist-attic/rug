@@ -115,6 +115,32 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     updated should equal(expected)
   }
 
+  it should "find format info from nested node" in {
+    val inputA = "foo"
+    val inputB = "bar"
+    val inputC = "Lisbon"
+    val inputD = "Alentejo"
+    val unmatchedContent = "this is incorrect"
+    val bollocks2 = "(more bollocks)"
+    val line = inputA + unmatchedContent + inputB + inputC + bollocks2 + inputD
+
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+
+    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
+    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
+
+    val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
+
+    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
+
+    soo.formatInfo(SimpleTerminalTreeNode("x", "y")) should be (empty)
+
+    soo.formatInfo(f1).get.start.offset should equal (f1.startPosition.offset)
+    soo.formatInfo(f2).get.start.offset should equal (f2.startPosition.offset)
+    soo.formatInfo(ff1).get.start.offset should equal (ff1.startPosition.offset)
+  }
+
   it should "allow add in nested match" in
     handleLine("")
 

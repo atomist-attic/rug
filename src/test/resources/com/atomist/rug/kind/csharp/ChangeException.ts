@@ -23,10 +23,12 @@ class ChangeException implements ProjectEditor {
 
       let count = 0
       eng.with<any>(project, catchClause, cc => {
-        console.log(`The catch clause was '${cc.value()}'`)
+        //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo()}'`)
+        if (cc.formatInfo() == null) 
+          throw new Error(`Format info was null for ${cc.nodeName()}`)
+        if (cc.formatInfo().start().lineNumberFrom1() < 5 || cc.formatInfo().start().lineNumberFrom1() > 100) 
+          throw new Error(`Format info values are wacky in ${cc.formatInfo()}`)
         let classType = cc.class_type()
-          //cc.children.filter(c => c.nodeName == "class_identifier")
-          console.log(`n=${classType}`)
         classType.update(this.newException)
         count++
       })

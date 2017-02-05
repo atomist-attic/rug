@@ -62,7 +62,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("src/exception.cs").get
         theFile.content should be (Exceptions.replace("IndexOutOfRangeException", newExceptionType))
-      case _ => ???
+      case wtf => fail(s"Expected SuccessModification, not $wtf")
     }
   }
 

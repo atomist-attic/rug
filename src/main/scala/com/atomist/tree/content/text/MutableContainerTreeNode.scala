@@ -31,17 +31,29 @@ trait MutableContainerTreeNode
     * @param child child of this node
     * @return Some if the child is found
     */
-  def formatInfo(child: TreeNode): Option[FormatInfo] =
-    if (!fieldValues.contains(child))
+  def formatInfo(child: TreeNode): Option[FormatInfo] = {
+    def descs(f: MutableContainerTreeNode): Seq[TreeNode] = {
+      f +: f.fieldValues.flatMap {
+        case d: MutableContainerTreeNode => descs(d)
+        case n => Seq(n)
+      }
+    }
+
+    val descendants = descs(this)
+
+    if (!descendants.contains(child))
       None
     else {
       // Build string to the left
-      val leftFields = fieldValues.takeWhile(f => f != child)
-      val stringToLeft = leftFields.map(_.value).mkString("")
+      val leftFields = descendants.takeWhile(f => f != child)
+      val stringToLeft = leftFields
+        .filter(_.childNodes.isEmpty)
+        .map(_.value).mkString("")
       val leftPoint = FormatInfo.contextInfo(stringToLeft)
       val rightPoint = FormatInfo.contextInfo(stringToLeft + child.value)
       //println(s"Found $fi from left string [$stringToLeft] with start=$start")
       Some(FormatInfo(leftPoint, rightPoint))
     }
+  }
 
 }

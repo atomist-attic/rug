@@ -12,15 +12,15 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   it should "enumerate usings in simple project" in {
     val r = modify("ListImports.ts", HelloWorldSources)
     r match {
-      case nmn: NoModificationNeeded =>
-      case _ => ???
+      case _: NoModificationNeeded =>
+      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
 
   it should "enumerate usings in simple project with ill-formed C#" in {
     modify("ListImports.ts", projectWithBogusCSharp.currentBackingObject) match {
-      case nmn: NoModificationNeeded =>
-      case _ => ???
+      case _: NoModificationNeeded =>
+      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
 
@@ -40,8 +40,8 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   it should "not add using if it's already present" in {
     modify("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "System")) match {
-      case nmn: NoModificationNeeded =>
-      case _ => ???
+      case _: NoModificationNeeded =>
+      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
 
@@ -55,7 +55,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
 
   it should "add using if no using present" is pending
 
-  it should "change exception" in {
+  it should "change exception, validating navigating up and down target nodes" in {
     val newExceptionType = "ThePlaneHasFlownIntoTheMountainException"
     modify("ChangeException.ts", exceptionProject,
       Map("newException" -> newExceptionType)) match {

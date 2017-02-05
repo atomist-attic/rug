@@ -29,6 +29,8 @@ class ChangeException implements ProjectEditor {
         if (cc.formatInfo().start().lineNumberFrom1() < 5 || cc.formatInfo().start().lineNumberFrom1() > 100) 
           throw new Error(`Format info values are wacky in ${cc.formatInfo()}`)
         let classType = cc.class_type()
+        if (classType.parent().value() != cc.value())
+          throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
         classType.update(this.newException)
         count++
       })

@@ -31,9 +31,9 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     val endOffset = startOffset + matchFound.matched.length
     val matchedNode = matchFound.node match {
       case one: MutableTerminalTreeNode =>
-        new MicrogrammarNode(name, name, Seq(one), startOffset, endOffset)
+        new SimpleMutableContainerTreeNode(name, Seq(one), startOffset, endOffset, TreeNode.Signal, Set(name, TreeNode.Dynamic))
       case  container: MutableContainerTreeNode =>
-        new MicrogrammarNode(name, name, container.childNodes, startOffset, endOffset)
+        new SimpleMutableContainerTreeNode(name, container.childNodes, startOffset, endOffset, TreeNode.Signal, Set(name, TreeNode.Dynamic))
       case _ => ???
     }
     matchedNode.pad(input.toString)
@@ -64,16 +64,4 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
 
   override def toString: String = s"MatcherMicrogrammar wrapping [$matcher]"
 
-}
-
-private class MicrogrammarNode(name: String,
-                               typ: String,
-                               fields: Seq[TreeNode],
-                               startPosition: InputPosition,
-                               endPosition: InputPosition)
-  extends SimpleMutableContainerTreeNode(
-    name: String, fields, startPosition, endPosition, significance = TreeNode.Signal) {
-
-  addType(typ)
-  addType(TreeNode.Dynamic)
 }

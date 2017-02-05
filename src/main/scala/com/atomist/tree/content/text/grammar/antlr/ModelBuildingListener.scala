@@ -3,7 +3,6 @@ package com.atomist.tree.content.text.grammar.antlr
 import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.microgrammar.MicrogrammarNode
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}

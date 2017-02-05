@@ -57,7 +57,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
 
   it should "change exception" in {
     val newExceptionType = "ThePlaneHasFlownIntoTheMountainException"
-    modify("ChangeException.ts", ExceptionProject,
+    modify("ChangeException.ts", exceptionProject,
       Map("newException" -> newExceptionType)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("src/exception.cs").get

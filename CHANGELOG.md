@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added `ScalaFileType` backed by ScalaMeta
+
 -   Implement JsonBackedContainerTreeNode, allows a ContainerTreeNode to
     maintain the Json is was generated from
 

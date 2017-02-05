@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.grammar.antlr
 import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.content.text.microgrammar.MicrogrammarNode
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
@@ -107,7 +108,8 @@ class ModelBuildingListener(
       startPos,
       endPos,
       namingStrategy.significance(rule, deduped),
-      namingStrategy.tagsForContainer(rule, deduped))
+      // Mark it as a dynamic node
+      namingStrategy.tagsForContainer(rule, deduped) ++ Set(TreeNode.Dynamic))
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case

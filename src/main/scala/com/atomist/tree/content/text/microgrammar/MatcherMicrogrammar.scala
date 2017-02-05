@@ -75,13 +75,5 @@ private class MicrogrammarNode(name: String,
     name: String, fields, startPosition, endPosition, significance = TreeNode.Signal) {
 
   addType(typ)
-  addType(MicrogrammarNode.MicrogrammarNodeType)
-}
-
-object MicrogrammarNode {
-
-  /**
-    * Node type added for all microgrammar nodes
-    */
-  val MicrogrammarNodeType = "microgrammar"
+  addType(TreeNode.Dynamic)
 }

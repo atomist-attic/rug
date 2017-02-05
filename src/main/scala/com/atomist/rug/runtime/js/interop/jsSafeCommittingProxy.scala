@@ -4,7 +4,6 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
-import com.atomist.tree.content.text.microgrammar.MicrogrammarNode
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
 
@@ -40,7 +39,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
         op => name.equals(op.name))
 
       if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-        if (node.nodeTags.contains(MicrogrammarNode.MicrogrammarNodeType)) {
+        if (node.nodeTags.contains(TreeNode.Dynamic)) {
           // Navigation on a node
           new FixedReturnProxy(name, node)
         }

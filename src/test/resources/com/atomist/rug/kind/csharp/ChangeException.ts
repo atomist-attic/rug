@@ -1,6 +1,6 @@
 import {Project,File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-import {PathExpression,TreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
+import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {parameter} from '@atomist/rug/operations/RugOperation'
@@ -22,13 +22,14 @@ class ChangeException implements ProjectEditor {
       let catchClause = `/src//CSharpFile()//specific_catch_clause[//class_type[@value='IndexOutOfRangeException']]`
 
       let count = 0
-      eng.with<any>(project, catchClause, cc => {
+      eng.with<TextTreeNode>(project, catchClause, cc => {
         //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo()}'`)
         if (cc.formatInfo() == null) 
           throw new Error(`Format info was null for ${cc.nodeName()}`)
         if (cc.formatInfo().start().lineNumberFrom1() < 5 || cc.formatInfo().start().lineNumberFrom1() > 100) 
           throw new Error(`Format info values are wacky in ${cc.formatInfo()}`)
-        let classType = cc.class_type()
+        let c2 = cc as any // We need to do this to get to the children
+        let classType = c2.class_type()
         if (classType.parent().value() != cc.value())
           throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
         classType.update(this.newException)

@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.csharp
 
-import com.atomist.project.edit.NoModificationNeeded
+import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
 
 class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
@@ -38,7 +38,7 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "not add using if it's already present" in {
-    val r = modify("AddUsingUsingMethod.ts", HelloWorldSources,
+    modify("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "System")) match {
       case nmn: NoModificationNeeded =>
       case _ => ???
@@ -54,5 +54,16 @@ class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
   }
 
   it should "add using if no using present" is pending
+
+  it should "change exception" in {
+    val newExceptionType = "ThePlaneHasFlownIntoTheMountainException"
+    modify("ChangeException.ts", ExceptionProject,
+      Map("newException" -> newExceptionType)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("src/exception.cs").get
+        theFile.content should be (Exceptions.replace("IndexOutOfRangeException", newExceptionType))
+      case wtf => fail(s"Expected SuccessModification, not $wtf")
+    }
+  }
 
 }

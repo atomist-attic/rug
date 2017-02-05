@@ -107,7 +107,8 @@ class ModelBuildingListener(
       startPos,
       endPos,
       namingStrategy.significance(rule, deduped),
-      namingStrategy.tagsForContainer(rule, deduped))
+      // Mark it as a dynamic node
+      namingStrategy.tagsForContainer(rule, deduped) ++ Set(TreeNode.Dynamic))
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case

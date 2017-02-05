@@ -91,28 +91,19 @@ trait TreeNode extends Visitable {
 }
 
 object TreeNode {
+
   sealed trait Significance
   case object Noise extends Significance
   case object Signal extends Significance
   case object Undeclared extends Significance
+
+  /**
+    * Tag added to all dynamically created nodes, such as those backed by microgrammars or Antlr
+    */
+  val Dynamic: String = "-dynamic"
 }
 
 /**
   * Tag interface for TreeNodes that are intended to contain other TreeNodes.
   */
 trait ContainerTreeNode extends TreeNode
-
-/**
-  * Convenient supertrait for terminal TreeNodes. Contains a simple string value.
-  */
-trait TerminalTreeNode extends TreeNode {
-
-  final override def accept(v: Visitor, depth: Int): Unit = v.visit(this, depth)
-
-  final override def childNodeNames: Set[String] = Set()
-
-  final override def childNodeTypes: Set[String] = Set()
-
-  final override def childrenNamed(key: String): Seq[TreeNode] = Nil
-
-}

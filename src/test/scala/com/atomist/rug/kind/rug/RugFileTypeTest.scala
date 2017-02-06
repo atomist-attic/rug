@@ -163,13 +163,13 @@ object RugFileTypeTest {
     ))
 
 
-  val HelloProjectEditorProject = new ProjectMutableView(EmptyArtifactSource(),
+  def helloProjectEditorProject = new ProjectMutableView(EmptyArtifactSource(),
     HelloProjectEditor)
 
-  val MultiRugsInASingleRugFile = new ProjectMutableView(EmptyArtifactSource(),
+  def multiRugsInASingleRugFile = new ProjectMutableView(EmptyArtifactSource(),
     TwoEditors)
 
-  val RugArchive = new ProjectMutableView(EmptyArtifactSource(),
+  def rugArchive = new ProjectMutableView(EmptyArtifactSource(),
     HelloProjectEditor + DumbAndDumberGenerator + TwoEditors + UsingOldGeneratorAnnotationEditor)
 }
 
@@ -182,48 +182,48 @@ class RugFileTypeTest extends FlatSpec with Matchers {
   val rugFileType = new RugFileType
 
   it should "load a basic Rug" in {
-    val rugs = rugFileType.findAllIn(HelloProjectEditorProject)
+    val rugs = rugFileType.findAllIn(helloProjectEditorProject)
     rugs.size should be(1)
   }
 
   it should "parse a Rug into mutable view and write out unchanged" in {
-    val rugs = rugFileType.findAllIn(HelloProjectEditorProject)
+    val rugs = rugFileType.findAllIn(helloProjectEditorProject)
     rugs.size should be(1)
     rugs.head.head match {
       case mtn: MutableContainerMutableView =>
         val content = mtn.value
-        content should equal(HelloProjectEditorProject.files.get(0).content)
+        content should equal(helloProjectEditorProject.files.get(0).content)
       case _ => ???
     }
   }
 
   it should "find HelloProject using path expression" in {
     val expr = "//RugFile()"
-    val rtn = ee.evaluate(HelloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(helloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
   }
 
   it should "find HelloProject using a predicate path expression" in {
     val expr = "//File[RugFile()]"
-    val rtn = ee.evaluate(HelloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(helloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
   }
 
   it should "find all editors in a single Rug" in {
     val expr = "/RugFile()//rug"
-    val rtn = ee.evaluate(MultiRugsInASingleRugFile, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(multiRugsInASingleRugFile, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(2)
   }
 
   it should "find only generators in a Rug archive" in {
     val expr = "//RugFile()[/rug/type[@value='generator']]"
-    val rtn = ee.evaluate(RugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(rugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(2)
   }
 
   it should "find Rugs using DumbGenerator" in {
     val expr = "//RugFile()[/rug/uses/other_rug[@value='DumbGenerator']]"
-    val rtn = ee.evaluate(RugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(rugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     rtn.right.get.size should be(1)
   }
 }

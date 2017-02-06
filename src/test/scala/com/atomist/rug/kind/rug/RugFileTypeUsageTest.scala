@@ -5,6 +5,7 @@ import com.atomist.rug.kind.rug.dsl.RugFileType
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 
 class RugFileTypeUsageTest extends AntlrRawFileTypeTest {
+
   override protected def typeBeingTested: AntlrRawFileType = new RugFileType
 
   import RugFileTypeTest._

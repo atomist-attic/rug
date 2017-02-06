@@ -12,7 +12,7 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     val jsed = TestUtils.editorInSideFile(this, "SimpleBanana.ts")
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleProjectOperationArguments.Empty) match {
-      case nmn: NoModificationNeeded =>
+      case _: NoModificationNeeded =>
       case _ => ???
     }
   }

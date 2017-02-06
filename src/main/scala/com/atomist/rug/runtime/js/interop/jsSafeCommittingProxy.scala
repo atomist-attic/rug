@@ -41,7 +41,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
       if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
         if (node.nodeTags.contains(TreeNode.Dynamic)) {
           // Navigation on a node
-          new FixedReturnProxy(name, node)
+          new FunctionProxyToNodeNavigationMethods(name, node)
         }
         else node match {
           case sobtn: ScriptObjectBackedTreeNode =>
@@ -51,15 +51,18 @@ class jsSafeCommittingProxy(types: Set[Typed],
         }
       }
       else
-        new MethodInvocationProxy(name, possibleOps)
+        new FunctionProxyToReflectiveInvocationOnUnderlyingNode(name, possibleOps)
 
     case _ =>
       // No static type information
       throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
   }
 
-  // Nashorn proxy for a method invocation that delegates using reflection
-  private class MethodInvocationProxy(name: String, possibleOps: Seq[TypeOperation])
+  /**
+    * Nashorn proxy for a method invocation that delegates to the
+    * underlying node using reflecti
+    */
+  private class FunctionProxyToReflectiveInvocationOnUnderlyingNode(name: String, possibleOps: Seq[TypeOperation])
     extends AbstractJSObject {
 
     override def isFunction: Boolean = true
@@ -94,17 +97,30 @@ class jsSafeCommittingProxy(types: Set[Typed],
     }
   }
 
-  // Nashorn proxy for a method invocation that retrieves tree node
-  private class FixedReturnProxy(name: String, node: TreeNode)
+  /**
+    * Nashorn proxy for a method invocation that use navigation methods on
+    * TreeNode
+    */
+  private class FunctionProxyToNodeNavigationMethods(name: String, node: TreeNode)
     extends AbstractJSObject {
 
     override def isFunction: Boolean = true
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      import scala.language.reflectiveCalls
+
       val r = node match {
         case ctn: ContainerTreeNode =>
-          val childrenAccessedThroughThisFunctionCall = ctn.childrenNamed(name)
-          childrenAccessedThroughThisFunctionCall.toList match {
+          val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = name match {
+            case "parent" =>
+              // Not all nodes have a parent
+              ctn match {
+                case hap: ({def parent(): TreeNode})@unchecked => Seq(hap.parent())
+                case _ => Seq(null)
+              }
+            case _ => ctn.childrenNamed(name)
+          }
+          nodesAccessedThroughThisFunctionCall.toList match {
             case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
             case head :: Nil => head
             case more => ???

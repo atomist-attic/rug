@@ -1,7 +1,5 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.rug.{CompilerChainPipeline, RugPipeline}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -26,7 +24,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
     val readme : String = maybeReadme.get.content
 
     withClue(s"README content----------\n$readme\n----------\n") {
-      readme.contains( s"# ${projectName}") should be(true)
+      readme.contains( s"# $projectName") should be(true)
       readme.contains(s"${System.lineSeparator()}${description}${System.lineSeparator()}") should be(true)
     }
   }
@@ -46,12 +44,12 @@ object ElmTypeScriptEditorTestResources {
     """
       |import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
+      |import {Match,PathExpression,PathExpressionEngine,TreeNode,TextTreeNode} from '@atomist/rug/tree/PathExpression'
       |
       |class Release implements ProjectEditor  {
       |
       |    name: string = "Release"
-      |    description: string  ="Release editor"
+      |    description: string = "Release editor"
       |
       |    edit(project: Project) {
       |
@@ -59,7 +57,7 @@ object ElmTypeScriptEditorTestResources {
       |
       |    let pe = new PathExpression<Project,TreeNode>(
       |     `/File()[@name='elm-package.json']/Json()/summary/*[1]`)
-      |    let description: TreeNode = eng.scalar(project, pe)
+      |    let description: TextTreeNode = eng.scalar<TreeNode,TextTreeNode>(project, pe)
       |
       |     if (!project.fileExists("README.md")) {
       |       project.addFile("README.md", `# ${project.name()}

@@ -30,9 +30,11 @@ class FruitererType implements TypeProvider {
 
 class Fruiterer implements TreeNode {
 
+  parent() { return null}
+
   nodeName(): string { return "fruiterer" }
 
-  nodeType(): string[] { return [ this.nodeName()] }
+  nodeTags(): string[] { return [ this.nodeName()] }
 
   value(): string { return "" }
 
@@ -44,13 +46,13 @@ class Fruiterer implements TreeNode {
 
 class Banana implements TreeNode {
 
+  parent() { return null}
+
   nodeName(): string { return "banana" }
 
-  nodeType(): string[] { return [ this.nodeName()] }
+  nodeTags(): string[] { return [ this.nodeName()] }
 
   value(): string { return "yellow" }
-
-  update(newValue: string) {}
 
   children() { return [] }
 
@@ -58,13 +60,13 @@ class Banana implements TreeNode {
 
 class Pear implements TreeNode {
 
+  parent() { return null}
+
   nodeName(): string { return "pear" }
 
-  nodeType(): string[] { return [ this.nodeName()] }
+  nodeTags(): string[] { return [ this.nodeName()] }
 
   value(): string { return "green" }
-
-  update(newValue: string) {}
 
   children() { return [] }
 

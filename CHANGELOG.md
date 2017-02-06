@@ -9,16 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.11.0...HEAD
 
+### Added
+
+-   Added `ScalaFileType` backed by ScalaMeta
+
 -   Fix: Elm parser failed on files with two multiline comments
      https://github.com/atomist/rug/issues/268 
+     
+### Changed
+
+-   **BREAKING** `value`, `update` and `formatInfo` functions from TypeScript `TreeNode` moved to 
+    new `TextTreeNode` sub-interface.
 
 ## [0.11.0]
 
 [0.11.0]: https://github.com/atomist/rug/compare/0.10.0...0.11.0
 
 ### Added
-
--   Added `ScalaFileType` backed by ScalaMeta
 
 -   Implement JsonBackedContainerTreeNode, allows a ContainerTreeNode to
     maintain the Json is was generated from
@@ -61,8 +68,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
--   **BREAKING** `TreeNode.nodeType` renamed to `TreeNode.nodeTags`, in both
-    TypeScript and Scala.
+-   **BREAKING** `TreeNode.nodeType` renamed to `TreeNode.nodeTags`
 
 -   We now create a new JS rug for each thread for safety.
     https://github.com/atomist/rug/issues/78

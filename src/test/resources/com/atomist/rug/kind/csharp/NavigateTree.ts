@@ -3,14 +3,12 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
+import {TreeHelper} from '@atomist/rug/tree/TreeHelper'
 import {parameter} from '@atomist/rug/operations/RugOperation'
 
-class ChangeException implements ProjectEditor {
-    name: string = "ChangeException"
-    description: string = "Changes exception"
-
-    @parameter({pattern: "^.*$$", description: "New package"})
-    newException: string
+class NavigateTree implements ProjectEditor {
+    name: string = "NavigateTree"
+    description: string = "Navigates tree but doesn't make changes"
 
     edit(project: Project) {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
@@ -28,12 +26,21 @@ class ChangeException implements ProjectEditor {
           throw new Error(`Format info was null for ${cc.nodeName()}`)
         if (cc.formatInfo().start().lineNumberFrom1() < 5 || cc.formatInfo().start().lineNumberFrom1() > 100) 
           throw new Error(`Format info values are wacky in ${cc.formatInfo()}`)
-        let c2 = cc as any // We need to do this to get to the children
+        let c2 = cc as any // We need to do this to get to the children using functions
         let classType = c2.class_type()
         if (classType.parent().value() != cc.value())
           throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
-        classType.update(this.newException)
-        count++
+
+        let th = new TreeHelper()
+
+        let inFile: File = th.findAncestorWithTag<File>(classType, "File")
+        if (inFile != null) {
+            if (inFile.name() != "exception.cs")
+                throw new Error(`File has wrong name: ${inFile.name()}`)
+            count++
+        }
+         let inFile1: File = th.findAncestorWithTag<File>(c2, "File")
+         let inFile2: File = th.findAncestorWithTag<File>(cc, "File")
       })
 
       if (count == 0)
@@ -41,4 +48,4 @@ class ChangeException implements ProjectEditor {
     }
 }
 
-export let editor = new ChangeException()
+export let editor = new NavigateTree()

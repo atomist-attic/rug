@@ -47,7 +47,7 @@ class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
     }
 
   override def nodeTags: Set[String] =
-    toScalaSeq(som.callMember("nodeType")).map(s => Objects.toString(s)).toSet
+    toScalaSeq(som.callMember("nodeTags")).map(s => Objects.toString(s)).toSet
 
   override def value: String = stringFunction(som, "value")
 

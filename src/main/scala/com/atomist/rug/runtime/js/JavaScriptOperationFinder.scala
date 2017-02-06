@@ -21,11 +21,16 @@ object JavaScriptOperationFinder {
     * Used to recognise JS operations that we can call.
     * TODO - this should probably include type checking too!
     */
-  val KnownSignatures = Map(
-    ExecutorType -> JsRugOperationSignature(Set("execute")),
-    EditorType -> JsRugOperationSignature(Set("edit")),
-    ReviewerType -> JsRugOperationSignature(Set("review")),
-    GeneratorType -> JsRugOperationSignature(Set("populate")))
+  val KnownSignatures = Set(
+    JsRugOperationSignature(ExecutorType, Set("execute")),
+    JsRugOperationSignature(ExecutorType, Set("execute"), Set("__name", "__description")),
+    JsRugOperationSignature(EditorType, Set("edit")),
+    JsRugOperationSignature(EditorType, Set("edit"), Set("__name", "__description")),
+    JsRugOperationSignature(ReviewerType,Set("review")),
+    JsRugOperationSignature(ReviewerType,Set("review"), Set("__name", "__description")),
+    JsRugOperationSignature(GeneratorType,Set("populate")),
+    JsRugOperationSignature(GeneratorType,Set("populate"),Set("__name", "__description"))
+  )
 
   /**
     * Find and instantiate project operations in the given Rug archive
@@ -55,24 +60,20 @@ object JavaScriptOperationFinder {
   }
 
   private def extractOperation(obj: ScriptObjectMirror): Option[String] = {
-    val matches = KnownSignatures.foldLeft(Seq[String]())((acc: Seq[String], kv) => {
-      //does it contain all the matching functions and props?
-      val fns = kv._2.functionsNames
-      val props = kv._2.propertyNames
-      val fnCount = fns.count(fn => {
-        obj.hasMember(fn) && obj.getMember(fn).asInstanceOf[ScriptObjectMirror].isFunction
-      })
-      val propsCount = props.count(prop => {
-        obj.hasMember(prop) // TODO make stronger check
-      })
-      if (fnCount == fns.size && propsCount == props.size) {
-        acc :+ kv._1
-      } else {
-        acc
-      }
-    })
-    matches.headOption
+    KnownSignatures.find {
+      case JsRugOperationSignature(_, fns, props) =>
+        val fnCount = fns.count(fn => {
+          obj.hasMember(fn) && obj.getMember(fn).asInstanceOf[ScriptObjectMirror].isFunction
+        })
+        val propsCount = props.count(prop => {
+          obj.hasMember(prop) // TODO make stronger check
+        })
+        fnCount == fns.size && propsCount == props.size
+    } match {
+      case Some(JsRugOperationSignature(kind,_, _)) => Some(kind)
+      case _ => Option.empty
+    }
   }
 
-  case class JsRugOperationSignature(functionsNames: Set[String], propertyNames: Set[String] = Set("name", "description"))
+  case class JsRugOperationSignature(rugtype: String, functionsNames: Set[String], propertyNames: Set[String] = Set("name", "description"))
 }

@@ -20,35 +20,33 @@ object TypeScriptRugEditorTest {
   val SimpleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core';
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor';
+      |import {editor} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple";
-      |    description: string = "My simple editor";
+      |@editor("Simple", "My simple editor")
+      |class SimpleEditor {
       |    edit(project: Project): void {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
-      |export let editor = new SimpleEditor();
+      |export let myeditor = new SimpleEditor();
     """.stripMargin
 
   val SimpleEditorWithBasicParameter =
     s"""
       |import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {parameter} from '@atomist/rug/operations/RugOperation'
+      |import {editor, parameter} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple"
-      |    description: string = "My simple editor"
+      |@editor("Simple", "My simple editor")
+      |class SimpleEditor {
       |
       |    @parameter({description: "Content", pattern: "$ContentPattern"})
       |    content: string
+      |
       |    edit(project: Project)  {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
       |}
-      |export let editor = new SimpleEditor()
+      |export let myeditor = new SimpleEditor()
     """.stripMargin
 
   val SimpleLetStyleEditorWithoutParameters =
@@ -61,76 +59,70 @@ object TypeScriptRugEditorTest {
       |    description: "My simple editor",
       |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |
-      |        // `Edited Project now containing ${project.fileCount()} files: \n`)
       |    }
       |}
     """.stripMargin
 
   val SimpleEditor =
     """
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
+      |import {editor} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple"
-      |    description: string = "My simple editor"
+      |@editor("Simple", "My simple editor")
+      |class SimpleEditor {
       |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
       |
-      |export let editor = new SimpleEditor()
+      |export let myeditor = new SimpleEditor()
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditor =
     """
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {Project} from '@atomist/rug/model/Core'
+      |import {editor} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple"
-      |    description: string = "My simple editor"
+      |@editor("Simple", "My simple editor")
+      |class SimpleEditor {
       |    edit(project: Project) {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
       |    }
       |}
-      |export let editor = new SimpleEditor()
+      |export let myeditor = new SimpleEditor()
 
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {parameter} from '@atomist/rug/operations/RugOperation'
+       |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "My simple editor"
-       |    tags: string[] = ["java", "maven"]
+       |@editor("Simple", "My simple editor")
+       |@tags("java", "maven")
+       |class SimpleEditor {
        |
        |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]})
        |    content: string
-       |
        |
        |    edit(project: Project) {
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |    }
        |  }
-       |export let editor = new SimpleEditor()
+       |export let myeditor = new SimpleEditor()
     """.stripMargin
 
   val SimpleGenerator =
     """
-      |import {ProjectGenerator} from '@atomist/rug/operations/ProjectGenerator'
       |import {Project} from '@atomist/rug/model/Core'
+      |import {generator, parameter} from '@atomist/rug/operations/RugOperation'
       |
-      |class SimpleGenerator implements ProjectGenerator {
-      |     description: string = "My simple Generator"
-      |     name: string = "SimpleGenerator"
-      |     content: string = ""
+      |@generator("SimpleGenerator","My simple Generator")
+      |class SimpleGenerator{
+      |
+      |     content: string = "woot"
+      |
       |     populate(project: Project) {
       |        let len: number = this.content.length;
       |        if(project.name() != "woot"){
@@ -145,15 +137,11 @@ object TypeScriptRugEditorTest {
   val SimpleEditorTaggedAndMeta =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-       |import {parameter} from '@atomist/rug/operations/RugOperation'
-       |import {File} from '@atomist/rug/model/Core'
+       |import {parameter, tags, editor} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    tags: string[] = ["java", "maven"]
+       |@editor("Simple","A nice little editor")
+       |@tags("java", "maven")
+       |class SimpleEditor {
        |
        |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, displayable: false})
        |    content: string = "Anders is ?"
@@ -181,14 +169,14 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorWithRelativeDependency =
     """
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {editor} from '@atomist/rug/operations/RugOperation'
       |import {Project} from '@atomist/rug/model/Core'
       |
       |import {Bar} from './Foo'
       |
-      |class SimpleEditor implements ProjectEditor {
-      |    name: string = "Simple"
-      |    description: string = "My simple editor"
+      |@editor("Simple","My simple editor")
+      |class SimpleEditor {
+      |
       |    edit(project: Project) {
       |        let bar: Bar = new Bar();
       |        bar.doWork()
@@ -196,43 +184,39 @@ object TypeScriptRugEditorTest {
       |    }
       |}
       |
-      |export let editor = new SimpleEditor()
+      |export let myeditor = new SimpleEditor()
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
-      """import {Project} from '@atomist/rug/model/Core'
-        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-        |import {PathExpression} from '@atomist/rug/tree/PathExpression'
-        |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-        |import {Match} from '@atomist/rug/tree/PathExpression'
-        |import {File} from '@atomist/rug/model/Core'
-        |import {parameter} from '@atomist/rug/operations/RugOperation'
+
+      """import {Project,File} from '@atomist/rug/model/Core'
+        |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+        |import {parameter, editor,tags} from '@atomist/rug/operations/RugOperation'
         |
         |class PomFile extends PathExpression<Project,File> {
         |
         |    constructor() { super(`/File()[@name='pom.xml']`) }
         |}
         |
-        |class ConstructedEditor implements ProjectEditor {
-        |
-        |    name: string = "Constructed"
-        |    description: string = "A nice little editor"
-        |    tags: string[] = ["java", "maven"]
+        |@tags("java", "maven")
+        |@editor("Constructed", "A nice little editor")
+        |class ConstructedEditor {
         |
         |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-        |    packageName: string;
+        |    packageName: string
+        |
         |    edit(project: Project) {
         |
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let m = eng.evaluate<Project,File>(project, new PomFile())
         |
-        |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
+        |      let t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
         |      for (let n of m.matches()) {
         |        t += `Matched file=${n.path()}`;
         |        n.append("randomness")
         |        }
         |
-        |        var s: string = ""
+        |        let s: string = ""
         |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
         |        for (let f of project.files())
         |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
@@ -240,26 +224,21 @@ object TypeScriptRugEditorTest {
         |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
         |    }
         |  }
-        |  export let editor = new ConstructedEditor()
+        |  export let myeditor = new ConstructedEditor()
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
-    """import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
-      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {File} from '@atomist/rug/model/Core'
-      |import {parameter} from '@atomist/rug/operations/RugOperation'
+
+    """import {Project, File} from '@atomist/rug/model/Core'
+      |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
       |
-      |class ConstructedEditor implements ProjectEditor {
-      |
-      |    name: string = "Constructed"
-      |    description: string = "A nice little editor"
-      |    tags: string[] = ["java", "maven"]
+      |@tags("java", "maven")
+      |@editor("Constructed", "A nice little editor")
+      |class ConstructedEditor {
       |
       |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |    packageName: string;
+      |    packageName: string
       |
       |    edit(project: Project) {
       |
@@ -280,29 +259,29 @@ object TypeScriptRugEditorTest {
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
       |    }
       |  }
-      |  export let editor = new ConstructedEditor()
+      |  export let myeditor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWith: String =
     """import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
       |import {PathExpression} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
       |import {File} from '@atomist/rug/model/Core'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {editor,parameter,tags} from '@atomist/rug/operations/RugOperation'
       |
-      |class ConstructedEditor implements ProjectEditor {
       |
-      |    name: string = "Constructed"
-      |    description: string = "A nice little editor"
-      |    tags: string[] = ["java", "maven"]
-      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
+      |@tags("java", "maven")
+      |@editor("Constructed", "A nice little editor")
+      |class ConstructedEditor {
       |
-      |    edit(project: Project, {packageName } : {packageName: string}) {
+      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    packageName: string
+      |
+      |    edit(project: Project) {
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |      project.files().filter(t => false)
-      |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
+      |      var t: string = `param=${this.packageName},filecount=${project.fileCount()}`
       |
       |      eng.with<File>(project, "/*[@name='pom.xml']", n => {
       |        t += `Matched file=${n.path()}`;
@@ -319,36 +298,35 @@ object TypeScriptRugEditorTest {
       |    }
       |  }
       |
-      |  export let editor = new ConstructedEditor()
+      |  export let myeditor = new ConstructedEditor()
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
-    """import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
-      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {File} from '@atomist/rug/model/Core'
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+
+    """import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Project, File} from '@atomist/rug/model/Core'
+      |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
       |
-      |class ConstructedEditor implements ProjectEditor {
-      |    name: string = "Constructed"
-      |    description: string = "A nice little editor"
-      |    tags: string[] = ["java", "maven"]
       |
-      |    parameters: Parameter[] = [{name: "packageName", description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
-      |    edit(project: Project, {packageName } : { packageName: string}) {
+      |@tags("java", "maven")
+      |@editor("Constructed", "A nice little editor")
+      |class ConstructedEditor {
+      |
+      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    packageName: string
+      |
+      |    edit(project: Project) {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
-      |      var t: string = `param=${packageName},filecount=${project.fileCount()}`
+      |      let t: string = `param=${this.packageName},filecount=${project.fileCount()}`
       |
       |      eng.with<File>(project, "/File()", n => {
       |        t += `Matched file=${n.path()}`;
       |        n.append("randomness")
       |      })
       |
-      |        var s: string = ""
+      |        let s: string = ""
       |
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |        for (let f of project.files())
@@ -357,7 +335,7 @@ object TypeScriptRugEditorTest {
       |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
-      |  export let editor = new ConstructedEditor()
+      |  export let myeditor = new ConstructedEditor()
       | """.stripMargin
 
 }

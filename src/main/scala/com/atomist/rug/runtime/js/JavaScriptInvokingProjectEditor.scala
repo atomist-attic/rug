@@ -20,8 +20,6 @@ class JavaScriptInvokingProjectEditor(
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectEditorSupport {
 
-  override val name: String = jsVar.getMember("name").asInstanceOf[String]
-
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 
   override protected def modifyInternal(

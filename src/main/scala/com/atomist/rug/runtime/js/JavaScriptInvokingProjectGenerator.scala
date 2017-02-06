@@ -23,8 +23,6 @@ class JavaScriptInvokingProjectGenerator(
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
 
-  override val name: String = jsVar.getMember("name").asInstanceOf[String]
-
   @throws(classOf[InvalidParametersException])
   override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
     validateParameters(poa)

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added support for @editor, @generator, @executor, @reviewer and @tags class decorators in TS
+
 -   Added `ScalaFileType` backed by ScalaMeta
 
 -   Fix: Elm parser failed on files with two multiline comments

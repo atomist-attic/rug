@@ -18,8 +18,6 @@ class JavaScriptInvokingProjectReviewer(
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with ProjectReviewer {
 
-  override val name: String = jsVar.getMember("name").asInstanceOf[String]
-
   override def review(targetProject: ArtifactSource, poa: ProjectOperationArguments): ReviewResult = {
     val (response, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs,

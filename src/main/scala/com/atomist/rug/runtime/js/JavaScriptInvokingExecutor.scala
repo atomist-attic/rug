@@ -14,8 +14,6 @@ class JavaScriptInvokingExecutor(
   extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
     with Executor {
 
-  override val name: String = jsVar.getMember("name").asInstanceOf[String]
-
   override def execute(serviceSource: ServiceSource, poa: ProjectOperationArguments): Unit = {
     val smv = new ServicesMutableView(rugAs, serviceSource)
     val wsmv = new jsSafeCommittingProxy(new ServicesType, smv)

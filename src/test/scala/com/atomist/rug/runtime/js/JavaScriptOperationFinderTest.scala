@@ -12,30 +12,28 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
   val SimpleProjectEditorWithParametersArray: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {parameter, editor} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "^.*$$", maxLength: 100}]
-       |    edit(project: Project, {content} : {content: string}) {
-       |    }
+       |@editor("Simple", "A nice little editor")
+       |class SimpleEditor{
+       |
+       |    @parameter({pattern: "^.*$$", description: "foo bar"})
+       |    content: string
+       |
+       |    edit(project: Project) {}
        |  }
-       |export let editor = new SimpleEditor()
+       |export let myeditor = new SimpleEditor()
     """.stripMargin
 
   val SimpleProjectEditorWithAnnotatedParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
-       |import {parameter} from '@atomist/rug/operations/RugOperation'
+       |import {parameter, editor} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
+       |@editor("Simple", "A nice little editor")
+       |class SimpleEditor {
        |
        |    @parameter({pattern: "^.*$$", description: "foo bar"})
        |    content: string = "Test String";
@@ -55,7 +53,7 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
        |       }
        |    }
        |  }
-       |export let editor = new SimpleEditor()
+       |export let myeditor = new SimpleEditor()
     """.stripMargin
 
   it should "find an editor with a parameters list" in {

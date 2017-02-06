@@ -59,11 +59,27 @@ abstract class JavaScriptInvokingProjectOperation(
     _context
   }
 
-  override def description: String = jsVar.getMember("description").asInstanceOf[String] match {
+  override def name: String = getMember("name").asInstanceOf[String]
+
+  override def description: String = getMember("description").asInstanceOf[String] match {
     case s: String => s
     case _ => name
   }
 
+
+  /**
+    * Convenience method that will try __name first for decorated things
+    * @param name
+    * @return
+    */
+  protected def getMember(name: String, someVar: ScriptObjectMirror = jsVar) : AnyRef = {
+    val decorated = s"__$name"
+    if(someVar.hasMember(decorated)){
+      someVar.getMember(decorated)
+    }else{
+      someVar.getMember(name)
+    }
+  }
   /**
     * Invoke the given member of the JavaScript class with these arguments, processing them as appropriate
     *
@@ -110,14 +126,12 @@ abstract class JavaScriptInvokingProjectOperation(
     * @param params
     */
   private def setParamsIfDecorated(clone: ScriptObjectMirror, params: java.util.Map[String, AnyRef]): Unit = {
-    val decoratedParamNames: Set[String] = clone.get("parameters") match {
-      case ps: ScriptObjectMirror if !ps.isEmpty => {
+    val decoratedParamNames: Set[String] = clone.get("__parameters") match {
+      case ps: ScriptObjectMirror if !ps.isEmpty =>
         ps.asScala.collect {
-          case (_, details: ScriptObjectMirror) if details.get("decorated").asInstanceOf[Boolean] => {
+          case (_, details: ScriptObjectMirror) =>
             details.get("name").asInstanceOf[String]
-          }
         }.toSet[String]
-      }
       case _ => Set()
     }
     params.asScala.foreach {
@@ -131,7 +145,7 @@ abstract class JavaScriptInvokingProjectOperation(
 
   protected def readTagsFromMetadata(someVar: ScriptObjectMirror): Seq[Tag] = {
     Try {
-      someVar.getMember("tags") match {
+      getMember("tags",someVar) match {
         case som: ScriptObjectMirror =>
           val stringValues = som.values().asScala collect {
             case s: String => s
@@ -147,7 +161,7 @@ abstract class JavaScriptInvokingProjectOperation(
     * @return
     */
   protected def readParametersFromMetadata: Seq[Parameter] = {
-      jsVar.get("parameters") match {
+      getMember("parameters") match {
       case ps: ScriptObjectMirror if !ps.isEmpty => {
         ps.asScala.collect {
           case (_, details: ScriptObjectMirror) => parameterVarToParameter(jsVar, details)

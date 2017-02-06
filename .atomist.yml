@@ -24,3 +24,20 @@ executor:
     branch: "update-maven"
     sha: "24b88f7"
 
+---
+kind: "operation"
+client: "rug-cli 0.22.0"
+editor:
+  name: "atomist-rugs.rug-editors.ConvertExistingProjectToRugArchiveWithEditor"
+  group: "atomist-rugs"
+  artifact: "rug-editors"
+  version: "0.6.0"
+  origin:
+    repo: "git@github.com:atomist-rugs/rug-editors"
+    branch: "master"
+    sha: "00b7e7d*"
+  parameters:
+    - "editor_name": "AddTypeScriptTest"
+    - "rug_archive_name": "rug"
+    - "rug_archive_group_id": "atomist"
+

@@ -1,0 +1,6 @@
+group: atomist
+artifact: rug
+version: "0.1.0"
+requires: "[0.8.0,1.0.0)"
+dependencies:
+extensions:

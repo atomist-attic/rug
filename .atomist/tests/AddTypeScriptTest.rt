@@ -1,0 +1,20 @@
+scenario AddTypeScriptTest should do something amazing for developers
+
+let my_value = "Hey there new Atomista"
+
+let sample_output_file = "samplefile.txt"
+
+given
+  /* Selects the current project and its source files
+     as an initial point for then applying your editor
+  */
+  ArchiveRoot
+
+when
+  /* Run your editor */
+  AddTypeScriptTest
+
+then
+  /* Assert Something important that your editor did */
+  fileExists sample_output_file
+    and fileContains sample_output_file my_value

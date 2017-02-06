@@ -55,25 +55,6 @@ class ArchiveTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "accept executor passed in as string" in pendingUntilFixed {
-    val ex =
-      s"""
-         |executor AddSomeCaspar
-         |with services s
-         | editWith Caspar
-         |
-         |editor Caspar
-         |with Project
-         | do addFile "Caspar" 'What is this, the high hat?'
-      """.stripMargin
-    val f = StringFileArtifact(atomistConfig.editorsRoot + "/AddSomeCaspar.rug", ex)
-    val as = toArchive(Seq(f))
-    tryMod(as, "AddSomeCaspar", as) match {
-      case sm: SuccessfulModification =>
-      case _ => ???
-    }
-  }
-
   it should s"find single file under ${atomistConfig.editorsDirectory}" in {
     val prog =
       """

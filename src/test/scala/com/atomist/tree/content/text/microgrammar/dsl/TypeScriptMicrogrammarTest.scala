@@ -13,7 +13,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   val ModifiesWithSimpleMicrogrammar: String =
     """import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpression,TreeNode,TextTreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
       |
@@ -25,7 +25,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |      let mg = new Microgrammar('modelVersion', `<modelVersion>$version:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
       |
-      |      eng.with<TreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
+      |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
       |        n.update('Foo bar')
       |      })
       |    }
@@ -78,12 +78,14 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
-      |        n.update('Foo bar')
+      |
       |        let fi = n.formatInfo()
       |        if (fi == null)
       |         throw new Error("FormatInfo was null")
       |        if (fi.start().lineNumberFrom1() < 4)
       |         throw new Error(`I don't like ${fi}`)
+      |
+      |        n.update('Foo bar')
       |        //console.log(fi)
       |      })
       |    }
@@ -145,7 +147,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     val (originalPomContent, editedPomContent) = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))
     editedPomContent.contains("<modelVersion>Foo bar</modelVersion>") should be(true)
-    originalPomContent.replace("<modelVersion>4.0.0</modelVersion>", "<modelVersion>Foo bar</modelVersion>") should be(editedPomContent)
+    editedPomContent should equal(originalPomContent.replace("<modelVersion>4.0.0</modelVersion>", "<modelVersion>Foo bar</modelVersion>"))
   }
 
   it should "use microgrammar defined in TypeScript in 2 consts" in {
@@ -153,6 +155,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       ModifiesWithSimpleMicrogrammarSplitInto2))
   }
 
+  // RJ: I think this fails because of the underlying bug in returning the wrong structure
   it should "use editor requiring FormatInfo" in pendingUntilFixed {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       RequiresFormatInfo))

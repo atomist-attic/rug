@@ -21,7 +21,7 @@ class LineType(
 
   def this() = this(DefaultEvaluator)
 
-  override def resolvesFromNodeTypes: Set[String] = Set("file")
+  override def resolvesFromNodeTypes: Set[String] = Set("File")
 
   override def description = "Represents a line within a text file"
 
@@ -53,7 +53,7 @@ class LineMutableView(
   extends ViewSupport[String](originalBackingObject, parent)
     with TerminalView[String] {
 
-  override def nodeName: String = "line"
+  override def nodeName: String = "Line"
 
   override def childNodeNames: Set[String] = Set()
 

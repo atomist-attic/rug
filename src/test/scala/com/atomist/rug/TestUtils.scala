@@ -23,7 +23,7 @@ object TestUtils extends Matchers {
     attemptModification(program, as, backingAs, poa, pipeline) match {
       case sm: SuccessfulModification =>
         sm.result
-      case _ => ???
+      case wtf => fail(s"Expected SuccessfulModication, not $wtf")
     }
   }
 

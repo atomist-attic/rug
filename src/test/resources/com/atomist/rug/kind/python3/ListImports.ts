@@ -13,7 +13,7 @@ class Imports implements ProjectEditor {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
     eng.with<TextTreeNode>(project, "//File()/PythonFile()//import_from()//dotted_name", n => {
-        console.log(`The FROM value is '${n.value()}'`)
+        //console.log(`The FROM value is '${n.value()}'`)
       })
 
       let count = 0

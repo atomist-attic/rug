@@ -1,15 +1,12 @@
 package com.atomist.rug
 
 import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.RugCompilerTest._
 import com.atomist.rug.TestUtils._
-import com.atomist.rug.kind.core.FileMutableView
-import com.atomist.rug.runtime.rugdsl.LambdaPredicate
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{Assertion, FlatSpec, Matchers}
 
 abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
@@ -29,6 +26,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       """.stripMargin
 
     def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
+
     val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
     r.allFiles.size should be > (0)
     r.allFiles.foreach(f => f.content.contains(license) should be(true))
@@ -346,13 +344,13 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
       """.stripMargin
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
     val r = doModification(pas, outputAs, rugAs, SimpleProjectOperationArguments.Empty, pipeline)
-    r.totalFileCount should be (2)
-    r.findFile(mergeOutputPath).get.content should equal ("content")
-    r.findFile("test_out/foo").get.content should equal ("file content")
-    r.cachedDeltas.size should be (3)
-    r.cachedDeltas.exists(_.path == mergeOutputPath) should be (true)
-    r.cachedDeltas.exists(_.path == "test_out") should be (true)
-    r.cachedDeltas.exists(_.path == "test_out/foo") should be (true)
+    r.totalFileCount should be(2)
+    r.findFile(mergeOutputPath).get.content should equal("content")
+    r.findFile("test_out/foo").get.content should equal("file content")
+    r.cachedDeltas.size should be(3)
+    r.cachedDeltas.exists(_.path == mergeOutputPath) should be(true)
+    r.cachedDeltas.exists(_.path == "test_out") should be(true)
+    r.cachedDeltas.exists(_.path == "test_out/foo") should be(true)
   }
 
   it should "execute simple program with false comparison preventing bad changes" in {
@@ -377,8 +375,8 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
   it should "execute simple program with directory transformation" in {
     val DefaultPackageJavaAndText: ArtifactSource = SimpleFileBasedArtifactSource(
-        StringFileArtifact("pom.xml", "<maven></maven"),
-        StringFileArtifact("Dog.java", """class Dog {}""".stripMargin)
+      StringFileArtifact("pom.xml", "<maven></maven"),
+      StringFileArtifact("Dog.java", """class Dog {}""".stripMargin)
     )
     val goBowling =
       """
@@ -459,46 +457,6 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
   }
   */
 
-  it should "handle custom kind of 'line' nested under file" in pendingUntilFixed {
-    val program =
-      """
-        |@description "Documentation is good. Did I mention that I like documentation?"
-        |editor LineCommenter
-        |
-        |with File fx
-        | when isJava
-        |with line l1
-        | when {
-        |   return l1.num() == 0 && l1.content().indexOf("class") > 0
-        |  }
-        |do
-        |  eval { l1.update("// " + l1.content()) }
-      """.stripMargin
-
-    val fr = FixedRugFunctionRegistry(
-      Map(
-        "isJava" -> new LambdaPredicate[FileMutableView]("isJava", f => f.currentBackingObject.name.endsWith(".java"))
-      )
-    )
-
-    val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))
-
-    val eds = pipeline.create(as,None)
-    eds.size should be(1)
-    val pe = eds.head.asInstanceOf[ProjectEditor]
-
-    val r = pe.modify(RugCompilerTest.JavaAndText, SimpleProjectOperationArguments("", Map(
-      "text" -> extraText,
-      "message" -> "say this")))
-    r match {
-      case sm: SuccessfulModification =>
-        val f = sm.result.findFile("src/main/java/Dog.java").get
-        f.content.lines.size should be > (0)
-        f.content.lines.forall(_.startsWith("// ")) should be(true)
-      case _ => ???
-    }
-  }
-
   it should "run editor with complicated regular expression" in {
     val complexRegexEditor =
       """editor ComplexRegexpReplace
@@ -538,7 +496,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
                                                          as: ArtifactSource = JavaAndText,
                                                          rugAs: ArtifactSource = EmptyArtifactSource(""),
                                                          extraParams: Map[String, String] = Map(),
-                                                         pipeline: RugPipeline = new DefaultRugPipeline()) = {
+                                                         pipeline: RugPipeline = new DefaultRugPipeline()): Assertion = {
     // val originalFile = as.findFile("src/main/java/Dog.java").get
     val poa = SimpleProjectOperationArguments("", Map(
       "text" -> extraText,

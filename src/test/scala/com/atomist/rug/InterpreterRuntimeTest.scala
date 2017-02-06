@@ -1,9 +1,12 @@
 package com.atomist.rug
 
+import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.rug.TestUtils.doModification
 import com.atomist.rug.compiler.typescript.TypeScriptCompilationException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 
 /**
   * Uses the new transpiler
@@ -11,6 +14,33 @@ import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, String
 class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
   override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler, new RugTranspiler()))
+
+  it should "handle custom kind of 'Line' nested under file" in pendingUntilFixed {
+    val program =
+      """
+        |@description "Documentation is good. Did I mention that I like documentation?"
+        |editor LineCommenter
+        |
+        |with File fx
+        | when isJava
+        |with Line l1
+        | when {
+        |   return l1.num() == 0 && l1.content().indexOf("class") >= 0
+        |  }
+        |do
+        |  eval { l1.update("// " + l1.content()) }
+      """.stripMargin
+
+    val programAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))
+
+    val poa = SimpleProjectOperationArguments("", Map(
+      "text" -> extraText,
+      "message" -> "say this"))
+    val r = doModification(programAs + TypeScriptBuilder.userModel, RugCompilerTest.JavaAndText, EmptyArtifactSource(), poa, pipeline)
+    val f = r.findFile("src/main/java/Dog.java").get
+    f.content.lines.size should be > (0)
+    f.content.lines.forall(_.startsWith("// ")) should be(true)
+  }
 
   // Note that we do not support .endsWith
   it should "execute simple program with parameters, simple JavaScript file function and transform function using default type" in {

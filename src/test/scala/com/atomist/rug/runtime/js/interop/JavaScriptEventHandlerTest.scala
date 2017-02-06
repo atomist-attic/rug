@@ -8,7 +8,7 @@ import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpression
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
 
 
 object JavaScriptEventHandlerTest {
@@ -17,8 +17,13 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {EventHandler, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {EventHandler, Plan, Message, Generate} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
+       |class Generate1 implements Generate {
+       |  name: "name1"
+       |  kind: "generate"
+       |}
+       |
        |export let simpleHandler: EventHandler<TreeNode,TreeNode> = {
        |  name: "ClosedIssueReopener",
        |  description: "Reopens closed issues",
@@ -26,13 +31,16 @@ object JavaScriptEventHandlerTest {
        |  expression: new PathExpression<TreeNode,TreeNode>("/issue"),
        |  handle(event: Match<TreeNode, TreeNode>){
        |    let issue = event.root
-       |    return new Plan();
+       |    let plan = new Plan()
+       |    plan.add(new Message("message1"))
+       |    plan.add(new Generate1())
+       |    return plan
        |  }
        |}
       """.stripMargin)
 }
 
-class JavaScriptEventHandlerTest extends FlatSpec with Matchers{
+class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedAssertions {
 
   import JavaScriptEventHandlerTest._
 
@@ -44,6 +52,8 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers{
     val handler = handlers.head
     handler.rootNodeName should be("issue")
     val plan = handler.handle(SysEvent)
+
+    assert(plan.messages.head.text.contains("message1"))
   }
 }
 

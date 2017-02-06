@@ -10,40 +10,39 @@ import com.atomist.tree.TreeNode
 
 object Plan {
 
-  case class Plan(messages: Seq[Message], rugs: Seq[Rug])
+  case class Plan(messages: Seq[Message], instructions: Seq[Instruction])
 
-  case class Message(body: MessageBody,
-                     rugs: Seq[Rug],
-                     node: Option[TreeNode],
-                     channelId: Option[String])
+  case class Message(text: Option[String],
+                      body: Option[JsonBody],
+                      channelId: Option[String],
+                      node: Option[TreeNode],
+                      instructions: Seq[Instruction])
 
-  abstract class Rug(name: String,
-                 kind: RugKind,
-                 params: Option[Seq[ParameterValue]],
-                 coordinates: Option[MavenCoordinate],
-                 success: Option[Callback],
-                 failure: Option[Callback])
+  sealed trait Instruction
 
-  case class ProjectRug(project: ProjectMutableView,
-                        name: String,
-                        kind: RugKind,
-                        params: Option[Seq[ParameterValue]],
-                        coordinates: Option[MavenCoordinate],
-                        success: Option[Callback],
-                        failure: Option[Callback])
-    extends Rug(name,kind,params,coordinates ,success,failure)
+  class Rug(name: String,
+                     coordinates: Option[MavenCoordinate],
+                      parameters: Option[Seq[ParameterValue]],
+                      kind: InstructionKind,
+                      label: Option[String],
+                      onSuccess: Option[Callback],
+                      onFailure: Option[Callback]) extends Instruction
+
+  case class ProjectRug(project: ProjectMutableView, rug: Rug) extends Instruction
 
   case class Callback(function: String, params: Option[Seq[ParameterValue]])
 }
 
 
-sealed trait RugKind
+sealed trait InstructionKind
 
-object RugKind extends Enumeration {
-  val Editor = Value("editor")
-  val Generator = Value("generator")
-  val Reviewer = Value("reviewer")
-  val Execution = Value("execution")
+object InstructionKind extends Enumeration {
+  val Generate = Value("generate")
+  val Edit = Value("edit")
+  val Review = Value("review")
+  val Execute = Value("execute")
+  val Respond = Value("respond")
+  val Command = Value("command")
 }
 
 trait MavenCoordinate {

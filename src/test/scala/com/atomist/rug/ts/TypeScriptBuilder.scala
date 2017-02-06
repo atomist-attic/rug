@@ -15,7 +15,8 @@ import com.atomist.source.filter.ArtifactFilter
   */
 object TypeScriptBuilder {
 
-  val compiler = new TypeScriptCompiler(CompilerFactory.create(true))
+  val compiler = new TypeScriptCompiler(CompilerFactory.cachingCompiler(CompilerFactory.create(),
+    new File(".", "target" + File.separator + ".jscache").getAbsolutePath))
 
   val userModel: ArtifactSource = {
     val generator = new TypeScriptInterfaceGenerator

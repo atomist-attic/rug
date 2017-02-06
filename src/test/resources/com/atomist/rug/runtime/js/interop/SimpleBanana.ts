@@ -18,13 +18,13 @@ class BananaType implements TypeProvider {
 
 class Banana implements TreeNode {
 
+  parent() { return null }
+
   nodeName(): string { return "banana" }
 
-  nodeType(): string[] { return [ this.nodeName()] }
+  nodeTags(): string[] { return [ this.nodeName()] }
 
   value(): string { return "yellow" }
-
-  update(newValue: string) {}
 
   children() { return [] }
 

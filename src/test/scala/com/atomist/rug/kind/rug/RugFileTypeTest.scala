@@ -183,7 +183,7 @@ class RugFileTypeTest extends FlatSpec with Matchers {
 
   it should "load a basic Rug" in {
     val rugs = rugFileType.findAllIn(helloProjectEditorProject)
-    rugs.size should be(1)
+    assert(rugs.size === 1)
   }
 
   it should "parse a Rug into mutable view and write out unchanged" in {
@@ -200,30 +200,30 @@ class RugFileTypeTest extends FlatSpec with Matchers {
   it should "find HelloProject using path expression" in {
     val expr = "//RugFile()"
     val rtn = ee.evaluate(helloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 
   it should "find HelloProject using a predicate path expression" in {
     val expr = "//File[RugFile()]"
     val rtn = ee.evaluate(helloProjectEditorProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 
   it should "find all editors in a single Rug" in {
     val expr = "/RugFile()//rug"
     val rtn = ee.evaluate(multiRugsInASingleRugFile, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(2)
+    assert(rtn.right.get.size === 2)
   }
 
   it should "find only generators in a Rug archive" in {
     val expr = "//RugFile()[/rug/type[@value='generator']]"
     val rtn = ee.evaluate(rugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(2)
+    assert(rtn.right.get.size === 2)
   }
 
   it should "find Rugs using DumbGenerator" in {
     val expr = "//RugFile()[/rug/uses/other_rug[@value='DumbGenerator']]"
     val rtn = ee.evaluate(rugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 }

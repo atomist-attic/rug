@@ -50,7 +50,7 @@ object Descendant extends AxisSpecifier {
     v.nodes
   }
 
-    private class SaveAllDescendantsVisitor extends Visitor {
+  private class SaveAllDescendantsVisitor extends Visitor {
 
     private val _nodes = ListBuffer.empty[TreeNode]
 

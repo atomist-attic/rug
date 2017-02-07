@@ -195,6 +195,29 @@ object ScalaFileTypeTest {
       |}
     """.stripMargin)
 
+  val OldStyleScalaTest =
+    """
+      |// Don't worry about imports, we're not compiling the thing,
+      |// it just needs to have a valid AST
+      |
+      |class TestLoaderTest extends FlatSpec with Matchers {
+      |
+      | it should s"find test scenarios under ${ac.testsRoot}" in {
+      |    val scenarios = testLoader.loadTestScenarios(new SimpleFileBasedArtifactSource("",
+      |      Seq(
+      |        StringFileArtifact(s"${ac.testsRoot}/foo.rt", foobarScenario),
+      |        StringFileArtifact(s"${ac.testsRoot}/deeper/baz.rt", bazScenario)))
+      |    )
+      |    scenarios.size should be (2)
+      |    scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
+      |  }
+      |}
+    """.stripMargin
+
+  val ScalaTestSources = SimpleFileBasedArtifactSource(
+    StringFileArtifact("src/test/scala/test/TestLoaderTest.scala", OldStyleScalaTest)
+  )
+
   def helloWorldProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldScala))
 

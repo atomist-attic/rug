@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.csharp
 
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
-import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
+import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 
-class CSharpFileTypeUsageTest extends AntlrRawFileTypeTest {
+class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   import CSharpFileTypeTest._
 

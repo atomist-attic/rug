@@ -3,10 +3,10 @@ package com.atomist.rug.kind.python3
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.TestUtils
-import com.atomist.rug.kind.grammar.AntlrRawFileTypeTest
+import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 
-class PythonFileTypeUsageTest extends AntlrRawFileTypeTest {
+class PythonFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override protected val typeBeingTested = new PythonFileType
 

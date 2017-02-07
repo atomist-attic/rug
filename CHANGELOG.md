@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
      
 ### Changed
 
+-   `TreeNodeUtils.toShorterString` now optionally takes a function 
+    to customize the display of each node.
+
 -   **BREAKING** `value`, `update` and `formatInfo` functions from TypeScript `TreeNode` moved to 
     new `TextTreeNode` sub-interface.
 

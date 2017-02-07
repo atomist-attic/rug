@@ -19,6 +19,7 @@ object TreeNodeUtils {
   /**
     * Return a directory tree like representation of the node, using newlines and tabs
     * to show nesting and structure. For use in diagnostics.
+    *
     * @param tn node to represent
     * @return string representation of the node
     */
@@ -44,6 +45,7 @@ object TreeNodeUtils {
     def toShortStr(fv: TreeNode, depth: Int, shown: TreeNode => Boolean): String = fv match {
       case ctn: ContainerTreeNode =>
         def star(c: TreeNode) = if (shown(c)) "*" else ""
+
         tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")
       case f => tabs(depth) + info(f) + "\n"
     }
@@ -51,16 +53,32 @@ object TreeNodeUtils {
     toShortStr(tn, 0, _ => true)
   }
 
-  private def toShorterStringInternal(tn: TreeNode): Seq[String] = {
-    val shorterString = s"${tn.nodeName}:[${tn.nodeTags.mkString(",")}]"
+  /**
+    * Shows name tags of all nodes
+    */
+  val NameAndTagsStringifier: TreeNode => String =
+    tn => s"${tn.nodeName}:[${tn.nodeTags.mkString(",")}]"
+
+  /**
+    * Shows content of terminal nodes: Tags otherwise
+    */
+  val NameAndContentStringifier: TreeNode => String = {
+    case tn if tn.childNodes.isEmpty =>
+      s"${tn.nodeName}:[${tn.value}]"
+    case tn => s"${tn.nodeName}:[${tn.nodeTags.mkString(", ")}]"
+  }
+
+  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode => String): Seq[String] = {
+    val shorterString = nodeStringifier(tn)
     val lines = shorterString +:
-      tn.childNodes.flatMap (toShorterStringInternal)
-    lines.map(" " + _)
+      tn.childNodes.flatMap(tn => toShorterStringInternal(tn, nodeStringifier))
+    lines.map("  " + _)
   }
 
   /**
     * Return a string showing the structure of the tree but not the content
     */
-  def toShorterString(tn: TreeNode): String = toShorterStringInternal(tn).mkString("\n")
+  def toShorterString(tn: TreeNode, nodeStringifier: TreeNode => String = NameAndTagsStringifier): String =
+    toShorterStringInternal(tn, nodeStringifier).mkString("\n")
 
 }

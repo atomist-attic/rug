@@ -42,7 +42,12 @@ class jsSafeCommittingProxy(
         if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
           if (node.nodeTags.contains(TreeNode.Dynamic)) {
             // Navigation on a node
-            new FunctionProxyToNodeNavigationMethods(name, node)
+            if (name == "parent" || node.childNodeNames.contains(name))
+              new FunctionProxyToNodeNavigationMethods(name, node)
+            else {
+              println(s"Returning AlwaysReturnNull for $name")
+              AlwaysReturnNull
+            }
           }
           else node match {
             case sobtn: ScriptObjectBackedTreeNode =>
@@ -99,6 +104,14 @@ class jsSafeCommittingProxy(
     }
   }
 
+  private object AlwaysReturnNull extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = null
+
+  }
+
   /**
     * Nashorn proxy for a method invocation that use navigation methods on
     * TreeNode
@@ -111,7 +124,7 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
 
-      val r = node match {
+      val r: TreeNode = node match {
         case ctn: ContainerTreeNode =>
           val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = name match {
             case "parent" =>
@@ -129,7 +142,7 @@ class jsSafeCommittingProxy(
           }
         case _ => node
       }
-      r
+      jsPathExpressionEngine.wrapOne(r)
     }
   }
 

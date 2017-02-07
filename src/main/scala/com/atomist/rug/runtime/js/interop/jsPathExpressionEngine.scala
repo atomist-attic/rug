@@ -50,6 +50,8 @@ class jsPathExpressionEngine(
                               typeRegistry: TypeRegistry = DefaultTypeRegistry,
                               private var matcherRegistry: MatcherRegistry = EmptyMatcherRegistry) {
 
+  import jsPathExpressionEngine._
+
   /**
     * Return a customized version of this path expression engine for use in a specific
     * context, with its own microgrammar types
@@ -181,6 +183,12 @@ class jsPathExpressionEngine(
     }
   }
 
+}
+
+object jsPathExpressionEngine {
+
+  val matcherParser = new MatcherDefinitionParser
+
   /**
     * Wrap the given sequence of nodes so they can be accessed from
     * TypeScript. Intended for use from Scala, not TypeScript.
@@ -188,21 +196,14 @@ class jsPathExpressionEngine(
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
-    val cr: CommandRegistry = DefaultCommandRegistry
-
-    def proxify(n: TreeNode): Object = n match {
-      case _ => new jsSafeCommittingProxy(n, cr)
-    }
-
+  def wrap(nodes: Seq[TreeNode], cr: CommandRegistry = DefaultCommandRegistry): java.util.List[Object] = {
     new JavaScriptArray(
-      nodes.map(n => proxify(n))
+      nodes.map(n => wrapOne(n))
         .asJava)
   }
-}
 
-object jsPathExpressionEngine {
-
-  val matcherParser = new MatcherDefinitionParser
+  def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): Object = n match {
+    case _ => new jsSafeCommittingProxy(n, cr)
+  }
 
 }

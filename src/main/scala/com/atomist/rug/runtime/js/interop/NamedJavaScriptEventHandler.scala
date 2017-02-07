@@ -46,7 +46,7 @@ class NamedJavaScriptEventHandler(pathExpressionStr: String,
       case Right(matches) =>
         val cm = jsContextMatch(
           targetNode,
-          ctx.pathExpressionEngine.wrap(matches),
+          jsPathExpressionEngine.wrap(matches),
           s2,
           teamId = e.teamId)
         dispatch(invokeHandlerFunction(e, cm))

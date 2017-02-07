@@ -12,6 +12,8 @@ let class_name = {
   return after_the_last_dot;
   }
 
+let package = { class_under_test.replace(/\.[^.]*$/, "") }
+
 let ts_file_name = { "src/test/resources/" + class_under_test.replace(/\./g, '/') + "TypeScriptTest.ts" }
 let scala_file_name = { "src/test/scala/" + class_under_test.replace(/\./g, '/') + "TypeScriptTest.scala" }
 
@@ -21,6 +23,8 @@ with Project p begin
   do copyEditorBackingFileOrFail "src/test/scala/com/atomist/rug/ts/SampleTypeScriptTest.scala" scala_file_name
   with File when path = ts_file_name
     do replace "Sample" class_name
-  with File when path = scala_file_name
+  with File when path = scala_file_name begin
+    do replace "package com.atomist.rug.ts" { "package " + package }
     do replace "Sample" class_name
+  end
 end

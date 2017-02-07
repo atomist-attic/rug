@@ -1,8 +1,8 @@
 scenario AddTypeScriptTest should do something amazing for developers
 
-let my_value = "Hey there new Atomista"
 
-let sample_output_file = "samplefile.txt"
+let output_ts = "src/test/resources/com/atomist/rug/kind/scala/SomeClassHereTypeScriptTest.ts"
+let output_scala = "src/test/scala/com/atomist/rug/kind/scala/SomeClassHereTypeScriptTest.scala"
 
 given
   /* Selects the current project and its source files
@@ -12,9 +12,11 @@ given
 
 when
   /* Run your editor */
-  AddTypeScriptTest
+  AddTypeScriptTest class_under_test="com.atomist.rug.kind.scala.SomeClassHere"
 
 then
-  /* Assert Something important that your editor did */
-  fileExists sample_output_file
-    and fileContains sample_output_file my_value
+  fileExists output_ts
+    and fileContains output_ts "class SomeClassHereTypeScriptTest implements ProjectEditor"
+    and fileExists output_scala
+    and fileContains output_scala "class SomeClassHereTypeScriptTest extends FlatSpec with Matchers"
+

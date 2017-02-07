@@ -2,13 +2,25 @@
 @tag "documentation"
 editor AddTypeScriptTest
 
-@displayName "My Value"
-@description "a single parameter to this editor"
-@validInput "free text"
-param my_value: @any
+@displayName "Class Under Test"
+@validInput "Java fully qualified classname"
+param class_under_test: @any
 
-let sampleTemplateTemplate = "AddTypeScriptTestTemplate.vm"
+let class_name = {
+  var portions = class_under_test.split(".");
+  var after_the_last_dot = portions[portions.length - 1];
+  return after_the_last_dot;
+  }
+
+let ts_file_name = { "src/test/resources/" + class_under_test.replace(/\./g, '/') + "TypeScriptTest.ts" }
+let scala_file_name = { "src/test/scala/" + class_under_test.replace(/\./g, '/') + "TypeScriptTest.scala" }
 
 /* Example showing applying a simple template being applied */
-with Project p
-  do merge sampleTemplateTemplate to "samplefile.txt"
+with Project p begin
+  do copyEditorBackingFileOrFail "src/test/resources/com/atomist/rug/ts/SampleTypeScriptTest.ts" ts_file_name
+  do copyEditorBackingFileOrFail "src/test/scala/com/atomist/rug/ts/SampleTypeScriptTest.scala" scala_file_name
+  with File when path = ts_file_name
+    do replace "Sample" class_name
+  with File when path = scala_file_name
+    do replace "Sample" class_name
+end

@@ -90,7 +90,7 @@ class ParserCombinatorRugParser(
           case Annotation(DescriptionAnnotationAttribute, Some(desc: String)) => ed = ed.copy(description = desc)
           case Annotation(TagAnnotation, Some(tag: String)) => ed = ed.copy(tags = ed.tags :+ tag)
           case Annotation(GeneratorToken, pubName: Option[String@unchecked]) =>
-            System.err.println(s"Generator [$name] uses old style @generator annotation. Use 'generator', rather than 'editor', keyword")
+            System.err.println(s"Generator '$name' uses deprecated @generator annotation.\nPlease remove the @generator annotation and change the 'editor' keyword to 'generator'.")
             ed = ed.copy(publishedName = Some(pubName.getOrElse(ed.name)))
           // TODO Do what we did for parameters
           // and do the resolution later, because someone thought this makes it worse, but it doesn't, printing the $op helps

@@ -132,7 +132,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       this.lyst.push("fox")
       |       this.lyst.push("jumps")
       |       let spliced2: string[] = this.lyst.splice(-1)
-      |       if(spliced2.length != 2 || this.lyst.length != 2 || spliced2[0] != "fox" || spliced2[1] != "jumps"){
+      |       if(spliced2.length != <number>2 || this.lyst.length != <number>2 || spliced2[0] != "fox" || spliced2[1] != "jumps"){
       |          console.log(spliced2.toString())
       |          console.log(this.lyst.toString())
       |          throw new Error("-1 should start from the end -1 and always be 0 length")

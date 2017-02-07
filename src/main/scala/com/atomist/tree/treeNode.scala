@@ -58,6 +58,15 @@ trait TreeNode extends Visitable {
     childNodeNames.toSeq.flatMap(name => childrenNamed(name))
 
   /**
+    * Convenience method for Java callers and JavaScript
+    */
+  @ExportFunction(readOnly = true, description = "Children")
+  def children: java.util.List[TreeNode] = {
+    import scala.collection.JavaConverters._
+    childNodes.asJava
+  }
+
+  /**
     * Return the names of children of this node
     *
     * @return the names of children. There may be multiple children

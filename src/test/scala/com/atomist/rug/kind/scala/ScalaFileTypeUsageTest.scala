@@ -16,12 +16,13 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   it should "change a.equals(b)" is pending
 
-  it should "upgrade ScalaTest assertions" in pendingUntilFixed {
+  it should "upgrade ScalaTest assertions" in {
 
     modify("UpgradeScalaTestAssertions.ts", ScalaTestSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(ScalaTestSources.allFiles.head.path).get
-        theFile.content.contains("====") should be (true)
+        //println(theFile.content)
+        theFile.content.contains("===") should be (true)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }

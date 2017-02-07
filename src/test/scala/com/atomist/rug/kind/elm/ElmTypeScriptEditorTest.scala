@@ -23,13 +23,14 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
     maybeReadme.isDefined should be(true)
     val readme : String = maybeReadme.get.content
 
-    withClue(s"README content----------\n$readme\n----------\n") {
-      readme.contains( s"# $projectName") should be(true)
-      readme.contains(s"${System.lineSeparator()}${description}${System.lineSeparator()}") should be(true)
-    }
+    readme should (
+      include( s"# $projectName")
+        and
+        include(s"${System.lineSeparator()}${description}${System.lineSeparator()}")
+    )
   }
 
-  def singleFileArtifactSource(projectName: String): SimpleFileBasedArtifactSource = {
+  private def singleFileArtifactSource(projectName: String): SimpleFileBasedArtifactSource = {
     new SimpleFileBasedArtifactSource(
       projectName,
       StringFileArtifact(

@@ -4,6 +4,7 @@ import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class PositivePredicateTest extends FlatSpec with Matchers {
 
@@ -43,7 +44,7 @@ class PositivePredicateTest extends FlatSpec with Matchers {
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
 
-    val carrotContent = result.findFile(s"Banana.elm").get.content
+    val carrotContent = result.findFile(s"Banana.elm").value.content
     // TODO: remove the trims! this finds the newline problem
     carrotContent.trim should equal(expected.trim)
   }
@@ -56,7 +57,7 @@ class PositivePredicateTest extends FlatSpec with Matchers {
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
 
-    val carrotContent = result.findFile(s"Banana.elm").get.content
+    val carrotContent = result.findFile(s"Banana.elm").value.content
     // TODO: remove the trims! this finds the newline problem
     carrotContent should equal(expected)
   }

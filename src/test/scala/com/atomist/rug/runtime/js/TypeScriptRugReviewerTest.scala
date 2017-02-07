@@ -197,7 +197,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectReviewer]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectReviewer]
     jsed.name should be("Simple")
     jsed.setContext(others)
 

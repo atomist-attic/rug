@@ -26,7 +26,7 @@ import scala.util.Try
   * @param _jsVar     var reference in Nashorn
   * @param rugAs     backing artifact source for the Rug archive
   */
-abstract class JavaScriptInvokingProjectOperation(
+abstract class JavaScriptProjectOperation(
                                                    jsc: JavaScriptContext,
                                                    _jsVar: ScriptObjectMirror,
                                                    rugAs: ArtifactSource

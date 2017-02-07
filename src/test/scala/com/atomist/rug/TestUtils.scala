@@ -4,7 +4,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
@@ -42,7 +42,7 @@ object TestUtils extends Matchers {
   /**
     * Compile the named TypeScript file in the package of the caller
     */
-  def editorInSideFile(caller: Object, name: String): JavaScriptInvokingProjectEditor = {
+  def editorInSideFile(caller: Object, name: String): JavaScriptProjectEditor = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
     //println(s"Using resourcePath [$resourcePath]")
     val raw = ClassPathArtifactSource.toArtifactSource(
@@ -61,7 +61,7 @@ object TestUtils extends Matchers {
       override def edit(f: FileArtifact) = f.withPath(".atomist/editors/" + f.path)
     })
     val as = TypeScriptBuilder.compileWithModel(withAtomistDir)
-    val eds = JavaScriptOperationFinder.fromJavaScriptArchive(as)
-    eds.head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val eds = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as)
+    eds.head.asInstanceOf[JavaScriptProjectEditor]
   }
 }

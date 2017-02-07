@@ -13,6 +13,7 @@ import com.atomist.rug.{DefaultRugCompiler, InterpreterRugPipeline}
 import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
@@ -27,20 +28,15 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
     val elmPackageDotJsonOption = freshArtifactSource.findFile("elm-package.json")
 
-    elmPackageDotJsonOption.isDefined should be(true)
-    val elmPackageDotJson = elmPackageDotJsonOption.get
+    val elmPackageDotJson = elmPackageDotJsonOption.value
 
-    withClue(elmPackageDotJson.content) {
-      elmPackageDotJson.content.contains(s""""summary": "${description}"""") should be(true)
-    }
+    elmPackageDotJson.content should include(s""""summary": "${description}"""")
 
-    withClue(elmPackageDotJson.content) {
-      val repositoryLine = s""""repository": "https://github.com/${org}/${projectName.toLowerCase()}.git","""
-      elmPackageDotJson.content.contains(repositoryLine) should be(true)
-    }
+    val repositoryLine = s""""repository": "https://github.com/${org}/${projectName.toLowerCase()}.git","""
+    elmPackageDotJson.content should include(repositoryLine)
   }
 
-  def invokeGenerator(rugArchiveDirectoryOnTheClasspath: String,
+  private def invokeGenerator(rugArchiveDirectoryOnTheClasspath: String,
                       generatorName: String,
                       parameters: Map[String, Object]) = {
     val pipeline =
@@ -53,14 +49,14 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
     val ops = pipeline.create(rugArchive, None)
     val generatingEditor = ops.find { _.name == generatorName }.collect { case x : ProjectEditor => x}
 
-    withClue(ops.map(_.name)) {
-      generatingEditor.isDefined should be(true)
+    val projectEditor = withClue(ops.map(_.name)) {
+      generatingEditor.value
     }
 
     val gen =
       new EditorInvokingProjectGenerator(
         "StaticPage",
-        generatingEditor.get,
+        projectEditor,
         rugArchive)
 
     val freshArtifactSource =
@@ -71,8 +67,8 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
     freshArtifactSource
   }
 
-  def archiveFromDirectoryOnClasspath(resourceName: String): ArtifactSource = {
-    val whereIsIt = this.getClass().getClassLoader.getResource(resourceName)
+  private def archiveFromDirectoryOnClasspath(resourceName: String): ArtifactSource = {
+    val whereIsIt = this.getClass.getClassLoader.getResource(resourceName)
     if (whereIsIt == null) {
       throw new RuntimeException(s"Unable to find ${resourceName} on the classpath")
     }

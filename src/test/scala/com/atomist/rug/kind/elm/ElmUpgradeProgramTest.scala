@@ -2,6 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class ElmUpgradeProgramTest extends FlatSpec with Matchers {
 
@@ -26,7 +27,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", elm)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), editor)
 
-    r.findFile("Main.elm").get.content.lines.find(_.contains("import Foo")).head should equal("import Foo exposing (fooFunction)")
+    r.findFile("Main.elm").value.content.lines.find(_.contains("import Foo")).headOption.value should equal("import Foo exposing (fooFunction)")
 
   }
 
@@ -50,7 +51,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", elm)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), editor)
 
-    r.findFile("Carrot.elm").get.content.contains("module Carrot") should be(true)
+    r.findFile("Carrot.elm").value.content should include("module Carrot")
   }
 
   it should "find a module that exposes all things and defines this one" in {
@@ -72,7 +73,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", elm)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), editor)
 
-    r.findFile("Carrot.elm").get.content.contains("module Carrot") should be(true)
+    r.findFile("Carrot.elm").value.content should include("module Carrot")
   }
 
   it should "find not a module that does not expose the thing" in {
@@ -183,11 +184,12 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val r = elmExecute(r3, prog4)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
 
     // TODO should really bring this back, but there appears to be an ordering thing and
     // I'm not sure you've implemented all necessary edits
     //content should equal(ElmParserTest.AdvancedProgram)
+    pending
   }
 
 }

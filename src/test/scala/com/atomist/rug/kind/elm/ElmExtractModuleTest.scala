@@ -2,6 +2,7 @@ package com.atomist.rug.kind.elm
 
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 import com.atomist.util.Utils.StringImprovements
 
 class ElmExtractModuleTest extends FlatSpec with Matchers {
@@ -42,10 +43,13 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", ElmExtractModuleTest.OriginalMain)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), prog, Map("new_module_name" -> module))
 
-    val content = r.findFile("RandomGif.elm").get.content
+    val content = r.findFile("RandomGif.elm").value.content
     val expectedHeader = "module RandomGif exposing (Model, init, Msg, update, view, subscriptions)"
-    content.contains(expectedHeader) should be(true)
-    content.contains("main") should be(false)
+    content should (
+      include(expectedHeader)
+        and
+        not include("main")
+      )
   }
   it should "replace the init function" in {
     val prog =
@@ -81,8 +85,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", ElmExtractModuleTest.OriginalMain)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), prog, Map("new_module_name" -> module))
 
-    val content = r.findFile("Main.elm").get.content
-    content.contains("( randomGifModel, randomGifCommands )") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include("( randomGifModel, randomGifCommands )")
   }
 
   it should "replace a type alias Model" in {
@@ -110,8 +114,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", ElmExtractModuleTest.OriginalMain)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), prog, Map("new_module_name" -> module))
 
-    val content = r.findFile("Main.elm").get.content
-    content.contains(elm) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(elm)
   }
 
   it should "replace the subscriptions body" in {
@@ -133,6 +137,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
         |    with type.alias when name = "Model"
         |      do replaceBody new_body
         |""".stripMargin
+
+    pending
   }
 
   it should "replace the Msg" in {
@@ -158,8 +164,8 @@ class ElmExtractModuleTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", ElmExtractModuleTest.OriginalMain)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), prog, Map("new_module_name" -> module))
 
-    val content = r.findFile("Main.elm").get.content
-    content.contains(elm.toSystem) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(elm.toSystem)
   }
 }
 

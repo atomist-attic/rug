@@ -8,8 +8,8 @@ import com.atomist.rug.kind.elm.ElmTypeUsageTest.TestDidNotModifyException
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline, RugPipeline}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class ElmTypeUsageTest extends FlatSpec with Matchers {
 
@@ -188,9 +188,9 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     ),
       runtime = runtime)
 
-    val newTodoContent = result.findFile(s"$newModuleName.elm").get.content
+    val newTodoContent = result.findFile(s"$newModuleName.elm").value.content
     newTodoContent.trim should equal("module Foobar exposing (..)")
-    val newUsesTodoContent = result.findFile(usesTodoSource.path).get.content
+    val newUsesTodoContent = result.findFile(usesTodoSource.path).value.content
     newUsesTodoContent.trim should equal(makeUsesTodoSource(newModuleName).content.trim)
   }
 
@@ -229,8 +229,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         .stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val cont = r.findFile("Todo.elm").get.content
-    cont.contains(newImportStatement) should be(true)
+    val cont = r.findFile("Todo.elm").value.content
+    cont should include(newImportStatement)
     // TODO had to add 4 returns here. Maybe 3 is correct?
     cont should be(todoSource.content + s"${System.lineSeparator()}${System.lineSeparator()}${System.lineSeparator()}${System.lineSeparator()}" + newImportStatement)
   }
@@ -252,8 +252,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         .stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Todo.elm").get.content
-    content.contains(newImportStatement) should be(true)
+    val content = r.findFile("Todo.elm").value.content
+    content should include(newImportStatement)
     content should be(todoSource.content + newImportStatement + System.lineSeparator())
   }
 
@@ -309,13 +309,13 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(newImportStatement) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(newImportStatement)
   }
 
   it should "add a whole declaration" in {
-    val pattern = "SeeThis string"
-    val expression = "model"
+//    val pattern = "SeeThis string"
+//    val expression = "model"
     val prog =
       s"""
          |editor AddFunction
@@ -340,8 +340,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |        , more
         |        , bar
         |        ]""".stripMargin))
-    val content = r.findFile("Main.elm").get.content
-    content.contains(addThisCode) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(addThisCode)
   }
 
   it should "rename a function" in {
@@ -367,7 +367,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val todoSource = StringFileArtifact("Main.elm", input)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
     content.trim should equal(output.trim)
   }
 
@@ -394,7 +394,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     val todoSource = StringFileArtifact("Main.elm", input)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
     content.trim should equal(output.trim)
   }
 
@@ -432,8 +432,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog,
       Map("field_type" -> fieldType, "initial_value" -> initialValue.toString))
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"""$newField = \"$initialValue\"""") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"""$newField = \"$initialValue\"""")
   }
 
   /*
@@ -464,7 +464,9 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
+
+    pending
   }
 
   it should "rename function" in {
@@ -481,8 +483,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(newFunctionName) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(newFunctionName)
     //content should be(todoSource.content + newImportStatement)
   }
 
@@ -500,8 +502,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(newTypeAliasName) should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(newTypeAliasName)
     //content should be(todoSource.content + newImportStatement)
   }
 
@@ -522,8 +524,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"$newIdentifier : $newType") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"$newIdentifier : $newType")
   }
 
   it should "add to empty record type" in {
@@ -547,8 +549,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"{ $newIdentifier : $newType }") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"{ $newIdentifier : $newType }")
   }
 
   it should "add to record value at top of function" in {
@@ -571,8 +573,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"$newField = $initialValue") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"$newField = $initialValue")
   }
 
   it should "add to record value deep in function" in {
@@ -595,8 +597,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
         |""".stripMargin)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"$newField = $initialValue") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"$newField = $initialValue")
   }
 
   it should "add a constructor to a union type" in {
@@ -613,8 +615,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.contains(s"| $newConstructor") should be(true) // assumes it's at the end or in the middle
+    val content = r.findFile("Main.elm").value.content
+    content should include(s"| $newConstructor") // assumes it's at the end or in the middle
   }
 
   it should "add function" in {
@@ -628,7 +630,9 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
+
+    pending
   }
 
   it should "replace the body of this function" in {
@@ -655,8 +659,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog, Map("module" -> "Main"))
-    val content = r.findFile("Main.elm").get.content
-    content.contains(", subscriptions = subscriptions2") should be(true)
+    val content = r.findFile("Main.elm").value.content
+    content should include(", subscriptions = subscriptions2")
   }
 
   it should "replace the body of case clauses" in {
@@ -676,8 +680,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       ElmParserTest.FullProgram)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Main.elm").get.content
-    content.split(toAppend).length should equal(5)
+    val content = r.findFile("Main.elm").value.content
+    content.split(toAppend) should have length(5)
   }
 
   it should "let me switch on the type of a function" in {
@@ -704,17 +708,23 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
       val advancedProgramShouldAlterThis = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog,
         Map("new_pattern" -> "Hello", "body" -> "model"))
-      val content = advancedProgramShouldAlterThis.findFile("Main.elm").get.content
-      content.contains("Hello ->") should be(true)
-      content.contains("model ! []") should be(true)
+      val content = advancedProgramShouldAlterThis.findFile("Main.elm").value.content
+      content should(
+        include("Hello ->")
+          and
+          include("model ! []")
+        )
     }
 
     {
       val basicProgramShouldNotAlterThis = elmExecute(new SimpleFileBasedArtifactSource("", StringFileArtifact("Main.elm", ElmParserTest.BeginnerProgram)), prog,
         Map("new_pattern" -> "Hello", "body" -> "model"))
-      val content = basicProgramShouldNotAlterThis.findFile("Main.elm").get.content
-      content.contains("Hello ->") should be(true)
-      content.contains("model ! []") should be(false)
+      val content = basicProgramShouldNotAlterThis.findFile("Main.elm").value.content
+      content should(
+        include("Hello ->")
+          and
+          not include("model ! []")
+        )
     }
 
     {
@@ -723,9 +733,12 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
       val advancedProgramShouldPassASpecialBody = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog,
         Map("new_pattern" -> "Hello", "body" -> "(model, Cmd.none)"))
-      val content = advancedProgramShouldPassASpecialBody.findFile("Main.elm").get.content
-      content.contains("Hello ->") should be(true)
-      content.contains("model ! []") should be(false)
+      val content = advancedProgramShouldPassASpecialBody.findFile("Main.elm").value.content
+      content should(
+        include("Hello ->")
+        and
+          not include ("model ! []")
+      )
     }
   }
 
@@ -762,8 +775,8 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       elm)
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
-    val content = r.findFile("Foo.elm").get.content
-    content.contains("chuck = 10000000") should be(true)
+    val content = r.findFile("Foo.elm").value.content
+    content should include("chuck = 10000000")
   }
 }
 

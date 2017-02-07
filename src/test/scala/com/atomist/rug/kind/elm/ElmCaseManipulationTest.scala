@@ -7,10 +7,11 @@ import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class ElmCaseManipulationTest extends FlatSpec with Matchers {
 
-  val bodyAppenderUnderUpdateFunction: String =
+  private val bodyAppenderUnderUpdateFunction: String =
     """
       |editor AddClause
       |
@@ -23,7 +24,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  val bodyAppenderMatchingOnCaseExpression: String =
+  private val bodyAppenderMatchingOnCaseExpression: String =
     """
       |editor AddClause
       |
@@ -35,7 +36,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  val clauseAdderMatchingExpression: String =
+  private val clauseAdderMatchingExpression: String =
     """
       |editor AddClause
       |
@@ -62,9 +63,9 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
   private def appendToCase(rugProg: String) {
     val todoSource = StringFileArtifact("Main.elm", ElmParserTest.FullProgram)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), rugProg)
-    val f = r.findFile("Main.elm").get
+    val f = r.findFile("Main.elm").value
     val content = f.content
-    content.contains("! []") should be(true)
+    content should include("! []")
   }
 
   private def addClauseToCase(rugProg: String) {
@@ -75,11 +76,13 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       "expr" -> expr,
       "rhs" -> rhs
     ))
-    val f = r.findFile("Main.elm").get
+    val f = r.findFile("Main.elm").value
     val content = f.content
-    content.contains(expr) should be (true)
-    content.contains(rhs) should be (true)
-
+    content should (
+      include(expr)
+        and
+        include(rhs)
+      )
   }
 
   private def elmExecute(elmProject: ArtifactSource, program: String,

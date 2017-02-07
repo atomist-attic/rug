@@ -1,11 +1,8 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.OptionValues._
 
 class ElmTextInputTest extends FlatSpec with Matchers {
 
@@ -71,7 +68,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val r = elmExecute(r3, prog4)
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
 
     // TODO should really bring this back, but there appears to be an ordering thing and
     // I'm not sure you've implemented all necessary edits
@@ -89,7 +86,9 @@ class ElmTextInputTest extends FlatSpec with Matchers {
         "field_type" -> "String",
         "initial_value" -> "cats"))
 
-    val content = r.findFile("Main.elm").get.content
+    val content = r.findFile("Main.elm").value.content
+
+    pending
   }
 }
 
@@ -263,25 +262,4 @@ object ElmTextInputTest {
       |      with case when matchAsString = match
       |        do addClause new_pattern body
       |""".stripMargin
-
-  def elmExecuteWithOtherEditorsDefined(elmProject: ArtifactSource, program: String,
-                 params: Map[String, String] = Map()): ArtifactSource = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-
-    val files: Seq[FileArtifact] = Seq(
-      new StringFileArtifact("AddToModel.rug", "AddToModel.rug", AddToModel),
-      new StringFileArtifact("AddToMessage.rug", "AddToMessage.rug", AddToModel)
-    )
-    val as = new SimpleFileBasedArtifactSource("whatever", files)
-    val rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", program))
-    val eds = runtime.create(rugAs,None)
-    val pe = eds.head.asInstanceOf[ProjectEditor]
-
-    val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))
-    r match {
-      case sm: SuccessfulModification =>
-        sm.result
-      case _ => ???
-    }
-  }
 }

@@ -1,7 +1,8 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.Tag
-import com.atomist.rug.runtime.SystemEventHandler
+import com.atomist.rug.runtime.js.JavaScriptProjectOperationFinder.JsRugOperationSignature
+import com.atomist.rug.runtime.{Handler, SystemEventHandler}
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.source.ArtifactSource
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -14,6 +15,26 @@ import scala.util.Try
   */
 object JavaScriptHandlerFinder {
 
+  val EventHandlerName = "event-handler"
+
+  val CommandHandlerName = "command-handler"
+
+  val ResponseHandlerName = "response-handler"
+
+  /**
+    * Used to recognise JS operations that we can call.
+    * TODO - this should probably include type checking too!
+    */
+//  val KnownSignatures = Map()
+//
+//    Set(
+//    JsRugOperationSignature(EditorType, Set("edit")),
+//    JsRugOperationSignature(EditorType, Set("edit"), Set("__name", "__description")),
+//    JsRugOperationSignature(ReviewerType,Set("review")),
+//    JsRugOperationSignature(ReviewerType,Set("review"), Set("__name", "__description")),
+//    JsRugOperationSignature(GeneratorType,Set("populate")),
+//    JsRugOperationSignature(GeneratorType,Set("populate"),Set("__name", "__description"))
+//  )
   /**
     * Find handler operations in the given Rug archive
     *
@@ -23,7 +44,7 @@ object JavaScriptHandlerFinder {
     */
 
   def findEventHandlers(rugAs: ArtifactSource,
-                        ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
+                        ctx: JavaScriptHandlerContext): Seq[Handler] = {
     handlersFromVars(rugAs, new JavaScriptContext(rugAs), ctx)
   }
 

@@ -13,7 +13,7 @@ given
 when
   /* Run your editor */
   AddTypeScriptTest class_under_test="com.atomist.rug.kind.scala.SomeClassHere"
-
+Tes
 then
   fileExists output_ts
     and fileContains output_ts "class SomeClassHereTypeScriptTest implements ProjectEditor"

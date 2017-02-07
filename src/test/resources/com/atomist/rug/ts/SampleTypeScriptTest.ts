@@ -1,13 +1,9 @@
 import {Project} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
-import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-import {Match} from '@atomist/rug/tree/PathExpression'
-import {Parameter} from '@atomist/rug/operations/RugOperation'
+import {Editor} from '@atomist/rug/operations/Decorators'
 
-class SampleTypeScriptTest implements ProjectEditor {
-    name: string = "Constructed";
-    description: string = "Uses single microgrammar";
+@Editor("SampleTypeScriptTest", "Uses Sample from TypeScript")
+class SampleTypeScriptTest {
 
     edit(project: Project) {
 

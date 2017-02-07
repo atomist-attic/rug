@@ -76,7 +76,7 @@
         </dependency>
         <dependency>
             <groupId>org.scalameta</groupId>
-            <artifactId>scalameta_2.11</artifactId>
+            <artifactId>scalameta_${scala.binary.version}</artifactId>
             <version>1.4.0</version>
         </dependency>
 

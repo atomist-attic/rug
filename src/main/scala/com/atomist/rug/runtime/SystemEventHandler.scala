@@ -1,6 +1,5 @@
-package com.atomist.event
+package com.atomist.rug.runtime
 
-import com.atomist.param.Tag
 import com.atomist.rug.spi.Plan.Plan
 
 /**
@@ -21,13 +20,7 @@ case class SystemEvent(
 /**
   * Event implemented by SystemEventHandlers
   */
-trait SystemEventHandler {
-
-  def name: String
-
-  def tags: Seq[Tag]
-
-  def description: String
+trait SystemEventHandler extends Handler {
 
   /**
     * Return the name of the the root node that this handler is interested in,
@@ -39,10 +32,9 @@ trait SystemEventHandler {
   val rootNodeName: String
 
   /**
-    * Handle the given event type. Communication occurs back
-    * through the ServiceSource.
+    * Handle the given event type.
     *
     * @param e SystemEvent we're processing
     */
-  def handle(e: SystemEvent): Plan
+  def handle(e: SystemEvent): Option[Plan]
 }

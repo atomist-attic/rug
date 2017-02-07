@@ -20,9 +20,9 @@ object TypeScriptRugEditorTest {
   val SimpleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core';
-      |import {editor} from '@atomist/rug/operations/RugOperation'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
       |
-      |@editor("Simple", "My simple editor")
+      |@Editor("Simple", "My simple editor")
       |class SimpleEditor {
       |    edit(project: Project): void {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
@@ -34,12 +34,12 @@ object TypeScriptRugEditorTest {
   val SimpleEditorWithBasicParameter =
     s"""
       |import {Project} from '@atomist/rug/model/Core'
-      |import {editor, parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
       |
-      |@editor("Simple", "My simple editor")
+      |@Editor("Simple", "My simple editor")
       |class SimpleEditor {
       |
-      |    @parameter({description: "Content", pattern: "$ContentPattern"})
+      |    @Parameter({description: "Content", pattern: "$ContentPattern"})
       |    content: string
       |
       |    edit(project: Project)  {
@@ -48,6 +48,30 @@ object TypeScriptRugEditorTest {
       |}
       |export let myeditor = new SimpleEditor()
     """.stripMargin
+
+  val SimpleEditorWithBasicNameParameter =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
+       |
+       |@Editor("Simple", "My simple editor")
+       |class SimpleEditor {
+       |
+       |    @Parameter({description: "Name", pattern: "^.*$$"})
+       |    name: string = "Not reserved"
+       |
+       |    @Parameter({description: "Description", pattern: "^.*$$"})
+       |    description: string = "Not reserved"
+       |
+       |    edit(project: Project)  {
+       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+       |        if(this.name !== "Not reserved") throw new Error("Darn - name is reserved it seems");
+       |        if(this.description !== "Not reserved") throw new Error("Darn - description is reserved it seems");
+       |    }
+       |}
+       |export let myeditor = new SimpleEditor()
+    """.stripMargin
+
 
   val SimpleLetStyleEditorWithoutParameters =
     """
@@ -66,9 +90,9 @@ object TypeScriptRugEditorTest {
   val SimpleEditor =
     """
       |import {Project} from '@atomist/rug/model/Core'
-      |import {editor} from '@atomist/rug/operations/RugOperation'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
       |
-      |@editor("Simple", "My simple editor")
+      |@Editor("Simple", "My simple editor")
       |class SimpleEditor {
       |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
@@ -81,9 +105,9 @@ object TypeScriptRugEditorTest {
   val SimpleEditorInvokingOtherEditor =
     """
       |import {Project} from '@atomist/rug/model/Core'
-      |import {editor} from '@atomist/rug/operations/RugOperation'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
       |
-      |@editor("Simple", "My simple editor")
+      |@Editor("Simple", "My simple editor")
       |class SimpleEditor {
       |    edit(project: Project) {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
@@ -97,13 +121,13 @@ object TypeScriptRugEditorTest {
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {File} from '@atomist/rug/model/Core'
-       |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter, Editor, Tags} from '@atomist/rug/operations/Decorators'
        |
-       |@editor("Simple", "My simple editor")
-       |@tags("java", "maven")
+       |@Editor("Simple", "My simple editor")
+       |@Tags("java", "maven")
        |class SimpleEditor {
        |
-       |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]})
+       |    @Parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]})
        |    content: string
        |
        |    edit(project: Project) {
@@ -116,9 +140,9 @@ object TypeScriptRugEditorTest {
   val SimpleGenerator =
     """
       |import {Project} from '@atomist/rug/model/Core'
-      |import {generator, parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Generator} from '@atomist/rug/operations/Decorators'
       |
-      |@generator("SimpleGenerator","My simple Generator")
+      |@Generator("SimpleGenerator","My simple Generator")
       |class SimpleGenerator{
       |
       |     content: string = "woot"
@@ -137,16 +161,16 @@ object TypeScriptRugEditorTest {
   val SimpleEditorTaggedAndMeta =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {parameter, tags, editor} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter, Tags, Editor} from '@atomist/rug/operations/Decorators'
        |
-       |@editor("Simple","A nice little editor")
-       |@tags("java", "maven")
+       |@Editor("Simple","A nice little editor")
+       |@Tags("java", "maven")
        |class SimpleEditor {
        |
-       |    @parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, displayable: false})
+       |    @Parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, displayable: false})
        |    content: string = "Anders is ?"
        |
-       |    @parameter({description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100})
+       |    @Parameter({description: "some num", displayName: "num", pattern: "^\\\\d+$$", maxLength: 100})
        |    num: number = 10
        |
        |    edit(project: Project) {
@@ -169,12 +193,12 @@ object TypeScriptRugEditorTest {
 
   val SimpleEditorWithRelativeDependency =
     """
-      |import {editor} from '@atomist/rug/operations/RugOperation'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
       |import {Project} from '@atomist/rug/model/Core'
       |
       |import {Bar} from './Foo'
       |
-      |@editor("Simple","My simple editor")
+      |@Editor("Simple","My simple editor")
       |class SimpleEditor {
       |
       |    edit(project: Project) {
@@ -191,18 +215,18 @@ object TypeScriptRugEditorTest {
 
       """import {Project,File} from '@atomist/rug/model/Core'
         |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-        |import {parameter, editor,tags} from '@atomist/rug/operations/RugOperation'
+        |import {Parameter, Editor, Tags} from '@atomist/rug/operations/Decorators'
         |
         |class PomFile extends PathExpression<Project,File> {
         |
         |    constructor() { super(`/File()[@name='pom.xml']`) }
         |}
         |
-        |@tags("java", "maven")
-        |@editor("Constructed", "A nice little editor")
+        |@Tags("java", "maven")
+        |@Editor("Constructed", "A nice little editor")
         |class ConstructedEditor {
         |
-        |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+        |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
         |    packageName: string
         |
         |    edit(project: Project) {
@@ -231,13 +255,13 @@ object TypeScriptRugEditorTest {
 
     """import {Project, File} from '@atomist/rug/model/Core'
       |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
+      |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
       |
-      |@tags("java", "maven")
-      |@editor("Constructed", "A nice little editor")
+      |@Tags("java", "maven")
+      |@Editor("Constructed", "A nice little editor")
       |class ConstructedEditor {
       |
-      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |    packageName: string
       |
       |    edit(project: Project) {
@@ -268,14 +292,14 @@ object TypeScriptRugEditorTest {
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
       |import {File} from '@atomist/rug/model/Core'
-      |import {editor,parameter,tags} from '@atomist/rug/operations/RugOperation'
+      |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
       |
       |
-      |@tags("java", "maven")
-      |@editor("Constructed", "A nice little editor")
+      |@Tags("java", "maven")
+      |@Editor("Constructed", "A nice little editor")
       |class ConstructedEditor {
       |
-      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |    packageName: string
       |
       |    edit(project: Project) {
@@ -305,14 +329,14 @@ object TypeScriptRugEditorTest {
 
     """import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Project, File} from '@atomist/rug/model/Core'
-      |import {editor, parameter, tags} from '@atomist/rug/operations/RugOperation'
+      |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
       |
       |
-      |@tags("java", "maven")
-      |@editor("Constructed", "A nice little editor")
+      |@Tags("java", "maven")
+      |@Editor("Constructed", "A nice little editor")
       |class ConstructedEditor {
       |
-      |    @parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
       |    packageName: string
       |
       |    edit(project: Project) {
@@ -343,6 +367,10 @@ object TypeScriptRugEditorTest {
 class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   import TypeScriptRugEditorTest._
+
+  it should "allow use of name/description fields if we are using annotations" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBasicNameParameter))
+  }
 
   it should "run simple editor compiled from TypeScript without parameters using support class" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithoutParameters))

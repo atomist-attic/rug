@@ -4,7 +4,7 @@ import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathEx
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {TreeHelper} from '@atomist/rug/tree/TreeHelper'
-import {parameter} from '@atomist/rug/operations/RugOperation'
+import {Parameter} from '@atomist/rug/operations/Decorators'
 
 class NavigateTree implements ProjectEditor {
     name: string = "NavigateTree"

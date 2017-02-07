@@ -3,13 +3,13 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
-import {parameter} from '@atomist/rug/operations/RugOperation'
+import {Parameter} from '@atomist/rug/operations/Decorators'
 
 class ChangeException implements ProjectEditor {
     name: string = "ChangeException"
     description: string = "Changes exception"
 
-    @parameter({pattern: "^.*$$", description: "New package"})
+    @Parameter({pattern: "^.*$$", description: "New package"})
     newException: string
 
     edit(project: Project) {

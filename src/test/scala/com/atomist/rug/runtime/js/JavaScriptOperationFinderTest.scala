@@ -13,12 +13,12 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {File} from '@atomist/rug/model/Core'
-       |import {parameter, editor} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
        |
-       |@editor("Simple", "A nice little editor")
+       |@Editor("Simple", "A nice little editor")
        |class SimpleEditor{
        |
-       |    @parameter({pattern: "^.*$$", description: "foo bar"})
+       |    @Parameter({pattern: "^.*$$", description: "foo bar"})
        |    content: string
        |
        |    edit(project: Project) {}
@@ -30,18 +30,18 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
     s"""
        |import {Project} from '@atomist/rug/model/Core'
        |import {File} from '@atomist/rug/model/Core'
-       |import {parameter, editor} from '@atomist/rug/operations/RugOperation'
+       |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
        |
-       |@editor("Simple", "A nice little editor")
+       |@Editor("Simple", "A nice little editor")
        |class SimpleEditor {
        |
-       |    @parameter({pattern: "^.*$$", description: "foo bar"})
+       |    @Parameter({pattern: "^.*$$", description: "foo bar"})
        |    content: string = "Test String";
        |
-       |    @parameter({pattern: "^\\d+$$", description: "A nice round number"})
+       |    @Parameter({pattern: "^\\d+$$", description: "A nice round number"})
        |    amount: number = 10;
        |
-       |    @parameter({pattern: "^\\d+$$", description: "A nice round number"})
+       |    @Parameter({pattern: "^\\d+$$", description: "A nice round number"})
        |    nope: boolean;
        |
        |    edit(project: Project) {

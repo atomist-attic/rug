@@ -191,11 +191,8 @@ class jsPathExpressionEngine(
   def wrap(nodes: Seq[TreeNode]): java.util.List[Object] = {
     val cr: CommandRegistry = DefaultCommandRegistry
 
-    def nodeTypes(node: TreeNode): Set[Typed] =
-      node.nodeTags.flatMap(t => typeRegistry.findByName(t))
-
     def proxify(n: TreeNode): Object = n match {
-      case _ => new jsSafeCommittingProxy(nodeTypes(n), n, cr)
+      case _ => new jsSafeCommittingProxy(n, cr)
     }
 
     new JavaScriptArray(

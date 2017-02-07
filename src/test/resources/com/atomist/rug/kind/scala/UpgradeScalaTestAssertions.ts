@@ -3,7 +3,6 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
-import {parameter} from '@atomist/rug/operations/RugOperation'
 
 class UpgradeScalaTestAssertions implements ProjectEditor {
     name: string = "UpgradeScalaTestAssertions"

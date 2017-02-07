@@ -3,6 +3,9 @@ package com.atomist.rug.kind.scala
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 
+/**
+  * Tests for realistic Scala scenarios
+  */
 class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   import ScalaFileTypeTest._
@@ -10,6 +13,8 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   override val typeBeingTested = new ScalaFileType
 
   it should "change exception catch ???" is pending
+
+  it should "change a.equals(b)" is pending
 
   it should "upgrade ScalaTest assertions" in pendingUntilFixed {
 

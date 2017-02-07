@@ -32,8 +32,6 @@ class ServicesMutableView(rugAs: ArtifactSource,
 
   override def nodeName: String = "services"
 
-  override def nodeTags: Set[String] = Set("services")
-
   override val childNodeNames: Set[String] = Set("service")
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {

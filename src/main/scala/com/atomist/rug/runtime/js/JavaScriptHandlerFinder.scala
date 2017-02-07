@@ -1,7 +1,6 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.Tag
-import com.atomist.rug.runtime.js.JavaScriptProjectOperationFinder.JsRugOperationSignature
 import com.atomist.rug.runtime.{Handler, SystemEventHandler}
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.source.ArtifactSource
@@ -21,20 +20,7 @@ object JavaScriptHandlerFinder {
 
   val ResponseHandlerName = "response-handler"
 
-  /**
-    * Used to recognise JS operations that we can call.
-    * TODO - this should probably include type checking too!
-    */
-//  val KnownSignatures = Map()
-//
-//    Set(
-//    JsRugOperationSignature(EditorType, Set("edit")),
-//    JsRugOperationSignature(EditorType, Set("edit"), Set("__name", "__description")),
-//    JsRugOperationSignature(ReviewerType,Set("review")),
-//    JsRugOperationSignature(ReviewerType,Set("review"), Set("__name", "__description")),
-//    JsRugOperationSignature(GeneratorType,Set("populate")),
-//    JsRugOperationSignature(GeneratorType,Set("populate"),Set("__name", "__description"))
-//  )
+
   /**
     * Find handler operations in the given Rug archive
     *
@@ -51,13 +37,13 @@ object JavaScriptHandlerFinder {
   private def handlersFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext, ctx: JavaScriptHandlerContext): Seq[SystemEventHandler] = {
     jsc.vars.foldLeft(Seq[SystemEventHandler]())((acc: Seq[SystemEventHandler], jsVar) => {
       val obj = jsVar.scriptObjectMirror
-      if (obj.hasMember("name") && obj.hasMember("description") && obj.hasMember("handle") && obj.hasMember("expression")) {
-        val name = obj.getMember("name").asInstanceOf[String]
-        val description = obj.getMember("description").asInstanceOf[String]
+      if (obj.hasMember("__name") && obj.hasMember("__description") && obj.hasMember("handle") && obj.hasMember("__expression")) {
+        val name = obj.getMember("__name").asInstanceOf[String]
+        val description = obj.getMember("__description").asInstanceOf[String]
         val handle = obj.getMember("handle").asInstanceOf[ScriptObjectMirror]
-        val expression: String = obj.getMember("expression") match {
+        val expression: String = obj.getMember("__expression") match {
           case x: String => x
-          case o: ScriptObjectMirror => o.getMember("expression").asInstanceOf[String]
+          case o: ScriptObjectMirror => o.getMember("__expression").asInstanceOf[String]
           case _ => null
         }
         val tags = readTagsFromMetadata(obj)
@@ -70,7 +56,7 @@ object JavaScriptHandlerFinder {
 
   protected def readTagsFromMetadata(someVar: ScriptObjectMirror): Seq[Tag] = {
     Try {
-      someVar.getMember("tags") match {
+      someVar.getMember("__tags") match {
         case som: ScriptObjectMirror =>
           val stringValues = som.values().asScala collect {
             case s: String => s

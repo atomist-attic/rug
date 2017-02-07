@@ -14,12 +14,12 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
-  * @param node  node we are fronting
+  * @param node node we are fronting
   */
 class jsSafeCommittingProxy(
-                            val node: TreeNode,
-                            commandRegistry: CommandRegistry = DefaultCommandRegistry,
-                            typeRegistry: TypeRegistry = DefaultTypeRegistry)
+                             val node: TreeNode,
+                             commandRegistry: CommandRegistry = DefaultCommandRegistry,
+                             typeRegistry: TypeRegistry = DefaultTypeRegistry)
   extends AbstractJSObject {
 
   override def toString: String = s"SafeCommittingProxy around $node"
@@ -32,8 +32,12 @@ class jsSafeCommittingProxy(
   import jsSafeCommittingProxy.MagicJavaScriptMethods
 
   override def getMember(name: String): AnyRef = {
+    //println(s"getMember: [$name]")
     if (MagicJavaScriptMethods.contains(name))
       super.getMember(name)
+    else if (name == "toString") {
+      new AlwaysReturns(node.toString)
+    }
     else typ.typeInformation match {
       case st: StaticTypeInformation =>
         val possibleOps = st.operations.filter(
@@ -45,7 +49,6 @@ class jsSafeCommittingProxy(
             if (name == "parent" || node.childNodeNames.contains(name))
               new FunctionProxyToNodeNavigationMethods(name, node)
             else {
-              println(s"Returning AlwaysReturnNull for $name")
               AlwaysReturnNull
             }
           }
@@ -104,13 +107,15 @@ class jsSafeCommittingProxy(
     }
   }
 
-  private object AlwaysReturnNull extends AbstractJSObject {
+  private class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
 
     override def isFunction: Boolean = true
 
-    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = null
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
 
   }
+
+  private object AlwaysReturnNull extends AlwaysReturns(null)
 
   /**
     * Nashorn proxy for a method invocation that use navigation methods on
@@ -153,7 +158,7 @@ private object jsSafeCommittingProxy {
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
-  def MagicJavaScriptMethods = Set("valueOf", "toString")
+  def MagicJavaScriptMethods = Set("valueOf")
 
 }
 

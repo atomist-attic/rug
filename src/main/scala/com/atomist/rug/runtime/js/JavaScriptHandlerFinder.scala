@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.event.SystemEventHandler
 import com.atomist.param.Tag
+import com.atomist.rug.runtime.SystemEventHandler
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.source.ArtifactSource
 import jdk.nashorn.api.scripting.ScriptObjectMirror

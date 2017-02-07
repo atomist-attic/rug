@@ -1,10 +1,10 @@
 package com.atomist.event.archive
 
-import com.atomist.event.SystemEvent
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.rug.runtime.SystemEvent
 import com.atomist.rug.runtime.js.JavaScriptHandlerFinder
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, JavaScriptEventHandlerTest}
+import com.atomist.rug.runtime.js.interop.{JavaScriptEventHandlerTest, JavaScriptHandlerContext}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.SimpleFileBasedArtifactSource
 import com.atomist.tree.TreeNode

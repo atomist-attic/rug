@@ -1,10 +1,11 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.event.{SystemEvent, SystemEventHandler}
 import com.atomist.param.Tag
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.runtime.{SystemEvent, SystemEventHandler}
+import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch}
 import com.atomist.rug.spi.Plan.Plan
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
@@ -23,11 +24,11 @@ class JavaScriptEventHandler(
                                  )
   extends SystemEventHandler {
 
-  override def name: String = pathExpressionStr
+  override def name: String = _name
 
   override def tags: Seq[Tag] = Nil
 
-  override def description: String = name
+  override def description: String = _description
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
@@ -36,7 +37,7 @@ class JavaScriptEventHandler(
     case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }
 
-  override def handle(e: SystemEvent): Plan = {
+  override def handle(e: SystemEvent): Option[Plan] = {
 
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
@@ -55,7 +56,7 @@ class JavaScriptEventHandler(
         throw new RugRuntimeException(pathExpressionStr,
           s"Error evaluating path expression $pathExpression: [$failure]")
     }
-    Plan(Nil,Nil)
+    Some(Plan(Nil,Nil))
   }
 }
 

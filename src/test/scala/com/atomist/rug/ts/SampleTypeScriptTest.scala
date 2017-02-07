@@ -6,6 +6,7 @@ import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
+import com.atomist.rug.ts.TypeScriptBuilder
 
 class SampleTypeScriptTest extends FlatSpec with Matchers {
 

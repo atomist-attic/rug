@@ -59,7 +59,7 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
     scalas.size should be(1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
 
-    val expr = "//TermTryWithCases/Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
+    val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
       ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
         case Right(nodes) if nodes.nonEmpty =>
           nodes.size should be(1)
@@ -78,7 +78,7 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
 
     val newException = "MicturationException"
 
-    val expr = "//TermTryWithCases/Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
+    val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)
@@ -105,7 +105,7 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
 
     val newException = "MicturationException"
 
-    val expr = "//Case//TypeName[@value='ThePlaneHasFlownIntoTheMountain']"
+    val expr = "//case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(2)
@@ -135,7 +135,7 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
     val newException = "MicturationException"
     //println(TreeNodeUtils.toShorterString(scalaFileNode))
 
-    val expr = "//TermTryWithCases/Case[//TypeName[@value='ThePlaneHasFlownIntoTheMountain']]"
+    val expr = "//termTryWithCases/case[//typeName[@value='ThePlaneHasFlownIntoTheMountain']]"
     ee.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         nodes.size should be(1)

@@ -24,16 +24,30 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
                 TermName:[be]
                 Lit:[2]
       */
-      let oldAssertion = `/src/test/scala//ScalaFile()//TermApplyInfix[/TermName[@value='should']]`
+      let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']]`
 
-      eng.with<TextTreeNode>(project, oldAssertion, shouldTerm => {
-        //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo()}'`)
-        
-        // let c2 = cc as any // We need to do this to get to the children
-        // let classType = c2.class_type()
-        console.log(shouldTerm.value())
+      eng.with<any>(project, oldAssertion, shouldTerm => {
+
+        console.log("b4 select")
+
+        let termSelect = shouldTerm.termSelect()
+
+        console.log("after select")
+        let termApply = shouldTerm.termApply()
+        if (termApply != null) {
+          console.log(`after apply, termApply value = ${termApply.value()}`)
+        }
+        if (termApply != null && termApply.termName().value() == "be") {
+
+          console.log(shouldTerm.value())
+        }
+        else {
+          console.log(`after apply, termApply is null`)
+        }
+
       })
-    }
+}
+
 }
 
 export let editor = new UpgradeScalaTestAssertions()

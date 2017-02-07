@@ -2,6 +2,7 @@ package com.atomist.rug.kind.scala
 
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.{InputPosition, OffsetInputPosition, PositionedTreeNode}
+import com.atomist.util.lang.JavaHelpers
 
 import scala.meta._
 
@@ -21,8 +22,10 @@ private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
     // class names with ` that are illegal Java class names according to java.Class
     // (but what would it know)
     val fqn = smTree.getClass.getName
-    fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", "")
+    JavaHelpers.lowerize(fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", ""))
   }
+
+  override def nodeTags: Set[String] = super.nodeTags ++ Set(TreeNode.Dynamic)
 
   override def startPosition: InputPosition = OffsetInputPosition(smTree.pos.start.offset)
 

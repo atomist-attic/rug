@@ -94,7 +94,10 @@ object SimpleMutableContainerTreeNode {
       case ptn: PositionedTreeNode =>
         makeMutable(ptn)
     }
-    new SimpleMutableContainerTreeNode(ptn.nodeName, kids, ptn.startPosition, ptn.endPosition, significance = TreeNode.Signal)
+    new SimpleMutableContainerTreeNode(ptn.nodeName, kids,
+      ptn.startPosition, ptn.endPosition,
+      significance = TreeNode.Signal,
+      additionalTypes = ptn.nodeTags)
   }
 
 }

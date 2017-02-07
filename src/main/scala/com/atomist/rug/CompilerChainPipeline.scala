@@ -3,7 +3,7 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.compiler.Compiler
-import com.atomist.rug.runtime.js.JavaScriptOperationFinder
+import com.atomist.rug.runtime.js.JavaScriptProjectOperationFinder
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
@@ -22,7 +22,7 @@ class CompilerChainPipeline(compilers: Seq[Compiler],
   override def create(rugArchive: ArtifactSource,
                       namespace: Option[String],
                       knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
-    val ops = JavaScriptOperationFinder.fromJavaScriptArchive(comps.reduce(_ compose _)(rugArchive))
+    val ops = JavaScriptProjectOperationFinder.fromJavaScriptArchive(comps.reduce(_ compose _)(rugArchive))
     ops foreach {
       case capo: ContextAwareProjectOperation =>
         capo.setContext(ops)

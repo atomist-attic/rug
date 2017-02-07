@@ -10,12 +10,12 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 
-class JavaScriptInvokingProjectReviewer(
+class JavaScriptProjectReviewer(
                                          jsc: JavaScriptContext,
                                          jsVar: ScriptObjectMirror,
                                          rugAs: ArtifactSource
                                        )
-  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectReviewer {
 
   override def review(targetProject: ArtifactSource, poa: ProjectOperationArguments): ReviewResult = {

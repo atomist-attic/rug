@@ -423,7 +423,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       SimpleEditorWithRelativeDependency)
     val dep = StringFileArtifact(s".atomist/editors/Foo.ts", SimpleTsUtil)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simple, dep))
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectEditor]
   }
 
   it should "find parameter metadata" in {
@@ -482,7 +482,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "send editor bad input and get appropriate response" in {
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be("Simple")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -504,9 +504,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     p.getMaxLength should be(100)
   }
 
-  private def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptInvokingProjectEditor, SuccessfulModification) = {
+  private def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be("Constructed")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
@@ -517,10 +517,10 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case _ => ???
     }
   }
-  private def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectGenerator = {
+  private def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectGenerator = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectGenerator]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectGenerator]
     jsed.name should be("SimpleGenerator")
     jsed.setContext(others)
 
@@ -530,10 +530,10 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be("Simple")
     jsed.setContext(others)
 
@@ -548,9 +548,9 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be("Simple")
     jsed.setContext(others)
 

@@ -4,7 +4,7 @@ import com.atomist.project.{ProjectOperation, SimpleProjectOperationArguments}
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
 import com.atomist.rug.{CompilerChainPipeline, RugPipeline, TestUtils}
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -26,13 +26,13 @@ trait TypeScriptEditorTestHelper extends Matchers {
       TypeScriptBuilder.compileWithModel(as)
     }
 
-    val eds = JavaScriptOperationFinder.fromJavaScriptArchive(cas)
+    val eds = JavaScriptProjectOperationFinder.fromJavaScriptArchive(cas)
 
     if (eds.isEmpty) {
       print(program); throw new Exception("No editor was parsed")
     }
 
-    val jsed = eds.head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = eds.head.asInstanceOf[JavaScriptProjectEditor]
     jsed.name should be(editorName)
     jsed.setContext(others)
 

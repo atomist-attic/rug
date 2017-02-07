@@ -14,13 +14,13 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * ProjectEditor implementation that invokes a JavaScript function. This will probably be the result of
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
   */
-class JavaScriptInvokingProjectGenerator(
+class JavaScriptProjectGenerator(
                                           jsc: JavaScriptContext,
                                           jsVar: ScriptObjectMirror,
                                           rugAs: ArtifactSource,
                                           startProject: ArtifactSource
                                         )
-  extends JavaScriptInvokingProjectOperation(jsc, jsVar, rugAs)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
 
   @throws(classOf[InvalidParametersException])

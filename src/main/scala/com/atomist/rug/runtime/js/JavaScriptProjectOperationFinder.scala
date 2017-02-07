@@ -7,7 +7,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 /**
   * Find and instantiate JavaScript editors in a Rug archive
   */
-object JavaScriptOperationFinder {
+object JavaScriptProjectOperationFinder {
 
   val EditorType = "editor"
 
@@ -39,17 +39,17 @@ object JavaScriptOperationFinder {
   }
 
   // TODO clean up this dispatch/signature stuff - too coupled
-  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
+  private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptProjectOperation] = {
     jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
       case (v, Some(EditorType)) =>
-        new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptProjectEditor(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(ReviewerType)) =>
-        new JavaScriptInvokingProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
       case (v, Some(GeneratorType)) =>
         // TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
-        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
+        new JavaScriptProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
     }
   }
 

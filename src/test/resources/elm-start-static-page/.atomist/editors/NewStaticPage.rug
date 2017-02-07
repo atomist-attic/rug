@@ -1,8 +1,7 @@
 
 @tag "elm"
 @description "Creates a new static Elm program"
-@generator "StaticPage"
-editor NewStaticPage
+generator NewStaticPage
 
 @maxLength 21
 @description "Name of your new project."

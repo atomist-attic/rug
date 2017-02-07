@@ -21,9 +21,10 @@ object TypeScriptRugEditorTest {
     """
       |import {Project} from '@atomist/rug/model/Core';
       |import {Editor} from '@atomist/rug/operations/Decorators'
+      |import {EditProject} from '@atomist/rug/operations/ProjectEditor'
       |
       |@Editor("Simple", "My simple editor")
-      |class SimpleEditor {
+      |class SimpleEditor implements EditProject {
       |    edit(project: Project): void {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }

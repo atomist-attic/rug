@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
      
 ### Changed
 
+-   Upgrade TS compiler to 2.1.5
+
 -   `TreeNodeUtils.toShorterString` now optionally takes a function 
     to customize the display of each node.
 

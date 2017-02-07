@@ -31,6 +31,7 @@ object JavaScriptHandlerFinder {
 
   def findEventHandlers(rugAs: ArtifactSource,
                         ctx: JavaScriptHandlerContext): Seq[Handler] = {
+
     handlersFromVars(rugAs, new JavaScriptContext(rugAs), ctx)
   }
 

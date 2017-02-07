@@ -17,18 +17,19 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {EventHandler, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
-       |export let simpleHandler: EventHandler<TreeNode,TreeNode> = {
-       |  name: "ClosedIssueReopener",
-       |  description: "Reopens closed issues",
-       |  tags: ["github", "issues"],
-       |  expression: new PathExpression<TreeNode,TreeNode>("/issue"),
+       |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
+       |
+       |@EventHandler("ClosedIssueReopener", "Reopens closed issues", new PathExpression<TreeNode,TreeNode>("/issue"))
+       |@Tags("github", "issues")
+       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
        |    let issue = event.root
        |    return new Plan();
        |  }
        |}
+       |export let handler = new SimpleHandler();
       """.stripMargin)
 }
 

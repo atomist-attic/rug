@@ -118,6 +118,31 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |export let editor = new MgEditor()
       | """.stripMargin
 
+  val ToStringOnMicrogrammarNode: String =
+    """import {Project} from '@atomist/rug/model/Core'
+      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {PathExpression,TreeNode,TextTreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
+      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import {Match} from '@atomist/rug/tree/PathExpression'
+      |import {Parameter} from '@atomist/rug/operations/RugOperation'
+      |
+      |class MgEditor implements ProjectEditor {
+      |    name: string = "Constructed"
+      |    description: string = "Uses single microgrammar"
+      |
+      |    edit(project: Project) {
+      |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      |
+      |      eng.with<TextTreeNode>(project, "//File()/method()/type()", n => {
+      |        let s = `Type is ${n}`
+      |        n.update(n.value() + "_x")
+      |      })
+      |    }
+      |  }
+      |export let editor = new MgEditor()
+      | """.stripMargin
+
   val NavigatesNestedUsingProperty: String =
     """import {Project} from '@atomist/rug/model/Core'
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
@@ -159,6 +184,11 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   it should "use editor requiring FormatInfo" in pendingUntilFixed {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       RequiresFormatInfo))
+  }
+
+  it should "#283 allow toString calls on node" in pendingUntilFixed {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+      ToStringOnMicrogrammarNode))
   }
 
   it should "navigate nested using path expression" in {

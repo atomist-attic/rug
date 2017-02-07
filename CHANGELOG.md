@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Added support for @editor, @generator, @executor, @reviewer and @tags class decorators in TS
+-   Add new minimal TS interfaces for use with class decorators. e.g. EditProject 
+
+-   Added support for @Editor, @Generator, @Reviewer and @Tags class decorators in TS.
 
 -   Added `ScalaFileType` backed by ScalaMeta
 

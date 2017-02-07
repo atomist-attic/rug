@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.JavaScriptHandlerFinder
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler, JavaScriptHandlerFinder}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.{TerminalTreeNode, TreeNode}
@@ -41,9 +41,12 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers{
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
     val handlers = JavaScriptHandlerFinder.findEventHandlers(rugArchive, new JavaScriptHandlerContext("XX", treeMaterializer))
     handlers.size should be(1)
-    val handler = handlers.head
-    handler.rootNodeName should be("issue")
-    val plan = handler.handle(SysEvent)
+    handlers.head match {
+      case handler: JavaScriptEventHandler =>
+        handler.rootNodeName should be("issue")
+        val plan = handler.handle(SysEvent)
+      case _ => ???
+    }
   }
 }
 

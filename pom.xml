@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.coveo</groupId>
             <artifactId>nashorn-commonjs-modules</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.github.julianthome</groupId>

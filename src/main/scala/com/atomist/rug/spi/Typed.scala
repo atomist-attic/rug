@@ -5,20 +5,20 @@ import com.atomist.util.lang.JavaHelpers
 object Typed {
 
   private[spi] def trimSuffix(suffix: String, orig: String): String = orig match {
-    case n if n.endsWith(suffix) => n.dropRight(suffix.size)
+    case n if n.endsWith(suffix) => n.dropRight(suffix.length)
     case n => n
   }
 
-  private val typeSuffix = "Type"
-  private val treeNodeSuffix = "TreeNode"
-  private val mutableViewSuffix = "MutableView"
+  private val TypeSuffix = "Type"
+  private val TreeNodeSuffix = "TreeNode"
+  private val MutableViewSuffix = "MutableView"
 
-  def typeClassToTypeName(tc: Class[_]): String = trimSuffix(typeSuffix, tc.getSimpleName)
+  def typeClassToTypeName(tc: Class[_]): String = trimSuffix(TypeSuffix, tc.getSimpleName)
 
   def typeClassesToTypeNames(tcs: Class[_]*): Set[String] = tcs.map(typeClassToTypeName).toSet
 
   def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
-    val raw = trimSuffix(treeNodeSuffix, trimSuffix(mutableViewSuffix, tc.getSimpleName))
+    val raw = trimSuffix(TreeNodeSuffix, trimSuffix(MutableViewSuffix, tc.getSimpleName))
     if (!searchable)
       JavaHelpers.lowerize(raw)
     else raw

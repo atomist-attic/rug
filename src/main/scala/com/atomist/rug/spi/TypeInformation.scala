@@ -19,10 +19,9 @@ trait DynamicTypeInformation extends TypeInformation
 
 /**
   * Trait that types should extend when all operations on the type are known.
-  * ReflectiveStaticTypeInformation subinterface computes this automatically
-  * using reflection.
+  * ReflectiveStaticTypeInformation computes this automatically using reflection.
   *
-  * @see ReflectiveStaticTypeInformation
+  * @see [[ReflectiveStaticTypeInformation]]
   */
 trait StaticTypeInformation extends TypeInformation {
 

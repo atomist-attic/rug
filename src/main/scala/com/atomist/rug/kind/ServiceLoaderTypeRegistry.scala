@@ -13,7 +13,7 @@ import _root_.scala.collection.JavaConverters._
   * JAR files needs a META-INF/services/com.atomist.rug.spi.Typed file containing
   * the FQNs of the types it defines.
   *
-  * @see Type
+  * @see [[Type]]
   */
 class ServiceLoaderTypeRegistry
   extends TypeRegistry

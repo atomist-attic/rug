@@ -35,16 +35,13 @@ class CSharpFileType
     // Create a special view
     new CSharpFileMutableView(n, f)
   }
-
 }
-
 
 object CSharpFileMutableView {
 
   import PathExpressionParser.parseString
 
   val FirstUsingStatement: PathExpression = "//using_directive[1]"
-
 }
 
 /**
@@ -66,8 +63,4 @@ class CSharpFileMutableView(topLevelNode: MutableContainerTreeNode, f: FileArtif
         mtn.update(s"${mtn.value}\n$newUsingStatement\n")
       )
   }
-
 }
-
-
-

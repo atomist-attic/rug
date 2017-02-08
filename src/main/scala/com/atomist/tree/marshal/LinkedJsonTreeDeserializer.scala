@@ -48,6 +48,11 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
           case None => throw new IllegalArgumentException(s"Type is required")
           case _ => ???
         }
+        val nodeTags: Set[String] = m.get(Type) match {
+          case Some(l: Seq[_]) => l.map(_.toString).toSet
+          case None => throw new IllegalArgumentException(s"Type is required")
+          case _ => ???
+        }
         val nodeName = nodeType
         val simpleFields =
           for {
@@ -61,7 +66,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
             }
             SimpleTerminalTreeNode(k, nodeValue)
           }
-        val ctn = new LinkableContainerTreeNode(nodeName, Set(nodeType), simpleFields.toSeq)
+        val ctn = new LinkableContainerTreeNode(nodeName, nodeTags + TreeNode.Dynamic, simpleFields.toSeq)
         val nodeId: String = requiredStringEntry(m, NodeId)
         idToNode += (nodeId -> ctn)
         ctn
@@ -128,7 +133,9 @@ private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContain
                                                 override val nodeName: String)
   extends ContainerTreeNode {
 
-  override def value: String = ???
+  override def value: String = wrappedNode.value
+
+  override def nodeTags: Set[String] = wrappedNode.nodeTags
 
   override def childNodeNames: Set[String] = wrappedNode.childNodeNames
 
@@ -148,9 +155,11 @@ class JsonBackedContainerTreeNode(val innerNode: ContainerTreeNode,
                                   val version: String)
   extends ContainerTreeNode {
 
-  override def value: String = ???
+  override def value: String = innerNode.value
 
   override def nodeName: String = innerNode.nodeName
+
+  override def nodeTags: Set[String] = innerNode.nodeTags
 
   override def childNodeNames: Set[String] = innerNode.childNodeNames
 

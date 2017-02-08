@@ -1,5 +1,6 @@
 package com.atomist.tree.marshal
 
+import com.atomist.tree.TreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
@@ -149,13 +150,13 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
 
   it should "deserialize simple tree" in {
     val node = LinkedJsonTreeDeserializer.fromJson(t1)
-    node.nodeTags should be (Set("Issue"))
+    node.nodeTags should be (Set("Issue", TreeNode.Dynamic))
     node.childrenNamed("number").size should be (1)
   }
 
   it should "deserialize a tree of n depth" in {
     val node = LinkedJsonTreeDeserializer.fromJson(t2)
-    node.nodeTags should be (Set("Build"))
+    node.nodeTags should be (Set("Build", TreeNode.Dynamic))
     node.childrenNamed("status").head.value should be ("Passed")
     val repo = node.childrenNamed("ON").head
     repo.childrenNamed("owner").size should be (1)

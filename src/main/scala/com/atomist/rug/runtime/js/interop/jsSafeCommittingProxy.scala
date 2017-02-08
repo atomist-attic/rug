@@ -4,7 +4,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
 
@@ -20,7 +20,7 @@ class jsSafeCommittingProxy(
                              val node: TreeNode,
                              commandRegistry: CommandRegistry = DefaultCommandRegistry,
                              typeRegistry: TypeRegistry = DefaultTypeRegistry)
-  extends AbstractJSObject {
+  extends AbstractJSObject with TreeNode {
 
   override def toString: String = s"SafeCommittingProxy around $node"
 
@@ -30,6 +30,23 @@ class jsSafeCommittingProxy(
   private val typ: Typed = UnionType(nodeTypes)
 
   import jsSafeCommittingProxy.MagicJavaScriptMethods
+
+  //-----------------------------------------------------
+  // Delegate TreeNode methods to backing node
+
+  override def nodeName: String = node.nodeName
+
+  override def value: String = node.value
+
+  override def childNodeNames: Set[String] = node.childNodeNames
+
+  override def childNodeTypes: Set[String] = node.childNodeTypes
+
+  override def childrenNamed(key: String): Seq[TreeNode] =
+    node.childrenNamed(key)
+      .map(n => new jsSafeCommittingProxy(n, commandRegistry, typeRegistry))
+
+  //-----------------------------------------------------
 
   override def getMember(name: String): AnyRef = {
     //println(s"getMember: [$name]")
@@ -147,7 +164,11 @@ class jsSafeCommittingProxy(
           }
         case _ => node
       }
-      jsPathExpressionEngine.wrapOne(r)
+      // For terminal nodes we want the wrapped value
+      r match {
+        case ttn: TerminalTreeNode => ttn.value
+        case _ => jsPathExpressionEngine.wrapOne(r)
+      }
     }
   }
 

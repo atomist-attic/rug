@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
 /**
-  * Represents a position within an input string
+  * Represents a position within an input sequence
   */
 trait InputPosition {
 
@@ -30,18 +30,13 @@ trait InputPosition {
 
   /**
     * Show a readable compiler-style position
-    *
-    * @return
     */
   def show: String
+
+  /**
+    * Take the content from this position to the end, inclusive
+    */
+  def takeTo(content: CharSequence, end: InputPosition): CharSequence =
+    content.subSequence(this.offset, end.offset)
 }
 
-
-case class LineHoldingOffsetInputPosition(input: String, offset: Int) extends InputPosition {
-
-  require(offset >= 0, s"Offset must be >= 0, had $offset")
-
-  override def show: String = s"${input.take(offset)}  HERE [${input.drop(offset)}] : offset=$offset"
-
-  override def toString: String = show
-}

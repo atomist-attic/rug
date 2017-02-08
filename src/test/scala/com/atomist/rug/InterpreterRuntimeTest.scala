@@ -15,7 +15,7 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
 
   override val pipeline: RugPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler, new RugTranspiler()))
 
-  it should "handle custom kind of 'Line' nested under file" in pendingUntilFixed {
+  it should "handle custom kind of 'Line' nested under file" in {
     val program =
       """
         |@description "Documentation is good. Did I mention that I like documentation?"

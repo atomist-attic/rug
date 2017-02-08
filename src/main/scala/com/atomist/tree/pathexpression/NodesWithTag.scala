@@ -41,8 +41,8 @@ case class NodesWithTag(tag: String)
       case Child =>
         ExecutionResult(findMeUnder(tn, typeRegistry))
       case Descendant =>
-        val allDescendants = Descendant.allDescendants(tn)
-        val found = allDescendants.filter(eligibleNode) ++ allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+        val allDescendants = Descendant.selfAndAllDescendants(tn)
+        val found = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
 
         // We may have duplicates in the found collection because, for example,
         // we might find the Java() node SomeClass.java under the directory "/src"
@@ -65,5 +65,4 @@ case class NodesWithTag(tag: String)
         ExecutionResult(toReturn)
     }
   }
-
 }

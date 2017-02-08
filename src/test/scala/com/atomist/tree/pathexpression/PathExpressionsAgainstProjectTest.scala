@@ -7,7 +7,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.elm.ElmModuleMutableView
 import com.atomist.rug.kind.java.JavaClassOrInterfaceView
-import com.atomist.rug.kind.pom.{EveryPomType, PomType}
+import com.atomist.rug.kind.pom.{EveryPomType, PomMutableView, PomType}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{Assertions, FlatSpec, Matchers}
 
@@ -48,7 +48,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === proj.findFile("pom.xml").get.content.count(_ == '\n'))
   }
 
-  it should "drill into lines inside project under File" in pendingUntilFixed {
+  it should "drill into lines inside project under File" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/File()[@name='pom.xml']"
@@ -316,7 +316,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
       """.stripMargin
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/Main.elm", elmWithMain))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val expr2 = "/src/ElmModule()[.exposes('main')]"
+    val expr2 = "/src//ElmModule()[.exposes('main')]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.head match {
@@ -349,6 +349,18 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     nodes.isEmpty should be(true)
   }
 
+  it should "find all top-level file as descendant" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "//mvnw"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 1)
+    rtn.right.get.foreach {
+      case _: FileArtifactBackedMutableView =>
+      case x => fail(s"failed to get FileArtifactBackedMutableView: ${x.getClass}")
+    }
+  }
+
   it should "find the pom.xml" in {
     val proj = ParsingTargets.MultiPomProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
@@ -356,7 +368,20 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
-      case j: PomType =>
+      case _: PomMutableView =>
+      case x => fail(s"failed to get PomMutableView: ${x.getClass}")
+    }
+  }
+
+  it should "find all the pom.xml descendants" in {
+    val proj = ParsingTargets.MultiPomProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "//Pom()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 3)
+    rtn.right.get.foreach {
+      case _: PomMutableView =>
+      case x => fail(s"failed to get PomMutableView: ${x.getClass}")
     }
   }
 
@@ -367,7 +392,32 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 3)
     rtn.right.get.foreach {
-      case j: EveryPomType =>
+      case _: PomMutableView =>
+      case x => fail(s"failed to get PomMutableView: ${x.getClass}")
+    }
+  }
+
+  it should "find elm module in src" in {
+    val proj = ParsingTargets.ElmStartStaticPage
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/src/*/ElmModule()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 1)
+    rtn.right.get.foreach {
+      case _: ElmModuleMutableView =>
+      case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
+    }
+  }
+
+  it should "find descendant elm module" in {
+    val proj = ParsingTargets.ElmStartStaticPage
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "//ElmModule()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 1)
+    rtn.right.get.foreach {
+      case _: ElmModuleMutableView =>
+      case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
     }
   }
 }

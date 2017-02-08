@@ -35,7 +35,6 @@ class SimpleBanana implements ProjectEditor {
     description: string = "Uses single microgrammar"
 
     edit(project: Project) {
-      console.log("Editing")
       let mg = new BananaType()
       let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
 

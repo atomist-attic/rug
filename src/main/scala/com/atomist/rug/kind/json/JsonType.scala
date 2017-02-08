@@ -26,8 +26,8 @@ class JsonType
 
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(Extension)
 
-  override def contentToRawNode(content: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
-    jsonParser.parse(content, ml)
+  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
+    jsonParser.parse(f.content, ml)
   }
 
   override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {

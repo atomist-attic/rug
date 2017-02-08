@@ -112,7 +112,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
   }
 
   it should "parse hello world and write out correctly" in {
-    val parsed = csFileType.contentToRawNode(HelloWorld, Some(ConsoleMatchListener)).get
+    val parsed = csFileType.fileToRawNode(StringFileArtifact("HelloWorld.cs", HelloWorld), Some(ConsoleMatchListener)).get
     val parsedValue = parsed.value
     withClue(s"Unexpected content: [$parsedValue]") {
       parsedValue should equal(helloWorldProject.files.get(0).content)

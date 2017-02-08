@@ -17,7 +17,7 @@ class FruitererType implements TypeProvider {
  find(context: TreeNode): TreeNode[] {
    if (this.isFile(context)) {
      let f = context as File
-     console.log(f.name())
+     //console.log(f.name())
      if (f.isJava())
       return [ new Fruiterer() ]
       else return []

@@ -14,11 +14,11 @@ class ScalaFileType extends TypeUnderFile {
 
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(".scala")
 
-  override def contentToRawNode(content: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
-    content.parse[Source] match {
+  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
+    f.content.parse[Source] match {
       case Success(ast) =>
         val smTree = new ScalaMetaTreeBackedTreeNode(ast)
-        val returnedTree = SimpleMutableContainerTreeNode.makeMutable(smTree, content)
+        val returnedTree = SimpleMutableContainerTreeNode.makeMutable(smTree, f.content)
         //println(TreeNodeUtils.toShorterString(returnedTree))
         Some(returnedTree)
       case _ => None

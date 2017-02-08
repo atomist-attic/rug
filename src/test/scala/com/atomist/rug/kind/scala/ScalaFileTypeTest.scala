@@ -31,7 +31,7 @@ class ScalaFileTypeTest extends FlatSpec with Matchers {
   }
 
   it should "parse hello world and write out correctly" in {
-    val parsed = scalaType.contentToRawNode(HelloWorldScala.content, Some(ConsoleMatchListener)).get
+    val parsed = scalaType.fileToRawNode(HelloWorldScala, Some(ConsoleMatchListener)).get
     val parsedValue = parsed.value
     withClue(s"Unexpected content: [$parsedValue]") {
       parsedValue should equal(HelloWorldScala.content)

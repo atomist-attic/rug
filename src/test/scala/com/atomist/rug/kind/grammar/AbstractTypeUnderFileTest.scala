@@ -26,7 +26,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
   protected def validateResultContainsValidFiles(r: ArtifactSource): Unit = {
     val goodFileCount = r.allFiles
       .filter(typeBeingTested.isOfType)
-      .map(cs => (cs, typeBeingTested.contentToRawNode(cs.content)))
+      .map(cs => (cs, typeBeingTested.fileToRawNode(cs)))
       .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
       .count(tree => tree.childNodes.nonEmpty)
     goodFileCount should be >=(1)

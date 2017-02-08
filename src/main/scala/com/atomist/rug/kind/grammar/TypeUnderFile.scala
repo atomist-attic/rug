@@ -53,7 +53,7 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
   }
 
   private def toView(f: FileArtifactBackedMutableView): Option[MutableView[_]] = {
-    val rawNode = contentToRawNode(f.content)
+    val rawNode = fileToRawNode(f.currentBackingObject)
     rawNode.map(n => {
       val mtn = createView(n, f)
       // Ensure the file is updated based on any changes to the underlying AST at any level
@@ -79,9 +79,9 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
   /**
     * Return a parsed node. Useful to validate content, for example in tests.
     *
-    * @param content content to parse
+    * @param f file with content to parse
     * @return
     */
-  def contentToRawNode(content: String, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode]
+  def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode]
 
 }

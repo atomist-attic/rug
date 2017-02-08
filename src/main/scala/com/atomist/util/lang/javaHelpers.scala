@@ -90,9 +90,7 @@ object JavaHelpers {
     else name
   }
 
-  def stripSuffixIfPresent(name: String, suffix: String): String = {
-    if (name.endsWith(suffix)) name.dropRight(suffix.length) else name
-  }
+  def stripSuffixIfPresent(name: String, suffix: String): String = name stripSuffix suffix
 
   def upperize(s: String): String = s.length match {
     case 0 | 1 => s.take(1).toUpperCase

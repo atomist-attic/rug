@@ -9,7 +9,7 @@ import scala.collection.JavaConverters._
   * Fronts JavaScript Context object
   */
 case class jsContextMatch(root: Object,
-                          matches: _root_.java.util.List[Object],
+                          matches: _root_.java.util.List[jsSafeCommittingProxy],
                           s2: ServiceSource,
                           teamId: String) {
 

@@ -22,10 +22,11 @@ import scala.collection.JavaConverters._
 /**
   * Represents a Match from executing a PathExpression, exposed
   * to JavaScript/TypeScript.
+  *
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class jsMatch(root: TreeNode, matches: _root_.java.util.List[Object])
+case class jsMatch(root: TreeNode, matches: _root_.java.util.List[jsSafeCommittingProxy])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -145,7 +146,7 @@ class jsPathExpressionEngine(
     * @param root root of Tree. SafeComittingProxy wrapping a TreeNode
     * @param pe   path expression of object
     */
-  def scalar(root: TreeNode, pe: Object): Object = {
+  def scalar(root: TreeNode, pe: Object): jsSafeCommittingProxy = {
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
@@ -160,7 +161,7 @@ class jsPathExpressionEngine(
   /**
     * Try to cast the given node to the required type.
     */
-  def as(root: TreeNode, name: String): Object = scalar(root, s"->$name")
+  def as(root: TreeNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")
 
   /**
     * Find the children of the current node of the named type
@@ -168,7 +169,7 @@ class jsPathExpressionEngine(
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
     */
-  def children(parent: TreeNode, name: String): util.List[Object] = {
+  def children(parent: TreeNode, name: String): util.List[jsSafeCommittingProxy] = {
     val rootTn = toUnderlyingTreeNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(
       throw new IllegalArgumentException(s"Unknown type")
@@ -194,14 +195,13 @@ object jsPathExpressionEngine {
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[TreeNode], cr: CommandRegistry = DefaultCommandRegistry): java.util.List[Object] = {
+  def wrap(nodes: Seq[TreeNode], cr: CommandRegistry = DefaultCommandRegistry): java.util.List[jsSafeCommittingProxy] = {
     new JavaScriptArray(
-      nodes.map(n => wrapOne(n))
+      nodes.map(n => wrapOne(n, cr))
         .asJava)
   }
 
-  def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): Object = n match {
-    case _ => new jsSafeCommittingProxy(n, cr)
-  }
+  def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): jsSafeCommittingProxy =
+    new jsSafeCommittingProxy(n, cr)
 
 }

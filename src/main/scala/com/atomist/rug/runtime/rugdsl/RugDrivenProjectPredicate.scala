@@ -23,7 +23,6 @@ import com.atomist.tree.TreeNode
   */
 class RugDrivenProjectPredicate(
                                  val evaluator: Evaluator,
-                                 val viewFinder: ViewFinder,
                                  program: RugProjectPredicate,
                                  rugAs: ArtifactSource,
                                  kindRegistry: TypeRegistry,

@@ -4,7 +4,7 @@ import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
-import com.atomist.rug.parser.Selected
+import com.atomist.rug.parser._
 import com.atomist.rug.spi.{MutableView, Type, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
@@ -13,9 +13,10 @@ import com.atomist.tree.content.text.microgrammar.Microgrammar
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.typesafe.scalalogging.LazyLogging
+import org.springframework.util.ObjectUtils
 
 class DefaultViewFinder(typeRegistry: TypeRegistry)
-  extends ViewFinder with LazyLogging {
+  extends LazyLogging {
 
   final def findIn(
                     rugAs: ArtifactSource,
@@ -33,13 +34,11 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         val msg =
           s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
              | The context is: $context
-             | This is what is available: ${findAllIn(context)}
              |"""
         throw new RugRuntimeException(null, msg, npe)
     }
   }
 
-  override def findAllIn(context: TreeNode) = findAllIn(null, null, context, null, null)
   /**
     * Finds views, first looking at children of current scope,
     * then identifiers in scope, then global identifiers.
@@ -103,6 +102,40 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
 
     childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes
   }
+
+
+  def invokePredicate(rugAs: ArtifactSource,
+                      poa: ProjectOperationArguments,
+                      identifierMap: Map[String, Object],
+                      predicate: Predicate,
+                      targetAlias: String,
+                      v: TreeNode): Boolean = {
+    predicate match {
+      case and: AndExpression =>
+        invokePredicate(rugAs, poa, identifierMap, and.a, targetAlias, v) &&
+          invokePredicate(rugAs, poa, identifierMap, and.b, targetAlias, v)
+      case or: OrExpression =>
+        invokePredicate(rugAs, poa, identifierMap, or.a, targetAlias, v) ||
+          invokePredicate(rugAs, poa, identifierMap, or.b, targetAlias, v)
+      case not: NotExpression =>
+        !invokePredicate(rugAs, poa, identifierMap, not.inner, targetAlias, v)
+      case eq: EqualsExpression =>
+        v match {
+          case v: MutableView[_] =>
+            val l = v.evaluator.evaluate[MutableView[_], Object](eq.a, null, null, v, targetAlias, identifierMap, poa)
+            val r = v.evaluator.evaluate[MutableView[_], Object](eq.b, null, null, v, targetAlias, identifierMap, poa)
+            ObjectUtils.nullSafeEquals(l, r)
+        }
+      case _ =>
+        v match {
+          case v: MutableView[_] =>
+            v.evaluator.evaluate[MutableView[_], Boolean](predicate, null, null, v, targetAlias, identifierMap, poa)
+        }
+    }
+  }
+
+
+
 }
 
 object DefaultViewFinder extends DefaultViewFinder(DefaultTypeRegistry)

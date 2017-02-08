@@ -12,8 +12,7 @@ import com.atomist.source.ArtifactSource
   */
 class DefaultRugCompiler(
                           evaluator: Evaluator,
-                          typeRegistry: TypeRegistry,
-                          viewFinder: ViewFinder = DefaultViewFinder
+                          typeRegistry: TypeRegistry
                         )
   extends RugCompiler {
 
@@ -27,9 +26,9 @@ class DefaultRugCompiler(
       validateWithTypesAndReferences(rugProgram, w)
     validateReferences(rugProgram, knownOperations)
     rugProgram match {
-      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, viewFinder, ed, artifactSource, typeRegistry, namespace)
-      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, viewFinder, rev, artifactSource, typeRegistry, namespace)
-      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, viewFinder, rpp, artifactSource, typeRegistry, namespace)
+      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, ed, artifactSource, typeRegistry, namespace)
+      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, rev, artifactSource, typeRegistry, namespace)
+      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, rpp, artifactSource, typeRegistry, namespace)
     }
   }
 

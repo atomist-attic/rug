@@ -17,7 +17,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 class RugDrivenProjectEditor(
                               val evaluator: Evaluator,
-                              val viewFinder: ViewFinder,
                               program: RugEditor,
                               rugAs: ArtifactSource,
                               kindRegistry: TypeRegistry,

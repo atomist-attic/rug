@@ -23,7 +23,6 @@ class HandlerArchiveReader(
                      treeMaterializer: TreeMaterializer,
                      atomistConfig: AtomistConfig = DefaultAtomistConfig,
                      evaluator: DefaultEvaluator = DefaultEvaluator,
-                     viewFinder: ViewFinder = DefaultViewFinder,
                      typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
   private val pex = new PathExpressionEngine

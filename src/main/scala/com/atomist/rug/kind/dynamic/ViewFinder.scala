@@ -26,34 +26,4 @@ trait ChildResolver {
   */
 trait ViewFinder extends ChildResolver {
 
-  def invokePredicate(rugAs: ArtifactSource,
-                      poa: ProjectOperationArguments,
-                      identifierMap: Map[String, Object],
-                      predicate: Predicate,
-                      targetAlias: String,
-                      v: TreeNode): Boolean = {
-    predicate match {
-      case and: AndExpression =>
-        invokePredicate(rugAs, poa, identifierMap, and.a, targetAlias, v) &&
-          invokePredicate(rugAs, poa, identifierMap, and.b, targetAlias, v)
-      case or: OrExpression =>
-        invokePredicate(rugAs, poa, identifierMap, or.a, targetAlias, v) ||
-          invokePredicate(rugAs, poa, identifierMap, or.b, targetAlias, v)
-      case not: NotExpression =>
-        !invokePredicate(rugAs, poa, identifierMap, not.inner, targetAlias, v)
-      case eq: EqualsExpression =>
-        v match {
-          case v: MutableView[_] =>
-            val l = v.evaluator.evaluate[MutableView[_], Object](eq.a, null, null, v, targetAlias, identifierMap, poa)
-            val r = v.evaluator.evaluate[MutableView[_], Object](eq.b, null, null, v, targetAlias, identifierMap, poa)
-            ObjectUtils.nullSafeEquals(l, r)
-        }
-      case _ =>
-        v match {
-          case v: MutableView[_] =>
-            v.evaluator.evaluate[MutableView[_], Boolean](predicate, null, null, v, targetAlias, identifierMap, poa)
-        }
-    }
-  }
-
 }

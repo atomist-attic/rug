@@ -17,7 +17,6 @@ import scala.collection.mutable.ListBuffer
 
 class RugDrivenProjectReviewer(
                                 val evaluator: Evaluator,
-                                val viewFinder: ViewFinder,
                                 program: RugReviewer,
                                 rugAs: ArtifactSource,
                                 kindRegistry: TypeRegistry,

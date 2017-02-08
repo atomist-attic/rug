@@ -61,7 +61,7 @@ object DismatchReport {
         case ctn: ContainerTreeNode =>
           val childrenByStartOffset = ctn.childNodes.map(_.asInstanceOf[PositionedTreeNode]).sortBy(_.startPosition.offset)
           val pf: String => String = {
-            case input =>
+            input =>
               childrenByStartOffset.reverse.foldLeft(input) { (inp: String, child: PositionedTreeNode) =>
                 printMatching(child, inp)
               }

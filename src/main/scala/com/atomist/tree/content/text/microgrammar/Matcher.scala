@@ -94,15 +94,15 @@ object Matcher {
           prettyPrintLines(left) ++
             prettyPrintLines(right))
       case Discard(m, name) =>
-        mkSeq(s"Discard($name", prettyPrintLines(m), ")")
+        mkSeq(s"Discard($name", prettyPrintLines(m))
       case Wrap(m, name) =>
-        mkSeq(s"Wrap($name", prettyPrintLines(m), ")")
+        mkSeq(s"Wrap($name", prettyPrintLines(m))
       case RestOfLine(name) =>
         Seq(s"RestOfLine($name)")
       case Optional(m, name) =>
-        mkSeq(s"Optional($name", prettyPrintLines(m), ")")
+        mkSeq(s"Optional($name", prettyPrintLines(m))
       case Reference(delegate, name) =>
-        mkSeq(s"Reference($name", prettyPrintLines(delegate), ")")
+        mkSeq(s"Reference($name", prettyPrintLines(delegate))
       case other =>
         Seq(other.toString)
     }

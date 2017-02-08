@@ -68,7 +68,7 @@ abstract class JavaScriptInvokingProjectOperation(
 
 
   /**
-    * Convenience method that will try __name first for decorated things
+    * Convenience method that will try `__name` first for decorated things
     */
   protected def getMember(name: String, someVar: ScriptObjectMirror = jsVar) : AnyRef = {
     val decorated = s"__$name"

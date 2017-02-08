@@ -1,13 +1,13 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js
 
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.JavaScriptEventHandler
+import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpression
+import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 

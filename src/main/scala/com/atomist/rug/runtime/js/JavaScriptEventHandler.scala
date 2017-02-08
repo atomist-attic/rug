@@ -16,12 +16,12 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   */
 object JavaScriptEventHandler extends HandlerFinder[JavaScriptEventHandler] {
 
-  val EventHandlerName = "event-handler"
+  override def kind = "event-handler"
 
-  override def extractHandler(obj: ScriptObjectMirror, as: ArtifactSource, ctx: JavaScriptHandlerContext): Option[JavaScriptEventHandler] = {
-    if(isValidHandler(obj) && kind(obj) == EventHandlerName && obj.hasMember("__expression")){
+  override def extractHandler(jsc: JavaScriptContext, obj: ScriptObjectMirror, as: ArtifactSource, ctx: JavaScriptHandlerContext): Option[JavaScriptEventHandler] = {
+    if(obj.hasMember("__expression")){
       val expression: String = obj.getMember("__expression").asInstanceOf[String]
-      Some(new JavaScriptEventHandler(expression, handle(obj), obj, as, ctx, name(obj), description(obj), tags(obj)))
+      Some(new JavaScriptEventHandler(jsc, obj, as, ctx, expression, name(obj), description(obj), tags(obj)))
     }else{
       Option.empty
     }
@@ -31,31 +31,24 @@ object JavaScriptEventHandler extends HandlerFinder[JavaScriptEventHandler] {
 /**
   * An invokable JS based handler for System Events
   * @param pathExpressionStr
-  * @param handlerFunction
-  * @param thiz
+  * @param handler
   * @param rugAs
   * @param ctx
-  * @param _name
-  * @param _description
-  * @param _tags
+  * @param name
+  * @param description
+  * @param tags
   */
-class JavaScriptEventHandler(
-                              pathExpressionStr: String,
-                              handlerFunction: ScriptObjectMirror,
-                              thiz: ScriptObjectMirror,
+class JavaScriptEventHandler(jsc: JavaScriptContext,
+                              handler: ScriptObjectMirror,
                               rugAs: ArtifactSource,
                               ctx: JavaScriptHandlerContext,
-                              _name: String,
-                              _description: String,
-                              _tags: Seq[Tag] = Nil
+                              pathExpressionStr: String,
+                              override val name: String,
+                              override val description: String,
+                              override val tags: Seq[Tag]
                                  )
-  extends SystemEventHandler {
-
-  override def name: String = _name
-
-  override def tags: Seq[Tag] = Nil
-
-  override def description: String = _description
+  extends SystemEventHandler
+  with JavaScriptUtils {
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
@@ -77,7 +70,7 @@ class JavaScriptEventHandler(
           jsPathExpressionEngine.wrap(matches),
           teamId = e.teamId)
         //TODO wrap this in safe committing proxy
-        handlerFunction.call(thiz, jsMatch(cm))
+        invokeMemberFunction(jsc, handler, "handle", jsMatch(cm))
 
       case Left(failure) =>
         throw new RugRuntimeException(pathExpressionStr,

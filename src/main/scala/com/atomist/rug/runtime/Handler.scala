@@ -7,13 +7,13 @@ import com.atomist.param.{Parameter, Tag}
   */
 trait Handler {
 
-  def name: String
+  val name: String
 
-  def tags: Seq[Tag]
+  val tags: Seq[Tag]
 
-  def description: String
+  val description: String
 }
 
 trait ParameterizedHandler extends Handler {
-  def parameters: Seq[Parameter]
+  val parameters: Seq[Parameter]
 }

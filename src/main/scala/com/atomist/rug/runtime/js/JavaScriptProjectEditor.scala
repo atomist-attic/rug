@@ -33,7 +33,10 @@ class JavaScriptProjectEditor(
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
-        invokeMemberWithParameters("edit",
+        invokeMemberFunction(
+          jsc,
+          jsVar,
+          "edit",
           wrapProject(pmv),
           poa)
 

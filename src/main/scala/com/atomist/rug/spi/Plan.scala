@@ -10,7 +10,15 @@ import com.atomist.tree.TreeNode
 
 object Plan {
 
+
+
   case class Plan(messages: Seq[Message], rugs: Seq[Rug])
+
+  object Plan {
+    def build(fromNashon: Any) : Option[Plan] = {
+      Some(Plan(Nil,Nil))
+    }
+  }
 
   case class Message(body: MessageBody,
                      rugs: Seq[Rug],

@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime
 
-import com.atomist.rug.runtime.js.JavaScriptEventHandler
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler, JavaScriptEventHandlerTest}
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.SimpleFileBasedArtifactSource

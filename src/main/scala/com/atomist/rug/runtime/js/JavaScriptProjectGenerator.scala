@@ -29,7 +29,7 @@ class JavaScriptProjectGenerator(
     val tr = time {
       val project = new EmptyArtifactSource(projectName) + startProject
       val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, context)
-      invokeMemberWithParameters("populate", wrapProject(pmv), poa)
+      invokeMemberFunction(jsc, jsVar, "populate", wrapProject(pmv), poa)
       pmv.currentBackingObject
     }
     logger.debug(s"$name modifyInternal took ${tr._2}ms")

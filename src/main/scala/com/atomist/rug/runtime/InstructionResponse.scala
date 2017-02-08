@@ -3,8 +3,8 @@ package com.atomist.rug.runtime
 /**
   * The response from Rugs, Executions etc
   */
-trait InstructionResponse[T >: Serializable] {
+trait InstructionResponse {
   def status: String
   def code: Int
-  def body: T
+  def body: Serializable
 }

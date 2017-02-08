@@ -75,13 +75,11 @@ class JavaScriptContext(rugAs: ArtifactSource,
     * @return ScriptObjectMirror objects for all vars known to the engine
     */
   def vars: Seq[Var] = {
-    val res = engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
+    engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
       .get("exports").asInstanceOf[ScriptObjectMirror]
-      .asScala
-      .foldLeft(Seq[Var]())((acc: Seq[Var], kv) => {
-        acc ++ extractVars(kv._2.asInstanceOf[ScriptObjectMirror])
-      })
-    res
+      .asScala.collect {
+      case (_, v: ScriptObjectMirror) => extractVars(v)
+    }.flatten.toSeq
   }
 
   private def extractVars(obj: ScriptObjectMirror): Seq[Var] = {

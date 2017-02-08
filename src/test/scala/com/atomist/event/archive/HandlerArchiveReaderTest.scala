@@ -3,8 +3,8 @@ package com.atomist.event.archive
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.{JavaScriptEventHandler}
-import com.atomist.rug.runtime.js.interop.{JavaScriptEventHandlerTest, JavaScriptHandlerContext}
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler, JavaScriptEventHandlerTest}
+import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.SimpleFileBasedArtifactSource
 import com.atomist.tree.TreeNode

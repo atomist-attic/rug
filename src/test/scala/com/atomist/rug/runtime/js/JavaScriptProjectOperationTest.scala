@@ -240,7 +240,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
     val tsf = StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptProjectOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptProjectEditor]
-    val v1 = jsed.cloneVar(jsed.jsVar)
+    val v1 = jsed.cloneVar(jsed.jsc, jsed.jsVar)
     v1.put("name", "dude")
     jsed.jsVar.get("name") should be ("Simple")
   }

@@ -25,7 +25,10 @@ class JavaScriptProjectReviewer(
         atomistConfig = DefaultAtomistConfig,
         context)
 
-      invokeMemberWithParameters("review",
+      invokeMemberFunction(
+        jsc,
+        jsVar,
+        "review",
         wrapProject(pmv),
         addDefaultParameterValues(poa)) match {
         case m: ScriptObjectMirror =>

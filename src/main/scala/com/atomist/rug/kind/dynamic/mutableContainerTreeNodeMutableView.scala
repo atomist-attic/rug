@@ -48,10 +48,8 @@ class MutableContainerMutableView(
               ctn.childNodes.indexOf(currentBackingObject)
             case _ => -1
           }
-          if (myIndex == -1) {
-            println(s"I am $this and I am not a child of my parent $parent")
+          if (myIndex == -1)
             ""
-          }
           else
             s"[$myIndex]"
         }

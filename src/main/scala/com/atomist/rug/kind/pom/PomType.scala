@@ -27,7 +27,7 @@ class PomType(
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         pmv.currentBackingObject.findFile("pom.xml")
-          .map(f => Seq(new PomMutableView(f, pmv)))
+          .map(f => Seq(new PomMutableView(f, pmv))).orElse(Some(Seq()))
       case f: FileArtifactBackedMutableView if f.filename == "pom.xml" =>
         Some(Seq(new PomMutableView(f.currentBackingObject, f.parent)))
       case _ => None

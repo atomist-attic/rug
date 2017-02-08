@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime
 
-import com.atomist.rug.runtime.js.JavaScriptHandlerFinder
+import com.atomist.rug.runtime.js.JavaScriptEventHandler
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.SimpleFileBasedArtifactSource
@@ -10,6 +10,6 @@ class HandlerTest extends FlatSpec with Matchers {
   it should "find and invoke other style of handler" in {
     val r = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
     val ctx = new JavaScriptHandlerContext(null,null)
-    JavaScriptHandlerFinder.findEventHandlers(r,ctx)
+    JavaScriptEventHandler.extractHandlers(r,ctx)
   }
 }

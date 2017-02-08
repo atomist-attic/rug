@@ -11,6 +11,34 @@ import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpression, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
+/**
+  * Discover JavaScriptEventHandler from artifact sources
+  */
+object JavaScriptEventHandler extends HandlerFinder[JavaScriptEventHandler] {
+
+  val EventHandlerName = "event-handler"
+
+  override def extractHandler(obj: ScriptObjectMirror, as: ArtifactSource, ctx: JavaScriptHandlerContext): Option[JavaScriptEventHandler] = {
+    if(isValidHandler(obj) && kind(obj) == EventHandlerName && obj.hasMember("__expression")){
+      val expression: String = obj.getMember("__expression").asInstanceOf[String]
+      Some(new JavaScriptEventHandler(expression, handle(obj), obj, as, ctx, name(obj), description(obj), tags(obj)))
+    }else{
+      Option.empty
+    }
+  }
+}
+
+/**
+  * An invokable JS based handler for System Events
+  * @param pathExpressionStr
+  * @param handlerFunction
+  * @param thiz
+  * @param rugAs
+  * @param ctx
+  * @param _name
+  * @param _description
+  * @param _tags
+  */
 class JavaScriptEventHandler(
                               pathExpressionStr: String,
                               handlerFunction: ScriptObjectMirror,

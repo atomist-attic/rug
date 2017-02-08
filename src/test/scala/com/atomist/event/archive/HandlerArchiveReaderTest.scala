@@ -3,7 +3,7 @@ package com.atomist.event.archive
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.{JavaScriptEventHandler, JavaScriptHandlerFinder}
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler}
 import com.atomist.rug.runtime.js.interop.{JavaScriptEventHandlerTest, JavaScriptHandlerContext}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.SimpleFileBasedArtifactSource
@@ -19,12 +19,10 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
   it should "parse single new-style handler" in {
 
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
-    val handlers = JavaScriptHandlerFinder.findEventHandlers(rugArchive, new JavaScriptHandlerContext("XX", treeMaterializer))
+    val handlers = JavaScriptEventHandler.extractHandlers(rugArchive, new JavaScriptHandlerContext("XX", treeMaterializer))
     handlers.size should be(1)
-    handlers.head match {
-      case h: JavaScriptEventHandler => h.rootNodeName should be("issue")
-      case _ => ???
-    }
+    handlers.head.rootNodeName should be("issue")
+
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

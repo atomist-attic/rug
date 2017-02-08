@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.atomist.util.lang.JavaScriptArray
@@ -13,56 +14,65 @@ import jdk.nashorn.api.scripting.AbstractJSObject
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
   * method that isn't read-only
   *
-  * @param types Rug types we are fronting. This is a union type.
-  * @param node  node we are fronting
+  * @param node node we are fronting
   */
-class jsSafeCommittingProxy(types: Set[Typed],
-                            val node: TreeNode,
-                            commandRegistry: CommandRegistry)
+class jsSafeCommittingProxy(
+                             val node: TreeNode,
+                             commandRegistry: CommandRegistry = DefaultCommandRegistry,
+                             typeRegistry: TypeRegistry = DefaultTypeRegistry)
   extends AbstractJSObject {
-
-  def this(t: Typed, node: TreeNode, commandRegistry: CommandRegistry = DefaultCommandRegistry) =
-    this(Set(t), node, commandRegistry)
 
   override def toString: String = s"SafeCommittingProxy around $node"
 
-  private val typ = UnionType(types)
+  private val nodeTypes: Set[Typed] =
+    node.nodeTags.flatMap(t => typeRegistry.findByName(t))
+
+  private val typ: Typed = UnionType(nodeTypes)
 
   import jsSafeCommittingProxy.MagicJavaScriptMethods
 
-  override def getMember(name: String): AnyRef = typ.typeInformation match {
-    case _ if MagicJavaScriptMethods.contains(name) =>
+  override def getMember(name: String): AnyRef = {
+    //println(s"getMember: [$name]")
+    if (MagicJavaScriptMethods.contains(name))
       super.getMember(name)
+    else if (name == "toString") {
+      new AlwaysReturns(node.toString)
+    }
+    else typ.typeInformation match {
+      case st: StaticTypeInformation =>
+        val possibleOps = st.operations.filter(
+          op => name.equals(op.name))
 
-    case st: StaticTypeInformation =>
-      val possibleOps = st.operations.filter(
-        op => name.equals(op.name))
-
-      if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-        if (node.nodeTags.contains(TreeNode.Dynamic)) {
-          // Navigation on a node
-          new FunctionProxyToNodeNavigationMethods(name, node)
+        if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
+          if (node.nodeTags.contains(TreeNode.Dynamic)) {
+            // Navigation on a node
+            if (name == "parent" || node.childNodeNames.contains(name))
+              new FunctionProxyToNodeNavigationMethods(name, node)
+            else {
+              AlwaysReturnNull
+            }
+          }
+          else node match {
+            case sobtn: ScriptObjectBackedTreeNode =>
+              sobtn.invoke(name)
+            case _ => throw new RugRuntimeException(null,
+              s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
+          }
         }
-        else node match {
-          case sobtn: ScriptObjectBackedTreeNode =>
-            sobtn.invoke(name)
-          case _ => throw new RugRuntimeException(null,
-            s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
-        }
-      }
-      else
-        new FunctionProxyToReflectiveInvocationOnUnderlyingNode(name, possibleOps)
+        else
+          new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
 
-    case _ =>
-      // No static type information
-      throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+      case _ =>
+        // No static type information
+        throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+    }
   }
 
   /**
     * Nashorn proxy for a method invocation that delegates to the
-    * underlying node using reflecti
+    * underlying node using reflection
     */
-  private class FunctionProxyToReflectiveInvocationOnUnderlyingNode(name: String, possibleOps: Seq[TypeOperation])
+  private class FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name: String, possibleOps: Seq[TypeOperation])
     extends AbstractJSObject {
 
     override def isFunction: Boolean = true
@@ -97,6 +107,16 @@ class jsSafeCommittingProxy(types: Set[Typed],
     }
   }
 
+  private class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
+
+  }
+
+  private object AlwaysReturnNull extends AlwaysReturns(null)
+
   /**
     * Nashorn proxy for a method invocation that use navigation methods on
     * TreeNode
@@ -109,7 +129,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
 
-      val r = node match {
+      val r: TreeNode = node match {
         case ctn: ContainerTreeNode =>
           val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = name match {
             case "parent" =>
@@ -127,7 +147,7 @@ class jsSafeCommittingProxy(types: Set[Typed],
           }
         case _ => node
       }
-      r
+      jsPathExpressionEngine.wrapOne(r)
     }
   }
 
@@ -138,7 +158,7 @@ private object jsSafeCommittingProxy {
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
-  def MagicJavaScriptMethods = Set("valueOf", "toString")
+  def MagicJavaScriptMethods = Set("valueOf")
 
 }
 

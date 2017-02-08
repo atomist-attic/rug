@@ -128,15 +128,18 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
-      |    description: string = "Uses single microgrammar"
+      |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
-      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
       |
-      |      eng.with<TextTreeNode>(project, "//File()/method()/type()", n => {
-      |        let s = `Type is ${n}`
-      |        n.update(n.value() + "_x")
+      |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
+      |        if (n.value() != "4.0.0") project.fail("" + n.value())
+      |        let msg = `The node is ${n}`
+      |        //console.log(msg)
+      |        n.update('Foo bar')
       |      })
       |    }
       |  }
@@ -186,7 +189,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       RequiresFormatInfo))
   }
 
-  it should "#283 allow toString calls on node" in pendingUntilFixed {
+  it should "#283 allow toString calls on node" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ToStringOnMicrogrammarNode))
   }

@@ -69,8 +69,6 @@ abstract class JavaScriptInvokingProjectOperation(
 
   /**
     * Convenience method that will try __name first for decorated things
-    * @param name
-    * @return
     */
   protected def getMember(name: String, someVar: ScriptObjectMirror = jsVar) : AnyRef = {
     val decorated = s"__$name"
@@ -94,11 +92,10 @@ abstract class JavaScriptInvokingProjectOperation(
 
     // Translate parameters if necessary
     val processedArgs = args.collect {
-      case poa: ProjectOperationArguments => {
+      case poa: ProjectOperationArguments =>
         val params = poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
         setParamsIfDecorated(clone,params)
         params
-      }
       case x => x
     }
 
@@ -107,8 +104,6 @@ abstract class JavaScriptInvokingProjectOperation(
 
   /**
     * Separate for test
-    * @param jsVar
-    * @return
     */
   private[js] def cloneVar (jsVar: ScriptObjectMirror) : ScriptObjectMirror = {
     val bindings = new SimpleBindings()
@@ -122,8 +117,6 @@ abstract class JavaScriptInvokingProjectOperation(
   }
   /**
     * Make sure we only set fields if they've been decorated with @parameter
-    * @param clone
-    * @param params
     */
   private def setParamsIfDecorated(clone: ScriptObjectMirror, params: java.util.Map[String, AnyRef]): Unit = {
     val decoratedParamNames: Set[String] = clone.get("__parameters") match {
@@ -135,11 +128,10 @@ abstract class JavaScriptInvokingProjectOperation(
       case _ => Set()
     }
     params.asScala.foreach {
-      case (k: String, v: AnyRef) => {
+      case (k: String, v: AnyRef) =>
         if(decoratedParamNames.contains(k)){
           clone.put(k,v)
         }
-      }
     }
   }
 
@@ -162,11 +154,10 @@ abstract class JavaScriptInvokingProjectOperation(
     */
   protected def readParametersFromMetadata: Seq[Parameter] = {
       getMember("parameters") match {
-      case ps: ScriptObjectMirror if !ps.isEmpty => {
+      case ps: ScriptObjectMirror if !ps.isEmpty =>
         ps.asScala.collect {
           case (_, details: ScriptObjectMirror) => parameterVarToParameter(jsVar, details)
         }.toSeq
-      }
       case _ => Seq()
     }
   }
@@ -228,6 +219,6 @@ abstract class JavaScriptInvokingProjectOperation(
     * @return proxy TypeScript callers can use
     */
   protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
-    new jsSafeCommittingProxy(projectType, pmv)
+    new jsSafeCommittingProxy(pmv)
   }
 }

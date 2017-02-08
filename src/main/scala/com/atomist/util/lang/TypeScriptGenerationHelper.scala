@@ -40,6 +40,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.core.FileArtifactBackedMutableView>" => "File[]"
       case "java.util.List<com.atomist.rug.kind.java.support.PackageInfo>" => "any[]"//TODO
       case "java.util.List<com.atomist.rug.kind.service.ServiceMutableView>" => "any[]"
+      case "java.util.List<com.atomist.tree.TreeNode>" => "any[]"
       case "List" => "any[]" // TODO improve this
       case "FileArtifactMutableView" => "File"   // TODO this is nasty
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty

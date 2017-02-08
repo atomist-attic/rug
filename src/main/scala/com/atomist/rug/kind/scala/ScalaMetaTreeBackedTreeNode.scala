@@ -33,13 +33,13 @@ private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
 
   override def value: String = smTree.syntax
 
-  def childNodeNames: Set[String] = children.map(_.nodeName).toSet
+  def childNodeNames: Set[String] = wrappedChildren.map(_.nodeName).toSet
 
   override def childNodeTypes: Set[String] = childNodes.flatMap(n => n.nodeTags).toSet
 
-  def children: Seq[TreeNode] = smTree.children.map(new ScalaMetaTreeBackedTreeNode(_))
+  private def wrappedChildren: Seq[TreeNode] = smTree.children.map(new ScalaMetaTreeBackedTreeNode(_))
 
-  override def childrenNamed(key: String): Seq[TreeNode] = children.filter(_.nodeName == key)
+  override def childrenNamed(key: String): Seq[TreeNode] = wrappedChildren.filter(_.nodeName == key)
 
   override def toString: String = s"$nodeName:${nodeTags.mkString(",")}:[$value]"
 

@@ -13,30 +13,26 @@ import org.scalatest.{FlatSpec, Matchers}
 class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 
   it should "not allow invocation of non export function" in {
-    val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-
-    val sc = new jsSafeCommittingProxy(typed, fmv)
+    val sc = new jsSafeCommittingProxy(fmv)
     intercept[RugRuntimeException] {
       sc.getMember("bla")
     }
   }
 
   it should "not allow invocation of export function" in {
-    val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val sc = new jsSafeCommittingProxy(typed, fmv)
+    val sc = new jsSafeCommittingProxy(fmv)
      sc.getMember("setContent")
   }
 
   it should "not allow invocation of registered command function" in {
-    val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
     val fc = new FakeCommand
-    val sc = new jsSafeCommittingProxy(typed, fmv, new FakeCommandRegistry(fc))
+    val sc = new jsSafeCommittingProxy(fmv, new FakeCommandRegistry(fc))
     val ajs: AbstractJSObject = sc.getMember("execute").asInstanceOf[AbstractJSObject]
     val afc = ajs.call(fmv, null)
     fc.fmv should be(fmv)
@@ -44,10 +40,9 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
   }
 
   it should "fail for unregistered command function" in {
-    val typed = new FileType()
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val sc = new jsSafeCommittingProxy(typed, fmv, new FakeCommandRegistry)
+    val sc = new jsSafeCommittingProxy(fmv, new FakeCommandRegistry)
     intercept[RugRuntimeException] {
       sc.getMember("delete")
     }

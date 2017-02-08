@@ -1,15 +1,14 @@
 package com.atomist.rug.kind.grammar
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.{ContextlessViewFinder, MutableContainerMutableView, MutableTreeNodeUpdater}
-import com.atomist.rug.parser.Selected
+import com.atomist.rug.kind.core._
+import com.atomist.rug.kind.dynamic.{MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
+
 import scala.collection.JavaConverters._
 
 /**
@@ -17,10 +16,7 @@ import scala.collection.JavaConverters._
   * be resolved from files and projects
   */
 abstract class TypeUnderFile extends Type(DefaultEvaluator)
-  with ReflectivelyTypedType
-  with ContextlessViewFinder {
-
-  final override def resolvesFromNodeTypes = Set("Project", "File")
+  with ReflectivelyTypedType {
 
   /**
     * Is this file of interest to this type? Typically will involve an extension check
@@ -33,12 +29,7 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
   override def viewManifest: Manifest[_] = manifest[MutableContainerMutableView]
 
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv
           .files
@@ -50,7 +41,6 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
         Some(toView(f).toSeq)
       case _ => None
     }
-  }
 
   private def toView(f: FileArtifactBackedMutableView): Option[MutableView[_]] = {
     val rawNode = contentToRawNode(f.content)

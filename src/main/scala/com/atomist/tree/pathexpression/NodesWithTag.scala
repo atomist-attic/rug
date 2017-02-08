@@ -18,6 +18,7 @@ case class NodesWithTag(tag: String)
   private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
     typeRegistry.findByName(tag) match {
       case Some(cr: ChildResolver) => Some(cr)
+      case Some(_) => throw new IllegalStateException(s"type $tag is in the type registry ($typeRegistry) but does not implement ChildResolver")
       case _ => None
     }
 

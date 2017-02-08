@@ -1,12 +1,8 @@
 package com.atomist.rug.kind.yml
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{DirectoryMutableView, FileMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.parser.Selected
+import com.atomist.rug.kind.core._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 object YmlType {
@@ -17,7 +13,6 @@ class YmlType(
                evaluator: Evaluator
              )
   extends Type(evaluator)
-    with ContextlessViewFinder
     with ReflectivelyTypedType {
 
   import YmlType._
@@ -31,12 +26,7 @@ class YmlType(
 
   override def viewManifest: Manifest[YmlMutableView] = manifest[YmlMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override protected def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.originalBackingObject.allFiles
           .filter(f => f.name.endsWith(ymlExtension))
@@ -50,12 +40,4 @@ class YmlType(
           .filter(f => f.name.endsWith(ymlExtension))
           .map(f => new YmlMutableView(f, fmv.parent)))
     }
-  }
-
-  /**
-    * The set of node types this can resolve from
-    *
-    * @return set of node types this can resolve from
-    */
-  override val resolvesFromNodeTypes: Set[String] = Set("project", "directory", "file")
 }

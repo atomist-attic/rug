@@ -26,7 +26,7 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
     * Microgrammars can only be resolved from under files
     * @return set of node types this can resolve from. File type only
     */
-  override def resolvesFromNodeTypes: Set[String] = Set(Typed.typeClassToTypeName(classOf[FileType]))
+  override def resolvesFromNodeTypes = Set(classOf[FileType])
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
     case f: FileArtifactBackedMutableView =>

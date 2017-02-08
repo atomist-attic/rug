@@ -12,4 +12,6 @@ object ParsingTargets {
   val BuildManagementDependenciesSpringIoProject: ArtifactSource = ClassPathArtifactSource.toArtifactSource("spring-parsing-targets/buildManagement")
 
   val NonSpringBootMavenProject: ArtifactSource = ClassPathArtifactSource.toArtifactSource("editor-targets/non-spring-boot-maven-project")
+
+  val MultiPomProject: ArtifactSource = ClassPathArtifactSource.toArtifactSource("spring-parsing-targets")
 }

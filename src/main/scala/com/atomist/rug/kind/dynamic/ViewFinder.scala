@@ -14,13 +14,6 @@ import org.springframework.util.ObjectUtils
 trait ChildResolver {
 
   /**
-    * The set of node types this can resolve from
-    *
-    * @return set of node types this can resolve from
-    */
-  def resolvesFromNodeTypes: Set[String]
-
-  /**
     * Find all in this context
     *
     * @param context
@@ -29,19 +22,9 @@ trait ChildResolver {
 }
 
 /**
-  * Adapter making it possible to resolve children without context in a ViewFinder.
-  * Subclasses can implement this if they don't need ArtifactSource context etc.
-  */
-trait ContextlessViewFinder extends ViewFinder with ChildResolver {
-
-  override final def findAllIn(context: TreeNode): Option[Seq[TreeNode]] =
-    findAllIn(null, null, context, null, null)
-}
-
-/**
   * Find views in a context, with Project knowledge. Used to drive `with` block execution.
   */
-trait ViewFinder {
+trait ViewFinder extends ChildResolver {
 
   final def findIn(
                     rugAs: ArtifactSource,
@@ -50,7 +33,7 @@ trait ViewFinder {
                     poa: ProjectOperationArguments,
                     identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
     try {
-      findAllIn(rugAs, selected, context, poa, identifierMap)
+      findAllIn(context)
         .map(_.filter(v => invokePredicate(rugAs, poa, identifierMap, selected.predicate, selected.alias, v))
         )
     }
@@ -59,18 +42,11 @@ trait ViewFinder {
         val msg =
           s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
              | The context is: $context
-             | This is what is available: ${findAllIn(rugAs, selected, context, poa, identifierMap)}
+             | This is what is available: ${findAllIn(context)}
              |"""
         throw new RugRuntimeException(null, msg, npe)
     }
   }
-
-  protected def findAllIn(
-                           rugAs: ArtifactSource,
-                           selected: Selected,
-                           context: TreeNode,
-                           poa: ProjectOperationArguments,
-                           identifierMap: Map[String, Object]): Option[Seq[TreeNode]]
 
   def invokePredicate(rugAs: ArtifactSource,
                       poa: ProjectOperationArguments,

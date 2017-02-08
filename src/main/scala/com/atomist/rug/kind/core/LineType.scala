@@ -1,11 +1,7 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 /**
@@ -16,23 +12,16 @@ class LineType(
                 evaluator: Evaluator
               )
   extends Type(evaluator)
-    with ReflectivelyTypedType
-    with ContextlessViewFinder {
+    with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
-
-  override def resolvesFromNodeTypes: Set[String] = Set("File")
 
   override def description = "Represents a line within a text file"
 
   /** Describe the MutableView subclass to allow for reflective function export */
   override def viewManifest: Manifest[_] = manifest[LineMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {
       case fa: FileMutableView =>
         Some(fa.originalBackingObject.content.lines

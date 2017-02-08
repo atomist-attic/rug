@@ -16,7 +16,6 @@ import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 

@@ -1,14 +1,10 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.rug.kind.java.support.JavaAssertions
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
@@ -21,8 +17,7 @@ class SpringBootProjectType(
                              evaluator: Evaluator
                            )
   extends Type(evaluator)
-    with ReflectivelyTypedType
-    with ContextlessViewFinder {
+    with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
 
@@ -30,14 +25,7 @@ class SpringBootProjectType(
 
   override def viewManifest: Manifest[SpringBootProjectMutableView] = manifest[SpringBootProjectMutableView]
 
-  override val resolvesFromNodeTypes: Set[String] = Set("project")
-
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case jpv: JavaProjectMutableView =>
         val sproj = new SpringBootProjectMutableView(jpv)
         if (sproj.isValid)
@@ -51,7 +39,6 @@ class SpringBootProjectType(
       case _ =>
         Some(Nil)
     }
-  }
 }
 
 class SpringBootProjectMutableView(pv: JavaProjectMutableView)

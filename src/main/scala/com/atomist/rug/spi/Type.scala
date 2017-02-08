@@ -11,9 +11,7 @@ import com.atomist.rug.runtime.rugdsl.Evaluator
   *
   * @param evaluator used to evaluate expressions
   */
-abstract class Type(
-                     evaluator: Evaluator
-                   )
+abstract class Type(evaluator: Evaluator)
   extends ViewFinder with Typed {
 
   /** Describe the MutableView subclass to allow for reflective function export */

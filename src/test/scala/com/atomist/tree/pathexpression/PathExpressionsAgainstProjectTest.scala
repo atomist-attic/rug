@@ -7,6 +7,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.elm.ElmModuleMutableView
 import com.atomist.rug.kind.java.JavaClassOrInterfaceView
+import com.atomist.rug.kind.pom.{EveryPomType, PomType}
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{Assertions, FlatSpec, Matchers}
 
@@ -348,4 +349,25 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     nodes.isEmpty should be(true)
   }
 
+  it should "find the pom.xml" in {
+    val proj = ParsingTargets.MultiPomProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/Pom()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 1)
+    rtn.right.get.foreach {
+      case j: PomType =>
+    }
+  }
+
+  it should "find all the pom.xml files" in {
+    val proj = ParsingTargets.MultiPomProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/EveryPom()"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.size === 3)
+    rtn.right.get.foreach {
+      case j: EveryPomType =>
+    }
+  }
 }

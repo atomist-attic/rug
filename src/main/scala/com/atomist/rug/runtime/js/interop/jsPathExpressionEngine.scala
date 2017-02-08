@@ -120,8 +120,8 @@ class jsPathExpressionEngine(
 
   // If the node is a SafeCommittingProxy, find the underlying object
   private def toTreeNode(o: Object): TreeNode = o match {
-    case tn: TreeNode => tn
     case scp: jsSafeCommittingProxy => scp.node
+    case tn: TreeNode => tn
   }
 
   /**

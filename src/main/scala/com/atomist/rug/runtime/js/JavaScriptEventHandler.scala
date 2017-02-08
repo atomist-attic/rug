@@ -55,7 +55,7 @@ class JavaScriptEventHandler(
       case Right(Nil) =>
       case Right(matches) =>
         val cm = jsContextMatch(
-          targetNode,
+          jsPathExpressionEngine.wrapOne(targetNode),
           jsPathExpressionEngine.wrap(matches),
           s2,
           teamId = e.teamId)

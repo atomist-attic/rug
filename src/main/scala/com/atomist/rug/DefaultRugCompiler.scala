@@ -1,7 +1,6 @@
 package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
-import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl._
 import com.atomist.rug.spi.{StaticTypeInformation, TypeRegistry}
@@ -10,10 +9,8 @@ import com.atomist.source.ArtifactSource
 /**
   * Compiles Rug programs into ProjectEditor instances
   */
-class DefaultRugCompiler(
-                          evaluator: Evaluator,
-                          typeRegistry: TypeRegistry
-                        )
+class DefaultRugCompiler(evaluator: Evaluator,
+                          typeRegistry: TypeRegistry)
   extends RugCompiler {
 
   @throws[BadRugException]

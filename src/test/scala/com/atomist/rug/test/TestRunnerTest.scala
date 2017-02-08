@@ -39,13 +39,14 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
   it should "test a generator with parameters" in {
     val generator = StringFileArtifact(".atomist/editors/OneFileGenerator.rug",
-    """generator OneFileGenerator
-      |
-      |param contents: ^.*$
-      |
-      |with File f
-      |   do setContent contents
-    """.stripMargin)
+      """generator OneFileGenerator
+        |
+        |param contents: ^.*$
+        |
+        |with File f
+        |   do setContent contents
+      """.
+        stripMargin)
     val theOneFile = StringFileArtifact("happy.txt", "Joy Joy")
     val rugArchive = SimpleFileBasedArtifactSource(theOneFile, generator)
     val parsedGenerator: Seq[ProjectOperation] = new ProjectOperationArchiveReader().findOperations(rugArchive, None, Nil).generators
@@ -258,11 +259,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
 
-//    val as =
-//      new SimpleFileBasedArtifactSource(DefaultRugArchive,
-//        StringFileArtifact(defaultFilenameFor(input), input))
+    //    val as =
+    //      new SimpleFileBasedArtifactSource(DefaultRugArchive,
+    //        StringFileArtifact(defaultFilenameFor(input), input))
 
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
 
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
     val eds = rp.create(as, namespace)
@@ -282,7 +283,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", edProg))
-    val eds = new DefaultRugPipeline().create(as,  Some("testnamespace"))
+    val eds = new DefaultRugPipeline().create(as, Some("testnamespace"))
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -320,7 +321,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", edProg))
-    val eds = new DefaultRugPipeline().create(as,  None)
+    val eds = new DefaultRugPipeline().create(as, None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -353,9 +354,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do rename "Cat"
       """.stripMargin
 
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
-    val eds = rp.create(as,  None)
+    val eds = rp.create(as, None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -388,9 +389,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |do fail "This is bad"
       """.stripMargin
 
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
-    val eds = rp.create(as,  None)
+    val eds = rp.create(as, None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -424,9 +425,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
-    val eds = rp.create(as,  None)
+    val eds = rp.create(as, None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -459,9 +460,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |with JavaType c when name = old_class
         |do rename "foo"
       """.stripMargin
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
-    val eds = rp.create(as,  None)
+    val eds = rp.create(as, None)
 
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -523,9 +524,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |	 and fileContains "README.md" "Harry Potter"
          |	 and fileContains "README.md" "Boy Wizard"
       """.stripMargin
-    val rp =new DefaultRugPipeline()
+    val rp = new DefaultRugPipeline()
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
-    val eds = rp.create(as,  None)
+    val eds = rp.create(as, None)
     val readme = StringFileArtifact("README.md",
       """
         |# {{name}}
@@ -577,6 +578,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
     }
   }
 
+}
+
+class MoreTestRunnerTest extends FlatSpec with Matchers {
+  val testRunner = new TestRunner
+
   it should "pass the assertion when a precondition restricts an editor from running" in {
     val prog =
       """
@@ -593,21 +599,25 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |predicate IsMaven
         |  with Pom
         |
-      """.stripMargin
-    val scenario =
-      s"""
-         |scenario Should not copy readme for empty project
-         |
-         |given
-         |	Empty
-         |
-         |DoSomething
-         |
-         |then
-         |  NotApplicable
-      """.stripMargin
-    val readme = StringFileArtifact("test.txt", "Some pearls of wisdom")
-    val editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
+      """.
+        stripMargin
+    val scenario
+    =
+    """
+      |scenario Should not copy readme for empty project
+      |
+      |given
+      |	Empty
+      |
+      |DoSomething
+      |
+      |then
+      |  NotApplicable
+    """.stripMargin
+    val readme
+    = StringFileArtifact("test.txt", "Some pearls of wisdom")
+    val
+    editorBackingArchive = new SimpleFileBasedArtifactSource("", Seq(readme, StringFileArtifact("editors/DoSomething.rug", prog)))
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
@@ -617,6 +627,10 @@ class TestRunnerTest extends FlatSpec with Matchers {
       // Ok
     }
   }
+}
+
+class EvenMoreTestRunnerTest extends FlatSpec with Matchers {
+  val testRunner = new TestRunner
 
   it should "pass the assertion when preconditions restrict an editor from running" in {
     val prog =

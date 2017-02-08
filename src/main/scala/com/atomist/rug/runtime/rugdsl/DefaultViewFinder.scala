@@ -1,16 +1,17 @@
-package com.atomist.rug.kind.dynamic
+package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.rug.kind.dynamic.{MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.parser._
 import com.atomist.rug.spi.{MutableView, Type, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.microgrammar.Microgrammar
-import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import com.typesafe.scalalogging.LazyLogging
 import org.springframework.util.ObjectUtils

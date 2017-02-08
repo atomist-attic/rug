@@ -6,9 +6,8 @@ import com.atomist.project.predicate.ProjectPredicate
 import com.atomist.project.review.{ReviewComment, Severity}
 import com.atomist.rug.RugProjectPredicate
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.ViewFinder
 import com.atomist.rug.parser.{Computation, DoStep, With}
-import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 

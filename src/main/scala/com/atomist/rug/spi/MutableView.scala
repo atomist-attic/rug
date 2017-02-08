@@ -1,28 +1,7 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.runtime.rugdsl.Evaluator
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
-
-/**
-  * View read operations.
-  *
-  * @tparam T type of the underlying object
-  */
-trait View[T] extends ContainerTreeNode {
-
-  /**
-    * Nullable if at the top level, as we don't want to complicate
-    * use from JavaScript by using Option.
-    */
-  def parent: MutableView[_]
-
-  def originalBackingObject: T
-
-  def addressableBackingObject: Any = originalBackingObject
-
-  override def value: String = toString
-
-}
+import com.atomist.tree.ContainerTreeNode
 
 /**
   * Exposed to Rug "with" and "from" blocks, and access from JavaScript.
@@ -40,7 +19,19 @@ trait View[T] extends ContainerTreeNode {
   *
   * @tparam  T type of the underlying object
   */
-trait MutableView[T] extends View[T] {
+trait MutableView[T] extends ContainerTreeNode {
+
+  /**
+    * Nullable if at the top level, as we don't want to complicate
+    * use from JavaScript by using Option.
+    */
+  def parent: MutableView[_]
+
+  def originalBackingObject: T
+
+  def addressableBackingObject: Any = originalBackingObject
+
+  override def value: String = toString
 
   def dirty: Boolean
 

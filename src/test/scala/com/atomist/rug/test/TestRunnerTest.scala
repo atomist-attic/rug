@@ -636,7 +636,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
         |  with Pom
         |
         |predicate IsOk
-        |   with Project
+        |  with Project
         |
       """.stripMargin
     val scenario =
@@ -644,7 +644,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |scenario Should not copy readme for empty project
          |
          |given
-         |	Empty
+         |  Empty
          |
          |DoSomething
          |

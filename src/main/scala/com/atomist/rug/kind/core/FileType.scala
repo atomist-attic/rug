@@ -25,9 +25,9 @@ class FileType(
                                    selected: Selected,
                                    context: TreeNode,
                                    poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    (selected.kind, context) match {
-      case (`name`, pmv: ProjectMutableView) =>
+                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] =
+    context match {
+      case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject.allFiles.map(f => new FileMutableView(f, pmv)))
       case _ => None
     }

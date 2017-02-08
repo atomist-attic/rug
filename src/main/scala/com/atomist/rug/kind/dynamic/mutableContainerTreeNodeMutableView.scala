@@ -52,7 +52,7 @@ class MutableContainerMutableView(
       case Nil =>
         throw new RugRuntimeException(null,
           s"Cannot find backing key '$key' in [$originalBackingObject]")
-      case x =>
+      case _ =>
         logger.debug(s"Cannot update backing key '$key' in [$originalBackingObject]")
     }
     updateTo(currentBackingObject)
@@ -73,7 +73,7 @@ class MutableContainerMutableView(
       case msoo: MutableTreeNode =>
         msoo.update(newValue)
       //println(s"Updated to $msoo")
-      case other => throw new Exception(s"waaah I don't know what to do with a ${other}")
+      case other => throw new Exception(s"waaah I don't know what to do with a $other")
     }
     require(dirty)
     parent.commit()

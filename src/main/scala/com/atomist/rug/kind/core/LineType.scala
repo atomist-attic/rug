@@ -42,7 +42,7 @@ class LineMutableView(
   extends ViewSupport[String](originalBackingObject, parent)
     with TerminalView[String] {
 
-  override def nodeName: String = "Line"
+  override def nodeName: String = s"Line#${linenum}"
 
   override def childNodeNames: Set[String] = Set()
 

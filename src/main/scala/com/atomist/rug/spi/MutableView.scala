@@ -3,6 +3,7 @@ package com.atomist.rug.spi
 import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.tree.ContainerTreeNode
 
+
 /**
   * Exposed to Rug "with" and "from" blocks, and access from JavaScript.
   * Typically backed by an object from another hierarchy.
@@ -55,6 +56,20 @@ trait MutableView[T] extends ContainerTreeNode {
     * Commit all changes, invoking updaters and calling parent if necessary.
     */
   def commit(): Unit
+
+  /* really this should be a path expression but let's start somewhere */
+  def address: String = MutableView.address(this, s"name=$nodeName")
+
+}
+
+object MutableView {
+  def address(nodeOfInterest: MutableView[_], test: String): String = {
+    val myType = nodeOfInterest.nodeTags.mkString(",")
+    if (nodeOfInterest.parent == null)
+      s"$myType()$test"
+    else
+      s"${nodeOfInterest.parent.address}/$myType()[$test]"
+  }
 }
 
 /**

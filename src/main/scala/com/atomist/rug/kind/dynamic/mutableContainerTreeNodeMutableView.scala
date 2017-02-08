@@ -37,7 +37,28 @@ class MutableContainerMutableView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  override def addressableBackingObject = parent.addressableBackingObject
+  override def address = {
+      val myType = originalBackingObject.nodeTags.mkString(",")
+      if (parent == null)
+        s"Root Mutable Container of type ${myType}" // this would be weird, but it could happen in test
+      else {
+        val parentTest = {
+          val myIndex = parent.currentBackingObject match {
+            case ctn: ContainerTreeNode =>
+              ctn.childNodes.indexOf(currentBackingObject)
+            case _ => -1
+          }
+          if (myIndex == -1) {
+            println(s"I am $this and I am not a child of my parent $parent")
+            ""
+          }
+          else
+            s"[$myIndex]"
+        }
+
+        s"${parent.address}$parentTest/$myType()[name=$nodeName]"
+      }
+  }
 
   @ExportFunction(readOnly = false, description = "Set the value of the given key")
   def set(@ExportFunctionParameterDescription(name = "key",

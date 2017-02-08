@@ -49,12 +49,13 @@ case class NodesWithTag(tag: String)
         // and under "/src/main" and under the actual file.
         // So check that our returned types have distinct backing objects
         // TODO what happens if there isn't a mutable view with a concept of a backing object?
-        var backingObjectsSeen: Set[Any] = Set()
+        var nodeAddressesSeen: Set[String] = Set()
         var toReturn = List.empty[TreeNode]
         found.foreach {
           case mv: MutableView[_] =>
-            if (!backingObjectsSeen.contains(mv.addressableBackingObject)) {
-              backingObjectsSeen = backingObjectsSeen + mv.addressableBackingObject
+            println(s"I see a node at ${mv.address}")
+            if (!nodeAddressesSeen.contains(mv.address)) {
+              nodeAddressesSeen = nodeAddressesSeen + mv.address
               toReturn = toReturn :+ mv
             }
           case n =>

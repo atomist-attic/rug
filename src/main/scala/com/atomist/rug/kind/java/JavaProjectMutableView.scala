@@ -2,14 +2,12 @@ package com.atomist.rug.kind.java
 
 import java.util.{List => JList}
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
@@ -29,11 +27,7 @@ class JavaProjectType(
 
   override def viewManifest: Manifest[JavaProjectMutableView] = manifest[JavaProjectMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {
       case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
         Some(Seq(new JavaProjectMutableView(pv)))

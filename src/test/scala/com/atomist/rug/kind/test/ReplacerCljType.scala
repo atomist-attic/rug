@@ -1,11 +1,8 @@
 package com.atomist.rug.kind.test
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectiveStaticTypeInformation, Type, TypeInformation}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 import scala.reflect.ManifestFactory
@@ -22,23 +19,12 @@ class ReplacerCljType(ev: Evaluator) extends Type(ev) {
 
   protected def viewClass: Class[StringReplacingMutableView] = classOf[StringReplacingMutableView]
 
-  protected def listViews(rugAs: ArtifactSource,
-                          selected: Selected,
-                          context: TreeNode,
-                          poa: ProjectOperationArguments,
-                          identifierMap: Map[String, AnyRef]): Seq[MutableView[_]] = context match {
+  protected def listViews(context: TreeNode): Seq[MutableView[_]] = context match {
     case pmv: ProjectMutableView =>
       pmv.currentBackingObject.allFiles.filter(f => f.path.contains(".clj"))
         .map(f => new StringReplacingMutableView(f, pmv))
     case _ => Nil
   }
 
-  def findAllIn(rugAs: ArtifactSource,
-                selected: Selected,
-                context: TreeNode,
-                poa: ProjectOperationArguments,
-                identifierMap: Map[String, AnyRef]): Option[Seq[MutableView[_]]] = {
-    val l = listViews(rugAs, selected, context, poa, identifierMap)
-    Option.apply(l)
-  }
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = Option(listViews(context))
 }

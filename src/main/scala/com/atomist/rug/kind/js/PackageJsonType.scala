@@ -1,11 +1,8 @@
 package com.atomist.rug.kind.js
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 class PackageJsonType(
@@ -20,11 +17,7 @@ class PackageJsonType(
 
   override def viewManifest: Manifest[PackageJsonMutableView] = manifest[PackageJsonMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject

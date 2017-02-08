@@ -26,28 +26,6 @@ trait ChildResolver {
   */
 trait ViewFinder extends ChildResolver {
 
-  final def findIn(
-                    rugAs: ArtifactSource,
-                    selected: Selected,
-                    context: TreeNode,
-                    poa: ProjectOperationArguments,
-                    identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
-    try {
-      findAllIn(context)
-        .map(_.filter(v => invokePredicate(rugAs, poa, identifierMap, selected.predicate, selected.alias, v))
-        )
-    }
-    catch {
-      case npe: NullPointerException =>
-        val msg =
-          s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
-             | The context is: $context
-             | This is what is available: ${findAllIn(context)}
-             |"""
-        throw new RugRuntimeException(null, msg, npe)
-    }
-  }
-
   def invokePredicate(rugAs: ArtifactSource,
                       poa: ProjectOperationArguments,
                       identifierMap: Map[String, Object],

@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.dynamic
 
 import com.atomist.project.ProjectOperationArguments
+import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.parser.Selected
@@ -16,12 +17,35 @@ import com.typesafe.scalalogging.LazyLogging
 class DefaultViewFinder(typeRegistry: TypeRegistry)
   extends ViewFinder with LazyLogging {
 
+  final def findIn(
+                    rugAs: ArtifactSource,
+                    selected: Selected,
+                    context: TreeNode,
+                    poa: ProjectOperationArguments,
+                    identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
+    try {
+      findAllIn(rugAs, selected, context, poa, identifierMap)
+        .map(_.filter(v => invokePredicate(rugAs, poa, identifierMap, selected.predicate, selected.alias, v))
+        )
+    }
+    catch {
+      case npe: NullPointerException =>
+        val msg =
+          s"""Internal error in Rug type with alias '${selected.alias}': A view was returned as null.
+             | The context is: $context
+             | This is what is available: ${findAllIn(context)}
+             |"""
+        throw new RugRuntimeException(null, msg, npe)
+    }
+  }
+
+  override def findAllIn(context: TreeNode) = findAllIn(null, null, context, null, null)
   /**
     * Finds views, first looking at children of current scope,
     * then identifiers in scope, then global identifiers.
     */
-  override def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
-                         poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
+  def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
+                poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
 
     val fromIdentifierInScope: Option[Seq[MutableView[_]]] = identifierMap.get(selected.kind).flatMap(typ => {
       logger.debug(s"Getting type '${selected.kind}' from $typ")
@@ -74,7 +98,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
     val fromGlobalTypes: Option[Seq[TreeNode]] =
       typeRegistry.findByName(selected.kind) flatMap {
         case t: Type =>
-          t.findIn(rugAs, selected, context, poa, identifierMap)
+          t.findAllIn(context)
       }
 
     childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes

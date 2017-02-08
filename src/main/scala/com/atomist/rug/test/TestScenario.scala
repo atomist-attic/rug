@@ -28,9 +28,6 @@ case class TestScenario(
                          outcome: Then
                        ) extends RugOperationSupport {
 
-  // TODO could parameterize this to pass in MatcherListener
-  override val viewFinder: ViewFinder = DefaultViewFinder
-
   override val kindRegistry = DefaultTypeRegistry
 
   override val evaluator = new DefaultEvaluator(new EmptyRugFunctionRegistry)

@@ -26,7 +26,7 @@ class YmlType(
 
   override def viewManifest: Manifest[YmlMutableView] = manifest[YmlMutableView]
 
-  override protected def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.originalBackingObject.allFiles
           .filter(f => f.name.endsWith(ymlExtension))

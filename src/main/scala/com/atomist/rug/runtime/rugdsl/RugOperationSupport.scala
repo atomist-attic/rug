@@ -47,8 +47,6 @@ object RugOperationSupport {
   */
 trait RugOperationSupport extends LazyLogging {
 
-  def viewFinder: ViewFinder
-
   val kindRegistry: TypeRegistry
 
   def evaluator: Evaluator
@@ -159,9 +157,9 @@ trait RugOperationSupport extends LazyLogging {
                         context: TreeNode,
                         poa: ProjectOperationArguments,
                         identifierMap: Map[String, Object]): Seq[TreeNode] = {
-    val vo = viewFinder.findIn(rugAs, selected, context, poa, identifierMap)
+    val vo = DefaultViewFinder.findIn(rugAs, selected, context, poa, identifierMap)
     vo.getOrElse {
-      throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $viewFinder")
+      throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $DefaultViewFinder")
     }
   }
 

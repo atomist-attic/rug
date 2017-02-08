@@ -37,6 +37,8 @@ class MutableContainerMutableView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
+  override def addressableBackingObject = parent.addressableBackingObject
+
   @ExportFunction(readOnly = false, description = "Set the value of the given key")
   def set(@ExportFunctionParameterDescription(name = "key",
     description = "The match key whose content you want")

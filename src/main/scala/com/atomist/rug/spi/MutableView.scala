@@ -18,6 +18,8 @@ trait View[T] extends ContainerTreeNode {
 
   def originalBackingObject: T
 
+  def addressableBackingObject: Any = originalBackingObject
+
   override def value: String = toString
 
 }

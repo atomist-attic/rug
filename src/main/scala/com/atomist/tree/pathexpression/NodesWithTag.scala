@@ -53,8 +53,8 @@ case class NodesWithTag(tag: String)
         var toReturn = List.empty[TreeNode]
         found.foreach {
           case mv: MutableView[_] =>
-            if (!backingObjectsSeen.contains(mv.originalBackingObject)) {
-              backingObjectsSeen = backingObjectsSeen + mv.originalBackingObject
+            if (!backingObjectsSeen.contains(mv.addressableBackingObject)) {
+              backingObjectsSeen = backingObjectsSeen + mv.addressableBackingObject
               toReturn = toReturn :+ mv
             }
           case n =>

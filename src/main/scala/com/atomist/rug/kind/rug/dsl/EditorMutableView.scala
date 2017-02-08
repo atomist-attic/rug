@@ -31,11 +31,7 @@ class EditorMutableView(originalBackingObject: FileArtifact,
 
   private def isRugDsl: Boolean = currentBackingObject.name.endsWith(RugArchiveProjectType.RugExtension)
 
-  private def removeSuffix(suffix: String, whole: String) =
-    if (whole.endsWith(suffix))
-      whole.substring(0, whole.length - suffix.length)
-    else
-      whole
+  private def removeSuffix(suffix: String, whole: String) = whole stripSuffix suffix
 
   private def removeFileSuffix(filename:String): String =
     {

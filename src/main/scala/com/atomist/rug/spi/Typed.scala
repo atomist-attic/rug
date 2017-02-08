@@ -4,10 +4,7 @@ import com.atomist.util.lang.JavaHelpers
 
 object Typed {
 
-  private[spi] def trimSuffix(suffix: String, orig: String): String = orig match {
-    case n if n.endsWith(suffix) => n.dropRight(suffix.length)
-    case n => n
-  }
+  private[spi] def trimSuffix(suffix: String, orig: String): String = orig stripSuffix suffix
 
   private val TypeSuffix = "Type"
   private val TreeNodeSuffix = "TreeNode"

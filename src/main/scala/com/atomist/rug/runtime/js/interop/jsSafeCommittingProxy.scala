@@ -31,6 +31,23 @@ class jsSafeCommittingProxy(
 
   import jsSafeCommittingProxy.MagicJavaScriptMethods
 
+  //-----------------------------------------------------
+  // Delegate TreeNode methods to backing node
+
+  override def nodeName: String = node.nodeName
+
+  override def value: String = node.value
+
+  override def childNodeNames: Set[String] = node.childNodeNames
+
+  override def childNodeTypes: Set[String] = node.childNodeTypes
+
+  override def childrenNamed(key: String): Seq[TreeNode] =
+    node.childrenNamed(key)
+      .map(n => new jsSafeCommittingProxy(n, commandRegistry, typeRegistry))
+
+  //-----------------------------------------------------
+
   override def getMember(name: String): AnyRef = {
     //println(s"getMember: [$name]")
     if (MagicJavaScriptMethods.contains(name))
@@ -155,35 +172,6 @@ class jsSafeCommittingProxy(
     }
   }
 
-  /**
-    * Name of the node. This may vary with individual nodes: For example,
-    * with files. However, node names do not always need to be unique.
-    *
-    * @return name of the individual node
-    */
-  override def nodeName: String = node.nodeName
-
-  /**
-    * All nodes have values: Either a terminal value or the
-    * values built up from subnodes.
-    */
-  override def value: String = node.value
-
-  /**
-    * Return the names of children of this node
-    *
-    * @return the names of children. There may be multiple children
-    *         with a given name
-    */
-  override def childNodeNames: Set[String] = node.childNodeNames
-  override def childNodeTypes: Set[String] = node.childNodeTypes
-
-  /**
-    * Children under the given key. May be empty.
-    *
-    * @param key field name
-    */
-  override def childrenNamed(key: String): Seq[TreeNode] = node.childrenNamed(key)
 }
 
 private object jsSafeCommittingProxy {

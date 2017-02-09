@@ -6,7 +6,7 @@ import java.util.Collections
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
+import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.kind.service.TeamContext
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
@@ -175,8 +175,8 @@ class jsPathExpressionEngine(
       throw new IllegalArgumentException(s"Unknown type")
     )
     (typ, rootTn) match {
-      case (cvf: ContextlessViewFinder, mv: MutableView[_]) =>
-        val kids = cvf.findAllIn(mv).getOrElse(Nil)
+      case (cr: ChildResolver, mv: MutableView[_]) =>
+        val kids = cr.findAllIn(mv).getOrElse(Nil)
         wrap(kids)
       case _ => ???
     }

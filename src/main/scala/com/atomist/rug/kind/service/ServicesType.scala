@@ -1,9 +1,8 @@
 package com.atomist.rug.kind.service
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.parser.{RunOtherOperation, Selected}
+import com.atomist.rug.parser.RunOtherOperation
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
@@ -21,15 +20,9 @@ class ServicesType(
 
   override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case s: ServicesMutableView => Some(s.childrenNamed("service"))
     }
-  }
 }
 
 class ServiceTypeProvider extends TypeProvider(classOf[Service]) {

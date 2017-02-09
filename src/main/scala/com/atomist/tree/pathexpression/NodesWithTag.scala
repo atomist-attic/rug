@@ -18,6 +18,7 @@ case class NodesWithTag(tag: String)
   private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
     typeRegistry.findByName(tag) match {
       case Some(cr: ChildResolver) => Some(cr)
+      case Some(_) => throw new IllegalStateException(s"type $tag is in the type registry ($typeRegistry) but does not implement ChildResolver")
       case _ => None
     }
 
@@ -40,20 +41,21 @@ case class NodesWithTag(tag: String)
       case Child =>
         ExecutionResult(findMeUnder(tn, typeRegistry))
       case Descendant =>
-        val allDescendants = Descendant.allDescendants(tn)
-        val found = allDescendants.filter(eligibleNode) ++ allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+        val allDescendants = Descendant.selfAndAllDescendants(tn)
+        val found = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
 
         // We may have duplicates in the found collection because, for example,
         // we might find the Java() node SomeClass.java under the directory "/src"
         // and under "/src/main" and under the actual file.
         // So check that our returned types have distinct backing objects
         // TODO what happens if there isn't a mutable view with a concept of a backing object?
-        var backingObjectsSeen: Set[Any] = Set()
+        var nodeAddressesSeen: Set[String] = Set()
         var toReturn = List.empty[TreeNode]
         found.foreach {
           case mv: MutableView[_] =>
-            if (!backingObjectsSeen.contains(mv.originalBackingObject)) {
-              backingObjectsSeen = backingObjectsSeen + mv.originalBackingObject
+            println(s"I see a node at ${mv.address}")
+            if (!nodeAddressesSeen.contains(mv.address)) {
+              nodeAddressesSeen = nodeAddressesSeen + mv.address
               toReturn = toReturn :+ mv
             }
           case n =>
@@ -64,5 +66,4 @@ case class NodesWithTag(tag: String)
         ExecutionResult(toReturn)
     }
   }
-
 }

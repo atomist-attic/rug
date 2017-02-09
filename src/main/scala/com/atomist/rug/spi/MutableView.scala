@@ -1,26 +1,8 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.runtime.rugdsl.Evaluator
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.ContainerTreeNode
 
-/**
-  * View read operations.
-  *
-  * @tparam T type of the underlying object
-  */
-trait View[T] extends ContainerTreeNode {
-
-  /**
-    * Nullable if at the top level, as we don't want to complicate
-    * use from JavaScript by using Option.
-    */
-  def parent: MutableView[_]
-
-  def originalBackingObject: T
-
-  override def value: String = toString
-
-}
 
 /**
   * Exposed to Rug "with" and "from" blocks, and access from JavaScript.
@@ -38,7 +20,19 @@ trait View[T] extends ContainerTreeNode {
   *
   * @tparam  T type of the underlying object
   */
-trait MutableView[T] extends View[T] {
+trait MutableView[T] extends ContainerTreeNode {
+
+  /**
+    * Nullable if at the top level, as we don't want to complicate
+    * use from JavaScript by using Option.
+    */
+  def parent: MutableView[_]
+
+  def originalBackingObject: T
+
+  def addressableBackingObject: Any = originalBackingObject
+
+  override def value: String = toString
 
   def dirty: Boolean
 
@@ -62,6 +56,20 @@ trait MutableView[T] extends View[T] {
     * Commit all changes, invoking updaters and calling parent if necessary.
     */
   def commit(): Unit
+
+  /* really this should be a path expression but let's start somewhere */
+  def address: String = MutableView.address(this, s"name=$nodeName")
+
+}
+
+object MutableView {
+  def address(nodeOfInterest: MutableView[_], test: String): String = {
+    val myType = nodeOfInterest.nodeTags.mkString(",")
+    if (nodeOfInterest.parent == null)
+      s"$myType()$test"
+    else
+      s"${nodeOfInterest.parent.address}/$myType()[$test]"
+  }
 }
 
 /**

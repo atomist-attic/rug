@@ -7,7 +7,6 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug._
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.ViewFinder
 import com.atomist.rug.parser.{Computation, RunOtherOperation, ScriptBlockAction, With}
 import com.atomist.rug.runtime.lang.ScriptBlockActionExecutor
 import com.atomist.rug.spi.{InstantEditorFailureException, TypeRegistry}
@@ -17,7 +16,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 class RugDrivenProjectEditor(
                               val evaluator: Evaluator,
-                              val viewFinder: ViewFinder,
                               program: RugEditor,
                               rugAs: ArtifactSource,
                               kindRegistry: TypeRegistry,

@@ -1,7 +1,6 @@
 package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
-import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl._
 import com.atomist.rug.spi.{StaticTypeInformation, TypeRegistry}
@@ -10,11 +9,8 @@ import com.atomist.source.ArtifactSource
 /**
   * Compiles Rug programs into ProjectEditor instances
   */
-class DefaultRugCompiler(
-                          evaluator: Evaluator,
-                          typeRegistry: TypeRegistry,
-                          viewFinder: ViewFinder = DefaultViewFinder
-                        )
+class DefaultRugCompiler(evaluator: Evaluator,
+                          typeRegistry: TypeRegistry)
   extends RugCompiler {
 
   @throws[BadRugException]
@@ -27,9 +23,9 @@ class DefaultRugCompiler(
       validateWithTypesAndReferences(rugProgram, w)
     validateReferences(rugProgram, knownOperations)
     rugProgram match {
-      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, viewFinder, ed, artifactSource, typeRegistry, namespace)
-      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, viewFinder, rev, artifactSource, typeRegistry, namespace)
-      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, viewFinder, rpp, artifactSource, typeRegistry, namespace)
+      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, ed, artifactSource, typeRegistry, namespace)
+      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, rev, artifactSource, typeRegistry, namespace)
+      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, rpp, artifactSource, typeRegistry, namespace)
     }
   }
 

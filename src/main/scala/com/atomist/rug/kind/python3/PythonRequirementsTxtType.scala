@@ -22,12 +22,7 @@ class RequirementsType(
 
   override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .files
@@ -37,7 +32,6 @@ class RequirementsType(
         )
       case _ => None
     }
-  }
 
   protected def toView(f: FileArtifact, pmv: ProjectMutableView): MutableView[_] = {
     new RequirementsTxtMutableView(f, pmv)
@@ -74,12 +68,7 @@ class PythonRequirementsTxtType(
 
   override def description = "Python requirements text file"
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .findFile(RequirementsTextPath)
@@ -88,7 +77,6 @@ class PythonRequirementsTxtType(
         )
       case _ => None
     }
-  }
 }
 
 class RequirementsTxtMutableView(

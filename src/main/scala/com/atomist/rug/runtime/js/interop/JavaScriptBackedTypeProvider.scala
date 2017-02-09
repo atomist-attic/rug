@@ -21,9 +21,6 @@ class JavaScriptBackedTypeProvider(
 
   override def description: String = s"JavaScript-backed type [$name]"
 
-  override def resolvesFromNodeTypes: Set[String] =
-    Set(Typed.typeClassToTypeName(classOf[FileType]))
-
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = {
     val r = jsTypeProvider.callMember("find", context)
     val nodes: Seq[TreeNode] = toScalaSeq(r).map(e =>

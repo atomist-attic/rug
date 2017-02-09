@@ -1,11 +1,9 @@
 package com.atomist.rug.kind.pom
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.parser.Selected
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 /**
@@ -17,7 +15,8 @@ class PomType(
                evaluator: Evaluator
              )
   extends Type(evaluator)
-    with ReflectivelyTypedType {
+    with ReflectivelyTypedType
+    with ChildResolver {
 
   def this() = this(DefaultEvaluator)
 
@@ -25,18 +24,12 @@ class PomType(
 
   override def viewManifest: Manifest[PomMutableView] = manifest[PomMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
-        Some(pmv.currentBackingObject.allFiles
-          .filter(f => f.path.equals("pom.xml"))
-          .map(f => new PomMutableView(f, pmv))
-        )
+        pmv.currentBackingObject.findFile("pom.xml")
+          .map(f => Seq(new PomMutableView(f, pmv))).orElse(Some(Seq()))
+      case f: FileArtifactBackedMutableView if f.filename == "pom.xml" =>
+        Some(Seq(new PomMutableView(f.currentBackingObject, f.parent)))
       case _ => None
     }
-  }
 }

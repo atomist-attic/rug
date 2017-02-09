@@ -3,9 +3,8 @@ package com.atomist.rug.test
 import com.atomist.param.Parameter
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.parser.{Computation, Predicate, RunOtherOperation}
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, RugOperationSupport}
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, DefaultViewFinder, RugOperationSupport}
 import com.atomist.rug.{EmptyRugFunctionRegistry, Import}
 import com.atomist.source._
 
@@ -27,9 +26,6 @@ case class TestScenario(
                          editorInvocation: RunOtherOperation,
                          outcome: Then
                        ) extends RugOperationSupport {
-
-  // TODO could parameterize this to pass in MatcherListener
-  override val viewFinder: ViewFinder = DefaultViewFinder
 
   override val kindRegistry = DefaultTypeRegistry
 

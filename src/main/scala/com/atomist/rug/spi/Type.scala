@@ -1,6 +1,6 @@
 package com.atomist.rug.spi
 
-import com.atomist.rug.kind.dynamic.ViewFinder
+import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.rugdsl.Evaluator
 
 /**
@@ -11,10 +11,8 @@ import com.atomist.rug.runtime.rugdsl.Evaluator
   *
   * @param evaluator used to evaluate expressions
   */
-abstract class Type(
-                     evaluator: Evaluator
-                   )
-  extends ViewFinder with Typed {
+abstract class Type(evaluator: Evaluator)
+  extends ChildResolver with Typed {
 
   /** Describe the MutableView subclass to allow for reflective function export */
   def viewManifest: Manifest[_]

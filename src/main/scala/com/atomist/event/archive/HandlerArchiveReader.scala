@@ -6,7 +6,6 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.BadRugException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.dynamic.{DefaultViewFinder, ViewFinder}
 import com.atomist.rug.kind.service.MessageBuilder
 import com.atomist.rug.runtime.js.JavaScriptHandlerFinder
 import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsModelBackedAtomistFacade}
@@ -23,7 +22,6 @@ class HandlerArchiveReader(
                      treeMaterializer: TreeMaterializer,
                      atomistConfig: AtomistConfig = DefaultAtomistConfig,
                      evaluator: DefaultEvaluator = DefaultEvaluator,
-                     viewFinder: ViewFinder = DefaultViewFinder,
                      typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
   private val pex = new PathExpressionEngine

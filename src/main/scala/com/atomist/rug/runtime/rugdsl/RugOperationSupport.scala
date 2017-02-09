@@ -16,7 +16,6 @@ import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 
@@ -47,8 +46,6 @@ object RugOperationSupport {
   * Useful functionality shared between runtime and test infrastructure.
   */
 trait RugOperationSupport extends LazyLogging {
-
-  def viewFinder: ViewFinder
 
   val kindRegistry: TypeRegistry
 
@@ -160,9 +157,9 @@ trait RugOperationSupport extends LazyLogging {
                         context: TreeNode,
                         poa: ProjectOperationArguments,
                         identifierMap: Map[String, Object]): Seq[TreeNode] = {
-    val vo = viewFinder.findIn(rugAs, selected, context, poa, identifierMap)
+    val vo = DefaultViewFinder.findIn(rugAs, selected, context, poa, identifierMap)
     vo.getOrElse {
-      throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $viewFinder")
+      throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $DefaultViewFinder")
     }
   }
 

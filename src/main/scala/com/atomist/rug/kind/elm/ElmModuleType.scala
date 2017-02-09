@@ -1,37 +1,25 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.rug.kind.core.{DirectoryMutableView, FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.ContextlessViewFinder
-import com.atomist.rug.parser.Selected
+import com.atomist.rug.kind.core._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 
 class ElmModuleType(
                      evaluator: Evaluator
                    )
   extends Type(evaluator)
-    with ReflectivelyTypedType
-    with ContextlessViewFinder {
+    with ReflectivelyTypedType {
 
   import ElmModuleType._
 
   def this() = this(DefaultEvaluator)
 
-  override val resolvesFromNodeTypes: Set[String] = Set("Project", "File", "Directory")
-
   override def description = "Elm module"
 
   override def viewManifest: Manifest[ElmModuleMutableView] = manifest[ElmModuleMutableView]
 
-  override protected def findAllIn(rugAs: ArtifactSource,
-                                   selected: Selected,
-                                   context: TreeNode,
-                                   poa: ProjectOperationArguments,
-                                   identifierMap: Map[String, Object]): Option[Seq[MutableView[_]]] = {
-    context match {
+  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         val elmp = new ElmProjectMutableView(pmv)
         Some(pmv.currentBackingObject
@@ -52,7 +40,6 @@ class ElmModuleType(
           .map(f => new ElmModuleMutableView(f, elmp)))
       case _ => None
     }
-  }
 }
 
 /**

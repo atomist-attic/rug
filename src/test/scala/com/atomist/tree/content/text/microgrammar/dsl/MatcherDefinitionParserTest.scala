@@ -60,8 +60,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "reject invalid $ variables" in {
     val bogusInputs = Seq("$", "$$", "$***", "$7iud:eiruieur", "$ foo:bar")
 
-    println(mgp.parse(mgp.ident, "$"))
-
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
         an[BadRugException] should be thrownBy {

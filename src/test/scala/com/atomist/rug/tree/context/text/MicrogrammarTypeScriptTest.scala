@@ -22,7 +22,6 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
-    println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
     val projectEditor = JavaScriptOperationFinder.fromJavaScriptArchive(artifactSourceWithRugNpmModule).head.asInstanceOf[JavaScriptInvokingProjectEditor]

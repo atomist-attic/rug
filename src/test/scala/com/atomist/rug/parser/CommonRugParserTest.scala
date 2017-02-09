@@ -617,12 +617,11 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     an[BadRugSyntaxException] should be thrownBy (ri.parse(prog))
   }
 
-  it should "parse @generator annotation on operation without name override" in {
+  it should "parse geberator" in {
     val prog =
       s"""
-         |@generator
          |@description '100% JavaScript free'
-         |editor Triplet
+         |generator Triplet
          |
          |with File f
          | when isJava = "thing"
@@ -635,52 +634,15 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     assert(parsed.publishedName === Some("Triplet"))
   }
 
-  it should "parse @generator annotation on operation with name override" in {
-    val publishedName = "FooBar666"
+
+
+  it should "pick up multiple @tags annotations on operation" in {
     val prog =
       s"""
-         |@generator "$publishedName"
-         |@description '100% JavaScript free'
-         |editor Triplet
-         |
-         |with File f
-         | when isJava = "thing"
-         |
-         |do
-         | append "foobar"
-      """.stripMargin
-
-    val parsed = ri.parse(prog).head
-    assert(parsed.publishedName === Some(publishedName))
-  }
-
-  it should "parse generator on operation with name override" in {
-    val publishedName = "FooBar666"
-    val prog =
-      s"""
-         |@description '100% JavaScript free'
-         |generator $publishedName
-         |
-         |with File f
-         | when isJava = "thing"
-         |
-         |do
-         | append "foobar"
-      """.stripMargin
-
-    val parsed = ri.parse(prog).head
-    assert(parsed.publishedName === Some(publishedName))
-  }
-
-  it should "pick up multiple @tags annotations on operation with name override" in {
-    val publishedName = "FooBar666"
-    val prog =
-      s"""
-         |@generator "$publishedName"
          |@description '100% JavaScript free'
          |@tag "Foo"
          |@tag "Bar"
-         |editor Triplet
+         |generator Triplet
          |
          |with File f
          | when isJava = "thing"
@@ -690,7 +652,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    assert(parsed.publishedName === Some(publishedName))
     assert(parsed.tags === Seq("Foo", "Bar"))
   }
 

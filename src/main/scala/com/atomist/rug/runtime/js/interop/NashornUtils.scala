@@ -27,18 +27,14 @@ object NashornUtils {
   def toJavaMap(nashornReturn: Object): Map[String, Object] =
     nashornReturn match {
       case som: ScriptObjectMirror =>
-        println("I see SOMthing")
         val scalaMap = som.entrySet().asScala.map{
           case e: Entry[String, Object] =>
-            println(s"I see entry ${e.getKey}, ${e.getValue}")
             (e.getKey, e.getValue)
         }.toMap
           scalaMap.mapValues {
             case som: ScriptObjectMirror =>
-              println(" It contains SOMthing")
               toJavaMap(som)
             case x =>
-              println("It contains something else")
               toJavaType(x)
 
         }

@@ -1,13 +1,11 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
-import com.atomist.rug.parser.Selected
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 
 class RequirementsType(
@@ -20,7 +18,7 @@ class RequirementsType(
 
   override def description = "Python requirements file"
 
-  override def viewManifest: Manifest[MutableContainerMutableView] = manifest[MutableContainerMutableView]
+  override def runtimeClass = classOf[MutableContainerMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
@@ -52,7 +50,7 @@ object PythonRequirementsTxtType {
 
 }
 
-import PythonRequirementsTxtType._
+import com.atomist.rug.kind.python3.PythonRequirementsTxtType._
 
 /**
   * Type for Python requirements.txt

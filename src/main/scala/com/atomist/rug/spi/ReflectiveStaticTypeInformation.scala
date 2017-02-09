@@ -16,11 +16,7 @@ class ReflectiveStaticTypeInformation(classToExamine: Class[_]) extends StaticTy
   }
 }
 
-trait ReflectivelyTypedType extends Typed {
-
-  type Self <: Type
-
-  def self = this.asInstanceOf[Self]
+trait ReflectivelyTypedType extends Type {
 
   /**
     * Expose type information. Return an instance of StaticTypeInformation if
@@ -29,7 +25,7 @@ trait ReflectivelyTypedType extends Typed {
     * @return type information.
     */
   final override val typeInformation: TypeInformation =
-    new ReflectiveStaticTypeInformation(self.viewManifest.runtimeClass)
+    new ReflectiveStaticTypeInformation(runtimeClass)
 }
 
 /**

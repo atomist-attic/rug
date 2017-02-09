@@ -15,7 +15,7 @@ class PackageJsonType(
 
   override def description = "package.json configuration file"
 
-  override def viewManifest: Manifest[PackageJsonMutableView] = manifest[PackageJsonMutableView]
+  override def runtimeClass = classOf[PackageJsonMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

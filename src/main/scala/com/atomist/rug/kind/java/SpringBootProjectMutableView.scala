@@ -23,7 +23,7 @@ class SpringBootProjectType(
 
   override def description = "Spring Boot project"
 
-  override def viewManifest: Manifest[SpringBootProjectMutableView] = manifest[SpringBootProjectMutableView]
+  override def runtimeClass = classOf[SpringBootProjectMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case jpv: JavaProjectMutableView =>

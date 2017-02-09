@@ -20,7 +20,7 @@ class EveryPomType(
 
   override def description = "POM XML file"
 
-  override def viewManifest: Manifest[PomMutableView] = manifest[PomMutableView]
+  override def runtimeClass = classOf[PomMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

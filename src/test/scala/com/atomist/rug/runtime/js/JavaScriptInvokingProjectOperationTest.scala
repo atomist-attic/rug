@@ -1,8 +1,9 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, TestUtils}
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -36,6 +37,26 @@ object JavaScriptInvokingProjectOperationTest {
        |    name: string = "Simple"
        |    description: string = "A nice little editor"
        |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100, default: "http://t.co"}]
+       |    edit(project: Project, {content} : {content: string}) {
+       |       if(content != "http://t.co"){
+       |          throw new Error("Content was not as expected");
+       |       }
+       |    }
+       |  }
+       |export let editor = new SimpleEditor()
+    """.stripMargin
+
+  val SimpleEditorWithRequiredParameterButNoDefault: String =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleEditor implements ProjectEditor {
+       |    name: string = "Simple"
+       |    description: string = "A nice little editor"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
        |    edit(project: Project, {content} : {content: string}) {
        |       if(content != "http://t.co"){
        |          throw new Error("Content was not as expected");
@@ -245,7 +266,19 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
     jsed.jsVar.get("name") should be ("Simple")
   }
 
-  private  def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  it should "Should throw an exception if required parameters are not set" in {
+    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithRequiredParameterButNoDefault)
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    assert(jsed.name  == "Simple")
+    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
+
+    assertThrows[MissingParametersException]{
+      jsed.modify(target, SimpleProjectOperationArguments.Empty)
+    }
+  }
+
+  private def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
     assert(jsed.name === "Simple")

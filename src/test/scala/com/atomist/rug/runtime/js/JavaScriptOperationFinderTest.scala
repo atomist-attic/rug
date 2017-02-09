@@ -38,11 +38,11 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
        |    @Parameter({pattern: "^.*$$", description: "foo bar"})
        |    content: string = "Test String";
        |
-       |    @Parameter({pattern: "^\\d+$$", description: "A nice round number"})
+       |    @Parameter({pattern: "^[0-9]+$$", description: "A nice round number"})
        |    amount: number = 10;
        |
-       |    @Parameter({pattern: "^\\d+$$", description: "A nice round number"})
-       |    nope: boolean;
+       |    @Parameter({pattern: "^.*$$", description: "A nice round number", required: false})
+       |    nope: boolean
        |
        |    edit(project: Project) {
        |       if(this.amount != 10) {

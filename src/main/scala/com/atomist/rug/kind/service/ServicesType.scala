@@ -25,7 +25,7 @@ class ServicesType(
     }
 }
 
-class ServiceTypeProvider extends TypeProvider(classOf[Service]) {
+class ServiceTypeProvider extends TypeProvider(classOf[ServiceMutableView]) {
 
   override def description: String = "Service"
 }

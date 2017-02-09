@@ -17,14 +17,14 @@ class DockerFileType(
 
   def description: String = "Docker file type"
 
-  override def viewManifest: Manifest[DockerMutableView] = manifest[DockerMutableView]
+  override def viewManifest: Manifest[DockerFileMutableView] = manifest[DockerFileMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .allFiles
           .filter(f => f.name == DockerFileName)
-          .map(f => new DockerMutableView(f, pmv))
+          .map(f => new DockerFileMutableView(f, pmv))
         )
       case _ => None
     }

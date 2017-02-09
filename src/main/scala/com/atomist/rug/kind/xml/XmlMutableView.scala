@@ -194,9 +194,7 @@ class XmlMutableView(
 
     if (numberOfFoundNodes > 0) {
       val nodeToRemove: Node = nodesList.item(0)
-
       nodeToRemove.getParentNode.removeChild(nodeToRemove)
-
       this.xml = documentToString(xmlDocument)
     }
   }

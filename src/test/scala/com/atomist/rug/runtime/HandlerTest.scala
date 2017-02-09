@@ -16,7 +16,6 @@ import org.scalatest.{FlatSpec, Matchers}
 class HandlerTest extends FlatSpec with Matchers {
 
   it should "allow Atomist invocations" in {
-
     val subscription =
       s"""
          |import {Atomist} from "@atomist/rug/operations/Handler"
@@ -41,12 +40,10 @@ class HandlerTest extends FlatSpec with Matchers {
     bindings.put("atomist", TestAtomistFacade)
     val jsc = new JavaScriptContext(r, DefaultAtomistConfig, bindings)
 
-
     for (ts <- r.allFiles.filter(_.name.endsWith(".js"))) {
       //TODO - call compiler
       //jsc.eval(ts)
     }
-
   }
 
   it should "find and invoke other style of handler" in {

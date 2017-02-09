@@ -41,3 +41,16 @@ editor:
     - "rug_archive_name": "rug"
     - "rug_archive_group_id": "atomist"
 
+---
+kind: "operation"
+client: "rug-cli 0.23.0-SNAPSHOT"
+executor:
+  name: "UpgradeScalaTestAssertions"
+  group: "atomist-rugs"
+  artifact: "scala-editors"
+  version: "0.1.0"
+  origin:
+    repo: "n/a"
+    branch: "n/a"
+    sha: "n/a"
+

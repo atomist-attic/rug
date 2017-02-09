@@ -13,6 +13,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+
   it should "parse simple class without error" in {
     val source =
       """class Foo(bar: String, i: Int)
@@ -20,6 +21,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
+  
   }
 
   it should "satisfy simple path expression" in {
@@ -30,8 +32,8 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
     ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
-        nodes.head.value should be("bar")
+        assert(nodes.size === 1)
+        assert(nodes.head.value === "bar")
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -44,10 +46,10 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
     ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
+        assert(nodes.size === 1)
         val tn: PositionedTreeNode = nodes.head.asInstanceOf[PositionedTreeNode]
-        tn.value should be("bar")
-        tn.startPosition.offset should equal (source.indexOf("bar"))
+        assert(tn.value === "bar")
+        assert(tn.startPosition.offset === source.indexOf("bar"))
         //nodes.head.
       case wtf => fail(s"Unexpected: $wtf")
     }

@@ -48,9 +48,9 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
         """.stripMargin))
     val comment = "EJB Alert! EJB Alert!"
     val rr = review(as, ejbFinder(comment))
-    rr.comments.size should be (1)
-    rr.comments.head.comment should equal(comment)
-    rr.comments.head.severity should equal(MAJOR)
+    assert(rr.comments.size === 1)
+    assert(rr.comments.head.comment === comment)
+    assert(rr.comments.head.severity === MAJOR)
   }
 
   it should "not find pattern when not present" in {
@@ -61,8 +61,8 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
         """.stripMargin))
     val comment = "EJB Alert! EJB Alert!"
     val rr = review(as, ejbFinder(comment))
-    rr.comments.size should be (0)
-    rr.severity should be (FINE)
+    assert(rr.comments.size === 0)
+    assert(rr.severity === FINE)
   }
 
   it should "execute two reviewers" in {
@@ -76,14 +76,14 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
     val comment2 = "Needs Juergenization"
     val prog = combined + "\n" + alwaysGripe(comment2) + "\n" + ejbFinder(comment)
     val rr = review(as, prog)
-    rr.comments.size should be(2)
-    rr.comments.head.comment should equal(comment)
-    rr.comments.head.severity should equal(MAJOR)
-    rr.comments(1).comment should equal(comment2)
-    rr.comments(1).severity should equal(POLISH)
+    assert(rr.comments.size === 2)
+    assert(rr.comments.head.comment === comment)
+    assert(rr.comments.head.severity === MAJOR)
+    assert(rr.comments(1).comment === comment2)
+    assert(rr.comments(1).severity === POLISH)
   }
 
-  private def review(as: ArtifactSource, prog: String): ReviewResult = {
+  private  def review(as: ArtifactSource, prog: String): ReviewResult = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
     val pe = eds.head.asInstanceOf[ProjectReviewer]

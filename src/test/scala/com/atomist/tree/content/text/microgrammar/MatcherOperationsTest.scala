@@ -10,8 +10,8 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val ls = l.toString
     l.matchPrefix(InputState("thing")) match {
       case Right(PatternMatch(tn, "thing", InputState("thing", _, _), `ls`)) =>
-        tn.nodeName should be ("x")
-        tn.value should be ("thing")
+        assert(tn.nodeName === "x")
+        assert(tn.value === "thing")
       case _ => ???
     }
   }
@@ -20,9 +20,9 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = Literal("thing")
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(node, "thing", is, value)) =>
-        node.significance should be(TreeNode.Noise)
+        assert(node.significance === TreeNode.Noise)
         value should be(l.toString)
-        is.offset should be(5)
+        assert(is.offset === 5)
       case _ => ???
     }
   }
@@ -33,6 +33,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState(thing2, _, _), _)) =>
+      
       case _ => ???
     }
   }
@@ -43,6 +44,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Left(_) =>
+      
       case _ => ???
     }
   }
@@ -53,18 +55,22 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1 | l2
     l.matchPrefix(InputState("thing")) match {
       case Right(PatternMatch(_, "thing", InputState("thing", _, _), _)) =>
+      
       case _ => ???
     }
     l2.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
+      
       case _ => ???
     }
     l.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(_, "2", InputState("2", _, 1), _)) =>
+      
       case _ => ???
     }
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing", InputState("thing2", _, _), _)) =>
+      
       case _ => ???
     }
   }
@@ -74,6 +80,7 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1.?
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(_, "thing", InputState("thing2", _, 5), _)) =>
+      
       case _ => ???
     }
   }
@@ -84,18 +91,22 @@ class MatcherOperationsTest extends FlatSpec with Matchers {
     val l = l1.? ~ l2
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
+      
       case _ => ???
     }
     l.matchPrefix(InputState("2")) match {
       case Right(PatternMatch(tn, "2", InputState("2", _, _), _)) =>
+      
       case _ => ???
     }
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn, "thing2", InputState("thing2", _, _), _)) =>
+      
       case _ => ???
     }
     l.matchPrefix(InputState("xthing2")) match {
       case Left(_) =>
+      
       case _ => ???
     }
   }

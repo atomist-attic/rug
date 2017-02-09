@@ -11,7 +11,7 @@ import org.scalatest.OptionValues._
 
 class ElmCaseManipulationTest extends FlatSpec with Matchers {
 
-  private val bodyAppenderUnderUpdateFunction: String =
+  private  val bodyAppenderUnderUpdateFunction: String =
     """
       |editor AddClause
       |
@@ -24,7 +24,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  private val bodyAppenderMatchingOnCaseExpression: String =
+  private  val bodyAppenderMatchingOnCaseExpression: String =
     """
       |editor AddClause
       |
@@ -36,7 +36,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       |
     """.stripMargin
 
-  private val clauseAdderMatchingExpression: String =
+  private  val clauseAdderMatchingExpression: String =
     """
       |editor AddClause
       |
@@ -60,7 +60,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
   it should "add clause to case statement matching case expression" in
     addClauseToCase(clauseAdderMatchingExpression)
 
-  private def appendToCase(rugProg: String) {
+  private  def appendToCase(rugProg: String) {
     val todoSource = StringFileArtifact("Main.elm", ElmParserTest.FullProgram)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), rugProg)
     val f = r.findFile("Main.elm").value
@@ -68,7 +68,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
     content should include("! []")
   }
 
-  private def addClauseToCase(rugProg: String) {
+  private  def addClauseToCase(rugProg: String) {
     val todoSource = StringFileArtifact("Main.elm", ElmParserTest.FullProgram)
     val expr = "Expression"
     val rhs = "bar"
@@ -85,13 +85,14 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
       )
   }
 
-  private def elmExecute(elmProject: ArtifactSource, program: String,
+  private  def elmExecute(elmProject: ArtifactSource, program: String,
                          params: Map[String, String] = Map()): ArtifactSource = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
 
+
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program))
     val eds = runtime.create(as,None)
-    eds.size should be(1)
+    assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
     val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))

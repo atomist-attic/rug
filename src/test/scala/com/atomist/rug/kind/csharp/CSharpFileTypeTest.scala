@@ -83,8 +83,10 @@ object CSharpFileTypeTest {
 
   def helloWorldProject = new ProjectMutableView(EmptyArtifactSource(), HelloWorldSources)
 
+
   def projectWithBogusCSharp = new ProjectMutableView(EmptyArtifactSource(),
     HelloWorldSources + StringFileArtifact("bogus.cs", "And this is nothing like C#"))
+
 
   def exceptionProject =
     SimpleFileBasedArtifactSource(StringFileArtifact("src/exception.cs", Exceptions))
@@ -97,18 +99,20 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+
   val csFileType = new CSharpFileType
+
 
   it should "ignore ill-formed file without error" in {
     val cs = new CSharpFileType
     val csharps = cs.findAllIn(projectWithBogusCSharp)
     // Should have silently ignored the bogus file
-    csharps.size should be(1)
+    assert(csharps.size === 1)
   }
 
   it should "parse hello world" in {
     val csharps = csFileType.findAllIn(helloWorldProject)
-    csharps.size should be(1)
+    assert(csharps.size === 1)
   }
 
   it should "parse hello world and write out correctly" in {
@@ -121,7 +125,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val csharps = csFileType.findAllIn(helloWorldProject)
-    csharps.size should be(1)
+    assert(csharps.size === 1)
     csharps.head.head match {
       case mtn: MutableContainerMutableView =>
         val content = mtn.value
@@ -132,20 +136,21 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
   it should "find hello world using path expression" in {
     val expr = "/src//CSharpFile()"
     val rtn = ee.evaluate(helloWorldProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 
   it should "find specification exception class" in {
     val csharps: Option[Seq[TreeNode]] = csFileType.findAllIn(new ProjectMutableView(EmptyArtifactSource(), exceptionProject))
-    csharps.size should be(1)
+    assert(csharps.size === 1)
     val csharpFileNode = csharps.get.head.asInstanceOf[MutableContainerMutableView]
 
     val expr = "//specific_catch_clause//class_type[@value='IndexOutOfRangeException']"
     ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
+    
     }
 
-    csharpFileNode.value should equal(Exceptions)
+    assert(csharpFileNode.value === Exceptions)
   }
 
   it should "find file that catches exception class" in {
@@ -153,7 +158,7 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
     val expr = "/src//*[CSharpFile()//specific_catch_clause//class_type[@value='IndexOutOfRangeException']]"
     ee.evaluate(project, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
       case Right(Seq(fileCatchingIndexOutOfRange: FileArtifactBackedMutableView)) =>
-        fileCatchingIndexOutOfRange.path should equal(exceptionProject.allFiles.head.path)
+        assert(fileCatchingIndexOutOfRange.path === exceptionProject.allFiles.head.path)
     }
   }
 }

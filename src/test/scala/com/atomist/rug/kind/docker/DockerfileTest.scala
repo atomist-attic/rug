@@ -23,7 +23,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |ENTRYPOINT ["java"]
         |CMD ["-Xmx1g", "-jar", "test1-0.0.1.jar"]""".stripMargin
 
-    df.toString should equal(expectedContent)
+    assert(df.toString === expectedContent)
   }
 
   it should "update file" in {
@@ -51,7 +51,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |WORKDIR /opt/dude
         |ENTRYPOINT ["java"]
         |CMD ["-Xmx2g", "-jar", "test1-0.0.1.jar"]""".stripMargin
-    df.toString should equal(expectedContent)
+    assert(df.toString === expectedContent)
   }
 
   it should "get single port via EXPOSE" in {

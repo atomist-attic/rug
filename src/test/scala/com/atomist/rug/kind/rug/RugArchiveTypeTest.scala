@@ -37,10 +37,12 @@ class RugArchiveTypeTest extends FlatSpec
       Seq(StringFileArtifact(".atomist/editors/BananaToCarrot.rug", StartingRug
     )))
 
+
   val InputProject =
     new SimpleFileBasedArtifactSource("my-rug-archive",
       Seq(StringFileArtifact("whatever.txt", "armadillo banana carrots"
       )))
+
 
   it should "convert a rug to TS" in {
     val resultOfRugEditor = executeRug(StartingRug, InputProject)
@@ -49,7 +51,7 @@ class RugArchiveTypeTest extends FlatSpec
       StartingProject, Map("rug_name" -> "BananaToCarrot"))
 
     val tsEditorFile = result.findFile(".atomist/editors/BananaToCarrot.ts")
-    tsEditorFile.isDefined should be(true)
+    assert(tsEditorFile.isDefined === true)
     val tsEditor = tsEditorFile.get.content
     //println("it turned into: " + tsEditor)
 
@@ -60,8 +62,8 @@ class RugArchiveTypeTest extends FlatSpec
   }
 
   def singleFileArtifactSourcesAreEquivalent(as1: ArtifactSource, as2: ArtifactSource): Boolean = {
-    as1.allFiles.size should be(1)
-    as2.allFiles.size should be(1)
+    assert(as1.allFiles.size === 1)
+    assert(as2.allFiles.size === 1)
 
     val as1Name = as1.allFiles.head.path
     val as2Name = as2.allFiles.head.path

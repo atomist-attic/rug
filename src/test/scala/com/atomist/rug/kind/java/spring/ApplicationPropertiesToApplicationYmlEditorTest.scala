@@ -14,6 +14,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
 
   val eap = new ExtractApplicationProperties(JavaAssertions.ApplicationPropertiesFilePath)
 
+
   val SpringDocsSampleFile = StringFileArtifact(JavaAssertions.ApplicationPropertiesFilePath,
     """
       |spring.application.name=cruncher
@@ -38,7 +39,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
   val SpringDocsSampleArtifactSource = EmptyArtifactSource("") + SpringDocsSampleFile
 
   "ApplicationPropertiesToApplicationYmlEditor" should "not be applicable to empty ArtifactSource" in {
-    ApplicationPropertiesToApplicationYmlEditor.applicability(new EmptyArtifactSource("")).canApply should equal(false)
+    assert(ApplicationPropertiesToApplicationYmlEditor.applicability(new EmptyArtifactSource("")).canApply === false)
   }
 
   it should "transform Spring docs sample" in testAgainst(SpringDocsSampleArtifactSource)
@@ -59,7 +60,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
     ayml.get.content shouldBe SpringDocsOutputYmlFile.content
   }
 
-  private def testAgainst(as: ArtifactSource): ArtifactSource = {
+  private  def testAgainst(as: ArtifactSource): ArtifactSource = {
     // Read config first for comparison
     // Wouldn't normally call get without checking, but if it fails the test that's fine
     val config = eap(as.findFile(JavaAssertions.ApplicationPropertiesFilePath).get)
@@ -79,7 +80,7 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
     }
   }
 
-  private def validateYmlRepresentationOfConfiguration(ymlString: String, config: Configuration): Unit = {
+  private  def validateYmlRepresentationOfConfiguration(ymlString: String, config: Configuration): Unit = {
     logger.debug(s"Config length = ${config.configurationValues.size}, yml=[$ymlString]")
     // ymlString should not equal ""
     // compare to expected yaml

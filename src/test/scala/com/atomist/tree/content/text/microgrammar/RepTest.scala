@@ -11,7 +11,7 @@ class RepTest extends FlatSpec with Matchers {
     val input = "woieurowieurowieur"
     l.matchPrefix(InputState(input)) match {
       case Right(PatternMatch(tn, "", InputState(input, _, _), _)) =>
-        tn.nodeName should be (".rep")
+        assert(tn.nodeName === ".rep")
       case _ => ???
     }
   }
@@ -21,8 +21,8 @@ class RepTest extends FlatSpec with Matchers {
     val l = Rep(l1)
     l.matchPrefix(InputState("thing2")) match {
       case Right(PatternMatch(tn: ContainerTreeNode, "thing", InputState(thing2, _, _), _)) =>
-        tn.nodeName should be (".rep")
-        tn.childNodes.size should be (1)
+        assert(tn.nodeName === ".rep")
+        assert(tn.childNodes.size === 1)
       case _ => ???
     }
   }
@@ -33,12 +33,12 @@ class RepTest extends FlatSpec with Matchers {
     val input = "thingthing2"
     l.matchPrefix(InputState(input)) match {
       case Right(pe: PatternMatch) =>
-        pe.matched should be ("thingthing")
-        pe.resultingInputState.input should be (input)
-        pe.resultingInputState.offset should be ("thingthing".length)
+        assert(pe.matched === "thingthing")
+        assert(pe.resultingInputState.input === input)
+        assert(pe.resultingInputState.offset === "thingthing".length)
         val tn = pe.node.asInstanceOf[ContainerTreeNode]
-        tn.nodeName should be (".rep")
-        tn.childNodes.size should be (2)
+        assert(tn.nodeName === ".rep")
+        assert(tn.childNodes.size === 2)
       case _ => ???
     }
   }
@@ -49,12 +49,12 @@ class RepTest extends FlatSpec with Matchers {
     val input = "thingthing2"
     namedRep.matchPrefix(InputState(input)) match {
       case Right(pe: PatternMatch) =>
-        pe.matched should be ("thingthing")
-        pe.resultingInputState.input should be (input)
-        pe.resultingInputState.offset should be ("thingthing".length)
+        assert(pe.matched === "thingthing")
+        assert(pe.resultingInputState.input === input)
+        assert(pe.resultingInputState.offset === "thingthing".length)
         val tn = pe.node.asInstanceOf[ContainerTreeNode]
-        tn.nodeName should be (namedRep.name)
-        tn.childNodes.size should be (2)
+        assert(tn.nodeName === namedRep.name)
+        assert(tn.childNodes.size === 2)
       case _ => ???
     }
   }

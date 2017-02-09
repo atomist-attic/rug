@@ -9,10 +9,12 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new CSharpFileType
 
+
   it should "enumerate usings in simple project" in {
     val r = modify("ListImports.ts", HelloWorldSources)
     r match {
       case _: NoModificationNeeded =>
+      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
@@ -20,6 +22,7 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "enumerate usings in simple project with ill-formed C#" in {
     modify("ListImports.ts", projectWithBogusCSharp.currentBackingObject) match {
       case _: NoModificationNeeded =>
+      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
@@ -41,6 +44,7 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("AddUsingUsingMethod.ts", HelloWorldSources,
       Map("packageName" -> "System")) match {
       case _: NoModificationNeeded =>
+      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
@@ -61,7 +65,7 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
       Map("newException" -> newExceptionType)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("src/exception.cs").get
-        theFile.content should be (Exceptions.replace("IndexOutOfRangeException", newExceptionType))
+        assert(theFile.content === Exceptions.replace("IndexOutOfRangeException", newExceptionType))
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
@@ -69,6 +73,7 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "navigate up and down tree with TypeScript helper" in {
     modify("NavigateTree.ts", exceptionProject) match {
       case _: NoModificationNeeded =>
+      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }

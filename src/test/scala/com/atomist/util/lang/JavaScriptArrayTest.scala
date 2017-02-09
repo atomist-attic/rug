@@ -234,11 +234,11 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       EditorWithFancyListArray))
   }
 
-  private def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
-    jsed.name should be("Constructed")
+    assert(jsed.name === "Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

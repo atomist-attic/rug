@@ -6,7 +6,8 @@ import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 
 class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
-  override protected def typeBeingTested: AntlrRawFileType = new RugFileType
+  override protected  def typeBeingTested: AntlrRawFileType = new RugFileType
+
 
   import RugFileTypeTest._
 
@@ -14,6 +15,7 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
     val r = modify("ListEditors.ts", TwoEditors)
     r match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -22,6 +24,7 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
     val r = modify("ListParams.ts", ManyParamsEditor)
     r match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -30,6 +33,7 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
     val r = modify("ListUses.ts", UsesVariousEditor)
     r match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -38,6 +42,7 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
     val r = modify("ListEditorsUsingSemanticVersion.ts", SomeUsingSemverEditor)
     r match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -46,9 +51,10 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
     val r = modify("ReplaceEditorWithGenerator.ts", UsingOldGeneratorAnnotationEditor)
     r match {
       case nmn: NoModificationNeeded =>
+      
       case sma: SuccessfulModification =>
         val rugs = sma.result.files.filter(_.name.endsWith(".rug"))
-        rugs.size should equal(1)
+        assert(rugs.size === 1)
         rugs.foreach(f => {
           f.content contains "@generator \"UberGenerator\"" should be(false)
           f.content contains "editor UberGenerator" should be(false)

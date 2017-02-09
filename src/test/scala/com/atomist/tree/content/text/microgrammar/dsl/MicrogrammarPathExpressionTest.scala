@@ -23,7 +23,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     val result = exercisePathExpression(microgrammar, pathExpression, input)
 
-    result.size should be(0)
+    assert(result.size === 0)
   }
 
   it should "Let give 0 matches when I access something deep that might exist but does not" in {
@@ -36,7 +36,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     val result = exercisePathExpression(microgrammar, pathExpression, input)
 
-    result.size should be(0)
+    assert(result.size === 0)
   }
 
   it should "Fail when I name a node that can't possibly exist" in pendingUntilFixed {
@@ -62,11 +62,13 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
     }
   }
 
-  private def exercisePathExpressionInternal(microgrammar: Microgrammar, pathExpressionString: String, input: String) = {
+  private  def exercisePathExpressionInternal(microgrammar: Microgrammar, pathExpressionString: String, input: String) = {
 
     /* Construct a root node */
     val as = SimpleFileBasedArtifactSource(StringFileArtifact("banana.txt", input))
     val pmv = new ProjectMutableView(as /* cheating */ , as, DefaultAtomistConfig)
+
+    /* Parse the path expression */
 
     /* Parse the path expression */
     val pathExpression = PathExpressionParser.parseString(pathExpressionString)
@@ -75,6 +77,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
     val typeRegistryWithMicrogrammar =
       new UsageSpecificTypeRegistry(DefaultTypeRegistry,
         Seq(new MicrogrammarTypeProvider(microgrammar)))
+
 
     new PathExpressionEngine().evaluate(pmv, pathExpression, typeRegistryWithMicrogrammar)
   }
@@ -101,7 +104,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     val result = exercisePathExpression(microgrammar, pathExpression, input)
 
-    result.size should be(2)
+    assert(result.size === 2)
   }
 
   it should "match a named node" in {
@@ -114,6 +117,6 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
     val result = exercisePathExpression(microgrammar, pathExpression, input)
 
-    result.size should be(1)
+    assert(result.size === 1)
   }
 }

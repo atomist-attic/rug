@@ -8,10 +8,12 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
+
   it should "match literal" in {
     val matcher = mgp.parseMatcher("foo", "def foo")
     matcher.matchPrefix(InputState("def foo thing")) match {
       case Right(pm) =>
+      
       case _ => ???
     }
   }
@@ -19,7 +21,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
   it should "match literal using microgrammar" in {
     val matcher = mgp.parseMatcher("lit", "def foo")
     val mg = new MatcherMicrogrammar(matcher)
-    mg.findMatches("def foo bar").size should be(1)
+    assert(mg.findMatches("def foo bar").size === 1)
   }
 
   it should "match regex using microgrammar" in {
@@ -28,9 +30,10 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val input = "def foo bar"
     matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
+      
       case _ => ???
     }
-    mg.findMatches(input).size should be(1)
+    assert(mg.findMatches(input).size === 1)
   }
 
   it should "match regex in Maven POM" in {
@@ -39,7 +42,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
       mgp.parseMatcher("m", "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
     val pom = proj.findFile("pom.xml").get.content
     val matches = mg.findMatches(pom)
-    matches.size should be(1)
+    assert(matches.size === 1)
   }
 
   it should "parse Slack emoji html" in {
@@ -65,12 +68,13 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
         """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[^\"]+§" class="$name:§[\sa-zA-Z0-9_\-]*§"""
       ))
 
+
     val matches = mg.findMatches(html)
-    matches.size should be(1)
+    assert(matches.size === 1)
 
     withClue(matches) {
-      matches.head.childNodes.head.value should be("https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
-      matches.head.childNodes(1).value should be("lazy emoji-wrapper")
+      assert(matches.head.childNodes.head.value === "https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+      assert(matches.head.childNodes(1).value === "lazy emoji-wrapper")
     }
   }
 

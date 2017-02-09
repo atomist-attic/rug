@@ -20,7 +20,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", program))
     val eds = runtime.create(as,None)
-    eds.size should be(1)
+    assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleProjectOperationArguments("", params))
   }
@@ -93,6 +93,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
     val r = exec(prog, bad)
     r match {
       case nm: NoModificationNeeded =>
+      
       case _ => ???
     }
   }

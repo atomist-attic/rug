@@ -12,13 +12,14 @@ class RugPackagingTest extends FlatSpec with Matchers {
 
   val rp = new DefaultRugPipeline()
 
+
   it should "compile validly packaged programs" in {
     val as = new SimpleFileBasedArtifactSource("", Seq(
       StringFileArtifact(fileBase + "First.rug", "editor First  Second"),
       StringFileArtifact(fileBase + "Second.rug", "editor Second with File f do setName 'foo'")
     ))
     val ops = rp.create(as, None, Nil)
-    ops.size should be(2)
+    assert(ops.size === 2)
   }
 
   it should "reject invalidly packaged programs" in {
@@ -33,7 +34,7 @@ class RugPackagingTest extends FlatSpec with Matchers {
     val as = new SimpleFileBasedArtifactSource("", Seq(
       StringFileArtifact(fileBase + "First.rug", "editor First Second\neditor Second with File f do setName 'foo'")
     ))
-    rp.create(as, None).size should be (2)
+    assert(rp.create(as, None).size === 2)
   }
 
   it should "reject multiple programs in single source file with non-matching name" in {

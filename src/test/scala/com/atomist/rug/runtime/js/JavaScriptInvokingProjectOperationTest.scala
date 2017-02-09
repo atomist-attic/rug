@@ -195,7 +195,7 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithDefaultParameterValue)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
-    jsed.name should be("Simple")
+    assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleProjectOperationArguments.Empty)
   }
@@ -245,35 +245,38 @@ class JavaScriptInvokingProjectOperationTest extends FlatSpec with Matchers {
     jsed.jsVar.get("name") should be ("Simple")
   }
 
-  private def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifySimpleEditor(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
-    jsed.name should be("Simple")
+    assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "http://blah.com"))) match {
       case _ =>
+    
     }
     jsed
   }
 
-  private def invokeAndVerifySimpleReviewer(tsf: FileArtifact): JavaScriptInvokingProjectReviewer = {
+  private  def invokeAndVerifySimpleReviewer(tsf: FileArtifact): JavaScriptInvokingProjectReviewer = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsr = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectReviewer]
-    jsr.name should be("Simple")
+    assert(jsr.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsr.review(target, SimpleProjectOperationArguments("", Map("content" -> "http://blah.com"))) match {
       case _ =>
+    
     }
     jsr
   }
 
-  private def invokeAndVerifyEditorWithDefaults(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifyEditorWithDefaults(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
-    jsed.name should be("Simple")
+    assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleProjectOperationArguments("", Map[String,String]())) match {
       case _ =>
+    
     }
     jsed
   }

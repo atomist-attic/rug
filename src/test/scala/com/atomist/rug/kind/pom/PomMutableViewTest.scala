@@ -21,15 +21,16 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   var validPomWithDependencyManagement: PomMutableView = _
 
-  private def testConditions(uut: PomMutableView, response: String, expectedResponse: String, dirty: Boolean = false) = {
+  private  def testConditions(uut: PomMutableView, response: String, expectedResponse: String, dirty: Boolean = false) = {
     response should be (expectedResponse)
-    uut.dirty should be (dirty)
+    assert(uut.dirty === dirty)
   }
 
   override def beforeEach() {
     validPomUut = new PomMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomNoParent = new PomMutableView(pomNoParent, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+  
   }
 
   it should "get the project group id" in {
@@ -287,7 +288,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   it should "add a new project property" in {
     validPomUut.contains("/project/properties/my.new.property") should be (false)
-    validPomUut.dirty should be (false)
+    assert(validPomUut.dirty === false)
 
     val propertyName = "my.new.property"
     val newValue = "mine-all-mine"
@@ -302,7 +303,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeProperty(propertyName)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.property(propertyName) should be ("")
   }
@@ -325,7 +326,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeProperty(propertyName)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.property(propertyName) should be ("")
 
@@ -340,7 +341,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
   }
@@ -354,7 +355,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId, dependencyScope)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
 
@@ -371,7 +372,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependencyOfVersion(dependencyGroupId, dependencyArtifactId, dependencyVersion, dependencyScope)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
 
@@ -388,7 +389,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (true)
   }
@@ -402,7 +403,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependencyVersion(dependencyGroupId, dependencyArtifactId, newVersion)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.dependencyVersion(dependencyGroupId, dependencyArtifactId) should be (newVersion)
   }
@@ -442,7 +443,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependencyScope(dependencyGroupId, dependencyArtifactId , newScope)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (newScope)
   }
@@ -457,7 +458,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceDependencyScope(dependencyGroupId, dependencyArtifactId, newScope)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (newScope)
   }
@@ -472,7 +473,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeDependencyScope(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (expectedOutcomeScope)
   }
@@ -487,7 +488,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeDependencyScope(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (false)
+    assert(validPomUut.dirty === false)
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (expectedOutcomeScope)
   }
@@ -500,7 +501,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeDependency(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be (false)
   }
@@ -513,7 +514,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.removeDependency(dependencyGroupId, dependencyArtifactId)
 
-    validPomUut.dirty should be (false)
+    assert(validPomUut.dirty === false)
 
     validPomUut.isDependencyPresent(dependencyArtifactId, dependencyArtifactId) should be (false)
   }
@@ -527,7 +528,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceBuildPlugin(groupId, artifactId, plugin)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isBuildPluginPresent(groupId, artifactId) should be (true)
   }
@@ -544,7 +545,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.addOrReplaceBuildPlugin(groupId, artifactId, plugin)
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isBuildPluginPresent(newGroupId, newArtifactId) should be (true)
     validPomUut.isBuildPluginPresent(groupId, artifactId) should be (false)
@@ -556,7 +557,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) should be (false)
 
-    validPomUut.dirty should be (false)
+    assert(validPomUut.dirty === false)
   }
 
   it should "be able to test that a dependency management dependency is present when it is" in {
@@ -565,7 +566,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be (true)
 
-    validPomWithDependencyManagement.dirty should be (false)
+    assert(validPomWithDependencyManagement.dirty === false)
   }
 
   it should "add a dependency management dependency when no dependency management section is present" in {
@@ -577,7 +578,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.contains("/project/dependencyManagement")
 
-    validPomUut.dirty should be (true)
+    assert(validPomUut.dirty === true)
 
     validPomUut.isDependencyManagementDependencyPresent(groupId, artifactId) should be (true)
   }
@@ -592,7 +593,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomWithDependencyManagement.addOrReplaceDependencyManagementDependency(groupId, artifactId, dependencyContent)
 
-    validPomWithDependencyManagement.dirty should be (true)
+    assert(validPomWithDependencyManagement.dirty === true)
 
     validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be (true)
   }

@@ -15,6 +15,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     )
   )
 
+
   it should "use valid precondition in same file using reviewer" in
     validPreconditionInSameFile(
       """
@@ -32,7 +33,7 @@ class ConditionsTest extends FlatSpec with Matchers {
         |with Project when false
       """.stripMargin)
 
-  private def validPreconditionInSameFile(alwaysGripePrecondition: String) {
+  private  def validPreconditionInSameFile(alwaysGripePrecondition: String) {
     def prog(guard: Boolean) =
       s"""
          |editor Redeploy
@@ -52,17 +53,19 @@ class ConditionsTest extends FlatSpec with Matchers {
          |$alwaysGripePrecondition
       """.stripMargin
     val unguarded = create(prog(false))
-    unguarded.applicability(simpleAs).canApply should be(true)
+    assert(unguarded.applicability(simpleAs).canApply === true)
     unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case sm: SuccessfulModification =>
+      
       case _ => ???
     }
     val guarded = create(prog(true))
-    guarded.applicability(simpleAs).canApply should be(false)
+    assert(guarded.applicability(simpleAs).canApply === false)
     guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -121,20 +124,22 @@ class ConditionsTest extends FlatSpec with Matchers {
 
     for (doit <- shouldDoIts) {
       val ja = create(doit)
-      ja.applicability(simpleAs).canApply should be(true)
+      assert(ja.applicability(simpleAs).canApply === true)
       ja.modify(simpleAs, SimpleProjectOperationArguments.Empty)
       match {
         case sm: SuccessfulModification =>
+        
         case _ => ???
       }
     }
 
     for (dont <- shouldNotDoIts) {
       val nein = create(dont)
-      nein.applicability(simpleAs).canApply should be(false)
+      assert(nein.applicability(simpleAs).canApply === false)
       nein.modify(simpleAs, SimpleProjectOperationArguments.Empty)
       match {
         case nmn: NoModificationNeeded =>
+        
         case _ => ???
       }
     }
@@ -166,7 +171,7 @@ class ConditionsTest extends FlatSpec with Matchers {
         |minorProblem "I'm a PITA"
       """.stripMargin
     val harmlessGuard = create(prog)
-    harmlessGuard.applicability(simpleAs).canApply should be(true)
+    assert(harmlessGuard.applicability(simpleAs).canApply === true)
     harmlessGuard.modify(simpleAs, SimpleProjectOperationArguments.Empty)
   }
 
@@ -221,7 +226,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     an[InvalidRugUsesException] should be thrownBy create(prog)
   }
 
-  private def postconditionProg(postcondition: String) =
+  private  def postconditionProg(postcondition: String) =
     s"""
        |editor Redeploy
        |
@@ -257,27 +262,29 @@ class ConditionsTest extends FlatSpec with Matchers {
 
   it should "use no postcondition" in {
     val unguarded = create(postconditionProg(""))
-    unguarded.applicability(simpleAs).canApply should be(true)
+    assert(unguarded.applicability(simpleAs).canApply === true)
     unguarded.meetsPostcondition(simpleAs) should be(false)
     unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
+      
       case _ => ???
     }
   }
 
   it should "use always fails postcondition in same file" in {
     val guarded = create(postconditionProg("postcondition AlwaysGripe"))
-    guarded.applicability(simpleAs).canApply should be(true)
+    assert(guarded.applicability(simpleAs).canApply === true)
     guarded.meetsPostcondition(simpleAs) should be(false)
     guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case fm: FailedModificationAttempt =>
+      
       case _ => ???
     }
   }
 
   it should "use verifying postcondition in same file" in {
     val guarded2 = create(postconditionProg("postcondition DidIt"))
-    guarded2.applicability(simpleAs).canApply should be(true)
+    assert(guarded2.applicability(simpleAs).canApply === true)
     guarded2.meetsPostcondition(simpleAs) should be(false)
     guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
@@ -292,11 +299,12 @@ class ConditionsTest extends FlatSpec with Matchers {
     guarded2.meetsPostcondition(simpleAs) should be(true)
     guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
 
-  private def create(prog: String): ProjectEditor = {
+  private  def create(prog: String): ProjectEditor = {
     val filename = "whatever.txt"
 
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)

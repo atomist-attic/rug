@@ -72,7 +72,7 @@ class ElmTextInputTest extends FlatSpec with Matchers {
 
     // TODO should really bring this back, but there appears to be an ordering thing and
     // I'm not sure you've implemented all necessary edits
-    content.trim should equal(ElmParserTest.AdvancedProgram)
+    assert(content.trim === ElmParserTest.AdvancedProgram)
   }
 
   it should "add to model" in {

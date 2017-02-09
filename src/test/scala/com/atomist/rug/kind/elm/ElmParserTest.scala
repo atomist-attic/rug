@@ -14,7 +14,7 @@ class ElmParserTest extends FlatSpec with Matchers {
   it should "not lose trailing empty newline when marking up source" in checkMarkingUp(
     "module Todo exposing (..)\n")
 
-  private def checkMarkingUp(starterSource: String) {
+  private  def checkMarkingUp(starterSource: String) {
     val markedUp = ElmParser.markLinesThatAreLessIndented(starterSource)
     val unmarkedUp = ElmParser.unmark(markedUp)
     withClue(s"starter=\n[$starterSource], markedUp=\n[$unmarkedUp]") {
@@ -38,14 +38,14 @@ class ElmParserTest extends FlatSpec with Matchers {
   it should "parse module with .." in {
     val input: String = "module Todo exposing (..)" + restOfModule
     val em = parseAndVerifyCanWriteOutFromParsedStructureUnchanged(input)
-    em.nodeName should equal("Todo")
+    assert(em.nodeName === "Todo")
     em.exposing.isInstanceOf[AllExposing]
   }
 
   it should "parse module with function names and type names" in {
     val input: String = "module Todo exposing (Banana, carrot)" + restOfModule
     val em = parseAndVerifyCanWriteOutFromParsedStructureUnchanged(input)
-    em.nodeName should equal("Todo")
+    assert(em.nodeName === "Todo")
     val exposedNamesAsStrings = em.exposing match {
       case mttns : FunctionNamesExposing => mttns.names.map(_.value)
       case _ => ???
@@ -95,7 +95,7 @@ class ElmParserTest extends FlatSpec with Matchers {
         |import Todo as T
       """.stripMargin
     val em = parseAndVerifyCanWriteOutFromParsedStructureUnchanged(input)
-    em.nodeName should equal("UsesTodo")
+    assert(em.nodeName === "UsesTodo")
     //???
     //em.imports should equal(Seq(Import(moduleName = "Todo", alias = Some("T"))))
   }
@@ -108,7 +108,7 @@ class ElmParserTest extends FlatSpec with Matchers {
         |deet = (1, 2)
       """.stripMargin
     val em = parseAndVerifyCanWriteOutFromParsedStructureUnchanged(input)
-    em.nodeName should equal("Deeter")
+    assert(em.nodeName === "Deeter")
     em.functions.head.body match {
       case ElmTuple(innards) => "yay"
       case _ => ???

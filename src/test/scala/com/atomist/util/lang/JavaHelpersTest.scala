@@ -57,7 +57,7 @@ class JavaHelpersTest extends FlatSpec with Matchers {
     val tests = Seq("a", "aa", "dude", "duder", "el duderino", "his dudeness")
     for (t <- tests) {
       val r = upperize(t)
-      r.charAt(0).isUpper should be (true)
+      assert(r.charAt(0).isUpper === true)
       r.substring(1) should equal (t.substring(1))
     }
 

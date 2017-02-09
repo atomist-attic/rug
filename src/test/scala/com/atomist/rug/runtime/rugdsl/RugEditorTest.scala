@@ -43,7 +43,7 @@ class RugEditorTest extends FlatSpec with Matchers {
   }
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
-    override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    override protected  def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
       SuccessfulModification(as + StringFileArtifact("src/from/typescript",
         pmi.stringParamValue("otherParam")))
     }
@@ -55,11 +55,11 @@ class RugEditorTest extends FlatSpec with Matchers {
     override def description: String = name
   }
 
-  private def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
+  private  def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
     val red = ops.head.asInstanceOf[RugDrivenProjectEditor]
-    red.name should be("SimpleEditor")
+    assert(red.name === "SimpleEditor")
     red.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -67,11 +67,12 @@ class RugEditorTest extends FlatSpec with Matchers {
     val p = SimpleProjectOperationArguments("", Map[String, Object]())
     red.modify(target, p) match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(2)
+        assert(sm.result.totalFileCount === 2)
         sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
 
         red.modify(sm.result, p) match {
           case _: NoModificationNeeded => //yay
+           //yay
           case sm: SuccessfulModification =>
             fail("That should not have reported modification")
           case _ => ???
@@ -85,11 +86,11 @@ class RugEditorTest extends FlatSpec with Matchers {
     invokeAndVerifySomethingChanged(StringFileArtifact(".atomist/editors/TwoStepEditor.rug", TwoStepEditor))
   }
 
-  private def invokeAndVerifySomethingChanged(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
+  private  def invokeAndVerifySomethingChanged(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
     val red = ops.head.asInstanceOf[RugDrivenProjectEditor]
-    red.name should be("TwoStepEditor")
+    assert(red.name === "TwoStepEditor")
     red.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("README", "I dub thee... Flounder"))
@@ -97,7 +98,7 @@ class RugEditorTest extends FlatSpec with Matchers {
     val p = SimpleProjectOperationArguments("", Map[String, Object]())
     red.modify(target, p) match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(2)
+        assert(sm.result.totalFileCount === 2)
         sm.result.findFile("DoubleSecretFile").get.content.contains("Probation") should be(true)
         sm.result.findFile("README").get.content.contains("Flounder") should be(true)
         sm.result.findFile("README").get.content.contains("Pledge") should be(false)
@@ -120,7 +121,7 @@ class RugExecutorIsNoLongerSupportedTest extends FlatSpec with Matchers {
       new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
       fail("that should fail")
     } catch {
-      case bre: BadRugException => bre.getMessage should be("The Rug DSL no longer supports executors. Try writing it in TypeScript!")
+      case bre: BadRugException => assert(bre.getMessage === "The Rug DSL no longer supports executors. Try writing it in TypeScript!")
     }
   }
 

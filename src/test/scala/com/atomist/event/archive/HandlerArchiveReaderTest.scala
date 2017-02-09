@@ -59,15 +59,15 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", FirstHandler)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
-    handlers.size should be(1)
-    handlers.head.rootNodeName should be("issue")
+    assert(handlers.size === 1)
+    assert(handlers.head.rootNodeName === "issue")
   }
 
   it should "parse two handlers" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
       new ConsoleMessageBuilder("XX", null))
-    handlers.size should be(2)
+    assert(handlers.size === 2)
     handlers.exists(h => h.rootNodeName == "issue") should be(true)
     handlers.exists(h => h.rootNodeName == "commit") should be(true)
   }
@@ -76,16 +76,16 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram,NamedJavaScriptEventHandlerTest.issuesStuff)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
-    handlers.size should be(1)
-    handlers.head.rootNodeName should be("issue")
+    assert(handlers.size === 1)
+    assert(handlers.head.rootNodeName === "issue")
   }
 
   it should "allow a correlationId to be set" in {
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val messageBuilder = new ConsoleMessageBuilder("XX", null)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", ThirdHandler)), None, Nil, messageBuilder)
-    handlers.size should be(1)
-    handlers.head.rootNodeName should be("commit")
+    assert(handlers.size === 1)
+    assert(handlers.head.rootNodeName === "commit")
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

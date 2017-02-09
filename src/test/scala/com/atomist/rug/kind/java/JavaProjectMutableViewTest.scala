@@ -30,13 +30,14 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
 
+
     val oldPackage = "com.atomist.test1"
     jpv.packages.asScala.map(_.name).contains(oldPackage) should be(true)
     jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -49,12 +50,13 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
 
+
     val oldPackage = "com.atomist"
     jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
 
@@ -85,6 +87,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(editorBackingAs, NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
 
+
     val copiedInDir = "src/main/java/com/foo"
 
     jpv.copyEditorBackingFilesPreservingPath(copiedInDir)
@@ -94,11 +97,11 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
     jpv.directoryExists(copiedInDir) should be(false)
-    jpv.currentBackingObject.findDirectory(copiedInDir).isDefined should be(false)
+    assert(jpv.currentBackingObject.findDirectory(copiedInDir).isDefined === false)
 
     val unchanged = jpv.currentBackingObject.allFiles.filter(f => f.name.endsWith(".java")).find(_.content.contains(oldPackage))
     if (unchanged.nonEmpty) {
@@ -126,6 +129,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(editorBackingAs, NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
 
+
     val copiedInDir = "src/main/java/com/foo"
 
     jpv.copyEditorBackingFileOrFail("src/main/java/com/foo/Bar.java")
@@ -140,7 +144,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     jpv.renamePackage(oldPackage + ".baz", newPackage + ".newbaz")
 
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains(newPackage)) should be(true)
     jpv.directoryExists(copiedInDir) should be(false)
@@ -165,12 +169,13 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), projectToUse, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
 
+
     val oldPackage = "com.atomist"
     jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
 
@@ -205,17 +210,18 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     updateOtherFileRefOnPackageMove(newFile)
   }
 
-  private def updateOtherFileRefOnPackageMove(newFile: FileArtifact): Unit = {
+  private  def updateOtherFileRefOnPackageMove(newFile: FileArtifact): Unit = {
     val projectToUse = NewSpringBootProject + newFile
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), projectToUse, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
+
 
     val oldPackage = "com.atomist"
     jpv.currentBackingObject.allFiles.exists(_.content.contains(oldPackage)) should be(true)
 
     val newPackage = "com.whatever"
     jpv.renamePackage(oldPackage, newPackage)
-    jpv.dirty should be(true)
+    assert(jpv.dirty === true)
 
     jpv.currentBackingObject.allFiles.exists(_.content.contains("com.whatever.test1")) should be(true)
 

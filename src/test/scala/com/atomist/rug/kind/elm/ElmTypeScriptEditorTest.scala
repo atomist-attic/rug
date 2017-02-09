@@ -12,6 +12,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler(), TypeScriptBuilder.compiler))
 
+
   it should "produce a README with a link" in {
     val projectName = "Elminess"
     val after = ElmTypeUsageTest.elmExecute(
@@ -20,7 +21,7 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
       runtime = typeScriptPipeline)
 
     val maybeReadme = after.findFile("README.md")
-    maybeReadme.isDefined should be(true)
+    assert(maybeReadme.isDefined === true)
     val readme : String = maybeReadme.get.content
 
     readme should (
@@ -30,12 +31,13 @@ class ElmTypeScriptEditorTest extends FlatSpec with Matchers {
     )
   }
 
-  private def singleFileArtifactSource(projectName: String): SimpleFileBasedArtifactSource = {
+  private  def singleFileArtifactSource(projectName: String): SimpleFileBasedArtifactSource = {
     new SimpleFileBasedArtifactSource(
       projectName,
       StringFileArtifact(
         "elm-package.json",
         elmPackageDotJson))
+  
   }
 }
 

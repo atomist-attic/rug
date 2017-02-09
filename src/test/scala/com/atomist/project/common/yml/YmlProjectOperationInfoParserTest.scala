@@ -132,42 +132,42 @@ class YmlProjectOperationInfoParserTest extends FlatSpec with Matchers {
 
   it should "return empty parameters if no parameters specified" in {
     val poi = YmlProjectOperationInfoParser.parse(noParameters)
-    poi.parameters.isEmpty should be(true)
+    assert(poi.parameters.isEmpty === true)
   }
 
   it should "return empty tags if no tags specified" in {
     val poi = YmlProjectOperationInfoParser.parse(noParameters)
-    poi.tags.isEmpty should be(true)
+    assert(poi.tags.isEmpty === true)
   }
 
   it should "return no GAV if version and group not specified" in {
     val poi = YmlProjectOperationInfoParser.parse(noParameters)
-    poi.gav.isDefined should be(false)
+    assert(poi.gav.isDefined === false)
   }
 
   it should "return GAV if version and group specified" in {
     val poi = YmlProjectOperationInfoParser.parse(valid1)
-    poi.gav.isDefined should be(true)
-    poi.gav.get should equal(SimpleResourceSpecifier("atomist", "test1", "1.0"))
+    assert(poi.gav.isDefined === true)
+    assert(poi.gav.get === SimpleResourceSpecifier("atomist", "test1", "1.0"))
   }
 
   it should "find name in valid content" in {
     val poi = YmlProjectOperationInfoParser.parse(valid1)
-    poi.name should equal("test1")
-    poi.description should equal("descr1")
-    poi.parameters.size should equal(2)
+    assert(poi.name === "test1")
+    assert(poi.description === "descr1")
+    assert(poi.parameters.size === 2)
   }
 
   it should "find parameters in valid content using default values" in {
     val poi = YmlProjectOperationInfoParser.parse(valid1)
-    poi.name should equal("test1")
-    poi.description should equal("descr1")
-    poi.parameters.size should equal(2)
-    poi.parameters(0).getName should equal("foo")
-    poi.parameters(0).isRequired should equal(true)
-    poi.parameters(1).getName should equal("bar")
-    poi.parameters(1).isRequired should equal(false)
-    poi.parameters(1).getPattern should equal(ParameterValidationPatterns.MatchAny)
+    assert(poi.name === "test1")
+    assert(poi.description === "descr1")
+    assert(poi.parameters.size === 2)
+    assert(poi.parameters(0).getName === "foo")
+    assert(poi.parameters(0).isRequired === true)
+    assert(poi.parameters(1).getName === "bar")
+    assert(poi.parameters(1).isRequired === false)
+    assert(poi.parameters(1).getPattern === ParameterValidationPatterns.MatchAny)
   }
 
   it should "honor parameter overrides without strange characters" in {
@@ -180,25 +180,25 @@ class YmlProjectOperationInfoParserTest extends FlatSpec with Matchers {
 
   it should "respect tags" in {
     val poi = checkWithOverrides("name1", "description is good", required = true, ".+", "default_val", "You should've input something")
-    poi.tags.size should equal(2)
-    poi.tags(0).name should equal("spring")
-    poi.tags(0).description should equal("Spring Framework")
-    poi.tags(1).name should equal("spring-boot")
-    poi.tags(1).description should equal("Spring Boot")
+    assert(poi.tags.size === 2)
+    assert(poi.tags(0).name === "spring")
+    assert(poi.tags(0).description === "Spring Framework")
+    assert(poi.tags(1).name === "spring-boot")
+    assert(poi.tags(1).description === "Spring Boot")
   }
 
   it should "accept multiline description" is pending
 
-  private def checkWithOverrides(name: String, description: String, required: Boolean, pattern: String, default: String, validInputDescription: String) = {
+  private  def checkWithOverrides(name: String, description: String, required: Boolean, pattern: String, default: String, validInputDescription: String) = {
     val yml = withOverrides(name, description, required, pattern, default, validInputDescription)
     val poi = YmlProjectOperationInfoParser.parse(yml)
     val p = poi.parameters.head
-    p.getName should equal(name)
-    p.getDescription should equal(description)
-    p.isRequired should equal(required)
-    p.getPattern should equal(pattern)
-    p.getDefaultValue should equal(default)
-    p.getValidInputDescription should equal(validInputDescription)
+    assert(p.getName === name)
+    assert(p.getDescription === description)
+    assert(p.isRequired === required)
+    assert(p.getPattern === pattern)
+    assert(p.getDefaultValue === default)
+    assert(p.getValidInputDescription === validInputDescription)
     poi
   }
 
@@ -224,6 +224,6 @@ class YmlProjectOperationInfoParserTest extends FlatSpec with Matchers {
          |    valid_input_description: A name for this service
       """.stripMargin
     val parsed = YmlProjectOperationInfoParser.parse(yml)
-    parsed.parameters.head.getPattern should equal("""[a-zA-Z_$][a-zA-Z\d_$]*""")
+    assert(parsed.parameters.head.getPattern === """[a-zA-Z_$][a-zA-Z\d_$]*""")
   }
 }

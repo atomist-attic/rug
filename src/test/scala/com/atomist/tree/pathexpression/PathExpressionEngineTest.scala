@@ -11,6 +11,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+
   it should "return root node with / expression" in {
     val tn = new ParsedMutableContainerTreeNode("name")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")
@@ -18,7 +19,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
     val expr = "/"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(tn))
+    assert(rtn.right.get === Seq(tn))
   }
 
   it should "find property in container tree node" in {
@@ -29,7 +30,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/foo"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode))
+    assert(rtn.right.get === Seq(fooNode))
   }
 
   it should "find property in container tree node 2 levels deep" in {
@@ -41,7 +42,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
     val expr = "/nested/foo"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode))
+    assert(rtn.right.get === Seq(fooNode))
   }
 
   it should "follow //" in {
@@ -60,7 +61,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/nested//*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode1, fooNode2))
+    assert(rtn.right.get === Seq(fooNode1, fooNode2))
   }
 
   it should "match on node name" in {
@@ -76,7 +77,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
     val expr = "/nested/level2/*[@name='foo']"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode1, fooNode2))
+    assert(rtn.right.get === Seq(fooNode1, fooNode2))
   }
 
   it should "match on node name with /@name" in
@@ -94,7 +95,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   it should "match on node name with //foo and or predicate" in
     matchOnNodeName("/nested/level2//*[@value='foo1' or @value='foo2']")
 
-  private def matchOnNodeName(expr: String) {
+  private  def matchOnNodeName(expr: String) {
     val tn = new ParsedMutableContainerTreeNode("name")
     val prop1 = new ParsedMutableContainerTreeNode("nested")
     val prop11 = new ParsedMutableContainerTreeNode("level2")
@@ -106,7 +107,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     tn.appendField(prop1)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode1, fooNode2))
+    assert(rtn.right.get === Seq(fooNode1, fooNode2))
   }
 
   it should "match on node index" in {
@@ -125,11 +126,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/nested/level2/*[1]"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(fooNode1))
+    assert(rtn.right.get === Seq(fooNode1))
 
     val expr2 = "/nested/level2/*[2]"
     val rtn2 = ee.evaluate(tn, expr2, DefaultTypeRegistry)
-    rtn2.right.get should equal (Seq(fooNode2))
+    assert(rtn2.right.get === Seq(fooNode2))
   }
 
   it should "preparing nodes in path" in {
@@ -151,7 +152,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     })
     val s = rtn.right.get
     s should equal (Seq(tn))
-    tn.touched should be (true)
+    assert(tn.touched === true)
   }
 
   it should "compare value to null" in {
@@ -163,11 +164,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/*[.foo()=null]"
     val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(tn))
+    assert(rtn.right.get === Seq(tn))
 
     val expr2 = "/*[not(.foo()=null)]"
     val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
-    rtn2.right.get should equal (Nil)
+    assert(rtn2.right.get === Nil)
   }
 
   it should "compare method value to int with method" in {
@@ -179,11 +180,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/*[.age()=25]"
     val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(tn))
+    assert(rtn.right.get === Seq(tn))
 
     val expr2 = "/*[.age()=26]"
     val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
-    rtn2.right.get should equal (Nil)
+    assert(rtn2.right.get === Nil)
   }
 
   it should "compare method value to int with property" in {
@@ -194,11 +195,11 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/*[@age='25']"
     val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(tn))
+    assert(rtn.right.get === Seq(tn))
 
     val expr2 = "/*[@age='26']"
     val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
-    rtn2.right.get should equal (Nil)
+    assert(rtn2.right.get === Nil)
   }
 
   it should "descend to scalar property" in {
@@ -209,7 +210,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     val expr = "/thing"
     val rtn = ee.evaluate(tn, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(kid))
+    assert(rtn.right.get === Seq(kid))
   }
 
   it should "handle a property name axis specifier and Object type" in {
@@ -223,7 +224,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(tn)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(repo))
+    assert(rtn.right.get === Seq(repo))
   }
 
   it should "handle a property name axis specifier" in {
@@ -236,7 +237,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(tn)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(repo))
+    assert(rtn.right.get === Seq(repo))
   }
 
   it should "handle a property name axis specifier nested predicate with Object type" in {
@@ -249,7 +250,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "not match due to unsatisfied nested predicate" in {
@@ -262,7 +263,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Nil)
+    assert(rtn.right.get === Nil)
   }
 
   it should "match with an optional predicate" in {
@@ -272,7 +273,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "match with a non-matching optional predicate" in {
@@ -282,7 +283,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "match with a required and an optional predicate" in {
@@ -295,7 +296,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "match with a required and a non-matching optional predicate" in {
@@ -308,7 +309,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "match with an optional nested predicate" in {
@@ -321,7 +322,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 
   it should "match with a non-matching optional nested predicate that does not" in {
@@ -334,6 +335,6 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr, DefaultTypeRegistry)
-    rtn.right.get should equal (Seq(issue))
+    assert(rtn.right.get === Seq(issue))
   }
 }

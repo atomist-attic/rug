@@ -38,33 +38,34 @@ class MustacheMergeToolTest extends FlatSpec with Matchers {
   it should "process template files" in {
     val mmt = new MustacheMergeTool(templateAs)
     val files = mmt.processTemplateFiles(FirstContext, templateAs.allFiles)
-    files.size should equal(3)
+    assert(files.size === 3)
     val expectedPath = "location_was_true.txt"
     // First.mustache
-    files.map(f => f.path).toSet should equal(Set(static1.path, expectedPath, "first.mustache"))
-    files.find(_.path.equals(expectedPath)).get.content should equal(FirstExpected)
+    assert(files.map(f => f.path).toSet === Set(static1.path, expectedPath, "first.mustache"))
+    assert(files.find(_.path.equals(expectedPath)).get.content === FirstExpected)
   }
 
   it should "process classpath template files" in {
     val mmt = new MustacheMergeTool(cpTemplateAs)
     val files = mmt.processTemplateFiles(FirstContext, cpTemplateAs.allFiles)
-    files.size should equal(1)
+    assert(files.size === 1)
     val expectedPath = "G'day Chris. You just scored 10000 dollars. But the ATO has hit you with tax so you'll only get 6000.0"
-    files.map(f => f.path).toSet should equal(Set("test.mustache"))
-    files.head.content should equal(expectedPath)
+    assert(files.map(f => f.path).toSet === Set("test.mustache"))
+    assert(files.head.content === expectedPath)
   }
 
   it should "process template ArtifactSource" in {
     val mmt = new MustacheMergeTool(templateAs)
     val files = mmt.processTemplateFiles(FirstContext, templateAs).allFiles
-    files.size should equal(3)
+    assert(files.size === 3)
     val expectedPath = "location_was_true.txt"
     // First.mustache
-    files.map(f => f.path).toSet should equal(Set(static1.path, expectedPath, "first.mustache"))
-    files.find(_.path.equals(expectedPath)).get.content should equal(FirstExpected)
+    assert(files.map(f => f.path).toSet === Set(static1.path, expectedPath, "first.mustache"))
+    assert(files.find(_.path.equals(expectedPath)).get.content === FirstExpected)
   }
 
   val mt = new MustacheMergeTool(new EmptyArtifactSource(""))
+
 
   it should "strip .mustache extension" in {
     val name = "template_.mustache"

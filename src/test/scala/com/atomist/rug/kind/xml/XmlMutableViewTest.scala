@@ -12,13 +12,14 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   "XmlMutableView" should "add a new block as a child of another block" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val newNodeContent = "<plugin><groupId>com.atomist</groupId><artifactId>our-great-plugin</artifactId></plugin>"
 
     val newNodeName = "plugin"
 
     xv.addOrReplaceNode("/project/build/plugins", """/project/build/plugins/plugin/artifactId [text() = "our-great-plugin"]""", newNodeName, newNodeContent)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     checkCommentStillPresent(xv, "Add GIT commit information to the info endpoint")
 
@@ -30,7 +31,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
     xv.addOrReplaceNode("/project/dependencies", """/project/dependencies/dependency/artifactId [text() = "an-atomist-artifact"]""", secondNewNodeName, secondNewNodeContent)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     checkCommentStillPresent(xv, "Add GIT commit information to the info endpoint")
 
@@ -39,6 +40,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "report if an element is present according to xpath" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+
 
     val validXPath = "//project/dependencies"
     val invalidXPath = "//project/stuff"
@@ -51,6 +53,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "get a value from an element with text content" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val xpathToElementWithTextValue = "//project/groupId"
 
     xv.getTextContentFor(xpathToElementWithTextValue) should be ("atomist")
@@ -59,17 +62,19 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "set a value on an element with text content" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val xpathToElementWithTextValue = "/project/groupId"
 
     xv.setTextContentFor(xpathToElementWithTextValue, "donny")
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.getTextContentFor(xpathToElementWithTextValue) should be ("donny")
   }
 
   it should "add or replace an existing node with a new node" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+
 
     val replacementNode = "project.build.sourceEncoding"
     val xPathToParentNode = s"/project/properties"
@@ -79,7 +84,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
     xv.addOrReplaceNode(xPathToParentNode, fullXPathToNode, replacementNode, newContent)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
    xv.getTextContentFor(fullXPathToNode) should be (newValue)
 
@@ -90,7 +95,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
     xv.addOrReplaceNode(xPathToParentNode, fullXPathToAddedNode, newNode, newContent2)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.getTextContentFor(fullXPathToAddedNode) should be (newValue2)
   }
@@ -98,13 +103,14 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "delete the specified node" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val replacementNode = "project.build.sourceEncoding"
     val xPathToParentNode = s"/project/properties"
     val fullXPathToNode = s"$xPathToParentNode/$replacementNode"
 
     xv.deleteNode(fullXPathToNode)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.getTextContentFor(fullXPathToNode) should be ("")
   }
@@ -112,17 +118,19 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "delete the specific node among many peers" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val fullXPathToNode = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-actuator']/.."
 
     xv.deleteNode(fullXPathToNode)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.getTextContentFor(fullXPathToNode) should be ("")
   }
 
   it should "replace an existing node when an XPath condition is met" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+
 
     val nodeToReplaceXpathSelector = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-actuator']/.."
     val xPathToPlaceToInsertContent = "/project/dependencies"
@@ -131,7 +139,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
     xv.addOrReplaceNode(xPathToPlaceToInsertContent, nodeToReplaceXpathSelector, nodeName, newNodeContent)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.content.contains("<artifactId>atomistartifact</artifactId>") should be (true)
     xv.content.contains("<artifactId>spring-boot-starter-actuator</artifactId>") should be (false)
@@ -140,6 +148,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "add a new node when an XPath condition is not met" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
+
     val nodeToReplaceXpathSelector = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-web-DUMMY']/.."
     val xPathToPlaceToInsertContent = "/project/dependencies"
     val nodeName = "dependency"
@@ -147,7 +156,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
     xv.addOrReplaceNode(xPathToPlaceToInsertContent, nodeToReplaceXpathSelector, nodeName, newNodeContent)
 
-    xv.dirty should be (true)
+    assert(xv.dirty === true)
 
     xv.content.contains("<artifactId>atomistartifact</artifactId>") should be (true)
     xv.content.contains("<artifactId>spring-boot-starter-web</artifactId>") should be (true)
@@ -155,6 +164,7 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "replace the right child element when many are available" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+
 
     val artifactId = "git-commit-id-plugin"
     val groupId = "pl.project13.maven"

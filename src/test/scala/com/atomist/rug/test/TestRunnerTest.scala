@@ -13,6 +13,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
   val testRunner = new TestRunner
 
+
   it should "fail when not finding editor" in {
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -33,8 +34,8 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), Nil)
-    executedTests.tests.size should be(1)
-    executedTests.tests.head.passed should be(false)
+    assert(executedTests.tests.size === 1)
+    assert(executedTests.tests.head.passed === false)
   }
 
   it should "test a generator with parameters" in {
@@ -65,9 +66,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val parsedTest = RugTestParser.parse(generatorTest)
     val executedTests = testRunner.run(parsedTest, rugArchive, parsedGenerator)
 
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     val testResult = executedTests.tests.head
-    testResult.passed should be(true)
+    assert(testResult.passed === true)
   }
 
   it should "test a generator" in {
@@ -94,9 +95,9 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val parsedTest = RugTestParser.parse(generatorTest)
     val executedTests = testRunner.run(parsedTest, rugArchive, parsedGenerator)
 
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     val testResult = executedTests.tests.head
-    testResult.passed should be(true)
+    assert(testResult.passed === true)
   }
 
   it should "pass with passing editor and file created inline" in {
@@ -167,6 +168,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  fileCount = 1
          |  and fileContains "src/main/java/Cat.java" "class Cat"
       """.stripMargin, rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/foobar", f.content))
+    
     )
   }
 
@@ -187,6 +189,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
          |  fileCount = 1
          |  and fileContains "src/main/java/Cat.java" "class Cat"
       """.stripMargin, rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("resources/" + f.path, f.content))
+    
     )
   }
 
@@ -251,7 +254,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin, Some("testnamespace"))
   }
 
-  private def shouldPass(prog: String, namespace: Option[String] = None, rugAs: ArtifactSource = EmptyArtifactSource("")) = {
+  private  def shouldPass(prog: String, namespace: Option[String] = None, rugAs: ArtifactSource = EmptyArtifactSource("")) = {
     val edProg =
       """
         |editor Rename
@@ -265,13 +268,15 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
     val rp = new DefaultRugPipeline()
 
+
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
     val eds = rp.create(as, namespace)
     val testProg = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(testProg, rugAs, eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+    
     }
   }
 
@@ -306,9 +311,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if !t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -339,9 +346,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if !t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -374,9 +383,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -409,10 +420,12 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head.eventLog.input.shouldBe(defined)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -445,9 +458,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -480,9 +495,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin
     val test = RugTestParser.parse(StringFileArtifact("x.rt", prog))
     val executedTests = testRunner.run(test, EmptyArtifactSource(""), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -493,7 +510,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
   it should "test edit README omitting default parameter" in
     testEditReadMe(false)
 
-  private def testEditReadMe(includeSecondParameter: Boolean) = {
+  private  def testEditReadMe(includeSecondParameter: Boolean) = {
     val prog =
       """
         |editor UpdateReadme
@@ -535,9 +552,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
       """.stripMargin)
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", readme), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -571,9 +590,11 @@ class TestRunnerTest extends FlatSpec with Matchers {
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -582,6 +603,7 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
 class MoreTestRunnerTest extends FlatSpec with Matchers {
   val testRunner = new TestRunner
+
 
   it should "pass the assertion when a precondition restricts an editor from running" in {
     val prog =
@@ -621,9 +643,11 @@ class MoreTestRunnerTest extends FlatSpec with Matchers {
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }
@@ -631,6 +655,7 @@ class MoreTestRunnerTest extends FlatSpec with Matchers {
 
 class EvenMoreTestRunnerTest extends FlatSpec with Matchers {
   val testRunner = new TestRunner
+
 
   it should "pass the assertion when preconditions restrict an editor from running" in {
     val prog =
@@ -670,9 +695,11 @@ class EvenMoreTestRunnerTest extends FlatSpec with Matchers {
     val eds = new DefaultRugPipeline().create(editorBackingArchive, None, Nil)
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, editorBackingArchive, eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+      // Ok
+    
       // Ok
     }
   }

@@ -13,7 +13,7 @@ class SpringBootProjectMutableViewTest extends FlatSpec {
   it should "confirm is Spring Boot project" in {
     val sbp = new SpringBootProjectMutableView(new SpringProjectMutableView(
       new JavaProjectMutableView(new ProjectMutableView(EmptyArtifactSource(""), NewSpringBootProject))))
-    sbp.isSpringBoot should be(true)
+    assert(sbp.isSpringBoot === true)
   }
 
   it should "annotate Spring Boot class" in {
@@ -29,21 +29,21 @@ class SpringBootProjectMutableViewTest extends FlatSpec {
   it should "find Spring Boot application class simple name" in {
     val sbp = new SpringBootProjectMutableView(new SpringProjectMutableView(
       new JavaProjectMutableView(new ProjectMutableView(EmptyArtifactSource(""), NewSpringBootProject))))
-    sbp.applicationClassSimpleName should be ("Test1Application")
+    assert(sbp.applicationClassSimpleName === "Test1Application")
     verifyJavaIsWellFormed(sbp.currentBackingObject)
   }
 
   it should "find Spring Boot application class FQN" in {
     val sbp = new SpringBootProjectMutableView(new SpringProjectMutableView(
       new JavaProjectMutableView(new ProjectMutableView(EmptyArtifactSource(""), NewSpringBootProject))))
-    sbp.applicationClassFQN should be ("com.atomist.test1.Test1Application")
+    assert(sbp.applicationClassFQN === "com.atomist.test1.Test1Application")
     verifyJavaIsWellFormed(sbp.currentBackingObject)
   }
 
   it should "find Spring Boot application package" in {
     val sbp = new SpringBootProjectMutableView(new SpringProjectMutableView(
       new JavaProjectMutableView(new ProjectMutableView(EmptyArtifactSource(""), NewSpringBootProject))))
-    sbp.applicationClassPackage should be ("com.atomist.test1")
+    assert(sbp.applicationClassPackage === "com.atomist.test1")
     verifyJavaIsWellFormed(sbp.currentBackingObject)
   }
   

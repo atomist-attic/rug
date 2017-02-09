@@ -62,6 +62,7 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     )
   )
 
+
   it should "find key in simple yml" in {
     val simpleYml =
       """
@@ -87,8 +88,8 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleProjectOperationArguments.Empty, Nil)
     yv.updateKey("name", "Theresa")
-    yv.dirty should be(true)
-    "Theresa".r.findAllIn(yv.content).toList.size should be(1)
+    assert(yv.dirty === true)
+    assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
   }
 
   it should "set key in simple yml without affecting other keys" in {
@@ -106,8 +107,8 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleProjectOperationArguments.Empty, Nil)
     yv.updateKey("name", "Theresa")
-    yv.dirty should be(true)
-    "Theresa".r.findAllIn(yv.content).toList.size should be(1)
+    assert(yv.dirty === true)
+    assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
   }
 
   it should "set keys in simple yml maintaining comments" in {
@@ -128,8 +129,8 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleProjectOperationArguments.Empty, Nil)
     yv.updateKey("name", "Theresa")
-    yv.dirty should be(true)
-    "Theresa".r.findAllIn(yv.content).toList.size should be(1)
+    assert(yv.dirty === true)
+    assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
     yv.content.contains(firstComment)
     yv.content.contains(secondComment)
     yv.content.contains(thirdComment)
@@ -156,8 +157,8 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleProjectOperationArguments.Empty, Nil)
     yv.updateKey("name", "Theresa")
-    yv.dirty should be(true)
-    "Theresa".r.findAllIn(yv.content).toList.size should be(1)
+    assert(yv.dirty === true)
+    assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
     yv.content.contains(firstComment)
     yv.content.contains(secondComment)
     yv.content.contains(thirdComment)

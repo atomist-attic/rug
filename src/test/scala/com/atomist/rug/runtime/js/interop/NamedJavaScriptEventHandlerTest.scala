@@ -113,9 +113,9 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
     val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(reOpenCloseIssueProgram,issuesStuff)), None, Nil,
       new ConsoleMessageBuilder("XX", SimpleActionRegistry))
-    handlers.size should be(1)
+    assert(handlers.size === 1)
     val handler = handlers.head
-    handler.rootNodeName should be("issue")
+    assert(handler.rootNodeName === "issue")
     handler.handle(SysEvent,null)
   }
 }
@@ -134,6 +134,7 @@ object SimpleActionRegistry extends ActionRegistry {
 }
 
 object SysEvent extends SystemEvent ("blah", "issue", 0l)
+
 
 class IssueTreeNode extends TerminalTreeNode {
 
@@ -154,6 +155,7 @@ class IssueTreeNode extends TerminalTreeNode {
 object TestTreeMaterializer extends TreeMaterializer {
 
   override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = new IssueTreeNode()
+
 
   override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = rawRootNode
 }

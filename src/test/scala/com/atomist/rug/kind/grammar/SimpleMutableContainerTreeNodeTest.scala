@@ -16,13 +16,14 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
+
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
 
     val newInputA = "barnacles"
-    soo.dirty should be(false)
+    assert(soo.dirty === false)
     f1.update(newInputA)
-    soo.dirty should be(true)
+    assert(soo.dirty === true)
     val updated =
       soo.value
     updated should equal(newInputA + inputB)
@@ -36,12 +37,14 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
+
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
 
+
     val newInputB = "barnacles"
-    soo.dirty should be(false)
+    assert(soo.dirty === false)
     f2.update(newInputB)
-    soo.dirty should be(true)
+    assert(soo.dirty === true)
     soo.pad(line)
     val updated = soo.value
     updated should equal(inputA + newInputB)
@@ -56,12 +59,13 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
+
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
 
     val newInputB = "barnacles"
-    soo.dirty should be(false)
+    assert(soo.dirty === false)
     f2.update(newInputB)
-    soo.dirty should be(true)
+    assert(soo.dirty === true)
     val updated = soo.value
     updated should equal(inputA + unmatchedContent + newInputB)
   }
@@ -75,14 +79,15 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 1))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, 1 + inputA.length + unmatchedContent.length))
 
+
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
     soo.fieldValues.head.nodeName.contains("pad") should be(true)
     soo.childNodes.head.nodeName.contains("pad") should be(false)
 
     val newInputB = "barnacles"
-    soo.dirty should be(false)
+    assert(soo.dirty === false)
     f2.update(newInputB)
-    soo.dirty should be(true)
+    assert(soo.dirty === true)
     val updated = soo.value
     updated should equal(" " + inputA + unmatchedContent + newInputB)
   }
@@ -99,17 +104,20 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
+
     val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
 
+
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
+
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
 
     val newInputC = "tentacles"
-    soo.dirty should be(false)
+    assert(soo.dirty === false)
     ff1.update(newInputC)
-    soo.dirty should be(true)
+    assert(soo.dirty === true)
     val updated = soo.value
     val expected = line.replace(inputC, newInputC)
     updated should equal(expected)
@@ -124,7 +132,7 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
   it should "allow add in nested match with trailing spaces" in
     handleLine("    ")
 
-  private def handleLine(trailingPadding: String) {
+  private  def handleLine(trailingPadding: String) {
     val inputA = "foo"
     val inputB = "bar"
     val inputC = "Lisbon"
@@ -136,26 +144,29 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("f1", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("f2", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
+
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
+
 
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Signal)
 
+
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f1, f2, f3), startOf(line), endOf(line))
     topLevel.pad(line)
 
-    topLevel.value should equal(line)
+    assert(topLevel.value === line)
 
     val newInputD = "tentacles"
-    topLevel.dirty should be(false)
+    assert(topLevel.dirty === false)
     ff2.update(newInputD)
 
-    topLevel.value should equal(line.replace(inputD, newInputD))
+    assert(topLevel.value === line.replace(inputD, newInputD))
 
     f3.appendField(SimpleTerminalTreeNode("what", "dog"))
 
-    topLevel.dirty should be(true)
+    assert(topLevel.dirty === true)
     //println(s"${TreeNodeUtils.toShortString(soo)}")
     val updated = topLevel.value
     val expected = line.replace(inputD, newInputD) + "dog"
@@ -165,7 +176,7 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
   it should "pull up grandchildren of noise container" in
     pullUpGrandKids("woeiruwoeiurowieurowiuer")
 
-  private def pullUpGrandKids(trailingPadding: String) {
+  private  def pullUpGrandKids(trailingPadding: String) {
     val inputA = "foo"
     val inputB = "bar"
     val inputC = "Lisbon"
@@ -177,20 +188,22 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
+
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
+
 
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f3), startOf(line), endOf(line), significance = TreeNode.Signal)
     topLevel.fieldValues.contains(ff2) should be(false)
     topLevel.pad(line)
 
-    topLevel.value should equal(line)
+    assert(topLevel.value === line)
 
     val newInputD = "tentacles"
-    topLevel.dirty should be(false)
+    assert(topLevel.dirty === false)
     ff2.update(newInputD)
 
-    topLevel.value should equal(line.replace(inputD, newInputD))
+    assert(topLevel.value === line.replace(inputD, newInputD))
 
     withClue("child nodes should have been pulled up") {
       topLevel.fieldValues.contains(ff1) should be(true)
@@ -209,7 +222,7 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
   it should "pull up great-grandchildren of noise container" in
     pullUpGreatGrandKids("woeiruwoeiurowieurowiuer")
 
-  private def pullUpGreatGrandKids(trailingPadding: String) {
+  private  def pullUpGreatGrandKids(trailingPadding: String) {
     val inputA = "foo"
     val inputB = "bar"
     val inputC = "Lisbon"
@@ -221,20 +234,23 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
+
     val extraNoiseLayer = new SimpleMutableContainerTreeNode("extraNoiseLayer", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
 
+
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(extraNoiseLayer), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
+
 
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f3), startOf(line), endOf(line), significance = TreeNode.Signal)
     topLevel.fieldValues.contains(ff2) should be(false)
     topLevel.pad(line)
 
-    topLevel.value should equal(line)
+    assert(topLevel.value === line)
 
     val newInputD = "tentacles"
-    topLevel.dirty should be(false)
+    assert(topLevel.dirty === false)
     ff2.update(newInputD)
 
     // topLevel.value should equal(line.replace(inputD, newInputD))

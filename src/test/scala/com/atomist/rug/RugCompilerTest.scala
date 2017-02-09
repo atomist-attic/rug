@@ -23,6 +23,7 @@ object RugCompilerTest extends LazyLogging {
     )
   )
 
+
   def show(as: ArtifactSource): Unit = {
     as.allFiles.foreach(f => {
       logger.debug(f.path + "\n" + f.content + "\n\n")
@@ -37,6 +38,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
   val compiler: RugCompiler = new DefaultRugCompiler(
     new DefaultEvaluator(fr),
     DefaultTypeRegistry)
+
 
   it should "demand referenced kinds exist" in {
     val bogusType = "what_in_gods_holy_name_are_you_blathering_about"
@@ -90,6 +92,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     FixedRugFunctionRegistry(
       Map(
         "absquatulate" -> new LambdaPredicate[FileMutableView]("absquatulate", f => true)
+      
       )
     )
 
@@ -118,7 +121,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
     val program = RugEditor("foobar", None, Nil, "something goes here", Nil, Nil, None, Nil, Nil,
       Seq(With("File", "f", None, fileExpression, Seq(doStep))))
     val pe = compiler.compile(program)
-    pe.name should equal(program.name)
+    assert(pe.name === program.name)
   }
 
   it should "expose correct parameters" in {
@@ -129,23 +132,23 @@ class RugCompilerTest extends FlatSpec with Matchers {
       Seq(With("File", "f", None, fileExpression, Seq(doStep))))
 
     val pe = compiler compile program
-    pe.parameters.size should be(1)
-    pe.parameters.head should equal(p1)
+    assert(pe.parameters.size === 1)
+    assert(pe.parameters.head === p1)
   }
 
   it should "use supplied editor name" in {
     val name = "someName"
     val pe = simpleEditor(name)
-    pe.name should equal(name)
+    assert(pe.name === name)
   }
 
   it should "expose no parameters unless declared" in {
     val name = "someName"
     val pe = simpleEditor(name)
-    pe.parameters.size should be(0)
+    assert(pe.parameters.size === 0)
   }
 
-  private def simpleEditor(name: String): ProjectEditor = {
+  private  def simpleEditor(name: String): ProjectEditor = {
     val fileExpression = ParsedRegisteredFunctionPredicate("isJava")
     val doStep = FunctionDoStep("name")
     val program = RugEditor(name, None, Nil, name, Nil, Nil, None, Nil, Nil,

@@ -24,9 +24,10 @@ class PathExpressionParsingTest extends FlatSpec with Matchers {
       """.stripMargin
     val f = StringFileArtifact(atomistConfig.editorsRoot + "/Redeploy.rug", prog)
     val ed = new ParserCombinatorRugParser().parse(f)
-    ed.head.computations.size should be (1)
+    assert(ed.head.computations.size === 1)
     ed.head.computations.head.te match {
       case pev: PathExpressionValue =>
+    
     }
   }
 
@@ -42,10 +43,10 @@ class PathExpressionParsingTest extends FlatSpec with Matchers {
       """.stripMargin
     val f = StringFileArtifact(atomistConfig.editorsRoot + "/Redeploy.rug", prog)
     val ed = new ParserCombinatorRugParser().parse(f)
-    ed.head.computations.size should be (1)
+    assert(ed.head.computations.size === 1)
     ed.head.computations.head.te match {
       case pev: PathExpressionValue =>
-        pev.scalarProperty should equal (Some("name"))
+        assert(pev.scalarProperty === Some("name"))
     }
   }
 }

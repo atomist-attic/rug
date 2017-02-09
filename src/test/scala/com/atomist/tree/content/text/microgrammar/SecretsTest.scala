@@ -66,6 +66,6 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("application.yml", inYml))
     val rr = ed.review(target, SimpleProjectOperationArguments.Empty)
-    rr.comments.size should be(3)
+    assert(rr.comments.size === 3)
   }
 }

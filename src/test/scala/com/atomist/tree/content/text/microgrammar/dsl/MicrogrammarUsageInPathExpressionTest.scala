@@ -21,7 +21,9 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+
   val mgp = new MatcherDefinitionParser
+
 
   it should "use simple microgrammar to match in single file" in
     useSimpleMicrogrammarAgainstSingleFile
@@ -29,7 +31,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   it should "use simple microgrammar in a single file and modify content" in {
     val (pmv, nodes) = useSimpleMicrogrammarAgainstSingleFile
     val highlyImprobableValue = "woieurowiuroepqirupoqwieur"
-    nodes.size should be(1)
+    assert(nodes.size === 1)
     withClue(s"Type was ${nodes.head.nodeTags}") {
       nodes.head.nodeTags.contains("modelVersion") should be(true)
     }
@@ -45,7 +47,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   }
 
   // Return the project and matched nodes
-  private def useSimpleMicrogrammarAgainstSingleFile: (ProjectMutableView, Seq[TreeNode]) = {
+  private  def useSimpleMicrogrammarAgainstSingleFile: (ProjectMutableView, Seq[TreeNode]) = {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val findFile = "/File()[@name='pom.xml']"
@@ -54,19 +56,20 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
       mgp.parseMatcher("pom",
         "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"), "pom")
 
+
     val matches = mg.findMatches(proj.findFile("pom.xml").get.content)
-    matches.length should be(1)
+    assert(matches.length === 1)
 
     val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
       Seq(new MicrogrammarTypeProvider(mg))
     )
     val rtn = ee.evaluate(pmv, findFile, tr)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
 
     val modelVersion = findFile + "/pom()/modelVersion()"
 
     val grtn = ee.evaluate(pmv, modelVersion, tr)
-    grtn.right.get.size should be(1)
+    assert(grtn.right.get.size === 1)
     (pmv, grtn.right.get)
   }
 

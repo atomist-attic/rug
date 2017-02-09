@@ -15,12 +15,6 @@ class MicrogrammarTypeScriptTest {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
 
         eng.with<any>(project, "//File()/oldObject()/oldObjectName", n => {
-            console.log("hello")
-            if (n === null) {
-                console.log("I think it is null")
-            } else {
-                console.log("I wish I could print this " + n.value());
-            }
             n.update("TheTestHasChangedThis")
         })
 

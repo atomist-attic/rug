@@ -1,5 +1,7 @@
 package com.atomist.rug.spi
 
+import java.lang.reflect.InvocationTargetException
+
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.tree.TreeNode
@@ -86,6 +88,7 @@ case class TypeOperation(
     try {
       methods.head.invoke(target, args: _*)
     } catch {
+      case e: InvocationTargetException if e.getCause.isInstanceOf[InstantEditorFailureException] => throw e.getCause // we meant to do this
       case t: Throwable =>
         val argDiagnostics = args map {
           case null => "null"

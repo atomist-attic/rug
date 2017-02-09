@@ -8,7 +8,7 @@ object MatcherMicrogrammarConstruction {
   private val matcherParser = new MatcherDefinitionParser()
 
   // I feel like this should return an Either. will wait for a use case
-  def matcherMicrogrammar(name: String, grammar: String, submatchers: Map[String, Any] = Map()): MatcherMicrogrammar = {
+  def matcherMicrogrammar(name: String, grammar: String, submatchers: Map[String, Object] = Map()): MatcherMicrogrammar = {
 
     val parsedMatcher = matcherParser.parseMatcher(name, grammar)
 

@@ -64,17 +64,20 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar") =>
+    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar", "submatchers") =>
       // It's a microgrammar
       val name = stringProperty(som, "name")
       val grammar = stringProperty(som, "grammar")
+      val submatchers = toJavaMap(som.getMember("submatchers"))
       //println(s"Parsing $name=$grammar with ${matcherRegistry}")
-      val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar)
+      val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar, submatchers)
       new MicrogrammarTypeProvider(mg)
     case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
       tp
+    case som : ScriptObjectMirror =>
+      throw new RugRuntimeException(null, s"Unrecognized type. It has properties ${som.entrySet().asScala.map(_.getKey).mkString(",")}")
     case x =>
       throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
 

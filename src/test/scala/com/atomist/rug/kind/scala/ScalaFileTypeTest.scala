@@ -235,6 +235,30 @@ object ScalaFileTypeTest {
       |}
     """.stripMargin)
 
+  val Python3Source = StringFileArtifact("src/main/scala/com/atomist/PythonFileType.scala",
+    """
+      |package com.atomist
+      |
+      |class PythonFileType
+      |  extends AntlrRawFileType("file_input",
+      |    FromGrammarAstNodeCreationStrategy,
+      |    grammar = "classpath:grammars/antlr/Python3.g4") {
+      |
+      |  import PythonFileType._
+      |
+      |  override def description = "Python file"
+      |
+      |  override def isOfType(f: FileArtifact): Boolean =
+      |    f.name.endsWith(PythonExtension)
+      |
+      |}
+      |
+    """.stripMargin)
+
+  val PythonTypeSources = SimpleFileBasedArtifactSource(
+    Python3Source
+  )
+
   val ScalaTestSources = SimpleFileBasedArtifactSource(
     OldStyleScalaTest
   )

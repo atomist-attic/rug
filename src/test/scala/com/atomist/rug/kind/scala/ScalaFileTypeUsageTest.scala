@@ -15,6 +15,21 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   it should "change exception catch ???" is pending
 
+  it should "name a parameter" in {
+//    val tn = typeBeingTested.fileToRawNode(Python3Source).get
+//    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    modify("NameParameter.ts", PythonTypeSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(Python3Source.path).get
+        //println(theFile.content)
+        theFile.content.contains("nodeNamingStrategy =") should be (true)
+//        theFile.content.contains("equals") should be (false)
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "change a.equals(b)" in {
 //    val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
 //    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))

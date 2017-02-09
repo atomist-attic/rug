@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Add new minimal TS interfaces for use with class decorators. e.g. EditProject 
+-   Add new minimal TS interfaces for use with class decorators. e.g. EditProject
 
 -   Added support for @Editor, @Generator, @Reviewer and @Tags class decorators in TS.
 
@@ -20,8 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 -   Fix: Elm parser failed on files with two multiline comments
-    https://github.com/atomist/rug/issues/268 
-     
+    https://github.com/atomist/rug/issues/268
+
 -   Raise an `InvalidRugTestScenarioName` when a Rug test scenario is missing a name #71
 
 -   Implicit DLS parameters (from `uses`) are no longer duplicate if multiple
@@ -31,15 +31,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Ensure TS parameters are required by default, and ensure defaults are applied
     before validation: https://github.com/atomist/rug/issues/224
 
+-   Changed how descendants were found and processed in tree
+    expressions which fixed two pendingUntilFixed tests
+
 ### Changed
 
 -   Upgrade TS compiler to 2.1.5
 
--   `TreeNodeUtils.toShorterString` now optionally takes a function 
+-   `TreeNodeUtils.toShorterString` now optionally takes a function
     to customize the display of each node.
 
--   **BREAKING** `value`, `update` and `formatInfo` functions from TypeScript `TreeNode` moved to 
-    new `TextTreeNode` sub-interface.
+-   **BREAKING** `value`, `update` and `formatInfo` functions from
+    TypeScript `TreeNode` moved to new `TextTreeNode` sub-interface.
+
+-   **BREAKING** The interface for Rug extensions, formerly Rug types,
+    was simplified.  resolvesFromNodeTypes was eliminated and the
+    signature for findAllIn was simplified.  They should also directly
+    extend ChildResolver instead of some sort of ViewFinder.
 
 ## [0.11.0]
 

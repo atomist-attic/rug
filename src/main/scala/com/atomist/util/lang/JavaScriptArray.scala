@@ -222,13 +222,10 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
               lyst.sort(new Comparator[T] {
                 override def compare(t: T, t1: T): Int = {
                   val ret = filterfn.call(thiz, t.asInstanceOf[Object], t1.asInstanceOf[Object])
-                  // TODO - why does replacing this with matching fail to compile?
-                  if (ret.isInstanceOf[Double]) {
-                    ret.asInstanceOf[Double].toInt
-                  } else if(ret.isInstanceOf[Integer]){
-                    ret.asInstanceOf[Integer].toInt
-                  } else {
-                    throw new RuntimeException("Unrecognised return type from comparator: " + ret.getClass.getName)
+                  ret match {
+                    case d: java.lang.Double => d.toInt
+                    case i: Integer => i.toInt
+                    case _ => throw new RuntimeException("Unrecognised return type from comparator: " + ret.getClass.getName)
                   }
                 }
               })

@@ -27,7 +27,7 @@ class ElmUpgradeProgramTest extends FlatSpec with Matchers {
       StringFileArtifact("Main.elm", elm)
     val r = elmExecute(new SimpleFileBasedArtifactSource("", source), editor)
 
-    assert(r.findFile("Main.elm").value.content.lines.find(_.contains("import Foo")).headOption.value === "import Foo exposing (fooFunction)")
+    assert(r.findFile("Main.elm").value.content.lines.find(_.contains("import Foo")).value === "import Foo exposing (fooFunction)")
 
   }
 

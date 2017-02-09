@@ -150,7 +150,7 @@ object PositionedTreeNodeGenerators {
         }
       case ctn: ContainerTreeNode =>
         (for {
-          goodbyeChildIndex <- Range(0, ctn.childNodes.length)
+          goodbyeChildIndex <- ctn.childNodes.indices
         } yield {
           val before = ctn.childNodes.slice(0, goodbyeChildIndex)
           val goodbyeChild = ctn.childNodes(goodbyeChildIndex)

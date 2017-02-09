@@ -3,11 +3,11 @@ package com.atomist.event.archive
 import com.atomist.event.SystemEvent
 import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.kind.service.{ConsoleMessageBuilder}
+import com.atomist.rug.kind.service.ConsoleMessageBuilder
 import com.atomist.rug.runtime.js.interop.NamedJavaScriptEventHandlerTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.{TreeNode}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.PathExpression
 import org.scalatest.{FlatSpec, Matchers}
 

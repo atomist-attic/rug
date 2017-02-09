@@ -267,7 +267,8 @@ class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource
     new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
 
 
-  var issues = ListBuffer.empty[Issue]
+  val issues = ListBuffer.empty[Issue]
+
 
   override def services: Seq[Service] =
     projects.map(proj => Service(proj, updatePersister, issueRouter = this, messageBuilder = messageBuilder))

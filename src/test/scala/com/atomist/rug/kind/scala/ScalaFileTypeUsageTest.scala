@@ -2,6 +2,7 @@ package com.atomist.rug.kind.scala
 
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
+import com.atomist.tree.utils.TreeNodeUtils
 
 /**
   * Tests for realistic Scala scenarios
@@ -15,16 +16,15 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "change exception catch ???" is pending
 
   it should "change a.equals(b)" in {
-//    val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
-//    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+    val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
+    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
     modify("EqualsToSymbol.ts", UsesDotEqualsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesDotEquals.path).get
-        //println(theFile.content)
+        println(theFile.content)
         theFile.content.contains("==") should be (true)
         theFile.content.contains("equals") should be (false)
-        println(theFile.content)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }

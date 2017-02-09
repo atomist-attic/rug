@@ -18,25 +18,41 @@ class EqualsToSymbol implements ProjectEditor {
       /*
       We're matching a structure like this:
 
-      termApply:[ScalaMetaTreeBacked, -dynamic]
-              termSelect:[ScalaMetaTreeBacked, -dynamic]
+      a.equals(b)
+      termApply:
+              termSelect:
                 termName:[a]
                 termName:[equals]
               termName:[b]
+
+              - or -
+
+      ("dog" + "gie").equals("cat")
+      termApply:
+            termSelect:
+              termApplyInfix:
+                lit:["dog"]
+                termName:[+]
+                lit:["gie"]
+              termName:[equals]
+            lit:["cat"]
       */
-      let oldAssertion = `/src/test/scala//ScalaFile()//termApply[/termSelect/termName[2][@value='equals']][/termName]`
+      let oldAssertion = `/src/Directory()/scala//ScalaFile()//termApply[/termSelect/*[2][@value='equals']]`
 
       eng.with<any>(project, oldAssertion, termApply => {
+        if (termApply.children().length == 2) { // Should go in path expression when we have "count"
+          let leftTerm = termApply.termSelect().children()[0]
+          let rightTerm = termApply.children()[1]
 
-        let leftTerm = termApply.termSelect().children()[0]
-        let rightTerm = termApply.termName()
+          console.log(`left=${leftTerm}, right=${rightTerm}`)
 
-        if (leftTerm && rightTerm) {
-          //console.log(termApply)
-          termApply.update(`${leftTerm.value()} == ${rightTerm.value()}`)
+          if (leftTerm && rightTerm) {
+            let rightValue = rightTerm.children().length > 1 ? `(${rightTerm.value()})` : rightTerm.value() 
+            termApply.update(`${leftTerm.value()} == ${rightValue}`)
+          }
         }
       })
-}
+  }
 
 }
 

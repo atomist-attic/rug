@@ -214,10 +214,15 @@ object ScalaFileTypeTest {
 
   val UsesDotEquals = StringFileArtifact("src/test/scala/main/UsesDotEquals.scala",
     """
-      |// Don't worry about imports, we're not compiling the thing,
-      |// it just needs to have a valid AST
-      |
       |class Foo {
+      |
+      | val no = "dog".equals("cat")
+      |
+      | // Won't do infix yet
+      |
+      | val complexLeft = ("dog" + "gie").equals("cat")
+      |
+      | val complexRight = "dog".equals("pussy" + "cat")
       |
       | def bar(a: String, b: String) = {
       |   a.equals(b)

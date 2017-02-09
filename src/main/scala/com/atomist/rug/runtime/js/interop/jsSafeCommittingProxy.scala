@@ -159,8 +159,10 @@ class jsSafeCommittingProxy(
           }
           nodesAccessedThroughThisFunctionCall.toList match {
             case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
+            case null :: Nil => null
             case head :: Nil => head
-            case more => ???
+            case more => more.head
+              //throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
           }
         case _ => node
       }

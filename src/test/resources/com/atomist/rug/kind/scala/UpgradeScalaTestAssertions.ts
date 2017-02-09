@@ -27,20 +27,18 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
                 TermName:[be]
                 Lit:[2]
       */
-      let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']]`
+      let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`
 
       eng.with<any>(project, oldAssertion, shouldTerm => {
-
         let termSelect = shouldTerm.termSelect()
-
         let termApply = shouldTerm.termApply()
         if (termApply != null && ["be", "equal"].indexOf(termApply.termName().value()) > -1) {
           let newValue = `assert(${termSelect.value()} === ${termApply.children()[1].value()})`
-          //console.log(`It's a 'be': ${shouldTerm.value()}, replace all with ${newValue}`)
+          console.log(`Replacing [${shouldTerm.value()}] with [${newValue}]`)
           shouldTerm.update(newValue)
         }
       })
-}
+  }
 
 }
 

@@ -126,8 +126,6 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
                     iter.remove()
                   }
                 case sf: ScriptFunction =>
-                  // DO nothing
-                  println(sf)
                   ???
               }
             }

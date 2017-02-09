@@ -581,7 +581,7 @@ class RepMatcherTest extends FlatSpec with Matchers {
     val m = repsep.findMatches(input)
     assert(m.size === 2)
     //println(s"Final match=\n${TreeNodeUtils.toShortString(m.head)}")
-    //    m.head.childrenNamed("keys").size should be(1)
+    //     m.head.childrenNamed("keys").size should be(1)
     val keys: Seq[TreeNode] = m.head.childrenNamed("key") //.head.asInstanceOf[ContainerTreeNode].childrenNamed("key")
     assert(keys.size === 4)
     keys.map(k => k.value) should equal(Seq("a", "b", "cde", "f"))

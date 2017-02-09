@@ -8,11 +8,10 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
-
   import MatcherDefinitionParser._
 
   it should "reject null string" in {
-    val bogusInputs = Seq(null, "", "$", "[", "▶")
+    val bogusInputs = Seq(null, "", "$", "[")
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
         an[BadRugException] should be thrownBy mgp.parseMatcher("x", bad)
@@ -21,90 +20,52 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   it should "accept valid literal" in {
     val validLiterals = Seq("a", "aa", "a&a", "woiurwieur", "def")
-    for (v <- validLiterals) mgp.parseMatcher("v", v) match {
-      case Literal(`v`, None) =>
-      
-      case _ => fail(s"failed to parse $v")
+    for {v <- validLiterals
+         m = mgp.parseMatcher("a_nice_literal", v)
+    } {
+      assert(m.name === "a_nice_literal")
+      assert(m.matchPrefix(InputState(v)).isRight)
+      assert(m.matchPrefix(InputState("something else")).isLeft)
     }
   }
 
   it should "accept valid regex" in {
     val validLiterals = Seq(
       s"${RegexpOpenToken}y$RegexpCloseToken",
-      s"$RegexpOpenToken[.*]$RegexpCloseToken",
-      s"$RegexpOpenToken[.]$RegexpCloseToken")
-    for (v <- validLiterals) mgp.parseMatcher("y", v) match {
-      case Regex(_, Some("y"), _) =>
-      
-      case _ => fail(s"failed to parse $v")
+      s"$RegexpOpenToken.*$RegexpCloseToken",
+      s"$RegexpOpenToken[.y]$RegexpCloseToken")
+    val matchingInput = InputState("y")
+    for {v <- validLiterals
+         m = mgp.parseMatcher("y", v)}  {
+      assert(m.name === "y")
+      assert(m.matchPrefix(matchingInput).isRight, s"${matchingInput.input} didn't match $v")
     }
   }
 
   it should "accept valid inline regex" in {
-    val validLiterals = Seq(
-      s"${VariableDeclarationToken}foo:${RegexpOpenToken}a$RegexpCloseToken",
-      s"${VariableDeclarationToken}foo:$RegexpOpenToken.*$RegexpCloseToken",
-      s"${VariableDeclarationToken}foo:$RegexpOpenToken.$RegexpCloseToken")
-    for (v <- validLiterals) mgp.parseMatcher("x", v) match {
-      case Regex(rex, Some("foo"), _) =>
-        withClue(s"String [$v] should contain regex [$rex]") {
-          v.contains(rex) should be(true)
-        }
-    }
-  }
-
-  it should "accept valid descendant phrase" in {
-    val dog = Literal("dog", named = Some("dog"))
-    val cat = Literal("cat", named = Some("cat"))
-    val mr = SimpleMatcherRegistry(Seq(dog, cat))
-    val validDescendantPhrases = Seq("▶$:cat", "▶$d:dog")
-    for (v <- validDescendantPhrases) mgp.parseMatcher("v", v, mr) match {
-      case w: Wrap =>
-      
-      case _ => fail(s"failed to parse $v")
-    }
-  }
-
-  it should "accept valid descendant phrase with predicate" in {
-    val dog = Literal("dog", named = Some("dog"))
-    val cat = Literal("cat", named = Some("Cat"))
-    val mr = SimpleMatcherRegistry(Seq(dog, cat))
-    val validDescendantPhrases = Seq("▶$fido:dog[curlyDepth=3]", "▶$felix:Cat[fat=false]")
-    for (v <- validDescendantPhrases) mgp.parseMatcher("v", v, mr) match {
-      //case Literal(l, None) =>
-      case _ =>
-    
-    }
-  }
-
-  it should "accept valid bound $ variables" in {
-    val otherPattern = Literal("x", named = Some("OtherPattern"))
-    val scalaMethod = Literal("x", named = Some("ScalaMethod"))
-    val theMethod = scalaMethod.copy(named = Some("theMethod"))
-
-    val mr = SimpleMatcherRegistry(Seq(otherPattern, scalaMethod, theMethod))
-    val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
-    for (v <- validUseOfVars) mgp.parseMatcher("t", v, mr) match {
-      case m: Matcher =>
-      
-      case _ => fail(s"failed to parse $v")
-    }
-  }
-
-  it should "reject valid unbound $ variables" in {
-    val validUseOfVars = Seq("$:OtherPattern", "def $:ScalaMethod", "def $theMethod:ScalaMethod")
-    for (v <- validUseOfVars) {
-      withClue(s"[$v] is not a bound valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parseMatcher("v", v)
-      }
+    val validLiteralsWithMatchingAndUnmatchinExamples = Seq(
+      (s"${VariableDeclarationToken}foo:${RegexpOpenToken}a$RegexpCloseToken", "alala", "bababoo"),
+      (s"${VariableDeclarationToken}foo:$RegexpOpenToken.*f$RegexpCloseToken", "oh look i have an f in me", "none here"),
+      (s"${VariableDeclarationToken}foo:$RegexpOpenToken^.$$$RegexpCloseToken", "a", "aa"))
+    for {(v, matches, matchesNot) <- validLiteralsWithMatchingAndUnmatchinExamples
+         m = mgp.parseMatcher("x", v)}
+    {
+      assert(m.name === "x")
+      val matchingIS = InputState(matches)
+      assert(m.matchPrefix(matchingIS).isRight, s"$v did not match $matches")
+      assert(m.matchPrefix(InputState(matchesNot)).isLeft)
     }
   }
 
   it should "reject invalid $ variables" in {
     val bogusInputs = Seq("$", "$$", "$***", "$7iud:eiruieur", "$ foo:bar")
+
     for (bad <- bogusInputs)
       withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parseMatcher("bad", bad)
+        an[BadRugException] should be thrownBy {
+          val m = mgp.parseMatcher("bad", bad)
+          println(s"Here is the unexpected matcher: $m")
+        }
       }
   }
 
@@ -113,10 +74,9 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     for (v <- validLiterals) {
       withClue(s"[$v] IS a valid microgrammar definition") {
         mgp.parseMatcher("x", v) match {
-          case cat: Concat =>
+          case Wrap(cat: Concat, "x") =>
             cat.matchPrefix(InputState(v)) match {
-              case Right(PatternMatch(_, matched, InputState(`v`, _, _), _)) =>
-              
+              case Right(PatternMatch(_, matched, InputState2(`v`, _, _), _)) =>
               case Left(report) => fail(s"Failed to match on [$v]" + report)
               case _ => fail(s"failed to parse/match $v")
             }
@@ -129,7 +89,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     val f = s"""$BreakOpenToken<span data-original="$BreakCloseToken"""
     mgp.parseMatcher("f", f) match {
       case x =>
-    
     }
   }
 
@@ -147,8 +106,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
             InputState(in)) match {
             case Right(pe) =>
             //pe.matched should be ("foo\"")
-            
-            //pe.matched should be ("foo\"")
             case Left(report) => fail(s"[$in] didn't match and should have done: " + report)
             case _ => ???
           }
@@ -163,7 +120,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
           case Right(pe) =>
-          
           case _ => ???
         }
     }
@@ -172,12 +128,11 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
   it should "parse strict string literals" in {
     val f = s"""${StrictLiteralOpen}xxxx$StrictLiteralClose"""
     val parsed = mgp.parseMatcher("f", f)
-    assert(parsed.name === ".literal")
-    parsed match {
-      case Literal("xxxx", _) =>
-      
-      case _ => ???
-    }
+    parsed.name should be("f")
+    val matchingInput = InputState("xxxx")
+    val notMatchingInput = InputState(" xxxx")
+    assert(parsed.matchPrefix(matchingInput).isRight)
+    assert(parsed.matchPrefix(notMatchingInput).isLeft)
   }
 
   it should "accept valid break in string using strict literals" in {
@@ -187,7 +142,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
         parsedMatcher.matchPrefix(
           InputState("""<tr class="emoji_row">THIS OTHER STUFF<span data-original="and now for something completely different""")) match {
           case Right(pe) =>
-          
           case _ => ???
         }
     }
@@ -213,7 +167,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
           parsedMatcher.matchPrefix(
             InputState(s"""<tr class="emoji_row">THIS OTHER STUFF<span data-original="${suffix}$postsuffix""")) match {
             case Right(pe) =>
-            
             case Left(report) => fail(s"Expected to match with suffix of [$suffix] and postsuffix of [$postsuffix] but did not: " + report)
             case _ => ???
           }

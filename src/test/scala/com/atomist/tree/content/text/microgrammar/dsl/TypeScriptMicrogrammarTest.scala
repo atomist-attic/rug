@@ -46,12 +46,12 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
-      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
-      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
+      |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
-      |        if (n.value() != "4.0.0") project.fail("" + n.value())
+      |        if (n.value() != "4.0.0") project.fail("" + n.value()) // did this ever work??
       |        n.update('Foo bar')
       |      })
       |    }
@@ -72,8 +72,8 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
-      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
+      |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
@@ -131,9 +131,9 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    description: string = "Uses 2 microgrammars"
       |
       |    edit(project: Project) {
-      |      let mg1 = new Microgrammar('mv1', `$mv1:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
-      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$:mv1`)
-      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
+      |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
+      |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
@@ -164,7 +164,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.type().value() + "_x")
+      |        n.update(n.type().value() + "_x") // replace the whole method with its type and a suffix. It doesn't make sense
       |      })
       |    }
       |  }
@@ -178,7 +178,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     editedPomContent should equal(originalPomContent.replace("<modelVersion>4.0.0</modelVersion>", "<modelVersion>Foo bar</modelVersion>"))
   }
 
-  it should "use microgrammar defined in TypeScript in 2 consts" in {
+  it should "run use microgrammar defined in TypeScript in 2 consts" in { // I have a different impl in mind
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammarSplitInto2))
   }
@@ -273,7 +273,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
         sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
         val after = sm.result.findFile("pom.xml").get.content
         (before, after)
-      case _ => ???
+      case wtf => fail(s"Victory eludes us: $wtf")
     }
   }
 }

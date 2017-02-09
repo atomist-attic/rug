@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util.Map.Entry
 import java.util.Objects
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -22,6 +23,22 @@ object NashornUtils {
       r.values().asScala
     case x => x
   }
+
+  def toJavaMap(nashornReturn: Object): Map[String, Object] =
+    nashornReturn match {
+      case som: ScriptObjectMirror =>
+        val scalaMap = som.entrySet().asScala.map{
+          case e: Entry[String, Object] =>
+            (e.getKey, e.getValue)
+        }.toMap
+          scalaMap.mapValues {
+            case som: ScriptObjectMirror =>
+              toJavaMap(som)
+            case x =>
+              toJavaType(x)
+
+        }
+    }
 
   def toScalaSeq(nashornReturn: Object): Seq[Object] = nashornReturn match {
     case r: ScriptObjectMirror if r.isArray =>

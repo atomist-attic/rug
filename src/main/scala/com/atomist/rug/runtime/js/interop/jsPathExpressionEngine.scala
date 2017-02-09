@@ -44,8 +44,7 @@ case class jsMatch(root: TreeNode, matches: _root_.java.util.List[jsSafeCommitti
 class jsPathExpressionEngine(
                               teamContext: TeamContext,
                               val ee: ExpressionEngine = new PathExpressionEngine,
-                              typeRegistry: TypeRegistry = DefaultTypeRegistry,
-                              private var matcherRegistry: MatcherRegistry = EmptyMatcherRegistry) {
+                              typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
   import jsPathExpressionEngine._
 
@@ -61,24 +60,24 @@ class jsPathExpressionEngine(
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(teamContext, this.ee, tr, matcherRegistry)
+    new jsPathExpressionEngine(teamContext, this.ee, tr)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar") =>
+    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar", "submatchers") =>
       // It's a microgrammar
       val name = stringProperty(som, "name")
       val grammar = stringProperty(som, "grammar")
+      val submatchers = toJavaMap(som.getMember("submatchers"))
       //println(s"Parsing $name=$grammar with ${matcherRegistry}")
-      val parsedMatcher = jsPathExpressionEngine.matcherParser.parseMatcher(name, grammar, matcherRegistry)
-      //println("Parsed matcher=" + parsedMatcher)
-      matcherRegistry += parsedMatcher
-      val mg = new MatcherMicrogrammar(parsedMatcher, name)
+      val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar, submatchers)
       new MicrogrammarTypeProvider(mg)
     case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
       tp
+    case som : ScriptObjectMirror =>
+      throw new RugRuntimeException(null, s"Unrecognized type. It has properties ${som.entrySet().asScala.map(_.getKey).mkString(",")}")
     case x =>
       throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
 

@@ -101,8 +101,8 @@ object Matcher {
         Seq(s"RestOfLine($name)")
       case Optional(m, name) =>
         mkSeq(s"Optional($name", prettyPrintLines(m))
-      case Reference(delegate, name) =>
-        mkSeq(s"Reference($name", prettyPrintLines(delegate))
+      case Reference(name) =>
+        Seq(s"Reference($name)")
       case other =>
         Seq(other.toString)
     }

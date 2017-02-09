@@ -50,9 +50,7 @@ case class Wrap(m: Matcher, name: String)
       matched =>
         val wrappedNode =
           SimpleMutableContainerTreeNode.wrap(name, matched.node)
-        val wrapped = matched.copy(node = wrappedNode)
-        //println(s"Wrapped = ${TreeNodeUtils.toShorterString(wrappedNode.get)}")
-        wrapped
+        matched.copy(node = wrappedNode)
     }
 }
 

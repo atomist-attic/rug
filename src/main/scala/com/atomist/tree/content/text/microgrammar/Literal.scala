@@ -2,7 +2,7 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar.Matcher.MatchPrefixResult
-import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition}
+import com.atomist.tree.content.text.{MutableTerminalTreeNode, OffsetInputPosition, SimpleMutableContainerTreeNode}
 
 /**
   * Matches a literal string
@@ -60,8 +60,20 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
 /**
   * Reference to another matcher.
   */
-case class Reference(delegate: Matcher, name: String) extends Matcher {
+case class Reference(name: String) extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
-    delegate.matchPrefix(inputState).right.map(m => m.copy(node = ???))
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
+    val matcherOpt = inputState.knownMatchers.get(name)
+    matcherOpt match {
+      case Some(matcher) =>
+        matcher.matchPrefix(inputState).right.map{ matched =>
+          val wrappedNode =
+            SimpleMutableContainerTreeNode.wrap(name, matched.node)
+          matched.copy(node = wrappedNode)
+        }
+      case _ =>
+        throw new IllegalStateException(s"Could not find matcher '$name'.")
+    }
+
+  }
 }

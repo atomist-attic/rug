@@ -8,10 +8,73 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.pathexpression.{PathExpressionEngine, PathExpressionParser}
+import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
+
+class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
+
+  it should "Let me write the microgrammar this pretty way" in {
+    val stringRegex =
+      s"""${MatcherDefinitionParser.RegexpOpenToken}"[^"]*"${MatcherDefinitionParser.RegexpOpenToken}""" // this is not complete. valid Java string
+
+    /* Story: I have this case class (really it was Regex but that's confusing here
+     * so let's call it MyFunction) with 2 string args, name and regex.
+     * I want to swap their order and make name into an Option[String].
+     *
+     * Find all usages of the function. Swap their args and make the name Some("whatever it was")
+     */
+    val topLevelGrammar =
+      """MyFunction($nameArg, $reArg)"""
+
+    val inners = Map(
+      "nameArg" -> stringRegex,
+      "reArg" -> stringRegex)
+
+    val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar("myFunctionCall", topLevelGrammar, inners)
+
+    val pathExpression = "//File()/myFunctionCall()"
+
+    val pretendScala =
+      """package blahblah
+        |import balahdlsifjd
+        |
+        |object Whatever {
+        |   val f = MyFunction("iAmTheName","regex")
+        |
+        |   def somewhereElse = {
+        |      e = MyFunction("AnotherName", "more regex")
+        |   }
+        |}
+      """.stripMargin
+
+
+    /* someday, expand this test to be in ts */
+    val inTypescriptYouWould =
+      s""" n -> n.update(`FunctionCall($${n.reArg()},Some($${n.nameArg()})`)"""
+
+    val justFindTheMatches = mg.findMatches(pretendScala)
+    justFindTheMatches.size should be(2)
+
+    val result = ExercisePathExpression.exercisePathExpression(mg, pathExpression, pretendScala)
+
+    result.size should be(2)
+    val m = result.head
+    withClue(println(TreeNodeUtils.toShortString(m))) {
+      m.value should be("""MyFunction("iAmTheName","regex")""")
+      m.childNodes.size should be(2)
+      val nameArgNode = m.childNodes.head
+      nameArgNode.value should be(""""iAmTheName"""")
+      val reArgNode = m.childNodes(1)
+      reArgNode.value should be(""""regex"""")
+    }
+
+  }
+}
 
 
 class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
+
+  import ExercisePathExpression._
 
   it should "Let give 0 matches when I access something that might exist but does not" in {
 
@@ -51,6 +114,10 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
     message should be("what should it be")
   }
 
+}
+
+object ExercisePathExpression extends FlatSpec with Matchers {
+  // not a test but it needs fail()
 
   def exercisePathExpression(microgrammar: Microgrammar, pathExpressionString: String, input: String): List[TreeNode] = {
 

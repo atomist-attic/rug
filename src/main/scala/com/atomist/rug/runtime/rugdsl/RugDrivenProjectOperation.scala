@@ -72,7 +72,6 @@ abstract class RugDrivenProjectOperation(
 
     for (newParam <- paramsToAdd)
       addParameter(newParam)
-
     for {
       roo <- program.runs
       arg <- roo.args

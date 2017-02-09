@@ -15,7 +15,7 @@ class PropertiesType(
 
   override def description = "Java properties file"
 
-  override def viewManifest: Manifest[PropertiesMutableView] = manifest[PropertiesMutableView]
+  override def runtimeClass = classOf[PropertiesMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

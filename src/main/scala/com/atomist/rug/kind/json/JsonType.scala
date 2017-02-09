@@ -22,7 +22,7 @@ class JsonType
 
   override def description = "JSON file"
 
-  override def viewManifest: Manifest[JsonMutableView] = manifest[JsonMutableView]
+  override def runtimeClass = classOf[JsonMutableView]
 
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(Extension)
 

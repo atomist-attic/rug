@@ -15,7 +15,7 @@ class XmlType(
 
   override def description = "XML"
 
-  override def viewManifest: Manifest[XmlMutableView] = manifest[XmlMutableView]
+  override def runtimeClass = classOf[XmlMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

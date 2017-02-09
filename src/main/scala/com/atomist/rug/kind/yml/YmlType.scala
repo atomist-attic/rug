@@ -6,6 +6,7 @@ import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
 object YmlType {
+
   val ymlExtension = ".yml"
 }
 
@@ -19,10 +20,7 @@ class YmlType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description =
-    """
-      |YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable.
-    """.stripMargin
+  override def description = "YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable."
 
   override def viewManifest: Manifest[YmlMutableView] = manifest[YmlMutableView]
 

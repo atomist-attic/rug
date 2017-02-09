@@ -13,7 +13,7 @@ class XmlType(
 
   def this() = this(DefaultEvaluator)
 
-  override def description = "XML file"
+  override def description = "XML"
 
   override def viewManifest: Manifest[XmlMutableView] = manifest[XmlMutableView]
 

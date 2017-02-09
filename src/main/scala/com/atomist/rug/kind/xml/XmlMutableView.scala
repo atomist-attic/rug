@@ -14,6 +14,7 @@ import org.w3c.dom.{Document, Node, NodeList}
 import org.xml.sax.InputSource
 
 object XmlMutableView {
+
   def stringToDocument(xmlStr: String): Document = {
     val factory = DocumentBuilderFactory.newInstance()
 
@@ -130,12 +131,9 @@ class XmlMutableView(
     this.contains(xPathOfNodeToReplace) match {
       case true =>
         val xpathExpression = XPathFactory.newInstance().newXPath()
-
         val nodeToReplace: Node = xpathExpression.compile(xPathOfNodeToReplace)
           .evaluate(xmlDocument, XPathConstants.NODE).asInstanceOf[Node]
-
         nodeToReplace.getParentNode.replaceChild(nodeToAdd, nodeToReplace)
-
         this.xml = documentToString(xmlDocument)
       case false => addChildNode(xpathOfParent, newNode, nodeContent)
     }
@@ -161,7 +159,6 @@ class XmlMutableView(
     val nodesList: NodeList = executeXPathExpression(xpath, xmlDocument)
 
     val numberOfFoundNodes = nodesList.getLength
-
     if (numberOfFoundNodes > 0) {
       nodesList.item(0).getTextContent
     } else {
@@ -180,7 +177,6 @@ class XmlMutableView(
     val nodesList: NodeList = executeXPathExpression(xpath, xmlDocument)
 
     val numberOfFoundNodes = nodesList.getLength
-
     if (numberOfFoundNodes > 0) {
       nodesList.item(0).setTextContent(newContent)
       this.xml = documentToString(xmlDocument)
@@ -192,13 +188,11 @@ class XmlMutableView(
     description = "The XPath to the node to delete")
                  xpath: String): Unit = {
     val xmlDocument = stringToDocument(currentContent)
-
     val nodesList: NodeList = executeXPathExpression(xpath, xmlDocument)
 
     val numberOfFoundNodes = nodesList.getLength
 
     if (numberOfFoundNodes > 0) {
-
       val nodeToRemove: Node = nodesList.item(0)
 
       nodeToRemove.getParentNode.removeChild(nodeToRemove)

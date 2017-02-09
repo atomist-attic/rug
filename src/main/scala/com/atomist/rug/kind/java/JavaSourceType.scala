@@ -20,7 +20,7 @@ class JavaSourceType(evaluator: Evaluator)
 
   override def description = "Java source file"
 
-  override def viewManifest: Manifest[JavaSourceMutableView] = manifest[JavaSourceMutableView]
+  override def runtimeClass = classOf[JavaSourceMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>

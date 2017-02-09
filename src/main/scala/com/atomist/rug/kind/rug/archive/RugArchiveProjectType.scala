@@ -8,7 +8,8 @@ import com.atomist.tree.TreeNode
 class RugArchiveProjectType
   extends Type(DefaultEvaluator)
   with ReflectivelyTypedType {
-  def viewManifest: Manifest[_] = manifest[RugArchiveProjectMutableView]
+
+  def runtimeClass = classOf[RugArchiveProjectMutableView]
 
   // Members declared in com.atomist.rug.spi.Typed
   def description: String = "Rug archive"

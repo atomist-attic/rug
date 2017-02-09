@@ -26,8 +26,7 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
     */
   def isOfType(f: FileArtifact): Boolean
 
-  override def viewManifest: Manifest[_] = manifest[MutableContainerMutableView]
-
+  override def runtimeClass: Class[_] = classOf[MutableContainerMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>

@@ -18,7 +18,7 @@ class ServicesType(
 
   override def description: String = "Type for services. Used in executors"
 
-  override def viewManifest: Manifest[ServicesMutableView] = manifest[ServicesMutableView]
+  override def runtimeClass = classOf[ServicesMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case s: ServicesMutableView => Some(s.childrenNamed("service"))

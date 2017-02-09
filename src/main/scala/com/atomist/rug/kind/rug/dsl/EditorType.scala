@@ -8,7 +8,7 @@ import com.atomist.tree.TreeNode
 class EditorType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
 
-  override def viewManifest: Manifest[_] = manifest[EditorMutableView]
+  override def runtimeClass = classOf[EditorMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView => ???

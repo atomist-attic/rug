@@ -24,7 +24,7 @@ class JavaTypeType(evaluator: Evaluator)
 
   override def description = "Java class"
 
-  override def viewManifest: Manifest[JavaClassOrInterfaceView] = manifest[JavaClassOrInterfaceView]
+  override def runtimeClass = classOf[JavaClassOrInterfaceView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>

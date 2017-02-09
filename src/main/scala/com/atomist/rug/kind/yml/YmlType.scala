@@ -24,7 +24,7 @@ class YmlType(
       |YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable.
     """.stripMargin
 
-  override def viewManifest: Manifest[YmlMutableView] = manifest[YmlMutableView]
+  override def runtimeClass = classOf[YmlMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>

@@ -25,7 +25,7 @@ class JavaProjectType(
 
   override def description = "Java project"
 
-  override def viewManifest: Manifest[JavaProjectMutableView] = manifest[JavaProjectMutableView]
+  override def runtimeClass = classOf[JavaProjectMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

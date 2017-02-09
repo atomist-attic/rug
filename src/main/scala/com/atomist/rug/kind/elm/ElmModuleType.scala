@@ -17,7 +17,7 @@ class ElmModuleType(
 
   override def description = "Elm module"
 
-  override def viewManifest: Manifest[ElmModuleMutableView] = manifest[ElmModuleMutableView]
+  override def runtimeClass = classOf[ElmModuleMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>

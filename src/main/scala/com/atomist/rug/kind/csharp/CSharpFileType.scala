@@ -23,8 +23,7 @@ class CSharpFileType
 
   import CSharpFileType._
 
-  override def viewManifest: Manifest[CSharpFileMutableView] =
-    manifest[CSharpFileMutableView]
+  override def runtimeClass = classOf[CSharpFileMutableView]
 
   override def description = "C# file"
 

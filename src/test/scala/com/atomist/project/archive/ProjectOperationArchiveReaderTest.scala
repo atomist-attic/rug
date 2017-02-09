@@ -55,34 +55,34 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   it should "parse single editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", FirstEditor), None, Nil)
-    ops.editors.size should be(1)
-    ops.editorNames should equal(Seq("First"))
-    ops.reviewers should equal(Nil)
-    ops.reviewerNames should equal(Nil)
-    ops.generators should equal(Nil)
-    ops.generatorNames should equal(Nil)
+    assert(ops.editors.size === 1)
+    assert(ops.editorNames === Seq("First"))
+    assert(ops.reviewers === Nil)
+    assert(ops.reviewerNames === Nil)
+    assert(ops.generators === Nil)
+    assert(ops.generatorNames === Nil)
   }
 
   it should "parse editor and reviewer" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp)), None, Nil)
-    ops.editors.size should be(1)
-    ops.editorNames should equal(Seq("First"))
-    ops.reviewers.size should be(1)
-    ops.reviewerNames should equal(Seq("Second"))
-    ops.generators should equal(Nil)
-    ops.generatorNames should equal(Nil)
+    assert(ops.editors.size === 1)
+    assert(ops.editorNames === Seq("First"))
+    assert(ops.reviewers.size === 1)
+    assert(ops.reviewerNames === Seq("Second"))
+    assert(ops.generators === Nil)
+    assert(ops.generatorNames === Nil)
   }
 
   it should "parse editor and reviewer and generator" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
     val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(FirstEditor, SecondOp, Generator)), None, Nil)
-    ops.editors.size should be(1)
-    ops.editorNames.toSet should equal(Set("First"))
-    ops.reviewers.size should be(1)
-    ops.reviewerNames should equal(Seq("Second"))
-    ops.generators.size should equal(1)
-    ops.generatorNames should equal(Seq("Published"))
+    assert(ops.editors.size === 1)
+    assert(ops.editorNames.toSet === Set("First"))
+    assert(ops.reviewers.size === 1)
+    assert(ops.reviewerNames === Seq("Second"))
+    assert(ops.generators.size === 1)
+    assert(ops.generatorNames === Seq("Published"))
   }
 
   it should "find imports in a project that uses them" in {
@@ -106,8 +106,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/editors/SimpleEditor.ts", TypeScriptRugEditorTest.SimpleEditorTaggedAndMeta)
     ))
     val ops = apc.findOperations(as, None, Nil)
-    ops.editors.size should be(1)
-    ops.editors.head.parameters.size should be(2)
+    assert(ops.editors.size === 1)
+    assert(ops.editors.head.parameters.size === 2)
   }
 
   val SimpleExecutor =
@@ -135,8 +135,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/executors/SimpleExecutor.ts", SimpleExecutor)
     ))
     val ops = apc.findOperations(as, None, Nil)
-    ops.executors.size should be(1)
-    ops.executors.head.parameters.size should be(0)
+    assert(ops.executors.size === 1)
+    assert(ops.executors.head.parameters.size === 0)
     val s2 = new FakeServiceSource(Nil)
     ops.executors.head.execute(s2, SimpleProjectOperationArguments.Empty)
   }
@@ -152,12 +152,12 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       f2
     ))
     val ops = apc.findOperations(rugAs, None, Nil)
-    ops.generators.size should be(1)
-    ops.generators.head.parameters.size should be(0)
+    assert(ops.generators.size === 1)
+    assert(ops.generators.head.parameters.size === 0)
     val result = ops.generators.head.generate("woot",
       SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
-    result.id.name should be("woot")
+    assert(result.id.name === "woot")
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
     result.findFile(f2.path).get.content.equals(f2.content) should be(true)
 
@@ -180,8 +180,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     ) + TypeScriptBuilder.userModel
 
     val ops = apc.findOperations(rugAs, None, Nil)
-    ops.editors.size should be(1)
-    ops.editors.head.parameters.size should be(1)
+    assert(ops.editors.size === 1)
+    assert(ops.editors.head.parameters.size === 1)
   }
 
   it should "ignore unbound handler" in {
@@ -213,8 +213,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/handlers/sub.ts", handler)
     ))
     val ops = apc.findOperations(rugAs, None, Nil)
-    ops.generators.size should be(1)
-    ops.generators.head.parameters.size should be(0)
+    assert(ops.generators.size === 1)
+    assert(ops.generators.head.parameters.size === 0)
     val result = ops.generators.head.generate("woot",
       SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
@@ -239,8 +239,8 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       NamedJavaScriptEventHandlerTest.issuesStuff
     ))
     val ops = apc.findOperations(rugAs, None, Nil)
-    ops.generators.size should be(1)
-    ops.generators.head.parameters.size should be(0)
+    assert(ops.generators.size === 1)
+    assert(ops.generators.head.parameters.size === 0)
     val result = ops.generators.head.generate("woot", SimpleProjectOperationArguments("", Map("content" -> "woot")))
     // Should preserve content from the backing archive
     result.findFile(f1.path).get.content.equals(f1.content) should be(true)
@@ -256,13 +256,16 @@ class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource
 
   val updatePersister = new FakeUpdatePersister
 
+
   val teamId = "atomist-test"
 
   override def pathExpressionEngine: jsPathExpressionEngine =
     new jsPathExpressionEngine(teamContext = this)
 
+
   override def messageBuilder: MessageBuilder =
     new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
+
 
   var issues = ListBuffer.empty[Issue]
 

@@ -8,6 +8,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
+
   it should "parse simplest program" in
     simplestProgram("'Description'")
 
@@ -19,7 +20,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     simplestProgram(" \"\"\"description\"\"\" ")
   }
 
-  private def simplestProgram(description: String = ""): RugProgram = {
+  private  def simplestProgram(description: String = ""): RugProgram = {
     val prog =
       s"""
          |@description $description
@@ -67,8 +68,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     val p = ri.parse(prog).head
     p.withs.head.predicate match {
       case f: ParsedJavaScriptFunction =>
+    
     }
-    p.parameters should equal(Nil)
+    assert(p.parameters === Nil)
   }
 
   it should "parse editor precondition" in {
@@ -87,7 +89,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
     val p = ri.parse(prog).head match {
       case re: RugEditor =>
-        re.preconditions.head should equal(Condition("Foo"))
+        assert(re.preconditions.head === Condition("Foo"))
     }
   }
 
@@ -108,8 +110,8 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
     val p = ri.parse(prog).head match {
       case re: RugEditor =>
-        re.preconditions.headOption should equal(Some(Condition("Foo")))
-        re.postcondition should equal(Some(Condition("Bar")))
+        assert(re.preconditions.headOption === Some(Condition("Foo")))
+        assert(re.postcondition === Some(Condition("Bar")))
     }
   }
 
@@ -130,9 +132,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
     val actions = ri.parse(prog).head
 
-    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size should be(1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size === 1)
     actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.head match {
-      case s: WrappedFunctionArg => s.te.asInstanceOf[Literal[String]].value should equal(tripleStringContent)
+      case s: WrappedFunctionArg => assert(s.te.asInstanceOf[Literal[String]].value === tripleStringContent)
     }
   }
 
@@ -153,9 +155,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
     val actions = ri.parse(prog).head
 
-    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size should be(1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size === 1)
     actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.head match {
-      case s: WrappedFunctionArg => s.te.asInstanceOf[Literal[String]].value should equal(tripleStringContent)
+      case s: WrappedFunctionArg => assert(s.te.asInstanceOf[Literal[String]].value === tripleStringContent)
     }
   }
 
@@ -181,9 +183,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
     val actions = ri.parse(prog).head
 
-    actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size should be(1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.size === 1)
     actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation].args.head match {
-      case s: WrappedFunctionArg => s.te.asInstanceOf[Literal[String]].value should equal(tripleStringContent)
+      case s: WrappedFunctionArg => assert(s.te.asInstanceOf[Literal[String]].value === tripleStringContent)
     }
   }
 
@@ -209,12 +211,12 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getPattern should be("^...$")
-    p.isRequired should be(true)
-    p.isDisplayable should be(true)
+    assert(p.getName === "name")
+    assert(p.getPattern === "^...$")
+    assert(p.isRequired === true)
+    assert(p.isDisplayable === true)
   }
 
   it should "handle single parameter declaration with description and default value" in {
@@ -242,16 +244,16 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getPattern should be("^.*$")
-    p.getDescription should be(paramDesc)
-    p.getDefaultValue should be(defaultVal)
-    p.getValidInputDescription should be(validInput)
-    p.isDisplayable should be(false)
-    p.isRequired should be(false)
-    p.getDisplayName should be(displayName)
+    assert(p.getName === "name")
+    assert(p.getPattern === "^.*$")
+    assert(p.getDescription === paramDesc)
+    assert(p.getDefaultValue === defaultVal)
+    assert(p.getValidInputDescription === validInput)
+    assert(p.isDisplayable === false)
+    assert(p.isRequired === false)
+    assert(p.getDisplayName === displayName)
   }
 
   it should "handle single parameter declaration and use in do step" in {
@@ -270,11 +272,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getPattern should be("^.*$")
-    p.isRequired should be(true)
+    assert(p.getName === "name")
+    assert(p.getPattern === "^.*$")
+    assert(p.isRequired === true)
   }
 
   it should "handle single optional parameter declaration" in
@@ -283,7 +285,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   it should "handle int do arg" in {
     val actions = simpleProgram(Seq("1"))
     val step = actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation]
-    step.args.size should equal(1)
+    assert(step.args.size === 1)
     step.args.head.isInstanceOf[WrappedFunctionArg] should be(true)
   }
 
@@ -302,10 +304,10 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         | append "a" name;
       """.stripMargin
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.isRequired should be(true)
+    assert(p.getName === "name")
+    assert(p.isRequired === true)
   }
 
   it should "not allow invalid allowed parameter values list" in {
@@ -341,11 +343,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         | append "a" name;
       """.stripMargin
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getDefaultValue should be("432.678.980")
-    p.isRequired should be(false)
+    assert(p.getName === "name")
+    assert(p.getDefaultValue === "432.678.980")
+    assert(p.isRequired === false)
   }
 
   it should "not allow invalid default parameters" in {
@@ -382,11 +384,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         | append "a" name;
       """.stripMargin
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getDefaultValue should be("valid")
-    p.isRequired should be(false)
+    assert(p.getName === "name")
+    assert(p.getDefaultValue === "valid")
+    assert(p.isRequired === false)
   }
 
   it should "not allow a default value not in parameter alternating regex" in {
@@ -410,14 +412,14 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   it should "handle double do arg" in pendingUntilFixed {
     val actions = simpleProgram(Seq("1.9"))
     val step = actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation]
-    step.args.size should equal(1)
+    assert(step.args.size === 1)
     step.args.head.isInstanceOf[WrappedFunctionArg] should be(true)
   }
 
   it should "handle String literal do arg" in {
     val actions = simpleProgram(Seq("\"whatev\""))
     val step = actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation]
-    step.args.size should equal(1)
+    assert(step.args.size === 1)
     step.args.head match {
       case l: WrappedFunctionArg => l.te.asInstanceOf[Literal[String]].value.shouldEqual("whatev")
     }
@@ -426,13 +428,14 @@ class RugEditorParserTest extends FlatSpec with Matchers {
   it should "handle JavaScript do arg" in {
     val actions = simpleProgram(Seq("{ 42 + 63 }"))
     val step = actions.withs.head.doSteps.head.asInstanceOf[FunctionInvocation]
-    step.args.size should equal(1)
+    assert(step.args.size === 1)
     step.args.head match {
       case WrappedFunctionArg(te: JavaScriptBlock, _) =>
+    
     }
   }
 
-  private def simpleProgram(doArgs: Seq[String]): RugProgram = {
+  private  def simpleProgram(doArgs: Seq[String]): RugProgram = {
     val prog =
       s"""
          |@description "Something"
@@ -448,24 +451,24 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val progs = ri.parse(prog)
-    progs.size should be(1)
+    assert(progs.size === 1)
     val actions = progs.head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
-    p.getName should be("name")
-    p.getPattern should be("^.*$")
-    p.isRequired should be(false)
+    assert(p.getName === "name")
+    assert(p.getPattern === "^.*$")
+    assert(p.isRequired === false)
     actions
   }
 
   it should "compute parameter from string literal" in {
     val p = computeProgram(Seq("a = \"x\""))
-    p.computations.size should be(1)
+    assert(p.computations.size === 1)
   }
 
   it should "compute parameter from simple JavaScript expression" in {
     val p = computeProgram(Seq("a = { 42; }"))
-    p.computations.size should be(1)
+    assert(p.computations.size === 1)
   }
 
   it should "compute parameter from complex JavaScript expression" in {
@@ -477,11 +480,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         | if (true) { }
         |}
       """.stripMargin))
-    p.computations.size should be(1)
+    assert(p.computations.size === 1)
     p.computations.head
   }
 
-  private def computeProgram(infers: Seq[String]): RugProgram = {
+  private  def computeProgram(infers: Seq[String]): RugProgram = {
     val prog =
       s"""
          |@description 'Demonstrate computation'
@@ -499,7 +502,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.parameters.size should be(1)
+    assert(actions.parameters.size === 1)
     val p = actions.parameters.head
     actions
   }
@@ -570,8 +573,8 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val p = ri.parse(prog).head
-    p.actions.size should be(1)
-    p.withs.head.doSteps.size should be(2)
+    assert(p.actions.size === 1)
+    assert(p.withs.head.doSteps.size === 2)
   }
 
   it should "handle multiple with blocks" in {
@@ -592,7 +595,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.actions.size should equal(2)
+    assert(actions.actions.size === 2)
   }
 
   it should "handle multiple with blocks 2" in {
@@ -618,11 +621,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
         |   updateImport old_name new_name
       """.stripMargin
     val rug = ri.parse(prog).head
-    rug.actions.size should equal(2)
+    assert(rug.actions.size === 2)
     rug.withs(1).predicate match {
       case rp: ParsedRegisteredFunctionPredicate =>
-        rp.args.size should equal(1)
-        rp.args should equal(Seq(IdentifierFunctionArg("old_name")))
+        assert(rp.args.size === 1)
+        assert(rp.args === Seq(IdentifierFunctionArg("old_name")))
     }
   }
 
@@ -642,9 +645,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.actions.size should equal(1)
-    actions.withs.head.doSteps.size should be(1)
-    actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size should be(1)
+    assert(actions.actions.size === 1)
+    assert(actions.withs.head.doSteps.size === 1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size === 1)
   }
 
   it should "handle nested with blocks" in {
@@ -666,9 +669,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.actions.size should equal(1)
-    actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size should be(1)
-    actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size should be(2)
+    assert(actions.actions.size === 1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size === 1)
+    assert(actions.withs.head.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.head.asInstanceOf[WithDoStep].wth.doSteps.size === 2)
   }
 
   it should "find description" in {
@@ -685,7 +688,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
          | append "A";
       """.stripMargin
     val actions = ri.parse(prog).head
-    actions.description should equal(desc)
+    assert(actions.description === desc)
   }
 
   it should "find match alias and kind" in {
@@ -707,11 +710,11 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val actions = ri.parse(prog).head
-    actions.withs.size should be(2)
-    actions.withs.head.alias should be("f")
-    actions.withs.head.kind should be("File")
-    actions.withs(1).alias should be("t")
-    actions.withs(1).kind should be("thing")
+    assert(actions.withs.size === 2)
+    assert(actions.withs.head.alias === "f")
+    assert(actions.withs.head.kind === "File")
+    assert(actions.withs(1).alias === "t")
+    assert(actions.withs(1).kind === "thing")
   }
 
   it should "accept comments" in {
@@ -749,9 +752,9 @@ class RugEditorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val progs = ri.parse(prog)
-    progs.head.name should be("RemoveEJB")
-    progs.size should be(2)
-    progs(1).name should be("Caspar")
+    assert(progs.head.name === "RemoveEJB")
+    assert(progs.size === 2)
+    assert(progs(1).name === "Caspar")
   }
 
   it should "fail invalid input after a valid editor" in {
@@ -792,6 +795,7 @@ class RugEditorParserTest extends FlatSpec with Matchers {
     }
     catch {
       case micturation: BadRugSyntaxException =>
+    
     }
   }
 

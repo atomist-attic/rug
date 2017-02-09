@@ -18,6 +18,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
 
+
   it should "rename module using native Rug predicate" in doRename(
     """
       |@description "Renames an Elm module"
@@ -37,7 +38,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  private def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
+  private  def createElmRenamerClass(param: Boolean, prints: Boolean = false) = {
     val p1 = """{name: "old_name", description: "Name of module we're renaming", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
     val p2 = """{name: "new_name", description: "New name for the module", required: true, maxLength: 100, pattern: "^[A-Z][\w]+$"}"""
 
@@ -165,7 +166,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  private def doRename(program: String,
+  private  def doRename(program: String,
                        runtime: RugPipeline = new DefaultRugPipeline()) {
     val oldModuleName = "Todo"
     val newModuleName = "Foobar"
@@ -182,6 +183,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
     )
     )
 
+
     val result = elmExecute(elmProject, program, Map(
       "old_name" -> oldModuleName,
       "new_name" -> newModuleName
@@ -189,9 +191,9 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
       runtime = runtime)
 
     val newTodoContent = result.findFile(s"$newModuleName.elm").value.content
-    newTodoContent.trim should equal("module Foobar exposing (..)")
+    assert(newTodoContent.trim === "module Foobar exposing (..)")
     val newUsesTodoContent = result.findFile(usesTodoSource.path).value.content
-    newUsesTodoContent.trim should equal(makeUsesTodoSource(newModuleName).content.trim)
+    assert(newUsesTodoContent.trim === makeUsesTodoSource(newModuleName).content.trim)
   }
 
   it should "rename module directly under project using native Rug predicate" in {
@@ -368,7 +370,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").value.content
-    content.trim should equal(output.trim)
+    assert(content.trim === output.trim)
   }
 
   it should "rename a simple constant" in {
@@ -395,7 +397,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
     val r = elmExecute(new SimpleFileBasedArtifactSource("", todoSource), prog)
     val content = r.findFile("Main.elm").value.content
-    content.trim should equal(output.trim)
+    assert(content.trim === output.trim)
   }
 
   it should "add a value to the model in an advanced program with quotes around any string" in {
@@ -784,15 +786,18 @@ object ElmTypeUsageTest extends FlatSpec {
 
   class TestDidNotModifyException extends RuntimeException
 
+
   def elmExecute(elmProject: ArtifactSource, program: String,
                  params: Map[String, String] = Map(),
                  runtime: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
+                
                 ): ArtifactSource = {
 
     val as = TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program)))
     val eds = runtime.create(as,  None)
     if (eds.isEmpty) {
       print(program); throw new Exception("No editor was parsed")
+    
     }
     val pe = eds.head.asInstanceOf[ProjectEditor]
 

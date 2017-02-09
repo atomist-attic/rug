@@ -94,6 +94,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
+
   it should "parse = literal string in predicates" in
     parseLiteralStringInPredicates(EqualsLiteralStringInPredicate)
 
@@ -137,8 +138,8 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  replace "Dog" num
       """.stripMargin
     val rp = ri.parse(prog).head
-    rp.runs.size should be(1)
-    rp.runs.head.args.head.parameterName should equal(Some("num"))
+    assert(rp.runs.size === 1)
+    assert(rp.runs.head.args.head.parameterName === Some("num"))
   }
 
   it should "allow alias to be omitted and default correctly" in {
@@ -151,8 +152,8 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  replace "Dog" "Cat"
       """.stripMargin
     val rp = ri.parse(prog).head
-    rp.withs.size should be(1)
-    rp.withs.head.alias should be("Project")
+    assert(rp.withs.size === 1)
+    assert(rp.withs.head.alias === "Project")
   }
 
   it should "allow alias to dotted type to be omitted and default correctly" in {
@@ -165,8 +166,8 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  replace "Dog" "Cat"
       """.stripMargin
     val rp = ri.parse(prog).head
-    rp.withs.size should be(1)
-    rp.withs.head.alias should be("project")
+    assert(rp.withs.size === 1)
+    assert(rp.withs.head.alias === "project")
   }
 
   it should "allow arguments to be specified in JavaScript" in {
@@ -181,7 +182,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  do regexpReplace { 'regex\s*with\s*"quotes"' } replacementText
       """.stripMargin
     val rp = ri.parse(prog).head
-    rp.actions.size should be(1)
+    assert(rp.actions.size === 1)
     val vis = new SaveAllDescendantsVisitor
     rp.accept(vis, 0)
     vis.descendants collect {
@@ -201,7 +202,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
         |  do regexpReplace "regex\\s*with\\s*\"quotes[^\"]+\"" { "\"" + replacementText + "\"" }
       """.stripMargin
     val rp = ri.parse(prog).head
-    rp.actions.size should be(1)
+    assert(rp.actions.size === 1)
     val vis = new SaveAllDescendantsVisitor
     rp.accept(vis, 0)
     vis.descendants collect {
@@ -261,11 +262,12 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
     )
 
-  private def parseLiteralStringInPredicates(prog: String) {
+  private  def parseLiteralStringInPredicates(prog: String) {
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
+    
     }
   }
 
@@ -283,9 +285,10 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case AndExpression(a: EqualsExpression, b: ParsedRegisteredFunctionPredicate) =>
+    
     }
   }
 
@@ -306,7 +309,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case AndExpression(a: EqualsExpression, b: AndExpression) =>
         a.b.isInstanceOf[Literal[Int@unchecked]] should be(true)
@@ -332,7 +335,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case AndExpression(a: EqualsExpression, b: AndExpression) =>
         a.b.isInstanceOf[Literal[Int@unchecked]] should be(true)
@@ -357,14 +360,14 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.doSteps.head match {
       case fd: FunctionDoStep =>
-        fd.function should equal("fileHasContent")
-        fd.args.size should be(2)
+        assert(fd.function === "fileHasContent")
+        assert(fd.args.size === 2)
         fd.args(1) match {
           case WrappedFunctionArg(p: ParsedRegisteredFunctionPredicate, _) =>
-            p.args.size should be(2)
+            assert(p.args.size === 2)
           case _ => ???
         }
       case _ => ???
@@ -385,7 +388,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case EqualsExpression(a, b) =>
         b.isInstanceOf[Literal[Boolean@unchecked]] should be(true)
@@ -394,8 +397,8 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
   it should "resolve well-known regex in parameter" in {
     val parsed = ri.parse(WellKnownRegexInParameter).head
-    parsed.parameters.size should be(1)
-    parsed.parameters.head.getPattern should be(DefaultIdentifierResolver.knownIds("java_class"))
+    assert(parsed.parameters.size === 1)
+    assert(parsed.parameters.head.getPattern === DefaultIdentifierResolver.knownIds("java_class"))
   }
 
   it should "resolve well-known regex in parameter with comment on same line" in {
@@ -409,15 +412,15 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.parameters.size should be(1)
-    parsed.parameters.head.getPattern should be(DefaultIdentifierResolver.knownIds("java_class"))
+    assert(parsed.parameters.size === 1)
+    assert(parsed.parameters.head.getPattern === DefaultIdentifierResolver.knownIds("java_class"))
   }
 
   it should "expose parameter tags" in {
     val prog = InvokeOtherOperationWithSingleParameter
 
     val parsed = ri.parse(prog).head
-    parsed.parameters.size should be(1)
+    assert(parsed.parameters.size === 1)
     parsed.parameters.head.getTags.map(t => t.name) should equal(List("java", "spring"))
   }
 
@@ -436,11 +439,11 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.parameters.size should be(1)
+    assert(parsed.parameters.size === 1)
     val p = parsed.parameters.head
-    p.getMinLength should be(6)
-    p.getMaxLength should be(32)
-    p.getDefaultValue should be(name)
+    assert(p.getMinLength === 6)
+    assert(p.getMaxLength === 32)
+    assert(p.getDefaultValue === name)
   }
 
   it should "accept local arguments for run operation" in {
@@ -454,13 +457,12 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.runs.size should equal(1)
+    assert(parsed.runs.size === 1)
     val r = parsed.runs.head
-    r.name should equal("Foobar")
-    r.args should equal(Seq(
+    assert(r.name === "Foobar")
+    assert(r.args === Seq(
       WrappedFunctionArg(SimpleLiteral("foo"), Some("argA")),
-      WrappedFunctionArg(SimpleLiteral("bar"), Some("argB")))
-    )
+      WrappedFunctionArg(SimpleLiteral("bar"), Some("argB"))))
   }
 
   it should "reject bogus regex in parameter" in {
@@ -477,9 +479,10 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
   it should "parse = javascript block in predicate" in {
     val parsed = ri.parse(EqualsJavaScriptBlockInPredicate).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
+    
     }
   }
 
@@ -497,9 +500,10 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
+    
     }
   }
 
@@ -517,9 +521,10 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case eq: EqualsExpression =>
+      
       case _ => ???
     }
   }
@@ -539,10 +544,10 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.actions.size should be(2)
+    assert(parsed.actions.size === 2)
     parsed.actions.head.isInstanceOf[With] should be(true)
     parsed.actions(1) match {
-      case r: RunOtherOperation => r.name should equal("EditorA")
+      case r: RunOtherOperation => assert(r.name === "EditorA")
       case _ => ???
     }
   }
@@ -627,7 +632,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.publishedName should be(Some("Triplet"))
+    assert(parsed.publishedName === Some("Triplet"))
   }
 
   it should "parse @generator annotation on operation with name override" in {
@@ -646,7 +651,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.publishedName should be(Some(publishedName))
+    assert(parsed.publishedName === Some(publishedName))
   }
 
   it should "parse generator on operation with name override" in {
@@ -664,7 +669,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.publishedName should be(Some(publishedName))
+    assert(parsed.publishedName === Some(publishedName))
   }
 
   it should "pick up multiple @tags annotations on operation with name override" in {
@@ -685,8 +690,8 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.publishedName should be(Some(publishedName))
-    parsed.tags should equal(Seq("Foo", "Bar"))
+    assert(parsed.publishedName === Some(publishedName))
+    assert(parsed.tags === Seq("Foo", "Bar"))
   }
 
   it should "reject @publish annotation on parameters" in {
@@ -720,11 +725,11 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.doSteps.head match {
       case dds: FunctionDoStep =>
-        dds.function should equal("append")
-        dds.target should equal(Some("f"))
+        assert(dds.function === "append")
+        assert(dds.target === Some("f"))
       case _ => ???
     }
   }
@@ -739,14 +744,14 @@ class CommonRugParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     val parsed = ri.parse(prog).head
-    parsed.withs.size should be(1)
+    assert(parsed.withs.size === 1)
     parsed.withs.head.predicate match {
       case cp: ComparisonPredicate =>
         cp.a match {
           case p: ParsedRegisteredFunctionPredicate =>
-            p.function should equal("name")
-            p.target should equal(Some("f"))
-            p.pathBelow should equal(Seq("length"))
+            assert(p.function === "name")
+            assert(p.target === Some("f"))
+            assert(p.pathBelow === Seq("length"))
         }
     }
   }
@@ -765,7 +770,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val comp = p.computations.head
     comp.te match {
       case sl: SimpleLiteral[String@unchecked] =>
-        sl.value should equal("elm-stuff\ntarget")
+        assert(sl.value === "elm-stuff\ntarget")
     }
   }
 
@@ -797,10 +802,11 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     ri.parse(prog)
   }
 
-  private def updateWith(prog: String): Unit = {
+  private  def updateWith(prog: String): Unit = {
     val filename = "test.txt"
     val as = new SimpleFileBasedArtifactSource("name", Seq(StringFileArtifact(filename, "some content")))
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+
 
     val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Seq.empty))
     val f = r.findFile(".gitignore").get

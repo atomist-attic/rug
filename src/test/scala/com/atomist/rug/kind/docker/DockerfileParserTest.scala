@@ -6,11 +6,11 @@ import org.scalatest.{FlatSpec, Matchers}
 class DockerfileParserTest extends FlatSpec with Matchers {
 
   it should "parse empty file" in {
-    parse(null).toString should equal("")
+    assert(parse(null).toString === "")
   }
 
   it should "parse simple file" in {
-    parse("FROM java:8-jre").toString should equal("FROM java:8-jre")
+    assert(parse("FROM java:8-jre").toString === "FROM java:8-jre")
   }
 
   it should "parse multiline file" in {

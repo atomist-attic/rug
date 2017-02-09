@@ -11,15 +11,15 @@ class ReviewCommentTest extends FlatSpec with Matchers {
     val rc3 = ReviewComment("comment2", BROKEN, Some("file"))
 
     val rr = ReviewResult("", Seq(rc1))
-    rr.severity should equal(MAJOR)
+    assert(rr.severity === MAJOR)
     val rr2 = ReviewResult("", Seq(rc1, rc2))
-    rr2.severity should equal(MAJOR)
+    assert(rr2.severity === MAJOR)
     val rr3 = ReviewResult("", Seq(rc1, rc2, rc3))
-    rr3.severity should equal(BROKEN)
+    assert(rr3.severity === BROKEN)
   }
 
   it should "compute severity without issues" in {
     val rr = ReviewResult("nothing")
-    rr.severity should be(FINE)
+    assert(rr.severity === FINE)
   }
 }

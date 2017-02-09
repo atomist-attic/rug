@@ -17,7 +17,7 @@ class FileMutableViewTest extends FlatSpec with Matchers {
   it should "return linecount in single line file" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.lineCount should be (1)
+    assert(fmv.lineCount === 1)
   }
 
   it should "return linecount in longer file" in {
@@ -32,7 +32,7 @@ class FileMutableViewTest extends FlatSpec with Matchers {
         |on
       """.stripMargin)
     val fmv = new FileMutableView(f, null)
-    fmv.lineCount should be (9)
+    assert(fmv.lineCount === 9)
   }
 
   it should "handle contains" in {
@@ -55,39 +55,39 @@ class FileMutableViewTest extends FlatSpec with Matchers {
   it should "setPath" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.path should equal (f.path)
-    fmv.dirty should be (false)
+    assert(fmv.path === f.path)
+    assert(fmv.dirty === false)
     val path2 = "foobar/name"
     fmv.setPath(path2)
-    fmv.dirty should be (true)
-    fmv.path should equal (path2)
-    fmv.currentBackingObject.path should equal (path2)
-    fmv.originalBackingObject should equal (f)
+    assert(fmv.dirty === true)
+    assert(fmv.path === path2)
+    assert(fmv.currentBackingObject.path === path2)
+    assert(fmv.originalBackingObject === f)
   }
 
   it should "setName in root" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.name should equal("name")
-    fmv.dirty should be (false)
+    assert(fmv.name === "name")
+    assert(fmv.dirty === false)
     val name2 = "foobar"
     fmv.setName(name2)
-    fmv.dirty should be (true)
-    fmv.path should equal (name2)
-    fmv.currentBackingObject.path should equal (name2)
-    fmv.originalBackingObject should equal (f)
+    assert(fmv.dirty === true)
+    assert(fmv.path === name2)
+    assert(fmv.currentBackingObject.path === name2)
+    assert(fmv.originalBackingObject === f)
   }
 
   it should "setName under path" in {
     val f = StringFileArtifact("foo/name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.name should equal("name")
-    fmv.dirty should be (false)
+    assert(fmv.name === "name")
+    assert(fmv.dirty === false)
     val name2 = "foobar"
     fmv.setName(name2)
-    fmv.dirty should be (true)
-    fmv.originalBackingObject should equal (f)
-    fmv.currentBackingObject.path should equal ("foo/" + name2)
+    assert(fmv.dirty === true)
+    assert(fmv.originalBackingObject === f)
+    assert(fmv.currentBackingObject.path === "foo/" + name2)
   }
 
   it should "verify permissions and unique id after setPath" is pending
@@ -99,43 +99,43 @@ class FileMutableViewTest extends FlatSpec with Matchers {
   it should "setContent" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.content should equal (f.content)
-    fmv.dirty should be (false)
+    assert(fmv.content === f.content)
+    assert(fmv.dirty === false)
     val content2 = "To be or not to be"
     fmv.setContent(content2)
-    fmv.dirty should be (true)
-    fmv.content should equal (content2)
-    fmv.originalBackingObject should equal (f)
+    assert(fmv.dirty === true)
+    assert(fmv.content === content2)
+    assert(fmv.originalBackingObject === f)
   }
 
   it should "handle prepend" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.content should equal (f.content)
-    fmv.dirty should be (false)
+    assert(fmv.content === f.content)
+    assert(fmv.dirty === false)
     val prepended = "To be or not to be"
     fmv.prepend(prepended)
-    fmv.dirty should be (true)
-    fmv.content should equal (prepended + f.content)
-    fmv.originalBackingObject should equal (f)
+    assert(fmv.dirty === true)
+    assert(fmv.content === prepended + f.content)
+    assert(fmv.originalBackingObject === f)
   }
 
   it should "handle append" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.content should equal (f.content)
-    fmv.dirty should be (false)
+    assert(fmv.content === f.content)
+    assert(fmv.dirty === false)
     val appended = "To be or not to be"
     fmv.append(appended)
-    fmv.dirty should be (true)
-    fmv.content should equal (f.content + appended)
-    fmv.originalBackingObject should equal (f)
+    assert(fmv.dirty === true)
+    assert(fmv.content === f.content + appended)
+    assert(fmv.originalBackingObject === f)
   }
 
   it should "return name" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.filename should equal (f.name)
+    assert(fmv.filename === f.name)
   }
 
   it should "not add a string if the text already contains it" in {
@@ -143,9 +143,10 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
 
+
     val newString: String = " over the lazy dog"
     fmv.mustContain(newString)
-    fmv.content should equal(initialContent + newString)
+    assert(fmv.content === initialContent + newString)
   }
 
   it should "add a string if it isn't already present" in {
@@ -153,8 +154,9 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
 
+
     fmv.mustContain("over the lazy dog")
-    fmv.content should equal(initialContent)
+    assert(fmv.content === initialContent)
   }
 
   it should "not add a required string twice" in {
@@ -162,18 +164,19 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
 
+
     fmv.mustContain("over the lazy dog")
     fmv.mustContain("over the lazy dog")
-    fmv.content should equal(initialContent)
+    assert(fmv.content === initialContent)
   }
 
   it should "make file executable" in {
     val f = StringFileArtifact("name.sh", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    fmv.name should equal("name.sh")
-    fmv.dirty should be (false)
+    assert(fmv.name === "name.sh")
+    assert(fmv.dirty === false)
     fmv.makeExecutable()
-    fmv.dirty should be (true)
-    fmv.currentBackingObject.mode should equal (FileArtifact.ExecutableMode)
+    assert(fmv.dirty === true)
+    assert(fmv.currentBackingObject.mode === FileArtifact.ExecutableMode)
   }
 }

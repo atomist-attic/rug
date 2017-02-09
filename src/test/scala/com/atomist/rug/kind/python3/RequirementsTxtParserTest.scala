@@ -52,22 +52,22 @@ class RequirementsTxtParserTest extends FlatSpec with Matchers {
 
   it should "return tree and spit out unchanged" in {
     val reqs: TreeNode = RequirementsTxtParser.parseFile(simple1)
-    reqs.value.trim should equal(simple1.trim)
+    assert(reqs.value.trim === simple1.trim)
   }
 
   it should "allow update in place" in {
     val reqs = RequirementsTxtParser.parseFile(simple1)
     val req0 = reqs.requirements.head
-    req0.packageName.value should be("flask")
-    req0.version.get.value should be("0.11.1")
+    assert(req0.packageName.value === "flask")
+    assert(req0.version.get.value === "0.11.1")
     req0.version.get.update("0.12")
-    reqs.value.trim should equal(simple1.trim.replace("0.11.1", "0.12"))
+    assert(reqs.value.trim === simple1.trim.replace("0.11.1", "0.12"))
   }
 
   it should "perform upgrade operation" in {
     val reqs = RequirementsTxtParser.parseFile(simple1)
     reqs.update("flask", "0.12")
-    reqs.value.trim should equal(simple1.trim.replace("0.11.1", "0.12"))
+    assert(reqs.value.trim === simple1.trim.replace("0.11.1", "0.12"))
   }
 
   it should "add requirement" in {
@@ -80,15 +80,15 @@ class RequirementsTxtParserTest extends FlatSpec with Matchers {
 
   it should "parse without versions" in {
     val reqs = parsesOk(noVersions)
-    reqs.requirements.size should be(3)
+    assert(reqs.requirements.size === 3)
   }
 
   it should "parse with versions" in {
     val reqs = parsesOk(withVersions)
-    reqs.requirements.size should be(4)
+    assert(reqs.requirements.size === 4)
   }
 
-  private def parsesOk(content: String): Requirements = {
+  private  def parsesOk(content: String): Requirements = {
     val reqs = RequirementsTxtParser.parseFile(content)
     reqs
   }

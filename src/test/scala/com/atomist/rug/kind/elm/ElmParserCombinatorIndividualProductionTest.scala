@@ -9,7 +9,7 @@ class ElmParserCombinatorIndividualProductionTest extends FlatSpec with Matchers
     val input = """ "Foo" """
     val result = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.stringConstant, input)
     result match {
-      case sc: StringConstant => sc.s should be ("Foo")
+      case sc: StringConstant => assert(sc.s === "Foo")
       case _ => ???
     }
   }
@@ -25,7 +25,7 @@ class ElmParserCombinatorIndividualProductionTest extends FlatSpec with Matchers
         |            model
       """.stripMargin
     val cs = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.caseExpression, input)
-    cs.clauses.size should be (2)
+    assert(cs.clauses.size === 2)
   }
 
   it should "parse this function call" in {
@@ -39,7 +39,7 @@ class ElmParserCombinatorIndividualProductionTest extends FlatSpec with Matchers
 
     val e = ElmParserCombinator.parseProduction(ElmParserCombinator.ElmExpressions.expression, input)
     e match {
-      case fa: ElmFunctionApplication => fa.parameters.size should be(1)
+      case fa: ElmFunctionApplication => assert(fa.parameters.size === 1)
       case _ => ???
     }
   }

@@ -41,18 +41,20 @@ class PositivePredicateTest extends FlatSpec with Matchers {
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
 
+
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
 
     val carrotContent = result.findFile(s"Banana.elm").value.content
     // TODO: remove the trims! this finds the newline problem
-    carrotContent.trim should equal(expected.trim)
+    assert(carrotContent.trim === expected.trim)
   }
 
   it should "not delete the trailing newline" in pendingUntilFixed {
     val source = StringFileArtifact("Banana.elm", original)
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
+
 
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
@@ -97,6 +99,7 @@ class NegativePredicateTest extends FlatSpec with Matchers {
     val source = StringFileArtifact("Banana.elm", original)
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
+
 
     an [TestDidNotModifyException] should be thrownBy {
       elmExecute(elmProject, editor, Map[String, String](),

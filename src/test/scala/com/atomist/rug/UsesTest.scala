@@ -19,6 +19,7 @@ class UsesTest extends FlatSpec with Matchers {
     )
   )
 
+
   it should "not allow using unknown editor" in {
     val prog =
       """
@@ -82,9 +83,9 @@ class UsesTest extends FlatSpec with Matchers {
     pe.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(1)
+        assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
-        sm.result.findFile("filename").get.content should equal("foo bar")
+        assert(sm.result.findFile("filename").get.content === "foo bar")
       case _ => ???
     }
   }
@@ -107,12 +108,12 @@ class UsesTest extends FlatSpec with Matchers {
       """.stripMargin
     val namespace = "com.foobar"
     val pe = create(prog, Some(namespace)).find(_.name.equals(namespace + ".Redeploy")).get
-    pe.name should equal(namespace + ".Redeploy")
+    assert(pe.name === namespace + ".Redeploy")
     pe.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(1)
+        assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
-        sm.result.findFile("filename").get.content should equal("foo bar")
+        assert(sm.result.findFile("filename").get.content === "foo bar")
       case _ => ???
     }
   }
@@ -143,9 +144,9 @@ class UsesTest extends FlatSpec with Matchers {
     pe.modify(simpleAs, SimpleProjectOperationArguments.Empty)
     match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(1)
+        assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
-        sm.result.findFile("filename").get.content should equal("foo baz")
+        assert(sm.result.findFile("filename").get.content === "foo baz")
       case _ => ???
     }
   }
@@ -173,12 +174,12 @@ class UsesTest extends FlatSpec with Matchers {
     val namespace = "com.foobar"
     val foo = create(global, Some("foo")).head
     val pe = create(prog, Some(namespace), Seq(foo)).head
-    pe.name should equal(namespace + ".Redeploy")
+    assert(pe.name === namespace + ".Redeploy")
     pe.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
       case sm: SuccessfulModification =>
-        sm.result.totalFileCount should be(1)
+        assert(sm.result.totalFileCount === 1)
         // Check that both editors ran
-        sm.result.findFile("filename").get.content should equal("foo bar")
+        assert(sm.result.findFile("filename").get.content === "foo bar")
       case _ => ???
     }
   }
@@ -198,7 +199,7 @@ class UsesTest extends FlatSpec with Matchers {
         |do replace "some" "bar"
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get
-    ed.parameters should equal(Nil)
+    assert(ed.parameters === Nil)
   }
 
   it should "export single parameters from used editor" in {
@@ -221,9 +222,9 @@ class UsesTest extends FlatSpec with Matchers {
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get
     val red = ed.asInstanceOf[RugDrivenProjectEditor]
-    red.program.runs should equal(Seq(RunOtherOperation("Foo", Nil, None, None, None)))
-    ed.parameters.size should be(1)
-    ed.parameters.head.getName should be("foo")
+    assert(red.program.runs === Seq(RunOtherOperation("Foo", Nil, None, None, None)))
+    assert(ed.parameters.size === 1)
+    assert(ed.parameters.head.getName === "foo")
   }
 
   it should "export all extra parameters from imported editor minus ones that are set" in
@@ -232,7 +233,7 @@ class UsesTest extends FlatSpec with Matchers {
   it should "export all extra parameters from imported editor minus ones that are set, in namespace" in
     exportAllExtraParametersFromImportedEditorMinusOnesThatAreSet(Some("foo.bar"))
 
-  private def exportAllExtraParametersFromImportedEditorMinusOnesThatAreSet(namespace: Option[String]) = {
+  private  def exportAllExtraParametersFromImportedEditorMinusOnesThatAreSet(namespace: Option[String]) = {
     val prog =
       """
         |editor Redeploy
@@ -253,8 +254,8 @@ class UsesTest extends FlatSpec with Matchers {
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, namespace).find(_.name.equals(namespace.map(ns => ns + ".").getOrElse("") + "Redeploy")).get
-    ed.parameters.size should be(2)
-    ed.parameters.map(p => p.name).toSet should equal(Set("foo", "bar"))
+    assert(ed.parameters.size === 2)
+    assert(ed.parameters.map(p => p.name).toSet === Set("foo", "bar"))
   }
 
   it should "not export duplicate parameters" in {
@@ -287,8 +288,8 @@ class UsesTest extends FlatSpec with Matchers {
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, None).find(_.name.equals("Redeploy")).get
-    ed.parameters.size should be(2)
-    ed.parameters.map(p => p.name).toSet should equal(Set("foo", "bar"))
+    assert(ed.parameters.size === 2)
+    assert(ed.parameters.map(p => p.name).toSet === Set("foo", "bar"))
   }
 
   it should "preserve parameter ordering per order of editors" in {
@@ -318,7 +319,7 @@ class UsesTest extends FlatSpec with Matchers {
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog, None).find(_.name.equals("Redeploy")).get
-    ed.parameters.map(p => p.name).toList should equal(List("foo", "bar", "baz"))
+    assert(ed.parameters.map(p => p.name).toList === List("foo", "bar", "baz"))
     val prog2 =
       """
         |editor Redeploy
@@ -345,7 +346,7 @@ class UsesTest extends FlatSpec with Matchers {
         | do replace "some" "bar"
       """.stripMargin
     val ed2 = create(prog2, None).find(_.name.equals("Redeploy")).get
-    ed2.parameters.map(p => p.name).toList should equal(List("baz", "foo", "bar"))
+    assert(ed2.parameters.map(p => p.name).toList === List("baz", "foo", "bar"))
   }
 
   it should "export for otherwise empty using editor" in
@@ -354,7 +355,7 @@ class UsesTest extends FlatSpec with Matchers {
   it should "export for otherwise empty using namespace" in
     exportForOtherwiseEmpty(Some("whatever"))
 
-  private def exportForOtherwiseEmpty(namespace: Option[String]) {
+  private  def exportForOtherwiseEmpty(namespace: Option[String]) {
     val prog =
       """
         |editor PackageMove
@@ -372,15 +373,16 @@ class UsesTest extends FlatSpec with Matchers {
         |PackageMove
       """.stripMargin
     val ed = create(prog, namespace).find(_.name.equals(namespace.map(ns => ns + ".").getOrElse("") + "ParameterizePackage")).get
-    ed.parameters.size should be(1)
+    assert(ed.parameters.size === 1)
     val red = ed.asInstanceOf[RugDrivenProjectEditor]
-    red.program.runs should equal(Seq(RunOtherOperation("PackageMove", Nil, None, None, None)))
-    red.program.computations.size should be(1)
-    red.program.withs.size should be(0)
-    ed.parameters.map(p => p.name).toSet should equal(Set("new_package"))
+    assert(red.program.runs === Seq(RunOtherOperation("PackageMove", Nil, None, None, None)))
+    assert(red.program.computations.size === 1)
+    assert(red.program.withs.size === 0)
+    assert(ed.parameters.map(p => p.name).toSet === Set("new_package"))
     // Check it works OK with these parameters
     ed.modify(new EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "test"))) match {
       case nmn: NoModificationNeeded =>
+      
       case _ => ???
     }
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("src/main/java/com/atomist/springrest/Dog.java",
@@ -390,6 +392,7 @@ class UsesTest extends FlatSpec with Matchers {
       """.stripMargin))
     ed.modify(as, SimpleProjectOperationArguments("", Map[String, String]("new_package" -> "com.foo"))) match {
       case sm: SuccessfulModification =>
+      
       case _ => ???
     }
   }
@@ -410,15 +413,16 @@ class UsesTest extends FlatSpec with Matchers {
         | PackageMove old_package = "com.atomist.test1", new_package = "com.foo.bar"
       """.stripMargin
     val ed = create(prog, None).find(_.name.equals("ParameterizePackage")).get
-    ed.parameters.size should be(0)
+    assert(ed.parameters.size === 0)
     val red = ed.asInstanceOf[RugDrivenProjectEditor]
-    red.program.runs should equal(Seq(RunOtherOperation("PackageMove", Seq(
+    assert(red.program.runs === Seq(RunOtherOperation("PackageMove", Seq(
       WrappedFunctionArg(SimpleLiteral("com.atomist.test1"), parameterName = Some("old_package")),
       WrappedFunctionArg(SimpleLiteral("com.foo.bar"), parameterName = Some("new_package"))
     ), None, None, None)))
-    red.program.withs.size should be(0)
+    assert(red.program.withs.size === 0)
     ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleProjectOperationArguments("", Map[String, String]())) match {
       case sm: SuccessfulModification =>
+      
       case _ => ???
     }
   }
@@ -475,13 +479,13 @@ class UsesTest extends FlatSpec with Matchers {
         | do replace "some" "bar"
       """.stripMargin
     val ed = create(prog).find(_.name.equals("Redeploy")).get
-    ed.parameters.size should be(1)
-    ed.parameters.map(p => p.name).toSet should equal(Set("foo"))
+    assert(ed.parameters.size === 1)
+    assert(ed.parameters.map(p => p.name).toSet === Set("foo"))
   }
 
   it should "validate setting used operation parameters via compute" is pending
 
-  private def create(prog: String, namespace: Option[String] = None, globals: Seq[ProjectEditor] = Nil): Seq[ProjectEditor] = {
+  private  def create(prog: String, namespace: Option[String] = None, globals: Seq[ProjectEditor] = Nil): Seq[ProjectEditor] = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val rugAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(prog), prog))
     runtime.create(rugAs,namespace,globals).asInstanceOf[Seq[ProjectEditor]]

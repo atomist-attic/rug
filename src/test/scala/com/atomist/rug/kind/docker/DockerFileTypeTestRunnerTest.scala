@@ -55,9 +55,11 @@ class DockerFileTypeTestRunnerTest extends FlatSpec with Matchers with RugTestRu
 
     val test = RugTestParser.parse(StringFileArtifact("x.rt", scenario))
     val executedTests = testRunner.run(test, new SimpleFileBasedArtifactSource("", dockerfile), eds)
-    executedTests.tests.size should be(1)
+    assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
+        // Ok
+    
         // Ok
     }
   }

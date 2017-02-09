@@ -13,14 +13,15 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
 
   import Python3ParserTest._
 
-  private val pex = new PathExpressionEngine
+  private  val pex = new PathExpressionEngine
+
 
   it should "find Python file type using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/File()/PythonFile()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
     //    rtn.right.get.foreach {
     //      case p: PythonFileMutableView =>
     //    }
@@ -34,7 +35,9 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
+      
       case x => //println(s"Was empty: $x")
+     //println(s"Was empty: $x")
     }
   }
 
@@ -46,7 +49,9 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be>(2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
+      
       case x => //println(s"Was empty: $x")
+     //println(s"Was empty: $x")
     }
   }
 }

@@ -17,15 +17,16 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new ScalaFileType
 
+
   it should "ignore ill-formed file without error" in {
     val scalas = typeBeingTested.findAllIn(projectWithBogusScala)
     // Should have silently ignored the bogus file
-    scalas.size should be(1)
+    assert(scalas.size === 1)
   }
 
   it should "parse hello world" in {
     val scalas = typeBeingTested.findAllIn(helloWorldProject)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
   }
 
   it should "parse hello world and write out correctly" in {
@@ -38,7 +39,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val scalas = typeBeingTested.findAllIn(helloWorldProject)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
     scalas.head.head match {
       case mtn: MutableContainerMutableView =>
         val content = mtn.value
@@ -49,29 +50,29 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
   it should "find hello world using path expression" in {
     val expr = "//ScalaFile()"
     val rtn = expressionEngine.evaluate(helloWorldProject, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 
   it should "find specific exception catch" in {
     val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(exceptionsProject)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
-        nodes.head.value should be("ThePlaneHasFlownIntoTheMountain")
+        assert(nodes.size === 1)
+        assert(nodes.head.value === "ThePlaneHasFlownIntoTheMountain")
       case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
     }
 
-    scalaFileNode.value should equal(Exceptions.content)
+    assert(scalaFileNode.value === Exceptions.content)
   }
 
   it should "find and modify specific exception catch" in {
     val proj = exceptionsProject
     val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val newException = "MicturationException"
@@ -79,7 +80,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
+        assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
         mut.update(newException)
       case wtf =>
@@ -87,18 +88,18 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
-    scalaFileNode.value should equal(newContent)
+    assert(scalaFileNode.value === newContent)
 
-    scalaFileNode.dirty should be(true)
+    assert(scalaFileNode.dirty === true)
     val updatedFile = proj.findFile(Exceptions.path)
-    updatedFile.content should be(newContent)
+    assert(updatedFile.content === newContent)
     //updatedFile.dirty should be(true)
   }
 
   it should "find and modify multiple points" in {
     val proj = exceptionsProject
     val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val newException = "MicturationException"
@@ -106,28 +107,29 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val expr = "//case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(2)
+        assert(nodes.size === 2)
         nodes.foreach {
           case mut: MutableContainerMutableView => mut.update(newException)
           case _ =>
+        
         }
       case wtf =>
         fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
     }
 
     val newContent = Exceptions.content.replaceAll("ThePlaneHasFlownIntoTheMountain", newException)
-    scalaFileNode.value should equal(newContent)
+    assert(scalaFileNode.value === newContent)
 
-    scalaFileNode.dirty should be(true)
+    assert(scalaFileNode.dirty === true)
     val updatedFile = proj.findFile(Exceptions.path)
-    updatedFile.content should be(newContent)
+    assert(updatedFile.content === newContent)
     //updatedFile.dirty should be(true)
   }
 
   it should "find and modify specific exception catch body" in {
     val proj = exceptionsProject
     val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
-    scalas.size should be(1)
+    assert(scalas.size === 1)
     val scalaFileNode = scalas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val newException = "MicturationException"
@@ -136,7 +138,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val expr = "//termTryWithCases/case[//typeName[@value='ThePlaneHasFlownIntoTheMountain']]"
     expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
+        assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
         val terminals = TreeNodeOperations.terminals(mut)
         //println(terminals)
@@ -146,11 +148,11 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
-    scalaFileNode.value should equal(newContent)
+    assert(scalaFileNode.value === newContent)
 
-    scalaFileNode.dirty should be(true)
+    assert(scalaFileNode.dirty === true)
     val updatedFile = proj.findFile(Exceptions.path)
-    updatedFile.content should be(newContent)
+    assert(updatedFile.content === newContent)
     //updatedFile.dirty should be(true)
   }
 
@@ -162,6 +164,7 @@ object ScalaFileTypeTest {
 
   def projectWithBogusScala =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(BogusScala))
+
 
   val HelloWorldScala = StringFileArtifact("Hello.scala",
     """
@@ -271,8 +274,12 @@ object ScalaFileTypeTest {
   def helloWorldProject =
     new ProjectMutableView(SimpleFileBasedArtifactSource(HelloWorldScala))
 
+
   def exceptionsProject =
     new ProjectMutableView(SimpleFileBasedArtifactSource(Exceptions))
+
+
+
 
 
 }

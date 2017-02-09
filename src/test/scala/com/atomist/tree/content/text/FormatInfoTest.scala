@@ -8,26 +8,26 @@ class FormatInfoTest extends FlatSpec with Matchers {
 
   it should "find position at start of file" in {
     val fi = contextInfo("")
-    fi.offset should be (0)
-    fi.columnNumberFrom1 should be (1)
-    fi.lineNumberFrom1 should be (1)
-    fi.indentDepth should be (0)
+    assert(fi.offset === 0)
+    assert(fi.columnNumberFrom1 === 1)
+    assert(fi.lineNumberFrom1 === 1)
+    assert(fi.indentDepth === 0)
   }
 
   it should "find position within first line of file" in {
     val input = "The quick brown"
     val fi = contextInfo(input)
-    fi.columnNumberFrom1 should be (input.length + 1)
-    fi.lineNumberFrom1 should be (1)
-    fi.indentDepth should be (0)
+    assert(fi.columnNumberFrom1 === input.length + 1)
+    assert(fi.lineNumberFrom1 === 1)
+    assert(fi.indentDepth === 0)
   }
 
   it should "find position in second line of file" in {
     val input = "The\n "
     val fi = contextInfo(input)
-    fi.columnNumberFrom1 should be (2)
-    fi.lineNumberFrom1 should be (2)
-    fi.indentDepth should be (1)
+    assert(fi.columnNumberFrom1 === 2)
+    assert(fi.lineNumberFrom1 === 2)
+    assert(fi.indentDepth === 1)
   }
 
   it should "recognize indent depth of 4 with spaces" in
@@ -35,16 +35,16 @@ class FormatInfoTest extends FlatSpec with Matchers {
 
   it should "recognize indent depth of 3 with spaces" in {
     val fi = testIndent("   ")
-    fi.usesTabs should be (false)
+    assert(fi.usesTabs === false)
 
   }
 
   it should "recognize indent depth of 1 with tabs" in {
     val fi = testIndent("\t")
-    fi.usesTabs should be (true)
+    assert(fi.usesTabs === true)
   }
 
-  private def testIndent(indent: String): PointFormatInfo = {
+  private  def testIndent(indent: String): PointFormatInfo = {
     val input =
       s"""
         |public class Foobar {
@@ -53,10 +53,10 @@ class FormatInfoTest extends FlatSpec with Matchers {
         |${indent}void doSomething() {
         |${indent}${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
-    fi.columnNumberFrom1 should be (2 * indent.length + 8)
-    fi.lineNumberFrom1 should be (6)
-    fi.indentDepth should be (2)
-    fi.indent should be (indent)
+    assert(fi.columnNumberFrom1 === 2 * indent.length + 8)
+    assert(fi.lineNumberFrom1 === 6)
+    assert(fi.indentDepth === 2)
+    assert(fi.indent === indent)
     fi
   }
 
@@ -66,7 +66,7 @@ class FormatInfoTest extends FlatSpec with Matchers {
   it should "add indented content with tab" in
     testAddContent("\t", "Whatever")
 
-  private def testAddContent(indent: String, content: String): String = {
+  private  def testAddContent(indent: String, content: String): String = {
     val input =
       s"""
          |public class Foobar {
@@ -75,8 +75,8 @@ class FormatInfoTest extends FlatSpec with Matchers {
         |${indent}void doSomething() {
          |${indent}${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
-    fi.indent should be (indent)
-    fi.indentDepth should be (2)
+    assert(fi.indent === indent)
+    assert(fi.indentDepth === 2)
     val indented = fi.indented(content)
     indented.take(indent.length + 1) should equal ("\n" + indent)
     val r = input + fi.indented(content)
@@ -97,8 +97,8 @@ class FormatInfoTest extends FlatSpec with Matchers {
          |${indent}void doSomething() {
          |${indent}${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
-    fi.indent should be (indent)
-    fi.indentDepth should be (2)
+    assert(fi.indent === indent)
+    assert(fi.indentDepth === 2)
     val indented = fi.indented(content)
     indented.contains("\t") should be (false)
     indented.take(indent.length + 1) should equal ("\n" + indent)

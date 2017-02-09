@@ -17,15 +17,16 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new JavaFileType
 
+
   it should "ignore ill-formed file without error" in {
     val javas = typeBeingTested.findAllIn(projectWithBogusJava)
     // Should have silently ignored the bogus file
-    javas.size should be(1)
+    assert(javas.size === 1)
   }
 
   it should "parse hello world" in {
     val javas = typeBeingTested.findAllIn(helloWorldProject)
-    javas.size should be(1)
+    assert(javas.size === 1)
   }
 
   it should "parse hello world and write out correctly" in {
@@ -41,7 +42,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val javas = typeBeingTested.findAllIn(helloWorldProject)
-    javas.size should be(1)
+    assert(javas.size === 1)
     javas.head.head match {
       case mtn: MutableContainerMutableView =>
         val content = mtn.value
@@ -53,19 +54,19 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
   it should "find hello world using path expression" in {
     val expr = "//JavaFile()"
     val rtn = expressionEngine.evaluate(helloWorldProject, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
   }
 
   it should "find specific exception catch" in {
     val javas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(exceptionsProject)
-    javas.size should be(1)
+    assert(javas.size === 1)
     val javaFileNode = javas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val expr = "//catchClause//catchType[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(javaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
-        nodes.head.value should be("ThePlaneHasFlownIntoTheMountain")
+        assert(nodes.size === 1)
+        assert(nodes.head.value === "ThePlaneHasFlownIntoTheMountain")
       case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(javaFileNode))
     }
   }
@@ -73,7 +74,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
   it should "find and modify specific exception catch" in {
     val proj = exceptionsProject
     val javas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
-    javas.size should be(1)
+    assert(javas.size === 1)
     val javaFileNode = javas.get.head.asInstanceOf[MutableContainerMutableView]
 
     val newException = "MicturationException"
@@ -81,7 +82,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val expr = "//catchClause//catchType[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(javaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
-        nodes.size should be(1)
+        assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[MutableContainerMutableView]
         println(s"Mut content was [${mut.value}]")
         mut.update(newException)
@@ -90,11 +91,11 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
-    javaFileNode.value should equal(newContent)
+    assert(javaFileNode.value === newContent)
 
-    javaFileNode.dirty should be(true)
+    assert(javaFileNode.dirty === true)
     val updatedFile = proj.findFile(Exceptions.path)
-    updatedFile.content should be(newContent)
+    assert(updatedFile.content === newContent)
     //updatedFile.dirty should be(true)
   }
 
@@ -106,6 +107,8 @@ object JavaFileTypeTest {
 
   def projectWithBogusJava =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(BogusJava))
+
+  /** So simple it doesn't even have a newline */
 
   /** So simple it doesn't even have a newline */
   val HelloWorldJava = StringFileArtifact("Hello.java", "public class Hello { }")
@@ -128,8 +131,12 @@ object JavaFileTypeTest {
   def helloWorldProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldJava))
 
+
   def exceptionsProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(Exceptions))
+
+
+
 
 
 }

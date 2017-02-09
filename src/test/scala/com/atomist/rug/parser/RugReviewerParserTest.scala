@@ -7,10 +7,11 @@ class RugReviewerParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
+
   it should "parse simplest program" in
     simplestProgram("'Description'")
 
-  private def simplestProgram(description: String = ""): RugReviewer = {
+  private  def simplestProgram(description: String = ""): RugReviewer = {
     val prog =
       s"""
          |@description $description
@@ -23,7 +24,7 @@ class RugReviewerParserTest extends FlatSpec with Matchers {
          | warn { "ejb found in " + f.name() };
     """.stripMargin
     val pops = ri.parse(prog)
-    pops.size should be (1)
+    assert(pops.size === 1)
     pops.head match {
       case rr: RugReviewer => rr
     }

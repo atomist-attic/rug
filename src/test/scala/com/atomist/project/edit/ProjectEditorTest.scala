@@ -22,12 +22,13 @@ class ProjectEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
+
   val args = SimpleProjectOperationArguments.Empty
 
   val ed: ProjectEditor = new ProjectEditorSupport {
     addParameter(Parameter("class", ParameterValidationPatterns.JavaClass))
 
-    override protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    override protected  def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
       SuccessfulModification(as)
     }
 
@@ -50,11 +51,11 @@ class ProjectEditorTest extends FlatSpec with Matchers {
 
   it should "apply edit if needed" in {
     val as = ParsingTargets.SpringIoGuidesRestServiceSource
-    addFoobarAnnotationEditor.applicability(as).canApply should be(true)
+    assert(addFoobarAnnotationEditor.applicability(as).canApply === true)
     addFoobarAnnotationEditor.modify(as, args) match {
       case sma: SuccessfulModification =>
         val javaFiles = sma.result.files.filter(_.name.endsWith(".java"))
-        javaFiles.size should equal(2)
+        assert(javaFiles.size === 2)
         javaFiles.foreach(f => {
           f.content contains "@Mysterious" should be(true)
         })
@@ -76,14 +77,15 @@ class ProjectEditorTest extends FlatSpec with Matchers {
       override def failOnNoModification: Boolean = true
     })
 
-  private def testUnnecessaryEdit(ed: ProjectEditor): Unit = {
+  private  def testUnnecessaryEdit(ed: ProjectEditor): Unit = {
     val as = new SimpleFileBasedArtifactSource("", Seq(
       StringFileArtifact("SomeClass.java", "import com.megacorp.Mysterious; @Mysterious public class SomeClass {}"),
       StringFileArtifact("SomeInterface.java", "import com.megacorp.Mysterious;  @Mysterious public interface SomeInterface {}")
     ))
-    addFoobarAnnotationEditor.applicability(as).canApply should be(true)
+    assert(addFoobarAnnotationEditor.applicability(as).canApply === true)
     addFoobarAnnotationEditor.modify(as, args) match {
       case n: NoModificationNeeded =>
+      
       case _ => fail
     }
   }
@@ -93,9 +95,10 @@ class ProjectEditorTest extends FlatSpec with Matchers {
       StringFileArtifact("SomeClass.java", "import com.megacorp.Mysterious; @Mysterious public class SomeClass {}"),
       StringFileArtifact("SomeInterface.java", "import com.megacorp.Mysterious;  @Mysterious public interface SomeInterface {}")
     ))
-    addFoobarAnnotationEditor.applicability(as).canApply should be(true)
+    assert(addFoobarAnnotationEditor.applicability(as).canApply === true)
     addFoobarAnnotationEditor.modify(as, args) match {
       case n: NoModificationNeeded =>
+      
       case wtf => fail(s"$wtf not expected")
     }
   }
@@ -113,9 +116,10 @@ class ProjectEditorTest extends FlatSpec with Matchers {
       StringFileArtifact("SomeClass.java", "import com.megacorp.Mysterious; @Mysterious public class SomeClass {}"),
       StringFileArtifact("SomeInterface.java", "import com.megacorp.Mysterious;  @Mysterious public interface SomeInterface {}")
     ))
-    neverMatchEditor.applicability(as).canApply should be(true)
+    assert(neverMatchEditor.applicability(as).canApply === true)
     neverMatchEditor.modify(as, args) match {
       case n: FailedModificationAttempt =>
+      
       case wtf => fail(s"$wtf not expected")
     }
   }

@@ -9,8 +9,9 @@ class TestLoaderTest extends FlatSpec with Matchers {
   val ac = DefaultAtomistConfig
   val testLoader = new TestLoader(ac)
 
+
   it should "not find scenarios in empty ArtifactSource" in {
-    testLoader.loadTestScenarios(EmptyArtifactSource("")).size should be (0)
+    assert(testLoader.loadTestScenarios(EmptyArtifactSource("")).size === 0)
   }
 
   val foobarScenario =
@@ -40,11 +41,12 @@ class TestLoaderTest extends FlatSpec with Matchers {
     """.stripMargin
 
   it should "ignore test scenarios in root" in {
-    testLoader.loadTestScenarios(new SimpleFileBasedArtifactSource("",
+    assert(testLoader.loadTestScenarios(new SimpleFileBasedArtifactSource("",
       Seq(
         StringFileArtifact("foo.rt", foobarScenario),
         StringFileArtifact("baz.rt", bazScenario)))
-    ).size should be (0)
+    
+    ).size === 0)
   }
 
   it should s"find test scenarios under ${ac.testsRoot}" in {
@@ -52,9 +54,10 @@ class TestLoaderTest extends FlatSpec with Matchers {
       Seq(
         StringFileArtifact(s"${ac.testsRoot}/foo.rt", foobarScenario),
         StringFileArtifact(s"${ac.testsRoot}/deeper/baz.rt", bazScenario)))
+    
     )
-    scenarios.size should be (2)
-    scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
+    assert(scenarios.size === 2)
+    assert(scenarios.map(sc => sc.name).toSet === Set("Foobar", "Baz"))
   }
 
   it should s"find test scenarios under ${DefaultAtomistConfig.testsDirectory}" in {
@@ -62,8 +65,9 @@ class TestLoaderTest extends FlatSpec with Matchers {
       Seq(
         StringFileArtifact(s"${ac.testsDirectory}/foo.rt", foobarScenario),
         StringFileArtifact(s"${ac.testsDirectory}/deeper/baz.rt", bazScenario)))
+    
     )
-    scenarios.size should be (2)
-    scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
+    assert(scenarios.size === 2)
+    assert(scenarios.map(sc => sc.name).toSet === Set("Foobar", "Baz"))
   }
 }

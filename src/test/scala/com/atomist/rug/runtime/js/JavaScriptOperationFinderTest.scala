@@ -58,15 +58,15 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
 
   it should "find an editor with a parameters list" in {
     val eds = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleProjectEditorWithParametersArray))
-    eds.parameters.size should be(1)
+    assert(eds.parameters.size === 1)
   }
 
   it should "find an editor using annotated parameters" in {
     val eds = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleProjectEditorWithAnnotatedParameters))
-    eds.parameters.size should be(3)
-    eds.parameters(0).getDefaultValue should be("Test String")
-    eds.parameters(1).getDefaultValue should be("10")
-    eds.parameters(2).getDefaultValue should be("")
+    assert(eds.parameters.size === 3)
+    assert(eds.parameters(0).getDefaultValue === "Test String")
+    assert(eds.parameters(1).getDefaultValue === "10")
+    assert(eds.parameters(2).getDefaultValue === "")
 
   }
 
@@ -74,7 +74,7 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
     //runPerfTest()
   }
 
-  private def runPerfTest(): Unit = {
+  private  def runPerfTest(): Unit = {
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     val (as, compileTime) = time {
       val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleProjectEditorWithAnnotatedParameters)
@@ -119,10 +119,10 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
   }
 
 
-  private def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
-    jsed.name should be("Simple")
+    assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target,SimpleProjectOperationArguments("", Map("content" -> "woot")))
     jsed

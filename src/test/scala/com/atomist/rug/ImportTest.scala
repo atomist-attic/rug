@@ -8,11 +8,11 @@ class ImportTest extends FlatSpec with Matchers {
 
   it should "get simple name from default package" in {
     val imp = Import(simpleName1)
-    imp.simpleName should equal (simpleName1)
+    assert(imp.simpleName === simpleName1)
   }
 
   it should "get simple name from non-default package" in {
     val imp = Import(s"com.foo.bar.$simpleName1")
-    imp.simpleName should equal (simpleName1)
+    assert(imp.simpleName === simpleName1)
   }
 }

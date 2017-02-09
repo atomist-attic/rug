@@ -13,9 +13,10 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
   it should "generate compilable typescript file" in {
     val td = new TypeScriptInterfaceGenerator()
     // Make it put the generated files where our compiler will look for them
+    // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleProjectOperationArguments("",
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
-    output.allFiles.size should be(1)
+    assert(output.allFiles.size === 1)
 
     // We need to get rid of the imports as they'll fail when we try to compile the file on its own
     val withoutImport = output ✎ new FileEditor {

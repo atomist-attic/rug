@@ -12,7 +12,7 @@ class EveryPomUsageTest extends FlatSpec with Matchers {
 
   import com.atomist.rug.TestUtils._
 
-  private def runProgAndCheck(as: ArtifactSource, mods: Int): ArtifactSource = {
+  private  def runProgAndCheck(as: ArtifactSource, mods: Int): ArtifactSource = {
     val prog =
       """
         |editor EveryPomEdit
@@ -25,15 +25,16 @@ class EveryPomUsageTest extends FlatSpec with Matchers {
       StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)
     )
 
+
     val result = doModification(progArtifact, as, EmptyArtifactSource(""),
       SimpleProjectOperationArguments("", Map.empty[String,Object]))
 
-    result.cachedDeltas.size should be(mods)
+    assert(result.cachedDeltas.size === mods)
 
     result
   }
 
-  private val pomFileArtifact = JavaTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
+  private  val pomFileArtifact = JavaTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
 
   it should "edit a single pom" in {
     val singlePom: ArtifactSource = new SimpleFileBasedArtifactSource("simple", pomFileArtifact)

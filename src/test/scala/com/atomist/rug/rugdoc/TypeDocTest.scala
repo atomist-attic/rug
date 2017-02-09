@@ -13,7 +13,7 @@ class TypeDocTest extends FlatSpec with Matchers {
   it should "generate type doc" in {
     val td = new TypeDoc()
     val output = td.generate("", SimpleProjectOperationArguments.Empty)
-    output.allFiles.size should be(1)
+    assert(output.allFiles.size === 1)
     val d = output.allFiles.head
     d.contentLength should be > (100000)
     val doc: String = d.content
@@ -33,7 +33,7 @@ class TypeDocTest extends FlatSpec with Matchers {
     val output = td.modify(EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty)
     output match {
       case sm: SuccessfulModification =>
-        sm.result.allFiles.size should be(1)
+        assert(sm.result.allFiles.size === 1)
         val d = sm.result.allFiles.head
       case _ => ???
     }
@@ -51,7 +51,7 @@ class TypeDocTest extends FlatSpec with Matchers {
 
     output match {
       case sm: SuccessfulModification =>
-        sm.result.allFiles.size should be(1)
+        assert(sm.result.allFiles.size === 1)
         val d = sm.result.allFiles.head
         d.contentLength should be > (20)
       case _ => ???

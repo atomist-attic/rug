@@ -11,7 +11,7 @@ class JavaSourceMutableViewTest extends FlatSpec with Matchers {
       .allFiles
       .filter(f => f.name.endsWith(".java"))
       .map(f => new JavaSourceMutableView(f, null))
-      .foreach(f => f.isWellFormed should be(true))
+      .foreach(f => assert(f.isWellFormed === true))
   }
 
   it should "detect ill-formed files" in {

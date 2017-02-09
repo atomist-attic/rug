@@ -16,15 +16,16 @@ class AddClassAnnotationEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
+
   val args = SimpleProjectOperationArguments.Empty
 
   it should "apply annotations where needed" in {
     val as = ParsingTargets.SpringIoGuidesRestServiceSource
-    addFoobarAnnotationEditor.applicability(as).canApply should be(true)
+    assert(addFoobarAnnotationEditor.applicability(as).canApply === true)
     addFoobarAnnotationEditor.modify(as, args) match {
       case sma: SuccessfulModification =>
         val javaFiles = sma.result.files.filter(_.name.endsWith(".java"))
-        javaFiles.size should equal(2)
+        assert(javaFiles.size === 2)
         javaFiles.foreach(f => {
           f.content contains "@Mysterious" should be(true)
         })

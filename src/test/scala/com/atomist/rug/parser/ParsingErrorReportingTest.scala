@@ -8,6 +8,7 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
 
   val ri: RugParser = new ParserCombinatorRugParser()
 
+
   it should "give good error message for non reserved word" in {
     val prog =
       s"""
@@ -30,9 +31,9 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
     catch {
       case b: BadRugSyntaxException =>
         b.getMessage.contains("l") should be(true)
-        b.info.line should be(5)
-        b.info.col should be(1)
-        b.info. filePath should be(RugParser.DefaultRugPath)
+        assert(b.info.line === 5)
+        assert(b.info.col === 1)
+        assert(b.info. filePath === RugParser.DefaultRugPath)
     }
   }
 
@@ -59,9 +60,9 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
     catch {
       case b: BadRugSyntaxException =>
         b.getMessage.contains("le t") should be(true)
-        b.info.line should be(5)
+        assert(b.info.line === 5)
         b.info.col should be <(3)
-        b.info.filePath should equal(f.path)
+        assert(b.info.filePath === f.path)
         b.getMessage.startsWith(f.path + ":") should be(true)
     }
   }

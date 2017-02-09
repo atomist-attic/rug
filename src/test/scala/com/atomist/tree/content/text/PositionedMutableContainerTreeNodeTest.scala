@@ -15,10 +15,11 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + padding.length))
 
+
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
 
-    soo.value should equal (line)
+    assert(soo.value === line)
   }
 
   it should "refuse to find format info for child node without pad" in {
@@ -29,7 +30,9 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
+
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
+
 
     an[IllegalStateException] should be thrownBy soo.formatInfo(f1)
   }
@@ -42,15 +45,16 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
+
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
 
     soo.formatInfo(f1) match {
       case Some(fi) =>
-        fi.start.offset should be(f1.startPosition.offset)
-        fi.start.lineNumberFrom1 should be(1)
-        fi.end.offset should be(f1.endPosition.offset)
-        fi.end.lineNumberFrom1 should be(1)
+        assert(fi.start.offset === f1.startPosition.offset)
+        assert(fi.start.lineNumberFrom1 === 1)
+        assert(fi.end.offset === f1.endPosition.offset)
+        assert(fi.end.lineNumberFrom1 === 1)
       case _ => ???
     }
   }
@@ -62,6 +66,7 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
+
 
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1), startOf(line), endOf(line))
     soo.pad(line)
@@ -81,18 +86,21 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
+
     val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
 
+
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
+
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
 
     soo.formatInfo(SimpleTerminalTreeNode("x", "y")) should be (empty)
 
-    soo.formatInfo(f1).get.start.offset should equal (f1.startPosition.offset)
-    soo.formatInfo(f2).get.start.offset should equal (f2.startPosition.offset)
-    soo.formatInfo(ff1).get.start.offset should equal (ff1.startPosition.offset)
+    assert(soo.formatInfo(f1).get.start.offset === f1.startPosition.offset)
+    assert(soo.formatInfo(f2).get.start.offset === f2.startPosition.offset)
+    assert(soo.formatInfo(ff1).get.start.offset === ff1.startPosition.offset)
   }
 
   it should "find format info from nested node in multiple lines" in {
@@ -107,18 +115,21 @@ class PositionedMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
+
     val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
 
+
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
+
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
 
     soo.formatInfo(SimpleTerminalTreeNode("x", "y")) should be (empty)
 
-    soo.formatInfo(f1).get.start.offset should equal (f1.startPosition.offset)
-    soo.formatInfo(f2).get.start.offset should equal (f2.startPosition.offset)
-    soo.formatInfo(ff1).get.start.offset should equal (ff1.startPosition.offset)
+    assert(soo.formatInfo(f1).get.start.offset === f1.startPosition.offset)
+    assert(soo.formatInfo(f2).get.start.offset === f2.startPosition.offset)
+    assert(soo.formatInfo(ff1).get.start.offset === ff1.startPosition.offset)
     soo.formatInfo(ff1).get.start.lineNumberFrom1 should be > (1)
   }
 

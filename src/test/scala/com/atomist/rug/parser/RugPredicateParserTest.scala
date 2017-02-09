@@ -7,6 +7,7 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
+
   it should "parse simple with" in {
     val prog =
       s"""
@@ -15,7 +16,7 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
          |with File when isJava
     """.stripMargin
     val pops = ri.parse(prog)
-    pops.size should be(1)
+    assert(pops.size === 1)
     pops.head match {
       case rpr: RugProjectPredicate => rpr
     }
@@ -30,7 +31,7 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
          |   with File when name = "Foo"
     """.stripMargin
     val pops = ri.parse(prog)
-    pops.size should be(1)
+    assert(pops.size === 1)
     pops.head match {
       case rpr: RugProjectPredicate => rpr
     }

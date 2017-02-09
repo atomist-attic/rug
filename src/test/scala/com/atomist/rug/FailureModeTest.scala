@@ -21,6 +21,7 @@ class FailureModeTest extends FlatSpec with Matchers {
       """.stripMargin
     tryMod(prog) match {
       case n: NoModificationNeeded =>
+      
       case _ => ???
     }
   }
@@ -37,11 +38,12 @@ class FailureModeTest extends FlatSpec with Matchers {
       """.stripMargin
     tryMod(prog) match {
       case f: FailedModificationAttempt if f.failureExplanation == msg =>
+      
       case _ => ???
     }
   }
 
-  private def tryMod(prog: String): ModificationAttempt = {
+  private  def tryMod(prog: String): ModificationAttempt = {
     val filename = "whatever.txt"
     val as = new SimpleFileBasedArtifactSource("name",
       Seq(
@@ -49,9 +51,10 @@ class FailureModeTest extends FlatSpec with Matchers {
       )
     )
 
+
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
-    eds.size should be (1)
+    assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleProjectOperationArguments.Empty)
   }

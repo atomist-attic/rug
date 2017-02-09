@@ -35,7 +35,7 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
     val sc = new jsSafeCommittingProxy(fmv, new FakeCommandRegistry(fc))
     val ajs: AbstractJSObject = sc.getMember("execute").asInstanceOf[AbstractJSObject]
     val afc = ajs.call(fmv, null)
-    fc.fmv should be(fmv)
+    assert(fc.fmv === fmv)
     afc.asInstanceOf[AnotherFakeCommand].really("This is really working")
   }
 
@@ -70,6 +70,7 @@ class FakeCommand extends Command[FileMutableView] {
   override def invokeOn(treeNode: FileMutableView): AnyRef = {
     fmv = treeNode
     new AnotherFakeCommand
+  
   }
 }
 

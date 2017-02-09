@@ -10,7 +10,7 @@ import org.scalatest.{Assertion, FlatSpec, Matchers}
 
 abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
 
-  protected def pipeline: RugPipeline
+  protected  def pipeline: RugPipeline
 
   val extraText = "// I'm talkin' about ethics"
 
@@ -25,7 +25,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |
       """.stripMargin
 
-    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
+    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
 
     val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleProjectOperationArguments.Empty, pipeline)
     r.allFiles.size should be > (0)
@@ -342,12 +342,12 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
         |    do copyEditorBackingFilesWithNewRelativePath sourcePath='test/' destinationPath='test_out'
         |  end
       """.stripMargin
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
     val r = doModification(pas, outputAs, rugAs, SimpleProjectOperationArguments.Empty, pipeline)
-    r.totalFileCount should be(2)
-    r.findFile(mergeOutputPath).get.content should equal("content")
-    r.findFile("test_out/foo").get.content should equal("file content")
-    r.cachedDeltas.size should be(3)
+    assert(r.totalFileCount === 2)
+    assert(r.findFile(mergeOutputPath).get.content === "content")
+    assert(r.findFile("test_out/foo").get.content === "file content")
+    assert(r.cachedDeltas.size === 3)
     r.cachedDeltas.exists(_.path == mergeOutputPath) should be(true)
     r.cachedDeltas.exists(_.path == "test_out") should be(true)
     r.cachedDeltas.exists(_.path == "test_out/foo") should be(true)
@@ -491,7 +491,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     simpleAppenderProgramExpectingParameters(goBowling, pipeline = pipeline)
   }
 
-  protected def simpleAppenderProgramExpectingParameters(program: String,
+  protected  def simpleAppenderProgramExpectingParameters(program: String,
                                                          finalFileContent: Option[String] = None,
                                                          as: ArtifactSource = JavaAndText,
                                                          rugAs: ArtifactSource = EmptyArtifactSource(""),
@@ -501,14 +501,14 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
     val poa = SimpleProjectOperationArguments("", Map(
       "text" -> extraText,
       "message" -> "say this") ++ extraParams)
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
     val r = doModification(pas, as, rugAs, poa, pipeline)
     val path = "src/main/java/Dog.java"
     val fO = r.findFile(path)
     if (fO.isEmpty)
       fail(s"Cannot find file at $path")
     val f = fO.get
-    f.content should equal(finalFileContent.getOrElse(
+    assert(f.content === finalFileContent.getOrElse(
       as.findFile("src/main/java/Dog.java").get.content + extraText))
   }
 }

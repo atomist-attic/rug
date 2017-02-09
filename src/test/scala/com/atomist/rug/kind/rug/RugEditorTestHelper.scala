@@ -15,14 +15,16 @@ trait RugEditorTestHelper extends Matchers {
                  params: Map[String, String] = Map()): ArtifactSource = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
 
+
     val editorName = parseRugForEditorName(program)
     val editorPath = s".atomist/editors/$editorName.rug"
 
     val rugArchive = new SimpleFileBasedArtifactSource(DefaultRugArchive,
       StringFileArtifact(editorPath, program))
 
+
     val eds = runtime.create(rugArchive,None)
-    eds.size should be(1)
+    assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
     val r = pe.modify(startingProject, SimpleProjectOperationArguments("", params))
@@ -34,7 +36,7 @@ trait RugEditorTestHelper extends Matchers {
     }
   }
 
-  private def parseRugForEditorName(program: String) =
+  private  def parseRugForEditorName(program: String) =
     new ParserCombinatorRugParser().parse(program).head.name
 
 }

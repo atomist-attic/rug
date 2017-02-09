@@ -14,13 +14,14 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
 
   val jsonParser = new JsonParser
 
+
   it should "parse and find node in root" in {
     val f = StringFileArtifact("glossary.json", Simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     j.nodeTags.contains("Json") should be (true)
-    j.childrenNamed("glossary").size should be(1)
+    assert(j.childrenNamed("glossary").size === 1)
   }
 
   it should "support path find" in {
@@ -31,8 +32,8 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
-    rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.value should be ("S")
+    assert(rtn.right.get.size === 1)
+    assert(rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.value === "S")
   }
 
   it should "update path find" in {
@@ -43,11 +44,11 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val j = new JsonMutableView(f, pmv, jsonParser.parse(f.content).get)
     val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
     val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.asInstanceOf[MutableTreeNode]
-    target.value should be ("markup")
+    assert(target.value === "markup")
     target.update("XSLT")
-    j.value should equal(Simple.replace("\"markup", "\"XSLT"))
+    assert(j.value === Simple.replace("\"markup", "\"XSLT"))
   }
 
   it should "find descendant in project" in {
@@ -57,11 +58,11 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    rtn.right.get.size should be(1)
+    assert(rtn.right.get.size === 1)
     val x = rtn.right.get.head.asInstanceOf[ContainerTreeNode]
-    x.nodeName should be ("GlossSee")
+    assert(x.nodeName === "GlossSee")
     val target = x.childrenNamed("STRING").head.asInstanceOf[MutableTreeNode]
-    target.value should be ("markup")
+    assert(target.value === "markup")
     target.update("XSLT")
     //j.value should equal(Simple.replace("\"markup", "\"XSLT"))
   }

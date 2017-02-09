@@ -218,13 +218,18 @@ object ScalaFileTypeTest {
       |
       | val no = "dog".equals("cat")
       |
-      | // Won't do infix yet
+      | // Won't handle infix yet
       |
       | val complexLeft = ("dog" + "gie").equals("cat")
       |
       | val complexRight = "dog".equals("pussy" + "cat")
       |
-      | def bar(a: String, b: String) = {
+      | val becauseYouCanDoAnythingInScala = bar("a", "b").equals("dog" match {
+      |   case s: String => true
+      |   case _ => false
+      | })
+      |
+      | def bar(a: String, b: String): Boolean = {
       |   a.equals(b)
       | }
       |}

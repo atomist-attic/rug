@@ -9,7 +9,6 @@ import com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy
 object XmlFileType {
 
   val XmlExtension = ".xml"
-
 }
 
 class XmlFileType
@@ -27,7 +26,6 @@ class XmlFileType
     f.name.endsWith(XmlExtension)
 
 }
-
 
 private object XmlAstNodeCreationStrategy extends AstNodeCreationStrategy {
 

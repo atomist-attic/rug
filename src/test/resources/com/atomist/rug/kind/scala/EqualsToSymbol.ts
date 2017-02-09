@@ -44,7 +44,7 @@ class EqualsToSymbol implements ProjectEditor {
           let leftTerm = termApply.termSelect().children()[0]
           let rightTerm = termApply.children()[1]
 
-          console.log(`left=${leftTerm}, right=${rightTerm}`)
+          //console.log(`left=${leftTerm}, right=${rightTerm}`)
 
           if (leftTerm && rightTerm) {
             let rightValue = rightTerm.children().length > 1 ? `(${rightTerm.value()})` : rightTerm.value() 

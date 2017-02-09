@@ -15,8 +15,9 @@ import scala.collection.JavaConverters._
   * Convenient superclass for types that parse file content and can
   * be resolved from files and projects
   */
-abstract class TypeUnderFile extends Type(DefaultEvaluator)
-  with ReflectivelyTypedType {
+abstract class TypeUnderFile
+  extends Type(DefaultEvaluator)
+    with ReflectivelyTypedType {
 
   /**
     * Is this file of interest to this type? Typically will involve an extension check
@@ -27,7 +28,6 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
   def isOfType(f: FileArtifact): Boolean
 
   override def viewManifest: Manifest[_] = manifest[MutableContainerMutableView]
-
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>
@@ -73,5 +73,4 @@ abstract class TypeUnderFile extends Type(DefaultEvaluator)
     * @return
     */
   def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode]
-
 }

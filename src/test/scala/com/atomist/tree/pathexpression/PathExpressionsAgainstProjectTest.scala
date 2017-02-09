@@ -291,7 +291,15 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
   }
 
-  it should "test not(predicate)" in {
+  it should "test not(predicate) that does veto" in {
+    val proj = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.example')]"
+    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    assert(rtn.right.get.isEmpty)
+  }
+
+  it should "test not(predicate) that does not veto" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.wrong')]"

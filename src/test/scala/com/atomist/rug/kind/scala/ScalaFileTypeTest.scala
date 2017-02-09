@@ -17,7 +17,6 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new ScalaFileType
 
-
   it should "ignore ill-formed file without error" in {
     val scalas = typeBeingTested.findAllIn(projectWithBogusScala)
     // Should have silently ignored the bogus file
@@ -198,8 +197,7 @@ object ScalaFileTypeTest {
 
   val OldStyleScalaTest = StringFileArtifact("src/test/scala/test/TestLoaderTest.scala",
     """
-      |// Don't worry about imports, we're not compiling the thing,
-      |// it just needs to have a valid AST
+      |import org.scalatest.{FlatSpec, Matchers}
       |
       |class TestLoaderTest extends FlatSpec with Matchers {
       |
@@ -211,6 +209,9 @@ object ScalaFileTypeTest {
       |    )
       |    scenarios.size should be (2)
       |    scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
+      |
+      |    // Already OK
+      |    assert("dog" === "cat")
       |  }
       |}
     """.stripMargin)

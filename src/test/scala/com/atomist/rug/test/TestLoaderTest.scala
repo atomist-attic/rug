@@ -9,7 +9,6 @@ class TestLoaderTest extends FlatSpec with Matchers {
   val ac = DefaultAtomistConfig
   val testLoader = new TestLoader(ac)
 
-
   it should "not find scenarios in empty ArtifactSource" in {
     assert(testLoader.loadTestScenarios(EmptyArtifactSource("")).size === 0)
   }

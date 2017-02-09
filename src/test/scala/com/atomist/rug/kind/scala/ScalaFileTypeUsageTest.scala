@@ -1,8 +1,10 @@
 package com.atomist.rug.kind.scala
 
-import com.atomist.project.edit.SuccessfulModification
+import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
+import com.atomist.source.SimpleFileBasedArtifactSource
 import com.atomist.tree.utils.TreeNodeUtils
+import org.scalatest.DiagrammedAssertions._
 
 /**
   * Tests for realistic Scala scenarios
@@ -15,17 +17,35 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   it should "change exception catch ???" is pending
 
-  it should "name a parameter" in {
-//    val tn = typeBeingTested.fileToRawNode(Python3Source).get
-//    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
+  it should "name a specified parameter" in {
     modify("NameParameter.ts", PythonTypeSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(Python3Source.path).get
         //println(theFile.content)
         theFile.content.contains("nodeNamingStrategy =") should be (true)
-//        theFile.content.contains("equals") should be (false)
         validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  val diagrammedAssertionsImport = "import org.scalatest.DiagrammedAssertions._"
+
+  it should "upgrade to DiagrammedAssertions when needed" in {
+    modify("ImportDiagrammedAssertions.ts", ScalaTestSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(OldStyleScalaTest.path).get
+        //println(theFile.content)
+        assert(theFile.content.contains(diagrammedAssertionsImport) === true)
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  it should "not upgrade to DiagrammedAssertions when not needed" in {
+    val testWithImportAlready = OldStyleScalaTest.withContent(diagrammedAssertionsImport + "\n" + OldStyleScalaTest.content)
+    modify("ImportDiagrammedAssertions.ts", SimpleFileBasedArtifactSource(testWithImportAlready)) match {
+      case _: NoModificationNeeded =>
+        // OK
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }

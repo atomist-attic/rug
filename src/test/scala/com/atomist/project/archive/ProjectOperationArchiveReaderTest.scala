@@ -41,6 +41,7 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
+
   val EditorWithImports = StringFileArtifact(atomistConfig.editorsRoot + "/EditorWithImports.rug",
     """
       |editor EditorWithImports
@@ -51,6 +52,46 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
       |with File f do setPath ""
     """.stripMargin
   )
+
+  val EditorWithProjectName = StringFileArtifact(atomistConfig.editorsRoot + "/Stuff.rug",
+    """
+      |editor Stuff
+      |
+      |param project_name: ^.*$
+      |
+      |with File f do setPath ""
+    """.stripMargin
+  )
+
+  val AnotherEditorWithProjectName = StringFileArtifact(atomistConfig.editorsRoot + "/MoreStuff.rug",
+    """
+      |editor MoreStuff
+      |
+      |param project_name: ^.*$
+      |
+      |with File f do setPath ""
+    """.stripMargin
+  )
+
+  val GeneratorWithoutProjectName = StringFileArtifact(atomistConfig.editorsRoot + "/Published.rug",
+    """
+      |generator Published
+      |
+      |uses Stuff
+      |uses MoreStuff
+      |
+      |Stuff
+      |MoreStuff
+    """.stripMargin
+  )
+
+  //https://github.com/atomist/rug/issues/258
+  it should "only describe a single project_name parameter if it's declared" in {
+    val apc = new ProjectOperationArchiveReader(atomistConfig)
+    val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(GeneratorWithoutProjectName, EditorWithProjectName, AnotherEditorWithProjectName)), None, Nil)
+    assert(ops.generators.size === 1)
+    assert(ops.generators.head.parameters.size === 1)
+  }
 
   it should "parse single editor" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)

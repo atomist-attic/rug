@@ -11,9 +11,12 @@ trait ParameterizedSupport extends Parameterized {
 
   override final def parameters: Seq[Parameter] = params.filterNot(_ == null)
 
-  protected def addParameter(tp: Parameter): Unit =
-    params += tp
+  protected def addParameter(tp: Parameter): Unit = {
+    if(!params.exists(p => tp.name == p.name)){
+      params += tp
+    }
+  }
 
-  protected def addParameters(tps: Seq[Parameter]): Unit =
-    params ++= tps
+  protected def addParameters(tps: Seq[Parameter]): Unit = tps.foreach(p => addParameter(p))
+
 }

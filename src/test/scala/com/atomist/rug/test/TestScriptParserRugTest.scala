@@ -1,5 +1,6 @@
 package com.atomist.rug.test
 
+import com.atomist.rug.InvalidRugTestScenarioName
 import com.atomist.util.scalaparsing.SimpleLiteral
 import com.atomist.rug.parser.{ParsedRegisteredFunctionPredicate, WrappedFunctionArg}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -418,5 +419,20 @@ class TestScriptParserRugTest extends FlatSpec with Matchers {
     val parsed = parser.parse(StringFileArtifact("IdempotencyTest.rt", prog))
     val myTest = parsed.head
     assert(myTest.givenInvocations.size === 2)
+  }
+
+  it should "disallow empty scenario name" in {
+    val prog =
+      """scenario
+        |
+        |given
+        |  ArchiveRoot
+        |
+        |then
+        |  NoChange""".stripMargin
+
+    assertThrows[InvalidRugTestScenarioName] {
+      parser.parse(StringFileArtifact("InvalidScenarioName.rt", prog))
+    }
   }
 }

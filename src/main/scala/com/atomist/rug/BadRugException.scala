@@ -68,3 +68,6 @@ class InvalidRugParameterDefaultValue(msg: String)
 
 class RugJavaScriptException(msg: String, rootCause: ScriptException)
    extends BadRugException(msg,rootCause)
+
+class InvalidRugTestScenarioName(msg: String)
+  extends BadRugException(msg)

@@ -1,5 +1,6 @@
 package com.atomist.rug.test
 
+import com.atomist.rug.InvalidRugTestScenarioName
 import com.atomist.rug.parser.{CommonRugProductionsParser, Predicate, RunOtherOperation}
 import com.atomist.source.FileArtifact
 
@@ -14,14 +15,16 @@ object RugTestParser
   override def identifierRef: Parser[IdentifierRef] =
     identifierRef(KeywordsToAvoidInBody, camelCaseIdentifier)
 
-  private def freeText: Parser[String] = """\w(.*)+""".r
-
   // TODO improve this
   private def unquotedFilename: Parser[String] = """[\w|/|\.-[*]%![$]]+""".r
 
   private def filename: Parser[String] = literalString | unquotedFilename
 
-  private def scenarioName: Parser[String] = ScenarioToken.r ~> freeText
+  private val scenarioCapture = """scenario\s+(.*?)\s*\r?\n""".r
+  private def scenarioName: Parser[String] = "scenario\\b.*?\r?\n".r ^^ {
+    case scenarioCapture(m) => m
+    case s => throw new InvalidRugTestScenarioName(s"Invalid scenario name: '$s'")
+  }
 
   protected override def parameterName: Parser[String] = identifierRef(KeywordsToAvoidInBody, camelCaseIdentifier) ^^ (id => id.name)
 

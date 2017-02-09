@@ -14,13 +14,11 @@ class DirectoryType(evaluator: Evaluator)
 
   override def description = "Type for a directory within a project."
 
-  override def viewManifest: Manifest[DirectoryMutableView] = manifest[DirectoryMutableView]
+  override def runtimeClass: Class[_] = classOf[DirectoryMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject.allDirectories.map(d => new DirectoryMutableView(d, pmv)))
       case _ => None
     }
-
-  override type Self = this.type
 }

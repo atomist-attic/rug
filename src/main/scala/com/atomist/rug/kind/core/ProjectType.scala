@@ -16,7 +16,7 @@ class ProjectType(
     "Consider using file and other lower types by preference as project" +
     "operations can be inefficient."
 
-  override def viewManifest: Manifest[ProjectMutableView] = manifest[ProjectMutableView]
+  override def runtimeClass = classOf[ProjectMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = {
     // Special case where we want only one

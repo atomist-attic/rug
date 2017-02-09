@@ -26,7 +26,8 @@ trait ProjectEditorSupport
     */
   def failOnNoModification: Boolean = false
 
-  override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
+  override def modify(as: ArtifactSource, args: ProjectOperationArguments): ModificationAttempt = {
+    val poa = addDefaultParameterValues(args)
     validateParameters(poa)
 
     val r =
@@ -36,7 +37,7 @@ trait ProjectEditorSupport
       } else if (meetsPostcondition(as)) {
         NoModificationNeeded(s"Artifact source meets postcondition already")
       } else {
-        modifyInternal(as, addDefaultParameterValues(poa))
+        modifyInternal(as, poa)
       }
 
     // We may need to make it fail-fast

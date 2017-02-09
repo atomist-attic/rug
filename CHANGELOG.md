@@ -17,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Added `ScalaFileType` backed by ScalaMeta
 
-
 ### Fixed
 
 -   Fix: Elm parser failed on files with two multiline comments
@@ -28,6 +27,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Implicit DLS parameters (from `uses`) are no longer duplicate if multiple
     editors declare the same parameter. The first one is chosen.
     https://github.com/atomist/rug/issues/258
+
+-   Ensure TS parameters are required by default, and ensure defaults are applied
+    before validation: https://github.com/atomist/rug/issues/224
 
 ### Changed
 

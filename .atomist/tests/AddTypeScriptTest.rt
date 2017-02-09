@@ -1,0 +1,26 @@
+scenario AddTypeScriptTest should do something amazing for developers
+
+
+let output_ts = "src/test/resources/com/atomist/rug/kind/scala/SomeClassHereTypeScriptTest.ts"
+let output_scala = "src/test/scala/com/atomist/rug/kind/scala/SomeClassHereTypeScriptTest.scala"
+
+given
+  /* Selects the current project and its source files
+     as an initial point for then applying your editor
+  */
+  ArchiveRoot
+
+when
+  /* Run your editor */
+  AddTypeScriptTest class_under_test="com.atomist.rug.kind.scala.SomeClassHere"
+
+then
+  fileExists output_ts
+    and fileContains output_ts "class SomeClassHereTypeScriptTest"
+    and fileContains output_ts "Uses SomeClassHere from TypeScript"
+    and fileExists output_scala
+    and dump output_scala
+    and fileContains output_scala "class SomeClassHereTypeScriptTest extends FlatSpec with Matchers"
+    and fileContains output_scala "package com.atomist.rug.kind.scala"
+    and fileContains output_scala "com/atomist/rug/kind/scala/SomeClassHereTypeScriptTest.ts"
+

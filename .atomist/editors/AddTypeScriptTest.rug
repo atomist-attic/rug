@@ -1,0 +1,35 @@
+@description "uses a template to create samplefile.txt"
+@tag "documentation"
+editor AddTypeScriptTest
+
+@displayName "Class Under Test"
+@validInput "Java fully qualified classname"
+param class_under_test: @any
+
+let class_name = {
+  var portions = class_under_test.split(".");
+  var after_the_last_dot = portions[portions.length - 1];
+  return after_the_last_dot;
+  }
+
+let package = { class_under_test.replace(/\.[^.]*$/, "") }
+
+let sample_ts_under_resources = "com/atomist/rug/ts/SampleTypeScriptTest.ts"
+let sample_ts_file_path = { "src/test/resources/" + sample_ts_under_resources }
+
+let ts_under_resources = { class_under_test.replace(/\./g, '/') + "TypeScriptTest.ts" }
+let ts_file_path = { "src/test/resources/" + ts_under_resources }
+let scala_file_path = { "src/test/scala/" + class_under_test.replace(/\./g, '/') + "TypeScriptTest.scala" }
+
+/* Example showing applying a simple template being applied */
+with Project p begin
+  do copyEditorBackingFileOrFail sample_ts_file_path ts_file_path
+  do copyEditorBackingFileOrFail "src/test/scala/com/atomist/rug/ts/SampleTypeScriptTest.scala" scala_file_path
+  with File when path = ts_file_path
+    do replace "Sample" class_name
+  with File when path = scala_file_path begin
+    do replace sample_ts_under_resources ts_under_resources
+    do replace "package com.atomist.rug.ts" { "package " + package }
+    do replace "Sample" class_name
+  end
+end

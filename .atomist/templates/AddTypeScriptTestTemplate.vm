@@ -1,0 +1,8 @@
+Shows resolving a parameter to an editor as a variable in the template:
+
+$my_value
+
+See the Apache Velocity Project [User Guide][guide] for more
+information on using Velocity templates.
+
+[guide]: http://velocity.apache.org/engine/1.7/user-guide.html

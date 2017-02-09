@@ -462,6 +462,23 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (newScope)
   }
 
+  it should "add a scope to a new dependency: https://github.com/atomist/rug/issues/194" in {
+    val dependencyArtifactId = "junit"
+    val dependencyGroupId = "org.junit"
+    val dependencyVersion = "1.2.3"
+
+    val newScope = "test"
+
+    validPomUut.addOrReplaceDependencyOfVersion(dependencyGroupId, dependencyArtifactId, dependencyVersion)
+    validPomUut.addOrReplaceDependencyScope(dependencyGroupId, dependencyArtifactId, newScope)
+
+    println(validPomUut.content)
+
+    validPomUut.dirty should be (true)
+    validPomUut.dependencyVersion(dependencyGroupId, dependencyArtifactId) should be (dependencyVersion)
+    validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (newScope)
+  }
+
   it should "remove an existing dependency's existing scope" in {
     val dependencyArtifactId = "spring-boot-starter-test"
     val dependencyGroupId = "org.springframework.boot"
@@ -475,6 +492,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomUut.dirty should be (true)
 
     validPomUut.dependencyScope(dependencyGroupId, dependencyArtifactId) should be (expectedOutcomeScope)
+
   }
 
   it should "sensibly not remove an existing dependency's scope when it doesn't have one" in {

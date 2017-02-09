@@ -348,7 +348,7 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
     deleteNode(s"/project/dependencies/dependency/artifactId[text()='$artifactId' and ../groupId[text() = '$groupId']]/../$subnode")
 
   private def addOrReplaceDependencySubNode(artifactId: String, groupId: String, subnode: String, content: String): Unit =
-    addOrReplaceNode(dependencyBaseXPath,
+    addOrReplaceNode(s"/project/dependencies/dependency/artifactId [text()='$artifactId' and ../groupId [text() = '$groupId']]/..",
       s"/project/dependencies/dependency/artifactId[text()='$artifactId' and ../groupId[text() = '$groupId']]/../$subnode",
       subnode,
       s"""<$subnode>$content</$subnode>""")

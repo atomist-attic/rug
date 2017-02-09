@@ -14,13 +14,25 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   it should "change exception catch ???" is pending
 
-  it should "change a.equals(b)" is pending
+  it should "change a.equals(b)" in {
+//    val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
+//    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    modify("EqualsToSymbol.ts", UsesDotEqualsSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(UsesDotEquals.path).get
+        //println(theFile.content)
+        theFile.content.contains("==") should be (true)
+        theFile.content.contains("equals") should be (false)
+        println(theFile.content)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
 
   it should "upgrade ScalaTest assertions" in {
-
     modify("UpgradeScalaTestAssertions.ts", ScalaTestSources) match {
       case sm: SuccessfulModification =>
-        val theFile = sm.result.findFile(ScalaTestSources.allFiles.head.path).get
+        val theFile = sm.result.findFile(OldStyleScalaTest.path).get
         //println(theFile.content)
         theFile.content.contains("===") should be (true)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")

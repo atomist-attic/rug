@@ -6,7 +6,6 @@ import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
-import com.atomist.rug.ts.TypeScriptBuilder
 
 class SampleTypeScriptTest extends FlatSpec with Matchers {
 
@@ -21,7 +20,7 @@ class SampleTypeScriptTest extends FlatSpec with Matchers {
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
-    println(s"rug archive: $artifactSourceWithEditor")
+    //println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
     val projectEditor = JavaScriptOperationFinder.fromJavaScriptArchive(artifactSourceWithRugNpmModule).head.asInstanceOf[JavaScriptInvokingProjectEditor]

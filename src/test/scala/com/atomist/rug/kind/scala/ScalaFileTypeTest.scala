@@ -59,11 +59,11 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
     expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
-        case Right(nodes) if nodes.nonEmpty =>
-          nodes.size should be(1)
-          nodes.head.value should be("ThePlaneHasFlownIntoTheMountain")
-        case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
-      }
+      case Right(nodes) if nodes.nonEmpty =>
+        nodes.size should be(1)
+        nodes.head.value should be("ThePlaneHasFlownIntoTheMountain")
+      case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+    }
 
     scalaFileNode.value should equal(Exceptions.content)
   }
@@ -89,7 +89,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
     scalaFileNode.value should equal(newContent)
 
-    scalaFileNode.dirty should be (true)
+    scalaFileNode.dirty should be(true)
     val updatedFile = proj.findFile(Exceptions.path)
     updatedFile.content should be(newContent)
     //updatedFile.dirty should be(true)
@@ -118,7 +118,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val newContent = Exceptions.content.replaceAll("ThePlaneHasFlownIntoTheMountain", newException)
     scalaFileNode.value should equal(newContent)
 
-    scalaFileNode.dirty should be (true)
+    scalaFileNode.dirty should be(true)
     val updatedFile = proj.findFile(Exceptions.path)
     updatedFile.content should be(newContent)
     //updatedFile.dirty should be(true)
@@ -148,7 +148,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
     scalaFileNode.value should equal(newContent)
 
-    scalaFileNode.dirty should be (true)
+    scalaFileNode.dirty should be(true)
     val updatedFile = proj.findFile(Exceptions.path)
     updatedFile.content should be(newContent)
     //updatedFile.dirty should be(true)
@@ -193,7 +193,7 @@ object ScalaFileTypeTest {
       |}
     """.stripMargin)
 
-  val OldStyleScalaTest =
+  val OldStyleScalaTest = StringFileArtifact("src/test/scala/test/TestLoaderTest.scala",
     """
       |// Don't worry about imports, we're not compiling the thing,
       |// it just needs to have a valid AST
@@ -210,16 +210,35 @@ object ScalaFileTypeTest {
       |    scenarios.map(sc => sc.name).toSet should equal (Set("Foobar", "Baz"))
       |  }
       |}
-    """.stripMargin
+    """.stripMargin)
+
+  val UsesDotEquals = StringFileArtifact("src/test/scala/main/UsesDotEquals.scala",
+    """
+      |// Don't worry about imports, we're not compiling the thing,
+      |// it just needs to have a valid AST
+      |
+      |class Foo {
+      |
+      | def bar(a: String, b: String) = {
+      |   a.equals(b)
+      | }
+      |}
+    """.stripMargin)
 
   val ScalaTestSources = SimpleFileBasedArtifactSource(
-    StringFileArtifact("src/test/scala/test/TestLoaderTest.scala", OldStyleScalaTest)
+    OldStyleScalaTest
+  )
+
+  val UsesDotEqualsSources = SimpleFileBasedArtifactSource(
+    UsesDotEquals,
+    OldStyleScalaTest
   )
 
   def helloWorldProject =
-    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldScala))
+    new ProjectMutableView(SimpleFileBasedArtifactSource(HelloWorldScala))
 
   def exceptionsProject =
-    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(Exceptions))
+    new ProjectMutableView(SimpleFileBasedArtifactSource(Exceptions))
+
 
 }

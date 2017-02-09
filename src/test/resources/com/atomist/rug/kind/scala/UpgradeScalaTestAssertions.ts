@@ -4,6 +4,10 @@ import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathEx
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 
+/**
+ * Update ScalaTest assertions of the form "a should be(b)" or a "should equal(b)"
+ * with "assert(a === b)" to get better error messages.
+ */
 class UpgradeScalaTestAssertions implements ProjectEditor {
     name: string = "UpgradeScalaTestAssertions"
     description: string = "Upgrades ScalaTest assertions"

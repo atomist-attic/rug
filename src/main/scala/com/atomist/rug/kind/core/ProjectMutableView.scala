@@ -48,6 +48,12 @@ class ProjectMutableView(
   def this(rugAs: ArtifactSource, originalBackingObject: ArtifactSource) =
     this(rugAs, originalBackingObject, DefaultAtomistConfig)
 
+  /**
+    * Create a new ProjectMutableView with an empty Rug backing archive
+    */
+  def this(originalBackingObject: ArtifactSource) =
+    this(EmptyArtifactSource(), originalBackingObject, DefaultAtomistConfig)
+
   import ProjectMutableView._
 
   /**

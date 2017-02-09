@@ -17,7 +17,7 @@ class DockerFileType(
 
   def description: String = "Docker file type"
 
-  override def viewManifest: Manifest[DockerMutableView] = manifest[DockerMutableView]
+  override def runtimeClass = classOf[DockerMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>

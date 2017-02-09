@@ -15,6 +15,6 @@ abstract class Type(evaluator: Evaluator)
   extends ChildResolver with Typed {
 
   /** Describe the MutableView subclass to allow for reflective function export */
-  def viewManifest: Manifest[_]
+  def runtimeClass:Class[_]
 
 }

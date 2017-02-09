@@ -19,7 +19,7 @@ class LineType(
   override def description = "Represents a line within a text file"
 
   /** Describe the MutableView subclass to allow for reflective function export */
-  override def viewManifest: Manifest[_] = manifest[LineMutableView]
+  override def runtimeClass = classOf[LineMutableView]
 
   override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
     context match {

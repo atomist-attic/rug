@@ -2,21 +2,17 @@ package com.atomist.rug.kind.test
 
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
-import com.atomist.rug.spi.{MutableView, ReflectiveStaticTypeInformation, Type, TypeInformation}
+import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import org.springframework.beans.factory.annotation.Autowired
 
-import scala.reflect.ManifestFactory
-
 // Only used in tests
-class ReplacerType(ev: Evaluator) extends Type(ev) {
+class ReplacerType(ev: Evaluator) extends Type(ev) with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
 
-  def viewManifest: Manifest[_] = ManifestFactory.classType(viewClass)
+  def runtimeClass = viewClass
 
-  def typeInformation: TypeInformation = new ReflectiveStaticTypeInformation(viewClass)
-  
   def description = "Test type for replacing the content of files"
 
   @Autowired

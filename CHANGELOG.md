@@ -17,11 +17,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Added `ScalaFileType` backed by ScalaMeta
 
+
+### Fixed
+
 -   Fix: Elm parser failed on files with two multiline comments
-     https://github.com/atomist/rug/issues/268 
+    https://github.com/atomist/rug/issues/268 
      
 -   Raise an `InvalidRugTestScenarioName` when a Rug test scenario is missing a name #71
-     
+
+-   Implicit DLS parameters (from `uses`) are no longer duplicate if multiple
+    editors declare the same parameter. The first one is chosen.
+    https://github.com/atomist/rug/issues/258
+
 ### Changed
 
 -   Upgrade TS compiler to 2.1.5

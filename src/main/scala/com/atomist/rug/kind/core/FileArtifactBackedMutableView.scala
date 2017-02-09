@@ -4,6 +4,7 @@ import com.atomist.project.review.ReviewComment
 import com.atomist.project.review.Severity.Severity
 import com.atomist.rug.spi._
 import com.atomist.source.{FileArtifact, StringFileArtifact}
+import com.atomist.tree.PathAwareTreeNode
 
 /**
   * Convenience class for MutableView implementations that are backed by a
@@ -20,7 +21,7 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
 
   override def childNodeNames: Set[String] = Set()
 
-  override def address = MutableView.address(this, s"path=${currentBackingObject.path}")
+  override def address = PathAwareTreeNode.address(this, s"path=${currentBackingObject.path}")
 
   override protected def toReviewComment(msg: String, severity: Severity): ReviewComment =
     ReviewComment(msg, severity, Some(currentBackingObject.path))

@@ -53,7 +53,7 @@ case class NodesWithTag(tag: String)
         var toReturn = List.empty[TreeNode]
         found.foreach {
           case mv: MutableView[_] =>
-            println(s"I see a node at ${mv.address}")
+            //println(s"I see a node at ${mv.address}")
             if (!nodeAddressesSeen.contains(mv.address)) {
               nodeAddressesSeen = nodeAddressesSeen + mv.address
               toReturn = toReturn :+ mv

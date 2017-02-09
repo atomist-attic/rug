@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.runtime.rugdsl.Evaluator
-import com.atomist.tree.ContainerTreeNode
+import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
 
 
 /**
@@ -20,13 +20,7 @@ import com.atomist.tree.ContainerTreeNode
   *
   * @tparam  T type of the underlying object
   */
-trait MutableView[T] extends ContainerTreeNode {
-
-  /**
-    * Nullable if at the top level, as we don't want to complicate
-    * use from JavaScript by using Option.
-    */
-  def parent: MutableView[_]
+trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
 
   def originalBackingObject: T
 
@@ -37,6 +31,8 @@ trait MutableView[T] extends ContainerTreeNode {
   def dirty: Boolean
 
   def currentBackingObject: T
+
+  override def parent: MutableView[_]
 
   /**
     * Subclasses can call this to update the state of this object.
@@ -57,19 +53,6 @@ trait MutableView[T] extends ContainerTreeNode {
     */
   def commit(): Unit
 
-  /* really this should be a path expression but let's start somewhere */
-  def address: String = MutableView.address(this, s"name=$nodeName")
-
-}
-
-object MutableView {
-  def address(nodeOfInterest: MutableView[_], test: String): String = {
-    val myType = nodeOfInterest.nodeTags.mkString(",")
-    if (nodeOfInterest.parent == null)
-      s"$myType()$test"
-    else
-      s"${nodeOfInterest.parent.address}/$myType()[$test]"
-  }
 }
 
 /**

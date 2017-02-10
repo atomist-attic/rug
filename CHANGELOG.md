@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
--   Fix: Elm parser failed on files with two multiline comments
+-   Elm parser failed on files with two multiline comments
     https://github.com/atomist/rug/issues/268
 
 -   Raise an `InvalidRugTestScenarioName` when a Rug test scenario is missing a name #71

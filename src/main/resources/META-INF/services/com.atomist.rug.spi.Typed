@@ -1,20 +1,22 @@
 
 com.atomist.rug.kind.core.LineType
 com.atomist.rug.kind.core.FileType
-com.atomist.rug.kind.docker.DockerFileType
 com.atomist.rug.kind.core.ProjectType
+
+com.atomist.rug.kind.docker.DockerFileType
+
 com.atomist.rug.kind.elm.ElmModuleType
+
 com.atomist.rug.kind.java.JavaTypeType
 com.atomist.rug.kind.java.JavaSourceType
 com.atomist.rug.kind.java.JavaProjectType
-
+com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.java.path.JavaFileType
 
 com.atomist.rug.kind.rug.archive.RugArchiveProjectType
 
 com.atomist.rug.kind.json.JsonType
 
-com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.pom.PomType
 com.atomist.rug.kind.pom.EveryPomType
 
@@ -23,11 +25,11 @@ com.atomist.rug.kind.dynamic.MutableContainerTypeProvider
 com.atomist.rug.kind.csharp.CSharpFileType
 
 com.atomist.rug.kind.python3.PythonFileType
+com.atomist.rug.kind.python3.RequirementsType
+com.atomist.rug.kind.python3.PythonRequirementsTxtType
 
 com.atomist.rug.kind.rug.dsl.RugFileType
 
-com.atomist.rug.kind.python3.RequirementsType
-com.atomist.rug.kind.python3.PythonRequirementsTxtType
 com.atomist.rug.kind.properties.PropertiesType
 
 com.atomist.rug.kind.js.PackageJsonType
@@ -38,12 +40,11 @@ com.atomist.rug.kind.service.ServiceTypeProvider
 com.atomist.rug.kind.service.ServicesType
 
 com.atomist.rug.kind.xml.XmlType
-
 com.atomist.rug.kind.xml.XmlFileType
 
 com.atomist.rug.kind.yml.YmlType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider
-
+com.atomist.rug.kind.java.JavaClassOrInterfaceProvider
 com.atomist.tree.content.text.MutableTerminalTreeNodeTypeProvider

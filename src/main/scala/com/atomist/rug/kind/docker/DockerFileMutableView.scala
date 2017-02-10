@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
   * @param originalBackingObject original FileArtifact
   * @param pmv owning project
   */
-class DockerMutableView(originalBackingObject: FileArtifact, pmv: ProjectMutableView)
+class DockerFileMutableView(originalBackingObject: FileArtifact, pmv: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, pmv) {
 
   var _content: Dockerfile = DockerfileParser.parse(originalBackingObject.content)

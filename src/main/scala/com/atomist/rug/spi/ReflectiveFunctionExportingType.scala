@@ -23,7 +23,7 @@ object ReflectiveFunctionExport {
     functions
   }
 
-  def exportedOperations(c: Class[_]): Seq[TypeOperation] = {
+  def exportedOperations(c: Class[_]): Seq[TypeOperation] =
     ReflectionUtils.getAllDeclaredMethods(c)
       .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
       .map(m => {
@@ -39,7 +39,6 @@ object ReflectiveFunctionExport {
             case ex => Some(ex)
           })
       })
-  }
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {
     val params = m.getParameters.map(p =>

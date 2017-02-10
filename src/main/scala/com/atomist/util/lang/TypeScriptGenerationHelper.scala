@@ -46,6 +46,9 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
+      case "scala.collection.Seq<java.lang.String>" => "string[]"
+      case "scala.collection.Seq<scala.collection.Seq<java.lang.String>>" => "string[][]"
+      case "scala.collection.immutable.Map<java.lang.String, java.lang.String>" => "any"
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
     }
   }

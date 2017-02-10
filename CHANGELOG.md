@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Added `ScalaFileType` backed by ScalaMeta
 
+-   Getters for Dockerfile instructions in DockerFile extension type
+
 ### Fixed
 
 -   Elm parser failed on files with two multiline comments

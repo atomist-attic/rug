@@ -47,12 +47,15 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "not upgrade to DiagrammedAssertions when not needed" in
-    notUpgradeToDiagrammedAssertionsWhenNotNeeded
+  it should "not upgrade to DiagrammedAssertions when not needed using path expressions" in
+    notUpgradeToDiagrammedAssertionsWhenNotNeeded("ImportDiagrammedAssertions.ts")
 
-  private def notUpgradeToDiagrammedAssertionsWhenNotNeeded {
+  it should "not upgrade to DiagrammedAssertions when not needed using ScalaHelper" in
+    notUpgradeToDiagrammedAssertionsWhenNotNeeded("ImportAdder.ts")
+
+  private def notUpgradeToDiagrammedAssertionsWhenNotNeeded(sideFile: String)  {
     val testWithImportAlready = OldStyleScalaTest.withContent(diagrammedAssertionsImport + "\n" + OldStyleScalaTest.content)
-    modify("ImportDiagrammedAssertions.ts", SimpleFileBasedArtifactSource(testWithImportAlready)) match {
+    modify(sideFile, SimpleFileBasedArtifactSource(testWithImportAlready)) match {
       case _: NoModificationNeeded =>
         // OK
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")

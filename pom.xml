@@ -308,6 +308,8 @@
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                     <logForkedProcessCommand>true</logForkedProcessCommand>
+                    <!-- T: Failed test reminders with short stack traces -->
+                    <stdout>T</stdout>
                 </configuration>
                 <executions>
                     <execution>

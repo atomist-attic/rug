@@ -24,12 +24,8 @@ object ReflectiveFunctionExport {
   }
 
   def exportedOperations(c: Class[_]): Seq[TypeOperation] =
-    exportedOperations(ReflectionUtils.getAllDeclaredMethods(c))
-
-  private def exportedOperations(methods: Array[Method]): Seq[TypeOperation] =
-    methods
+    ReflectionUtils.getAllDeclaredMethods(c)
       .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
-      .sortBy(_.getName)
       .map(m => {
         val a = m.getAnnotation(classOf[ExportFunction])
         val params = extractExportedParametersAndDocumentation(m)
@@ -46,12 +42,11 @@ object ReflectiveFunctionExport {
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {
     val params = m.getParameters.map(p =>
-      if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription])) {
-        TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
+      p.isAnnotationPresent(classOf[ExportFunctionParameterDescription]) match {
+        case true => TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
           p.getParameterizedType.toString,
           Some(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).description()))
-      } else {
-        TypeParameter(p.getName, p.getParameterizedType.toString, None)
+        case _ => TypeParameter(p.getName, p.getParameterizedType.toString, None)
       }
     )
     params

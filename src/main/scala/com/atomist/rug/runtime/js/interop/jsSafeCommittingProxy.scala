@@ -6,7 +6,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 import com.atomist.util.lang.JavaScriptArray
-import jdk.nashorn.api.scripting.AbstractJSObject
+import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 /**
   * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
@@ -29,6 +29,8 @@ class jsSafeCommittingProxy(
 
   private val typ: Typed = UnionType(nodeTypes)
 
+  private var additionalMembers: Map[String, Object] = Map()
+
   import jsSafeCommittingProxy.MagicJavaScriptMethods
 
   //-----------------------------------------------------
@@ -48,40 +50,60 @@ class jsSafeCommittingProxy(
 
   //-----------------------------------------------------
 
+  /**
+    * A user is adding a named member e.g.
+    * shouldTerm.dispatch_me = function(name) { ...
+    * We want to save it and invoke it in getMember if necessary
+    *
+    * @param name  name of the member
+    * @param value function the user is adding in JavaScript
+    */
+  override def setMember(name: String, value: Object): Unit = {
+    //println(s"Adding member [$name]")
+    additionalMembers = additionalMembers ++ Map(name -> value)
+  }
+
   override def getMember(name: String): AnyRef = {
     //println(s"getMember: [$name]")
-    if (MagicJavaScriptMethods.contains(name))
-      super.getMember(name)
-    else if (name == "toString") {
-      new AlwaysReturns(node.toString)
-    }
-    else typ.typeInformation match {
-      case st: StaticTypeInformation =>
-        val possibleOps = st.operations.filter(
-          op => name.equals(op.name))
-
-        if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-          if (node.nodeTags.contains(TreeNode.Dynamic)) {
-            // Navigation on a node
-            if (name == "parent" || node.childNodeNames.contains(name))
-              new FunctionProxyToNodeNavigationMethods(name, node)
-            else {
-              AlwaysReturnNull
-            }
-          }
-          else node match {
-            case sobtn: ScriptObjectBackedTreeNode =>
-              sobtn.invoke(name)
-            case _ => throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
-          }
-        }
-        else
-          new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
-
+    // First, look for an added member
+    additionalMembers.get(name) match {
+      case Some(som: ScriptObjectMirror) =>
+        //println(s"Going with added value [$som] for [$name]")
+        som
+      case Some(wtf) =>
+        throw new RugRuntimeException(null,
+          s"Unexpected added value [$wtf] for [$name]: Only functions may be added to instances")
+      case _ if MagicJavaScriptMethods.contains(name) =>
+        super.getMember(name)
+      case _ if name == "toString" =>
+        new AlwaysReturns(node.toString)
       case _ =>
-        // No static type information
-        throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+        typ.typeInformation match {
+          case st: StaticTypeInformation =>
+            val possibleOps = st.operations.filter(
+              op => name.equals(op.name))
+
+            if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
+              if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
+                case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
+                  new FunctionProxyToNodeNavigationMethods(navigation, node)
+                case _ =>
+                  AlwaysReturnNull
+              }
+              else node match {
+                case sobtn: ScriptObjectBackedTreeNode =>
+                  sobtn.invoke(name)
+                case _ => throw new RugRuntimeException(null,
+                  s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
+              }
+            }
+            else
+              new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+
+          case _ =>
+            // No static type information
+            throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+        }
     }
   }
 
@@ -162,26 +184,44 @@ class jsSafeCommittingProxy(
             case null :: Nil => null
             case head :: Nil => head
             case more => more.head
-              //throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
+            //throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
           }
         case _ => node
       }
       // For terminal nodes we want the wrapped value
       r match {
         case ttn: TerminalTreeNode => ttn.value
-        case _ => jsPathExpressionEngine.wrapOne(r)
+        case _ => jsSafeCommittingProxy.wrapOne(r)
       }
     }
   }
 
 }
 
-private object jsSafeCommittingProxy {
+object jsSafeCommittingProxy {
+
+  import scala.collection.JavaConverters._
 
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.
     */
-  def MagicJavaScriptMethods = Set("valueOf")
+  private[interop] def MagicJavaScriptMethods = Set("valueOf")
+
+  /**
+    * Wrap the given sequence of nodes so they can be accessed from
+    * TypeScript. Intended for use from Scala, not TypeScript.
+    *
+    * @param nodes sequence to wrap
+    * @return TypeScript and JavaScript-friendly list
+    */
+  def wrap(nodes: Seq[TreeNode], cr: CommandRegistry = DefaultCommandRegistry): java.util.List[jsSafeCommittingProxy] = {
+    new JavaScriptArray(
+      nodes.map(n => wrapOne(n, cr))
+        .asJava)
+  }
+
+  def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): jsSafeCommittingProxy =
+    new jsSafeCommittingProxy(n, cr)
 
 }
 

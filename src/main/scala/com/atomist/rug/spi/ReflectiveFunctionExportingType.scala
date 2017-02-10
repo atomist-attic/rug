@@ -23,11 +23,8 @@ object ReflectiveFunctionExport {
     functions
   }
 
-  def allExportedOperations(c: Class[_]): Seq[TypeOperation] =
-    exportedOperations(ReflectionUtils.getAllDeclaredMethods(c))
-
   def exportedOperations(c: Class[_]): Seq[TypeOperation] =
-    exportedOperations(c.getDeclaredMethods)
+    exportedOperations(ReflectionUtils.getAllDeclaredMethods(c))
 
   private def exportedOperations(methods: Array[Method]): Seq[TypeOperation] =
     methods

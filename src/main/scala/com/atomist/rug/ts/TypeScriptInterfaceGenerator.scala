@@ -11,12 +11,9 @@ import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArg
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.TreeNode
 import com.atomist.util.Utils
 import com.atomist.util.lang.TypeScriptGenerationHelper
-import org.apache.commons.lang3.ClassUtils
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
@@ -62,7 +59,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       output ++= emitDocComment(description)
       output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}// interface $name"
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
     }
   }
@@ -122,40 +119,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
        | */""".stripMargin
   }
 
-  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
-    val interfaceTypes = new ListBuffer[InterfaceType]
-
-    allTypes.foreach(t => {
-      val operations = (t.typeInformation match {
-        case st: StaticTypeInformation => st.operations
-        case _ => null
-      }).filterNot(_ == null)
-
-      operations.foreach(op => {
-        val superclasses = ClassUtils.hierarchy(op.definedOn, ClassUtils.Interfaces.INCLUDE).asScala
-          .filterNot(c => allMethods(ReflectiveFunctionExport.exportedOperations(c)).isEmpty)
-          .filterNot(c => classOf[TreeNode] == c) // Ignore TreeNode as it's already present in TS file
-          .drop(1) // Drop leaf class
-          .toList
-
-        // Add superclasses
-        for (i <- 0 until superclasses.size) {
-          val ops = ReflectiveFunctionExport.exportedOperations(superclasses(i))
-          val parent = if (i == superclasses.size - 1) root else Typed.typeToTypeName(superclasses(i + 1))
-          val name = Typed.typeToTypeName(superclasses(i))
-          interfaceTypes += InterfaceType(name, name, allMethods(ops), parent)
-        }
-
-        // Add leaf class
-        val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses(0))
-        interfaceTypes += InterfaceType(t.name, t.description, allMethods(t), parent)
-      })
-    })
-
-    (interfaceTypes.groupBy(it => it.name) map {
-      case (_, l) => l.head
-    }).toSeq
-  }
+  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
+    allTypes.map(t => InterfaceType(t.name, t.description, allMethods(t)))
 
   private def allMethods(t: Typed): Seq[MethodInfo] =
     t.typeInformation match {

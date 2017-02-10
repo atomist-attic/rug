@@ -3,6 +3,7 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
+import {TreeHelper} from '@atomist/rug/tree/TreeHelper'
 
 /**
  * Upgrade Scala use of Java-style "a.equals(b)" to
@@ -43,6 +44,10 @@ class EqualsToSymbol implements ProjectEditor {
         if (termApply.children().length == 2) { // Should go in path expression when we have "count"
           let leftTerm = termApply.termSelect().children()[0]
           let rightTerm = termApply.children()[1]
+
+          let th = new TreeHelper()
+
+          //console.log(th.findPathFromAncestorWithTag(leftTerm, "File"))
 
           //console.log(`left=${leftTerm}, right=${rightTerm}`)
 

@@ -30,8 +30,14 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   val diagrammedAssertionsImport = "import org.scalatest.DiagrammedAssertions._"
 
-  it should "upgrade to DiagrammedAssertions when needed" in {
-    modify("ImportDiagrammedAssertions.ts", ScalaTestSources) match {
+  it should "upgrade to DiagrammedAssertions when needed using path expressions" in
+    upgradeToDiagrammedAssertionsWhenNeeded("ImportDiagrammedAssertions.ts")
+
+  it should "upgrade to DiagrammedAssertions when needed using ScalaHelper" in
+    upgradeToDiagrammedAssertionsWhenNeeded("ImportAdder.ts")
+
+  private def upgradeToDiagrammedAssertionsWhenNeeded(sideFile: String) {
+    modify(sideFile, ScalaTestSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(OldStyleScalaTest.path).get
         //println(theFile.content)
@@ -41,9 +47,15 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "not upgrade to DiagrammedAssertions when not needed" in {
+  it should "not upgrade to DiagrammedAssertions when not needed using path expressions" in
+    notUpgradeToDiagrammedAssertionsWhenNotNeeded("ImportDiagrammedAssertions.ts")
+
+  it should "not upgrade to DiagrammedAssertions when not needed using ScalaHelper" in
+    notUpgradeToDiagrammedAssertionsWhenNotNeeded("ImportAdder.ts")
+
+  private def notUpgradeToDiagrammedAssertionsWhenNotNeeded(sideFile: String)  {
     val testWithImportAlready = OldStyleScalaTest.withContent(diagrammedAssertionsImport + "\n" + OldStyleScalaTest.content)
-    modify("ImportDiagrammedAssertions.ts", SimpleFileBasedArtifactSource(testWithImportAlready)) match {
+    modify(sideFile, SimpleFileBasedArtifactSource(testWithImportAlready)) match {
       case _: NoModificationNeeded =>
         // OK
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")

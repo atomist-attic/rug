@@ -8,6 +8,7 @@ import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, S
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.ConsoleMatchListener
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
+import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 object CSharpFileTypeTest {
@@ -79,6 +80,91 @@ object CSharpFileTypeTest {
       |}
     """.stripMargin
 
+  val EmptyClass1 = StringFileArtifact("EmptyClass1.cs",
+    """
+      |using System;
+      |namespace EmptyClass
+      |{
+      |    class EmptyClass1 {}
+      |}
+    """.stripMargin)
+
+  val EmptyClass2 = StringFileArtifact("EmptyClass2.cs",
+    """
+      |
+      |using System;
+      |namespace EmptyClass
+      |{
+      |    class EmptyClass2 {}
+      |}
+    """.stripMargin)
+
+  val SingleMethodInClass = StringFileArtifact("SingleMethodInClass.cs",
+    """
+      |using System;
+      |namespace HelloWorld
+      |{
+      |    class Hello
+      |    {
+      |        public string Echo(string message)
+      |        {
+      |           return message;
+      |        }
+      |    }
+      |}
+    """.stripMargin)
+
+  val ManyMethodsInClass = StringFileArtifact("ManyMethodsInClass.cs",
+    """
+      |using System;
+      |namespace HelloWorld
+      |{
+      |    class Hello
+      |    {
+      |        public string Echo(string message)
+      |        {
+      |           return message;
+      |        }
+      |
+      |        public string TwoArgs(string a, string b)
+      |        {
+      |        }
+      |
+      |        private string VariableArgs(params string[] names)
+      |        {
+      |        }
+      |    }
+      |}
+    """.stripMargin)
+
+  val ManyUsingDirectives = StringFileArtifact("ManyUsingDirectives.cs",
+    """
+      |using System.Text;
+      |using static System.Math;
+      |
+      |namespace HelloWorld
+      |{
+      |     class Hello {}
+      |}
+    """.stripMargin)
+
+
+  val SingleLambdaExpression = StringFileArtifact("SingleLambdaExpression.cs",
+    """
+      |using System;
+      |
+      |namespace HelloWorld
+      |{
+      |     class HelloWorld
+      |     {
+      |        public void AddOne(int x) {
+      |           Func<int, int> addOne = x => x + 1;
+      |           return addOne(x);
+      |        }
+      |     }
+      |}
+    """.stripMargin)
+
   val HelloWorldSources =
     SimpleFileBasedArtifactSource(StringFileArtifact("src/hello.cs", HelloWorld))
 
@@ -90,6 +176,24 @@ object CSharpFileTypeTest {
   def exceptionProject =
     SimpleFileBasedArtifactSource(StringFileArtifact("src/exception.cs", Exceptions))
 
+  def manyClassesProject =
+    new ProjectMutableView(EmptyArtifactSource(),
+      new SimpleFileBasedArtifactSource("name",
+        Seq(EmptyClass1, EmptyClass2)
+      )
+    )
+
+  def manyMethodsProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(ManyMethodsInClass))
+
+  def singleMethodProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(SingleMethodInClass))
+
+  def manyUsingDirectivesProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(ManyUsingDirectives))
+
+  def singleLambdaExpressionProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(SingleLambdaExpression))
 }
 
 class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
@@ -157,5 +261,95 @@ class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
       case Right(Seq(fileCatchingIndexOutOfRange: FileArtifactBackedMutableView)) =>
         assert(fileCatchingIndexOutOfRange.path === exceptionProject.allFiles.head.path)
     }
+  }
+
+  it should "map class_definition to Class" in {
+    val expr1 = "/File()//CSharpFile()//Class()"
+    val rtn1 = expressionEngine.evaluate(manyClassesProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()//CSharpFile()//class_definition()"
+    val rtn2 = expressionEngine.evaluate(manyClassesProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map method_declaration to Func" in {
+    val expr1 = "/File()/CSharpFile()//Method()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 3)
+
+    val expr2 = "/File()/CSharpFile()//method_declaration()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 3)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map fixed_parameter to Args" in {
+    val expr1 = "/File()/CSharpFile()//Method()[/method_member_name/identifier/IDENTIFIER[@value='TwoArgs']]//Args()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()/CSharpFile()//method_declaration()[/method_member_name/identifier/IDENTIFIER[@value='TwoArgs']]//Args()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    val expr3 = "/File()/CSharpFile()//method_declaration()[/method_member_name/identifier/IDENTIFIER[@value='TwoArgs']]//fixed_parameter()"
+    val rtn3 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr3), DefaultTypeRegistry)
+    assert(rtn3.right.get.size === 2)
+  }
+
+
+  it should "map variable parameter_array to Args" in {
+    val expr1 = "/File()/CSharpFile()//Method()[/method_member_name/identifier/IDENTIFIER[@value='VariableArgs']]//VarArgs()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/CSharpFile()//method_declaration()[/method_member_name/identifier/IDENTIFIER[@value='VariableArgs']]//VarArgs()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    val expr3 = "/File()/CSharpFile()//method_declaration()[/method_member_name/identifier/IDENTIFIER[@value='VariableArgs']]//parameter_array()"
+    val rtn3 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr3), DefaultTypeRegistry)
+    assert(rtn3.right.get.size === 1)
+
+  }
+
+  it should "map lambda_expression to Lambda" in {
+    val expr1 = "/File()/CSharpFile()//Lambda()"
+    val rtn1 = expressionEngine.evaluate(singleLambdaExpressionProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/CSharpFile()//lambda_expression()"
+    val rtn2 = expressionEngine.evaluate(singleLambdaExpressionProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map class_definition and method_declaration to Class and Method" in {
+    val expr1 = "/File()/CSharpFile()//Class()//Method()"
+    val rtn1 = expressionEngine.evaluate(singleMethodProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/CSharpFile()//class_definition()//method_declaration()"
+    val rtn2 = expressionEngine.evaluate(singleMethodProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map using_directive to Using" in {
+    val expr1 = "/File()/CSharpFile()//Using()"
+    val rtn1 = expressionEngine.evaluate(manyUsingDirectivesProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()/CSharpFile()//using_directive()"
+    val rtn2 = expressionEngine.evaluate(manyUsingDirectivesProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
   }
 }

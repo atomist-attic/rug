@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.java.path
 
+import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
@@ -97,6 +98,97 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     //updatedFile.dirty should be(true)
   }
 
+
+  it should "map classDeclaration to Class" in {
+    val expr1 = "/File()//JavaFile()//Class()"
+    val rtn1 = expressionEngine.evaluate(manyClassesProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()//JavaFile()//classDeclaration()"
+    val rtn2 = expressionEngine.evaluate(manyClassesProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map methodDeclaration to Method" in {
+    val expr1 = "/File()/JavaFile()//Method()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 3)
+
+    val expr2 = "/File()/JavaFile()//methodDeclaration()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 3)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map formalParameter to Args" in {
+    val expr1 = "/File()/JavaFile()//Method()[/methodHeader/methodDeclarator/Identifier[@value='twoArgs']]//Args()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()/JavaFile()//methodDeclaration()[/methodHeader/methodDeclarator/Identifier[@value='twoArgs']]//Args()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    val expr3 = "/File()/JavaFile()//methodDeclaration()[/methodHeader/methodDeclarator/Identifier[@value='twoArgs']]//formalParameter()"
+    val rtn3 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr3), DefaultTypeRegistry)
+    assert(rtn3.right.get.size === 2)
+  }
+
+
+  it should "map variable formalParameter to Args" in {
+    val expr1 = "/File()/JavaFile()//Method()[/methodHeader/methodDeclarator/Identifier[@value='variableArgs']]//VarArgs()"
+    val rtn1 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/JavaFile()//methodDeclaration()[/methodHeader/methodDeclarator/Identifier[@value='variableArgs']]//VarArgs()"
+    val rtn2 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    val expr3 = "/File()/JavaFile()//methodDeclaration()[/methodHeader/methodDeclarator/Identifier[@value='variableArgs']]//lastFormalParameter()"
+    val rtn3 = expressionEngine.evaluate(manyMethodsProject, PathExpressionParser.parseString(expr3), DefaultTypeRegistry)
+    assert(rtn3.right.get.size === 1)
+
+  }
+
+  it should "map lambdaExpression to Lambda" in {
+    val expr1 = "/File()/JavaFile()//Lambda()"
+    val rtn1 = expressionEngine.evaluate(singleLambdaExpressionProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/JavaFile()//lambdaExpression()"
+    val rtn2 = expressionEngine.evaluate(singleLambdaExpressionProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map classDeclaration and methodDeclaration to Class and Method" in {
+    val expr1 = "/File()/JavaFile()//Class()//Method()"
+    val rtn1 = expressionEngine.evaluate(singleMethodProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 1)
+
+    val expr2 = "/File()/JavaFile()//classDeclaration()//methodDeclaration()"
+    val rtn2 = expressionEngine.evaluate(singleMethodProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 1)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
+  it should "map importDeclaration to Import" in {
+    val expr1 = "/File()/JavaFile()//Import()"
+    val rtn1 = expressionEngine.evaluate(manyImportsProject, PathExpressionParser.parseString(expr1), DefaultTypeRegistry)
+    assert(rtn1.right.get.size === 2)
+
+    val expr2 = "/File()/JavaFile()//importDeclaration()"
+    val rtn2 = expressionEngine.evaluate(manyImportsProject, PathExpressionParser.parseString(expr2), DefaultTypeRegistry)
+    assert(rtn2.right.get.size === 2)
+
+    assert(rtn1.right.get.size === rtn2.right.get.size)
+  }
+
 }
 
 object JavaFileTypeTest {
@@ -126,9 +218,73 @@ object JavaFileTypeTest {
       |}
     """.stripMargin)
 
+  val EmptyClass1 = StringFileArtifact("EmptyClass1.java",
+    """
+      |public class EmptyClass1 {}
+    """.stripMargin)
+
+  val EmptyClass2 = StringFileArtifact("EmptyClass2.java",
+    """
+      |public class EmptyClass2 {}
+    """.stripMargin)
+
+  val SingleMethodInClass = StringFileArtifact("SingleMethodInClass.java",
+    """
+      |public class SingleMethodInClass {
+      | public void echo(String message) {}
+      |}
+    """.stripMargin)
+
+  val ManyMethodsInClass = StringFileArtifact("ManyMethodsInClass.java",
+    """
+      |public class ManyMethodsInClass {
+      | public void echo(String message) {}
+      | public void twoArgs(String a, String b) {}
+      | private void variableArgs(String ... names) {}
+      |}
+    """.stripMargin)
+
+  val ManyImportStatements = StringFileArtifact("ManyImportStatements.java",
+    """
+      |import java.io;
+      |import java.math.*;
+      |
+      |public class DoNothingClass {}
+    """.stripMargin)
+
+
+  val SingleLambdaExpression = StringFileArtifact("SingleLambdaExpression.java",
+    """
+      |public class SingleLambdaExpression {
+      | public static void main(String[] args) {
+      |   Runnable r = () -> System.out.println("Hello world!");
+      |   r.run();
+      | }
+      |}
+    """.stripMargin)
+
   def helloWorldProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldJava))
 
   def exceptionsProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(Exceptions))
+
+  def manyClassesProject =
+    new ProjectMutableView(EmptyArtifactSource(),
+      new SimpleFileBasedArtifactSource("name",
+        Seq(EmptyClass1, EmptyClass2)
+      )
+    )
+
+  def manyMethodsProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(ManyMethodsInClass))
+
+  def singleMethodProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(SingleMethodInClass))
+
+  def manyImportsProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(ManyImportStatements))
+
+  def singleLambdaExpressionProject =
+    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(SingleLambdaExpression))
 }

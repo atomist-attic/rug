@@ -78,32 +78,37 @@ class jsSafeCommittingProxy(
       case _ if name == "toString" =>
         new AlwaysReturns(node.toString)
       case _ =>
-        typ.typeInformation match {
-          case st: StaticTypeInformation =>
-            val possibleOps = st.operations.filter(
-              op => name.equals(op.name))
+        invokeConsideringTypeInformation(name)
+    }
+  }
 
-            if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-              if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
-                case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
-                  new FunctionProxyToNodeNavigationMethods(navigation, node)
-                case _ =>
-                  AlwaysReturnNull
-              }
-              else node match {
-                case sobtn: ScriptObjectBackedTreeNode =>
-                  sobtn.invoke(name)
-                case _ => throw new RugRuntimeException(null,
-                  s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
-              }
-            }
-            else
-              new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
-
-          case _ =>
-            // No static type information
-            throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+  private def invokeConsideringTypeInformation(name: String): AnyRef =
+    typ.typeInformation match {
+      case st: StaticTypeInformation =>
+        val possibleOps = st.operations.filter(
+          op => name.equals(op.name))
+        if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
+          invokeGivenNoMatchingOperationInTypeInformation(name, st)
         }
+        else
+          new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+      case _ =>
+        throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+    }
+
+  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: StaticTypeInformation) = {
+    if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
+      case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
+        new FunctionProxyToNodeNavigationMethods(navigation, node)
+      case _ =>
+        AlwaysReturnNull
+    }
+    else node match {
+      case sobtn: ScriptObjectBackedTreeNode =>
+        // This object is wholly defined in JavaScript
+        sobtn.invoke(name)
+      case _ => throw new RugRuntimeException(null,
+        s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
     }
   }
 

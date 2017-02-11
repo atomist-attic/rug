@@ -4,18 +4,16 @@ import java.util
 import java.util.Collections
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.command.DefaultCommandRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.kind.service.TeamContext
+import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
-import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import NashornUtils._
 
 import scala.collection.JavaConverters._
 
@@ -46,7 +44,7 @@ class jsPathExpressionEngine(
                               val ee: ExpressionEngine = new PathExpressionEngine,
                               typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
-  import jsPathExpressionEngine._
+  import jsSafeCommittingProxy._
 
   /**
     * Return a customized version of this path expression engine for use in a specific
@@ -186,21 +184,5 @@ class jsPathExpressionEngine(
 object jsPathExpressionEngine {
 
   val matcherParser = new MatcherDefinitionParser
-
-  /**
-    * Wrap the given sequence of nodes so they can be accessed from
-    * TypeScript. Intended for use from Scala, not TypeScript.
-    *
-    * @param nodes sequence to wrap
-    * @return TypeScript and JavaScript-friendly list
-    */
-  def wrap(nodes: Seq[TreeNode], cr: CommandRegistry = DefaultCommandRegistry): java.util.List[jsSafeCommittingProxy] = {
-    new JavaScriptArray(
-      nodes.map(n => wrapOne(n, cr))
-        .asJava)
-  }
-
-  def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): jsSafeCommittingProxy =
-    new jsSafeCommittingProxy(n, cr)
 
 }

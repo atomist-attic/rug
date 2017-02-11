@@ -30,6 +30,13 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
       let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`
 
       eng.with<any>(project, oldAssertion, shouldTerm => {
+
+shouldTerm.dispatch_me = function(name) {
+  console.log(name)
+}
+shouldTerm.dispatch_me("foo")
+console.log("after bogus call")
+
         let termSelect = shouldTerm.termSelect()
         let termApply = shouldTerm.termApply()
         if (termApply != null && ["be", "equal"].indexOf(termApply.termName().value()) > -1) {

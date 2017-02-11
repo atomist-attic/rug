@@ -3,6 +3,8 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
+import {ScalaHelper} from '@atomist/rug/ast/scala/ScalaHelper'
+import * as scala from '@atomist/rug/ast/scala/Types'
 
 /**
  * Update ScalaTest assertions of the form "a should be(b)" or a "should equal(b)"
@@ -29,14 +31,7 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
       */
       let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`
 
-      eng.with<any>(project, oldAssertion, shouldTerm => {
-
-shouldTerm.dispatch_me = function(name) {
-  console.log(name)
-}
-shouldTerm.dispatch_me("foo")
-console.log("after bogus call")
-
+      eng.with<scala.TermApplyInfix>(project, oldAssertion, shouldTerm => {
         let termSelect = shouldTerm.termSelect()
         let termApply = shouldTerm.termApply()
         if (termApply != null && ["be", "equal"].indexOf(termApply.termName().value()) > -1) {

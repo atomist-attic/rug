@@ -4,7 +4,7 @@ import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathEx
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {ScalaHelper} from '@atomist/rug/ast/scala/ScalaHelper'
-
+import * as scala from '@atomist/rug/ast/scala/Types'
 
 /**
  * Uses our ScalaHelper to add imports
@@ -19,7 +19,7 @@ class ImportAdder implements ProjectEditor {
 
       let findExistingScalaTestImport = `/src/Directory()/scala//ScalaFile()`   
 
-      eng.with<any>(project, findExistingScalaTestImport, scalaFile => {
+      eng.with<scala.ScalaSource>(project, findExistingScalaTestImport, scalaFile => {
         let newScalaFile = scalaHelper.addImport(scalaFile, "org.scalatest.DiagrammedAssertions._")
         if (newScalaFile.value().indexOf("DiagrammedAssertions") < 0)
           throw new Error(`Content not right when i asked again: [${newScalaFile.value()}]`)

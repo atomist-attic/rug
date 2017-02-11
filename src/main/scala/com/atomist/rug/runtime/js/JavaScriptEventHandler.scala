@@ -6,7 +6,7 @@ import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
-import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpression, PathExpressionParser}
@@ -55,8 +55,8 @@ class JavaScriptEventHandler(
       case Right(Nil) =>
       case Right(matches) =>
         val cm = jsContextMatch(
-          jsPathExpressionEngine.wrapOne(targetNode),
-          jsPathExpressionEngine.wrap(matches),
+          jsSafeCommittingProxy.wrapOne(targetNode),
+          jsSafeCommittingProxy.wrap(matches),
           s2,
           teamId = e.teamId)
         invokeHandlerFunction(e, cm)

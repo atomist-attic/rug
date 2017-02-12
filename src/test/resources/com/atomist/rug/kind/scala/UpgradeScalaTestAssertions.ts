@@ -31,9 +31,21 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
       */
       let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`
 
-      eng.with<scala.TermApplyInfix>(project, oldAssertion, shouldTerm => {
+      eng.with<scala.TermApplyInfixNav>(project, oldAssertion, shouldTermNav => {
+        
+        // Have Scala return that overrides only evaluate to decorate.
+
+        var infixOps: scala.TermApplyInfixOps = new scala["TermApplyInfixOps"](shouldTermNav);
+  
+        let shouldTerm: scala.TermApplyInfix = scala.unify(shouldTermNav, infixOps)
+
         let termSelect = shouldTerm.termSelect()
         let termApply = shouldTerm.termApply()
+
+        console.log ("About to new absquatulate")
+        shouldTerm.absquatulate()
+        console.log ("Done absquatulate")
+
         if (termApply != null && ["be", "equal"].indexOf(termApply.termName().value()) > -1) {
           let newValue = `assert(${termSelect.value()} === ${termApply.children()[1].value()})`
           //console.log(`Replacing [${shouldTerm.value()}] with [${newValue}]`)

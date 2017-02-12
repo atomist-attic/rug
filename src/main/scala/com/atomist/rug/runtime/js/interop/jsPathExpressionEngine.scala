@@ -156,6 +156,13 @@ class jsPathExpressionEngine(
   }
 
   /**
+    * Convenience method to avoid overloading in TypeScript,
+    * which can cause problems with inheritance
+    */
+  def scalarStr(root: TreeNode, pe: String): jsSafeCommittingProxy =
+    scalar(root, pe)
+
+  /**
     * Try to cast the given node to the required type.
     */
   def as(root: TreeNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")

@@ -3,7 +3,7 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
-import {ScalaHelper,ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaHelper'
+import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpressionEngine'
 import * as scala from '@atomist/rug/ast/scala/Types'
 
 /**

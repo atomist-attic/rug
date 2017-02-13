@@ -58,9 +58,14 @@ class jsSafeCommittingProxy(
     * @param name  name of the member
     * @param value function the user is adding in JavaScript
     */
-  override def setMember(name: String, value: Object): Unit = {
-    //println(s"Adding member [$name]")
-    additionalMembers = additionalMembers ++ Map(name -> value)
+  override def setMember(name: String, value: Object): Unit = value match {
+    case som: ScriptObjectMirror =>
+      //println(s"Adding function member [$name]")
+      additionalMembers = additionalMembers ++ Map(name -> som)
+    case x =>
+      //println(s"Adding non-function member [$name]")
+      additionalMembers = additionalMembers ++ Map(name -> x)
+
   }
 
   override def getMember(name: String): AnyRef = {
@@ -70,12 +75,12 @@ class jsSafeCommittingProxy(
       case Some(som: ScriptObjectMirror) =>
         //println(s"Going with added value [$som] for [$name]")
         som
-      case Some(wtf) =>
-        throw new RugRuntimeException(null,
-          s"Unexpected added value [$wtf] for [$name]: Only functions may be added to instances")
-      case _ if MagicJavaScriptMethods.contains(name) =>
+      case Some(x) =>
+        //println(s"Going with added non-function value [$x] for [$name]")
+        x
+      case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
-      case _ if name == "toString" =>
+      case None if name == "toString" =>
         new AlwaysReturns(node.toString)
       case _ =>
         invokeConsideringTypeInformation(name)

@@ -157,9 +157,12 @@ trait RugOperationSupport extends LazyLogging {
                         context: TreeNode,
                         poa: ProjectOperationArguments,
                         identifierMap: Map[String, Object]): Seq[TreeNode] = {
-    val vo = DefaultViewFinder.findIn(rugAs, selected, context, poa, identifierMap)
-    vo.getOrElse {
-      throw new RugRuntimeException(null, s"Cannot find type '${selected.kind}' under $context using $DefaultViewFinder")
+    DefaultViewFinder.findIn(rugAs, selected, context, poa, identifierMap) match {
+      case Left(s) if s.isEmpty =>
+        throw new RugRuntimeException(null, s"Cannot find '${selected.kind}' under $context. It has no children of its own.")
+      case Left(alternatives) =>
+        throw new RugRuntimeException(null, s"Cannot find '${selected.kind}' under $context. It does have these children: ${alternatives.mkString(",")}")
+      case Right(views) => views
     }
   }
 

@@ -213,6 +213,21 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     assert(rtn.right.get === Seq(kid))
   }
 
+  it should "use XPath style contains function" in {
+    val rn = new ParsedMutableContainerTreeNode("root")
+    val tn = new ParsedMutableContainerTreeNode("name")
+    tn.appendField(SimpleTerminalTreeNode("age", "25"))
+    rn.appendField(tn)
+
+    val expr = "/*[contains(.,'25')]"
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
+    assert(rtn.right.get === Seq(tn))
+
+    val expr2 = "/*[@age='26']"
+    val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
+    assert(rtn2.right.get === Nil)
+  }
+
   it should "handle a property name axis specifier and Object type" in {
     val tn = new ContainerTreeNodeImpl("Issue", "Issue")
     tn.addField(SimpleTerminalTreeNode("state", "open"))

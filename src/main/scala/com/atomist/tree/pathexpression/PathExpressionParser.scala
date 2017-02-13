@@ -14,6 +14,8 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeName: Parser[String] = identifierRefString(Set(), ident)
 
+  private def functionName: Parser[String] = identifierRefString(Set(), ident)
+
   private def objectType: Parser[String] = identifierRefString(Set(), ident)
 
   private def child: Parser[AxisSpecifier] = opt(s"$ChildAxis::") ^^ {
@@ -56,9 +58,30 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def args: Parser[Seq[String]] = "(" ~> repsep(arg, ",") <~ ")"
 
-  private def booleanMethodInvocation: Parser[Predicate] = "." ~> nodeName ~ args ^^ {
+  private def stringLiteralFunctionArg: Parser[StringLiteralFunctionArg] =
+    (singleQuotedString | doubleQuotedString) ^^ (
+      s => StringLiteralFunctionArg(s)
+      )
+
+  private def relativePathFunctionArg: Parser[RelativePathFunctionArg] =
+    (nonEmptyRelativePathExpression) ^^ (
+      s => RelativePathFunctionArg(s)
+      )
+
+  private def functionArg: Parser[FunctionArg] =
+    stringLiteralFunctionArg |
+      relativePathFunctionArg
+
+  private def functionArgs: Parser[Seq[FunctionArg]] = "(" ~> rep1sep(functionArg, ",") <~ ")"
+
+  private def booleanMethodInvocation: Parser[Predicate] = "." ~> functionName ~ args ^^ {
     case methodName ~ args =>
       FunctionPredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+  }
+
+  private def functionCall: Parser[Predicate] = functionName ~ functionArgs ^^ {
+    case functionName ~ args =>
+      XPathStyleFunctionPredicate(functionName, args)
   }
 
   private def index: Parser[Predicate] = integer ^^ {
@@ -78,6 +101,7 @@ trait PathExpressionParser extends CommonTypesParser {
       booleanMethodInvocation |
       truePredicate |
       falsePredicate |
+      functionCall |
       index |
       nestedPathExpressionPredicate
 
@@ -127,6 +151,9 @@ trait PathExpressionParser extends CommonTypesParser {
   def relativePathExpression: Parser[PathExpression] = repsep(locationStep, slashSeparator) ^^
     (steps => PathExpression(steps))
 
+  private def nonEmptyRelativePathExpression: Parser[PathExpression] = rep1sep(locationStep, slashSeparator) ^^
+    (steps => PathExpression(steps))
+
   def absolutePathExpression: Parser[PathExpression] = slashSeparator ~> relativePathExpression
 
   def pathExpression: Parser[PathExpression] = absolutePathExpression | relativePathExpression
@@ -140,6 +167,7 @@ trait PathExpressionParser extends CommonTypesParser {
     }
   }
 }
+
 
 /**
   * Default implementation of PathExpressionParser. Import this

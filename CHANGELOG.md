@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Beginning of a TypeScript class library to simplify working with tree nodes and
+    transparently decorate tree nodes if a decoration strategy is provided in TypeScript.
+
 -   Add new minimal TS interfaces for use with class decorators. e.g. EditProject
 
 -   Added support for @Editor, @Generator, @Reviewer and @Tags class decorators in TS.
@@ -37,6 +40,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 -   Upgrade TS compiler to 2.1.5
+
+-   `scalar` method on TypeScript `PathExpressionEngine` taking string is now called `scalarStr`. This
+    change was necessary to avoid conflicts with method overloading in TypeScript/JavaScript.
 
 -   `TreeNodeUtils.toShorterString` now optionally takes a function
     to customize the display of each node.

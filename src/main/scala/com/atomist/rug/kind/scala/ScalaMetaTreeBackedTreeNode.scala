@@ -25,7 +25,7 @@ private[scala] class ScalaMetaTreeBackedTreeNode(smTree: Tree)
     JavaHelpers.lowerize(fqn.drop(fqn.lastIndexOf("$") + 1).replace("Impl", ""))
   }
 
-  override def nodeTags: Set[String] = super.nodeTags ++ Set(TreeNode.Dynamic)
+  override def nodeTags: Set[String] = super.nodeTags ++ Set(TreeNode.Dynamic, nodeName)
 
   override def startPosition: InputPosition = OffsetInputPosition(smTree.pos.start.offset)
 

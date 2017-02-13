@@ -20,13 +20,12 @@ class jsSafeCommittingProxy(
                              val node: TreeNode,
                              commandRegistry: CommandRegistry = DefaultCommandRegistry,
                              typeRegistry: TypeRegistry = DefaultTypeRegistry)
-  extends AbstractJSObject
-    with TreeNode {
+  extends AbstractJSObject with TreeNode {
 
   override def toString: String = s"SafeCommittingProxy around $node"
 
   private val nodeTypes: Set[Typed] =
-    node.nodeTags.flatMap(typeRegistry.findByName(_))
+    node.nodeTags.flatMap(t => typeRegistry.findByName(t))
 
   private val typ: Typed = UnionType(nodeTypes)
 
@@ -46,7 +45,8 @@ class jsSafeCommittingProxy(
   override def childNodeTypes: Set[String] = node.childNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] =
-    node.childrenNamed(key).map(new jsSafeCommittingProxy(_, commandRegistry, typeRegistry))
+    node.childrenNamed(key)
+      .map(n => new jsSafeCommittingProxy(n, commandRegistry, typeRegistry))
 
   //-----------------------------------------------------
 
@@ -58,24 +58,29 @@ class jsSafeCommittingProxy(
     * @param name  name of the member
     * @param value function the user is adding in JavaScript
     */
-  override def setMember(name: String, value: Object): Unit = {
-    // println(s"Adding member [$name]")
-    additionalMembers = additionalMembers ++ Map(name -> value)
+  override def setMember(name: String, value: Object): Unit = value match {
+    case som: ScriptObjectMirror =>
+      //println(s"Adding function member [$name]")
+      additionalMembers = additionalMembers ++ Map(name -> som)
+    case x =>
+      //println(s"Adding non-function member [$name]")
+      additionalMembers = additionalMembers ++ Map(name -> x)
+
   }
 
   override def getMember(name: String): AnyRef = {
-    // println(s"getMember: [$name]")
+    //println(s"getMember: [$name]")
     // First, look for an added member
     additionalMembers.get(name) match {
       case Some(som: ScriptObjectMirror) =>
         //println(s"Going with added value [$som] for [$name]")
         som
-      case Some(wtf) =>
-        throw new RugRuntimeException(null,
-          s"Unexpected added value [$wtf] for [$name]: Only functions may be added to instances")
-      case _ if MagicJavaScriptMethods.contains(name) =>
+      case Some(x) =>
+        //println(s"Going with added non-function value [$x] for [$name]")
+        x
+      case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
-      case _ if name == "toString" =>
+      case None if name == "toString" =>
         new AlwaysReturns(node.toString)
       case _ =>
         invokeConsideringTypeInformation(name)
@@ -85,7 +90,8 @@ class jsSafeCommittingProxy(
   private def invokeConsideringTypeInformation(name: String): AnyRef =
     typ.typeInformation match {
       case st: StaticTypeInformation =>
-        val possibleOps = st.operations.filter(op => name.equals(op.name))
+        val possibleOps = st.operations.filter(
+          op => name.equals(op.name))
         if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
           invokeGivenNoMatchingOperationInTypeInformation(name, st)
         }
@@ -101,7 +107,8 @@ class jsSafeCommittingProxy(
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
         AlwaysReturnNull
-    } else node match {
+    }
+    else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
@@ -123,7 +130,8 @@ class jsSafeCommittingProxy(
       possibleOps.find(op => op.parameters.size == args.size) match {
         case None =>
           commandRegistry.findByNodeAndName(node, name) match {
-            case Some(c) => c.invokeOn(node)
+            case Some(c) =>
+              c.invokeOn(node)
             case _ =>
               throw new RugRuntimeException(null,
                 s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
@@ -132,12 +140,13 @@ class jsSafeCommittingProxy(
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
           node match {
-            // case c: { def commit(): Unit } =>
+            //case c: { def commit(): Unit } =>
             case c: MutableView[_] if !op.readOnly =>
               c.commit()
             case _ =>
           }
-          // The returned type needs to be wrapped if it's a collection
+          // The returned type needs to be wrapped if it's
+          // a collection
           returned match {
             case l: java.util.List[_] =>
               new JavaScriptArray(l)
@@ -152,12 +161,14 @@ class jsSafeCommittingProxy(
     override def isFunction: Boolean = true
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
+
   }
 
   private object AlwaysReturnNull extends AlwaysReturns(null)
 
   /**
-    * Nashorn proxy for a method invocation that use navigation methods on TreeNode.
+    * Nashorn proxy for a method invocation that use navigation methods on
+    * TreeNode
     */
   private class FunctionProxyToNodeNavigationMethods(name: String, node: TreeNode)
     extends AbstractJSObject {
@@ -194,6 +205,7 @@ class jsSafeCommittingProxy(
       }
     }
   }
+
 }
 
 object jsSafeCommittingProxy {

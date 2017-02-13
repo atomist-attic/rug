@@ -82,14 +82,30 @@ trait FunctionRegistry {
 
 }
 
+
 object DefaultFunctionRegistry extends FunctionRegistry {
 
-  private val functions: Seq[Function] = Seq(
-    SimpleFunction("contains", Seq(String, String), args => {
-      if (args(0) == null || args(1) == null) false
-      else args(0).toString.contains(args(1).toString)
-    })
-  )
+  private val functions: Seq[Function] = {
+    for {
+      m <- DefaultFunctions.getClass.getMethods
+      if m.getParameterCount >= 1
+      if m.getParameterTypes.forall(c => c == classOf[String] || c == classOf[Boolean])
+    } yield {
+      val declaredArgs = m.getParameterTypes.map(_.getSimpleName) map {
+        case "String" => String
+        case "Boolean" => Boolean
+        case wtf => throw new IllegalStateException(s"Should have filtered out parameter type [$wtf]")
+      }
+      SimpleFunction(m.getName, declaredArgs, invoker = args => {
+        //println(s"Invoking $m on $DefaultFunctions with args=${args.map(a => s"$a - ${a.getClass}")}")
+        val objectified = args map {
+          case o: Object => o
+          case _ => ???
+        }
+        m.invoke(DefaultFunctions, objectified:_*)
+      })
+    }
+  }
 
   override def find(name: String, args: Seq[FunctionArg]): Option[Function] = functions.find(f => f.name == name)
 
@@ -106,3 +122,4 @@ private case class SimpleFunction(name: String, argTypes: Seq[XPathType], invoke
     invoker(convertedArgs)
   }
 }
+

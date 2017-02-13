@@ -185,7 +185,6 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-    output ++= config.separator
 
     alreadyGenerated.foreach(t => {
       output ++= s"""import {${t.name}} from "./${t.name}""""

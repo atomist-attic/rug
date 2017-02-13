@@ -13,6 +13,7 @@ import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.Utils
 import com.atomist.util.lang.TypeScriptGenerationHelper
+import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.ListBuffer
 
@@ -59,7 +60,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       output ++= emitDocComment(description)
       output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}// interface $name"
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
     }
   }
@@ -104,9 +105,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
-    val createdFile = emitInterfaces(poa)
-    // println(s"The content of ${createdFile.path} is\n${createdFile.content}")
-    new SimpleFileBasedArtifactSource("Rug user model", createdFile)
+    val createdFiles = emitInterfaces(poa)
+    new SimpleFileBasedArtifactSource("Rug user model", createdFiles)
   }
 
   private def shouldEmit(top: TypeOperation) =
@@ -144,33 +144,56 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     methods
   }
 
-  private def emitInterfaces(poa: ProjectOperationArguments): FileArtifact = {
+  private def emitInterfaces(poa: ProjectOperationArguments): Seq[FileArtifact] = {
     val alreadyGenerated = ListBuffer.empty[InterfaceType]
-
-    val output: StringBuilder = new StringBuilder(config.licenseHeader)
-    output ++= config.separator
-    output ++= config.imports
-    output ++= config.separator
+    val tsInterfaces = ListBuffer.empty[StringFileArtifact]
 
     val allTypes = typeRegistry.types.sortWith(typeSort)
     val interfaceTypes = allInterfaceTypes(allTypes)
+    val pathParam = poa.stringParamValue(OutputPathParam)
+
     for {
       t <- interfaceTypes
       if !alreadyGenerated.contains(t)
     } {
+      val t1 = t
+      val output = new StringBuilder(config.licenseHeader)
+      output ++= config.separator
+      output ++= config.imports
+      output ++= "\n"
+
+      val returnTypes = new ListBuffer[String]
+      interfaceTypes.foreach(t => t1.methods.foreach(m => {
+        val returnType = StringUtils.removeEnd(m.returnType, "[]")
+        if (!t1.name.equals(t.name) && returnType.equals(t.name))
+          returnTypes += returnType
+      }))
+      returnTypes.distinct.foreach(rt => {
+        output ++= s"""import {$rt} from "./$rt""""
+        output ++= "\n"
+      })
+
+      output ++= config.separator
       output ++= t.toString
       output ++= config.separator
+      output ++= s"export {${t.name}}\n"
+
+      val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
+      tsInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
       alreadyGenerated.append(t)
     }
 
-    output ++= "\n"
-    for {t <- interfaceTypes} {
-      output ++= s"export { ${t.name} }\n"
-    }
+    val output = new StringBuilder(config.licenseHeader)
+    output ++= config.separator
 
-    StringFileArtifact(
-      poa.stringParamValue(OutputPathParam),
-      output.toString())
+    alreadyGenerated.foreach(t => {
+      output ++= s"""import {${t.name}} from "./${t.name}""""
+      output ++= "\n"
+      output ++= s"export {${t.name}}\n"
+    })
+
+    tsInterfaces += StringFileArtifact(pathParam, output.toString())
+    tsInterfaces
   }
 
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {

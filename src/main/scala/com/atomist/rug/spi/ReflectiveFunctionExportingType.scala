@@ -15,13 +15,10 @@ object ReflectiveFunctionExport {
   /**
     * Export functions.
     */
-  def exportedFunctions(c: Class[_]): Traversable[RugFunction[_, _]] = {
-    val functions: Traversable[RugFunction[_, _]] =
-      ReflectionUtils.getAllDeclaredMethods(c)
-        .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
-        .map(new ReflectiveRugFunction[FunctionTarget, Any](_))
-    functions
-  }
+  def exportedFunctions(c: Class[_]): Traversable[RugFunction[_, _]] =
+    ReflectionUtils.getAllDeclaredMethods(c)
+      .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
+      .map(new ReflectiveRugFunction[FunctionTarget, Any](_))
 
   def exportedOperations(c: Class[_]): Seq[TypeOperation] =
     ReflectionUtils.getAllDeclaredMethods(c)
@@ -41,15 +38,14 @@ object ReflectiveFunctionExport {
       })
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {
-    val params = m.getParameters.map(p =>
-      p.isAnnotationPresent(classOf[ExportFunctionParameterDescription]) match {
-        case true => TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
+    m.getParameters.map(p =>
+      if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription]))
+        TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
           p.getParameterizedType.toString,
           Some(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).description()))
-        case _ => TypeParameter(p.getName, p.getParameterizedType.toString, None)
-      }
+      else
+        TypeParameter(p.getName, p.getParameterizedType.toString, None)
     )
-    params
   }
 
   final def exportedRegistry(c: Class[_]): RugFunctionRegistry = {

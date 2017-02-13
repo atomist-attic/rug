@@ -28,8 +28,6 @@ trait DynamicTypeInformation extends TypeInformation
 trait StaticTypeInformation extends TypeInformation {
 
   def operations: Seq[TypeOperation]
-
-  //def parent: StaticTypeInformation
 }
 
 /**

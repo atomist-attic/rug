@@ -136,10 +136,14 @@ trait PathExpressionParser extends CommonTypesParser {
   private def descendant: Parser[AxisSpecifier] = (s"$DescendantAxis::" | "/") ^^
     (s => Descendant)
 
+  private def selfAxis: Parser[AxisSpecifier] = (s"$SelfAxis::" | ".") ^^
+    (s => Self)
+
   private def axis: Parser[AxisSpecifier] =
     property |
       navigationAxis |
       descendant |
+      selfAxis |
       child
 
   private def locationStep: Parser[LocationStep] = axis ~ nodeTest ~ rep(predicate) ^^ {
@@ -148,11 +152,21 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private val slashSeparator = "/"
 
-  def relativePathExpression: Parser[PathExpression] = repsep(locationStep, slashSeparator) ^^
-    (steps => PathExpression(steps))
+  def relativePathExpression: Parser[PathExpression] = (selfAxis | repsep(locationStep, slashSeparator)) ^^ {
+    case Self => PathExpression(List(LocationStep(Self, All, Nil)))
+    case steps: List[LocationStep]@unchecked => PathExpression(steps)
+  }
 
-  private def nonEmptyRelativePathExpression: Parser[PathExpression] = rep1sep(locationStep, slashSeparator) ^^
-    (steps => PathExpression(steps))
+  private def nonEmptyRelativePathExpression: Parser[PathExpression] = new Parser[PathExpression] {
+
+    override def apply(in: Input): ParseResult[PathExpression] = {
+      relativePathExpression(in) match {
+        case s: Success[PathExpression]@unchecked if s.result.locationSteps.nonEmpty => s
+        case s: Success[PathExpression]@unchecked => Failure(s"Path expression has no steps: [${s.result}]", in)
+        case x => x
+      }
+    }
+  }
 
   def absolutePathExpression: Parser[PathExpression] = slashSeparator ~> relativePathExpression
 

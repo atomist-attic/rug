@@ -1,8 +1,9 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.grammar.SimpleMutableContainerTreeNodeTest
 import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode}
-import com.atomist.tree.content.text.ParsedMutableContainerTreeNode
+import com.atomist.tree.content.text.{LineHoldingOffsetInputPosition, MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleMutableContainerTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 class PathExpressionEngineTest extends FlatSpec with Matchers {
@@ -214,17 +215,22 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "use XPath style contains function" in {
-    val rn = new ParsedMutableContainerTreeNode("root")
-    val tn = new ParsedMutableContainerTreeNode("name")
-    tn.appendField(SimpleTerminalTreeNode("age", "25"))
-    rn.appendField(tn)
+    val inputA = "foo"
+    val inputB = "bar"
+    val unmatchedContent = "this is incorrect"
+    val line = inputA + unmatchedContent + inputB
 
-    val expr = "/*[contains(.,'25')]"
-    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry)
-    assert(rtn.right.get === Seq(tn))
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-    val expr2 = "/*[@age='26']"
-    val rtn2 = ee.evaluate(rn, expr2, DefaultTypeRegistry)
+    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+
+    val expr = "/*[contains(.,'foo')]"
+    val rtn = ee.evaluate(soo, expr, DefaultTypeRegistry)
+    assert(rtn.right.get === Seq(f1))
+
+    val expr2 = "/*[contains(.,'fxxxxxoo')]"
+    val rtn2 = ee.evaluate(soo, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get === Nil)
   }
 

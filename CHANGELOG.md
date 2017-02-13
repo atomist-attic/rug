@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Rug TypeScript classes should be exported directly (rather than an instance on one)
+
 -   Upgrade TS compiler to 2.1.5
 
 -   `scalar` method on TypeScript `PathExpressionEngine` taking string is now called `scalarStr`. This

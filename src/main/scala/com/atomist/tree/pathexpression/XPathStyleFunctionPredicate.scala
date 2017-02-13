@@ -20,10 +20,11 @@ import XPathTypes._
   * @param args arguments to the function
   */
 case class XPathStyleFunctionPredicate(override val name: String,
-                                       args: Seq[FunctionArg])
+                                       args: Seq[FunctionArg],
+                                       functionRegistry: FunctionRegistry = DefaultFunctionRegistry)
   extends Predicate {
 
-  val fun: Function = DefaultFunctionRegistry.find(name, args).getOrElse(
+  val fun: Function = functionRegistry.find(name, args).getOrElse(
     throw new IllegalArgumentException(s"No function named [$name] with args [$args]")
   )
 
@@ -32,6 +33,7 @@ case class XPathStyleFunctionPredicate(override val name: String,
                ee: ExpressionEngine,
                typeRegistry: TypeRegistry,
                nodePreparer: Option[NodePreparer]): Boolean = {
+    //println(s"Evaluate $this against $tn")
     val convertedArgs: Seq[Any] = args.zipWithIndex.map(tup =>
       convertToRequiredType(tup._1, fun.argTypes(tup._2), tn, ee, typeRegistry, nodePreparer))
     fun.invoke(convertedArgs) == true
@@ -46,12 +48,17 @@ case class XPathStyleFunctionPredicate(override val name: String,
     }
 
   // See XPath spec 4.2
-  private def convertToString(fa: FunctionArg, contextNode: TreeNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): String = fa match {
-    case s: StringLiteralFunctionArg => s.s
-    case rpe: RelativePathFunctionArg => ee.evaluate(contextNode, rpe.pe, tr, np) match {
-      case Right(l) if l.nonEmpty => l.head.value
-      case _ => ""
+  private def convertToString(fa: FunctionArg, contextNode: TreeNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): String = {
+    val value = fa match {
+      case s: StringLiteralFunctionArg => s.s
+      case rpe: RelativePathFunctionArg => ee.evaluate(contextNode, rpe.pe, tr, np) match {
+        case Right(l) if l.nonEmpty =>
+          l.head.value
+        case _ => ""
+      }
     }
+    //println(s"convertToString found node: $fa, value=[$value] against $contextNode")
+    value
   }
 
   private def convertToBoolean(fa: FunctionArg, contextNode: TreeNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): Boolean = fa match {
@@ -82,44 +89,6 @@ trait FunctionRegistry {
 
 }
 
-
-object DefaultFunctionRegistry extends FunctionRegistry {
-
-  private val functions: Seq[Function] = {
-    for {
-      m <- DefaultFunctions.getClass.getMethods
-      if m.getParameterCount >= 1
-      if m.getParameterTypes.forall(c => c == classOf[String] || c == classOf[Boolean])
-    } yield {
-      val declaredArgs = m.getParameterTypes.map(_.getSimpleName) map {
-        case "String" => String
-        case "Boolean" => Boolean
-        case wtf => throw new IllegalStateException(s"Should have filtered out parameter type [$wtf]")
-      }
-      SimpleFunction(m.getName, declaredArgs, invoker = args => {
-        //println(s"Invoking $m on $DefaultFunctions with args=${args.map(a => s"$a - ${a.getClass}")}")
-        val objectified = args map {
-          case o: Object => o
-          case _ => ???
-        }
-        m.invoke(DefaultFunctions, objectified:_*)
-      })
-    }
-  }
-
-  override def find(name: String, args: Seq[FunctionArg]): Option[Function] = functions.find(f => f.name == name)
-
-}
-
-/**
-  * Note that we don't need to write defensive code here as there will be the correct number of arguments
-  * and they will have been coerced as to type
-  */
-private case class SimpleFunction(name: String, argTypes: Seq[XPathType], invoker: Seq[Any] => Any) extends Function {
-
-  override def invoke(convertedArgs: Seq[Any]): Any = {
-    require(convertedArgs.size == argTypes.size)
-    invoker(convertedArgs)
-  }
-}
+object DefaultFunctionRegistry
+  extends ReflectiveFunctionRegistry(StandardFunctions)
 

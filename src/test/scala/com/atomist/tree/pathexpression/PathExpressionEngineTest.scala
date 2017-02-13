@@ -2,7 +2,8 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.grammar.SimpleMutableContainerTreeNodeTest
-import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode}
+import com.atomist.tree.content.text.OffsetInputPosition._
+import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode, TreeNode}
 import com.atomist.tree.content.text.{LineHoldingOffsetInputPosition, MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleMutableContainerTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -214,7 +215,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     assert(rtn.right.get === Seq(kid))
   }
 
-  it should "use XPath style contains function" in {
+  it should "use XPath style contains function against ." in {
     val inputA = "foo"
     val inputB = "bar"
     val unmatchedContent = "this is incorrect"
@@ -234,13 +235,32 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     assert(rtn2.right.get === Nil)
   }
 
+  it should "use XPath style contains function against child" in {
+    val inputA = "foo"
+    val inputB = "bar"
+    val inputC = "Lisbon"
+    val inputD = "Alentejo"
+    val unmatchedContent = "this is incorrect"
+    val bollocks2 = "(more bollocks)"
+    val line = inputA + unmatchedContent + inputB + inputC + bollocks2 + inputD
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
+    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
+    val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line), TreeNode.Signal)
+    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
+
+    val expr = "/*[contains(c1,'Lisbo')]"
+    val rtn = ee.evaluate(soo, expr, DefaultTypeRegistry)
+    assert(rtn.right.get === Seq(f3))
+  }
+
   it should "handle a property name axis specifier and Object type" in {
     val tn = new ContainerTreeNodeImpl("Issue", "Issue")
     tn.addField(SimpleTerminalTreeNode("state", "open"))
     val repo = new ContainerTreeNodeImpl("belongsTo", "Repo")
     repo.addField(SimpleTerminalTreeNode("name2", "rug-cli"))
     tn.addField(repo)
-    // TODO should we be able to handle a property called "name"?
     val expr = """/Issue()[@state='open']/belongsTo::Repo()[@name2='rug-cli']"""
     val parent = new ContainerTreeNodeImpl("root", "root")
     parent.addField(tn)

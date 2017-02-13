@@ -21,13 +21,13 @@ class HandlerTest extends FlatSpec with Matchers {
          |import {Atomist} from "@atomist/rug/operations/Handler"
          |import {Project,File} from "@atomist/rug/model/Core"
          |
-        |declare var atomist: Atomist  // <= this is for the compiler only
+         |declare var atomist: Atomist  // <= this is for the compiler only
          |
-        |declare var print: any
+         |declare var print: any
          |
-        |atomist.messageBuilder().say("This is a test").on("channel").send()
+         |atomist.messageBuilder().say("This is a test").on("channel").send()
          |
-        |atomist.on<Project,File>('/src/main//*.java', m => {
+         |atomist.on<Project,File>('/src/main//*.java', m => {
          |   //print(`in handler with $${m}`)
          |   //print(`Root=$${m.root()}, leaves=$${m.matches()}`)
          |})

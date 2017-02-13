@@ -28,6 +28,8 @@ trait DynamicTypeInformation extends TypeInformation
 trait StaticTypeInformation extends TypeInformation {
 
   def operations: Seq[TypeOperation]
+
+  //def parent: StaticTypeInformation
 }
 
 /**
@@ -77,14 +79,14 @@ case class TypeOperation(
     // Include TreeNode methods, although the annotations won't be inherited
     val methods = target.getClass.getMethods.toSeq.filter(m =>
       this.name.equals(m.getName) &&
-        (m.getDeclaredAnnotations.exists(ann => ann.isInstanceOf[ExportFunction]) || TreeNodeOperations.contains(m.getName)) &&
+        (m.getDeclaredAnnotations.exists(_.isInstanceOf[ExportFunction]) || TreeNodeOperations.contains(m.getName)) &&
         this.parameters.size == m.getParameterCount
     )
     if (methods.size != 1)
       throw new IllegalArgumentException(
         s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1: " +
           methods.mkString(","))
-    // println(s"About to invoke ${methods.head} with args=$args")
+
     try {
       methods.head.invoke(target, args: _*)
     } catch {
@@ -107,7 +109,7 @@ object TypeOperation {
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def typeInformation: TypeInformation = TreeNodeTypeInformation
+    override def typeInformation: StaticTypeInformation = TreeNodeTypeInformation
   }
 
   val TreeNodeOperations: Set[String] =

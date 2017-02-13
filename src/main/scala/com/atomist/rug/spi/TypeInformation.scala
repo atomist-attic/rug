@@ -109,7 +109,7 @@ object TypeOperation {
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def typeInformation: StaticTypeInformation = TreeNodeTypeInformation
+    override def typeInformation: TypeInformation = TreeNodeTypeInformation
   }
 
   val TreeNodeOperations: Set[String] =

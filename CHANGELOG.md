@@ -30,6 +30,8 @@ Valentine release
 
 -   Added `ScalaFileType` backed by ScalaMeta
 
+-   Getters for Dockerfile instructions in DockerFile extension type
+
 ### Fixed
 
 -   Elm parser failed on files with two multiline comments

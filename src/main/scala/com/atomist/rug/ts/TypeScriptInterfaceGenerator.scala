@@ -19,9 +19,11 @@ import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
 
+  val target = if (args.length < 1) "target/Core.ts" else args.head
+
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "target/Core.ts")))
+  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
 
@@ -181,7 +183,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
         output ++= "\n"
       })
 
-      output ++= config.separator
+      output ++= "\n"
       output ++= t.toString
       output ++= config.separator
       output ++= s"export {${t.name}}\n"
@@ -197,7 +199,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     alreadyGenerated.foreach(t => {
       output ++= s"""import {${t.name}} from "./${t.name}""""
       output ++= "\n"
-      output ++= s"export {${t.name}}\n"
+      output ++= s"export {${t.name}}\n\n"
     })
 
     tsInterfaces += StringFileArtifact(pathParam, output.toString())
@@ -224,26 +226,24 @@ case class InterfaceGenerationConfig(
   extends TypeScriptGenerationConfig {
 
   val imports: String =
-    """
-      |import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
-      |import {ProjectContext} from '../operations/ProjectEditor' """
+    """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
+       |import {ProjectContext} from '../operations/ProjectEditor' """
       .stripMargin
 
   val licenseHeader: String =
-    """
-      |/*
-      | * Copyright 2015-2017 Atomist Inc.
-      | *
-      | * Licensed under the Apache License, Version 2.0 (the "License");
-      | * you may not use this file except in compliance with the License.
-      | * You may obtain a copy of the License at
-      | *
-      | *      http://www.apache.org/licenses/LICENSE-2.0
-      | *
-      | * Unless required by applicable law or agreed to in writing, software
-      | * distributed under the License is distributed on an "AS IS" BASIS,
-      | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-      | * See the License for the specific language governing permissions and
-      | * limitations under the License.
-      | */""".stripMargin
+    """|/*
+       | * Copyright 2015-2017 Atomist Inc.
+       | *
+       | * Licensed under the Apache License, Version 2.0 (the "License");
+       | * you may not use this file except in compliance with the License.
+       | * You may obtain a copy of the License at
+       | *
+       | *      http://www.apache.org/licenses/LICENSE-2.0
+       | *
+       | * Unless required by applicable law or agreed to in writing, software
+       | * distributed under the License is distributed on an "AS IS" BASIS,
+       | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       | * See the License for the specific language governing permissions and
+       | * limitations under the License.
+       | */""".stripMargin
 }

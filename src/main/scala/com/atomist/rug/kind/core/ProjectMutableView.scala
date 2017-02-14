@@ -31,9 +31,9 @@ object ProjectMutableView {
   * Operations on a project. Backed by an immutable ArtifactSource,
   * using copy on write.
   *
-  * @param rugAs                 backing store of the editor
+  * @param rugAs backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig         Atomist configuration used to determine where we look for files.
+  * @param atomistConfig Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
@@ -170,8 +170,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter      file filter
-    * @param regexp      regexp
+    * @param filter file filter
+    * @param regexp regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -360,10 +360,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
-    description =
-      """Merge templates from the specified directory in the backing archive,
-under /.atomist/templates, to the given output path in the project being
-edited.""")
+    description = "Merge templates from the specified directory in the backing archive, under /.atomist/templates, to the given output path in the project being edited.")
   def mergeTemplates(@ExportFunctionParameterDescription(name = "templatesPath",
     description = "Source template path where content will be used to merge into target project")
                      templatesPath: String,
@@ -396,7 +393,7 @@ edited.""")
     * map of string arguments.
     *
     * @param editorName name of editor to use
-    * @param params     parameters to pass to the editor
+    * @param params parameters to pass to the editor
     * @return
     */
   protected def editWith(editorName: String,

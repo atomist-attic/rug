@@ -91,6 +91,21 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     }
   }
 
+  it should "convert printlns to logging" in {
+    //       val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
+    //        println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    modify("ConvertPrintlnsToLogging.ts", UsesPrintlnsSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
+        println(theFile.content)
+        theFile.content.contains("println") should be (false)
+        theFile.content.contains("logger.debug") should be (true)
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "upgrade ScalaTest assertions" in {
     modify("UpgradeScalaTestAssertions.ts", ScalaTestSources) match {
       case sm: SuccessfulModification =>

@@ -1,5 +1,6 @@
 import {Project,File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
@@ -7,11 +8,13 @@ import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpress
 import * as scala from '@atomist/rug/ast/scala/Types'
 
 /**
- * Removes printlns
+ * Removes printlns to logging using a defined logger
  */
-class RemovePrintlns implements ProjectEditor {
-    name: string = "RemovePrintlns"
-    description: string = "Remove printlns"
+class ConvertPrintlnsToLogging implements ProjectEditor {
+    name: string = "ConvertPrintlnsToLogging"
+    description: string = "Convert printlns to logging"
+
+    logStatement = "logger.debug"
 
     /*
       Our target looks like this:
@@ -33,10 +36,13 @@ class RemovePrintlns implements ProjectEditor {
 
       eng.with<scala.TermApply>(project, printlnStatement, termApply => {
         //console.log(`The term apply is ${termApply}`)
-        termApply.delete()
+        let newContent = termApply.value()
+            .replace("System.out.println", this.logStatement)
+            .replace("println", this.logStatement)
+        termApply.update(newContent)
       })
   }
 
 }
 
-export let editor = new RemovePrintlns()
+export let editor = new ConvertPrintlnsToLogging()

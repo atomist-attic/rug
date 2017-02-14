@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Support for `contains` and `starts-with` path expression functions
+
 -   Beginning of a TypeScript class library to simplify working with tree nodes and
     transparently decorate tree nodes if a decoration strategy is provided in TypeScript.
 

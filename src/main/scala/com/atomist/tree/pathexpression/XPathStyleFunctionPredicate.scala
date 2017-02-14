@@ -4,17 +4,10 @@ import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
 
-object XPathTypes extends Enumeration {
-
-  type XPathType = Value
-
-  val String, Boolean = Value
-}
-
 import XPathTypes._
 
 /**
-  * Handles an XPath predicate
+  * Handles an XPath predicate based on a function call
   *
   * @param name function
   * @param args arguments to the function
@@ -71,6 +64,9 @@ case class XPathStyleFunctionPredicate(override val name: String,
 
 }
 
+/**
+  * Represents an XPath style function.
+  */
 trait Function {
 
   def name: String
@@ -80,6 +76,9 @@ trait Function {
   def invoke(convertedArgs: Seq[Any]): Any
 }
 
+/**
+  * Registry of known XPath style functions.
+  */
 trait FunctionRegistry {
 
   /**

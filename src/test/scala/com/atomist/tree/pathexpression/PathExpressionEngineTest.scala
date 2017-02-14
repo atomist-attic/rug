@@ -97,7 +97,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   it should "match on node name with //foo and or predicate" in
     matchOnNodeName("/nested/level2//*[@value='foo1' or @value='foo2']")
 
-  private  def matchOnNodeName(expr: String) {
+  private def matchOnNodeName(expr: String) {
     val tn = new ParsedMutableContainerTreeNode("name")
     val prop1 = new ParsedMutableContainerTreeNode("nested")
     val prop11 = new ParsedMutableContainerTreeNode("level2")
@@ -138,6 +138,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   it should "preparing nodes in path" in {
     class TouchableTreeNode extends ParsedMutableContainerTreeNode("name") {
       def foo: String = null
+
       var touched: Boolean = false
     }
 
@@ -146,14 +147,14 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     rn.appendField(tn)
 
     val expr = "/*[.foo()=null]"
-    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry, Some{
+    val rtn = ee.evaluate(rn, expr, DefaultTypeRegistry, Some {
       case ttn: TouchableTreeNode =>
         ttn.touched = true
         ttn
       case x => x
     })
     val s = rtn.right.get
-    s should equal (Seq(tn))
+    s should equal(Seq(tn))
     assert(tn.touched === true)
   }
 
@@ -215,6 +216,22 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     assert(rtn.right.get === Seq(kid))
   }
 
+  it should "reject unknown path expression function" in {
+    val inputA = "foo"
+    val inputB = "bar"
+    val unmatchedContent = "this is incorrect"
+    val line = inputA + unmatchedContent + inputB
+
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+
+    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+
+    val expr = "/*[utter-balderdash(., 'fo')]"
+    an[IllegalArgumentException] should be thrownBy
+      ee.evaluate(soo, expr, DefaultTypeRegistry)
+  }
+
   it should "use XPath style contains function against ." in {
     val inputA = "foo"
     val inputB = "bar"
@@ -250,7 +267,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val rtn = ee.evaluate(soo, expr, DefaultTypeRegistry)
     assert(rtn.right.get === Seq(f1))
 
-    val expr2 = "/*[contains(.,'fxxxxxoo')]"
+    val expr2 = "/*[starts-with(.,'fxxxxxoo')]"
     val rtn2 = ee.evaluate(soo, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get === Nil)
   }

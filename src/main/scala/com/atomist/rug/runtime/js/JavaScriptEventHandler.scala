@@ -9,7 +9,7 @@ import com.atomist.rug.kind.service.{ServiceSource, ServicesMutableView}
 import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
-import com.atomist.tree.pathexpression.{NamedNodeTest, PathExpression, PathExpressionParser}
+import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 class JavaScriptEventHandler(
@@ -31,6 +31,7 @@ class JavaScriptEventHandler(
 
   override val rootNodeName: String = pathExpression.locationSteps.head.test match {
     case nnt: NamedNodeTest => nnt.name
+    case nwt: NodesWithTag => nwt.tag
     case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }
 

@@ -19,14 +19,16 @@ import org.springframework.util.ObjectUtils
 class DefaultViewFinder(typeRegistry: TypeRegistry)
   extends LazyLogging {
 
+  type SelectedChildrenOrSuggestedKinds = Either[Set[String], Seq[TreeNode]]
+
   final def findIn(
                     rugAs: ArtifactSource,
                     selected: Selected,
                     context: TreeNode,
                     poa: ProjectOperationArguments,
-                    identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
+                    identifierMap: Map[String, Object]): SelectedChildrenOrSuggestedKinds = {
     try {
-      findAllIn(rugAs, selected, context, poa, identifierMap)
+      findAllIn(rugAs, selected, context, poa, identifierMap).right
         .map(_.filter(v => invokePredicate(rugAs, poa, identifierMap, selected.predicate, selected.alias, v))
         )
     }
@@ -43,9 +45,11 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
   /**
     * Finds views, first looking at children of current scope,
     * then identifiers in scope, then global identifiers.
+    *
+    * If it can't find anything it returns a list of suggestions
     */
   def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
-                poa: ProjectOperationArguments, identifierMap: Map[String, Object]): Option[Seq[TreeNode]] = {
+                poa: ProjectOperationArguments, identifierMap: Map[String, Object]): SelectedChildrenOrSuggestedKinds = {
 
     val fromIdentifierInScope: Option[Seq[MutableView[_]]] = identifierMap.get(selected.kind).flatMap(typ => {
       logger.debug(s"Getting type '${selected.kind}' from $typ")
@@ -101,7 +105,12 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           t.findAllIn(context)
       }
 
-    childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes
+    childOfCurrentContext orElse fromIdentifierInScope orElse fromGlobalTypes match {
+      case Some(thing) => Right(thing)
+      case None =>
+        val cromulentChildren = context.childNodeTypes ++ context.childNodeNames
+        Left(cromulentChildren)
+    }
   }
 
 

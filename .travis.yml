@@ -1,5 +1,5 @@
 dist: trusty
-sudo: false
+sudo: required
 language: java
 jdk:
 - oraclejdk8
@@ -25,7 +25,6 @@ notifications:
 cache:
   directories:
   - "$HOME/.m2"
-  - "$HOME/build/atomist/rug/.jscache"
 before_deploy:
 - nvm install 6.9.2
 deploy:

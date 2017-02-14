@@ -269,6 +269,8 @@ object ScalaFileTypeTest {
       |
       |  val i = 25
       |
+      |  System.out.println("things")
+      |
       |  println(1 +
       |       2)
       |

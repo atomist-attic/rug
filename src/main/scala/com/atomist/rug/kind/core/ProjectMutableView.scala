@@ -74,7 +74,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true,
-    description = "Return the name of the project. If it's in GitHub, it will be the repo name." +
+    description = "Return the name of the project. If it's in GitHub, it will be the repo name. " +
       "If it's on the local filesystem it will be the directory name")
   override def name: String = {
     val segments = currentBackingObject.id.name.split("/")
@@ -105,7 +105,7 @@ class ProjectMutableView(
   @ExportFunction(readOnly = true, description = "Deletes a directory with the given path")
   def deleteDirectory(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
-                      path: String): Unit = updateTo(currentBackingObject.filter(d => !d.path.equals(path), f => true))
+                      path: String): Unit = updateTo(currentBackingObject.filter(!_.path.equals(path), _ => true))
 
   @ExportFunction(readOnly = true,
     description = "Does a file with the given path exist and have the expected content?")

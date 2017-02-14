@@ -30,8 +30,7 @@ trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
     * Useful for debugging.
     */
   @ExportFunction(readOnly = true,
-    description = "Cause the editor to print to the console. " +
-      "Useful for debugging if running editors locally.")
+    description = "Cause the editor to print to the console. Useful for debugging if running editors locally.")
   final def println(@ExportFunctionParameterDescription(name = "msg",
     description = "The message to be displayed")
                     msg: String): Unit = {

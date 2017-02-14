@@ -40,23 +40,6 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
     f.content.contains("using System.Linq;") should be(true)
   }
 
-  it should "not add using if it's already present" in {
-    modify("AddUsingUsingMethod.ts", HelloWorldSources,
-      Map("packageName" -> "System")) match {
-      case _: NoModificationNeeded =>
-      
-      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
-    }
-  }
-
-  it should "add missing using via type" in {
-    val r = modifyAndReparseSuccessfully("AddUsingUsingMethod.ts", HelloWorldSources,
-      Map("packageName" -> "Thing"))
-    val f = r.findFile("src/hello.cs").get
-    f.content.contains("using System;") should be(true)
-    f.content.contains("using Thing;") should be(true)
-  }
-
   it should "add using if no using present" is pending
 
   it should "change exception, validating navigating up and down target nodes" in {

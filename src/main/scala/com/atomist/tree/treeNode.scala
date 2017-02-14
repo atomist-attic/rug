@@ -15,16 +15,6 @@ import com.atomist.util.{Visitable, Visitor}
   */
 trait TreeNode extends Visitable {
 
-  /**
-    * Can this node be obtained from a top level type such as File?
-    */
-  val searchable: Boolean = true
-
-  /**
-    * Name of the node. This may vary with individual nodes: For example,
-    * with files. However, node names do not always need to be unique.
-    * @return name of the individual node
-    */
   @ExportFunction(readOnly = true, description = "Name of the node")
   def nodeName: String
 
@@ -41,17 +31,13 @@ trait TreeNode extends Visitable {
   @ExportFunction(readOnly = true, description = "Tags attached to the node")
   def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
-  /**
-    * All nodes have values: Either a terminal value or the
-    * values built up from subnodes.
-    */
   @ExportFunction(readOnly = true, description = "Node content")
   def value: String
 
   /**
-    * Return all children of this node
+    * Return all visible children of this node
     *
-    * @return all the children of this node.
+    * @return the children of this node.
     *         Ordering is significant
     */
   def childNodes: Seq[TreeNode] =
@@ -66,12 +52,6 @@ trait TreeNode extends Visitable {
     childNodes.asJava
   }
 
-  /**
-    * Return the names of children of this node
-    *
-    * @return the names of children. There may be multiple children
-    *         with a given name
-    */
   def childNodeNames: Set[String]
 
   def childNodeTypes: Set[String]
@@ -83,11 +63,6 @@ trait TreeNode extends Visitable {
 
   def count: Int = childNodes.size
 
-  /**
-    * Children under the given key. May be empty.
-    *
-    * @param key field name
-    */
   def childrenNamed(key: String): Seq[TreeNode]
 
   /**

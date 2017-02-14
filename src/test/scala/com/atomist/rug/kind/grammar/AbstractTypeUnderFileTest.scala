@@ -3,7 +3,10 @@ package com.atomist.rug.kind.grammar
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.TestUtils
-import com.atomist.source.ArtifactSource
+import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
+import com.atomist.tree.content.text.{OverwritableTextTreeNode, TextTreeNodeLifecycle}
+import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -21,15 +24,28 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
 
   /**
     * Validate all files of the type we're interested in in the given result
+    *
     * @param r result artifactsource
     */
   protected def validateResultContainsValidFiles(r: ArtifactSource): Unit = {
-    val goodFileCount = r.allFiles
-      .filter(typeBeingTested.isOfType)
-      .map(cs => (cs, typeBeingTested.fileToRawNode(cs)))
-      .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
-      .count(tree => tree.childNodes.nonEmpty)
-    goodFileCount should be >=(1)
+    val filesOfType = r.allFiles.filter(typeBeingTested.isOfType)
+    filesOfType.size should be >= (1)
+    withClue(s"files named ${filesOfType.map(_.path).mkString(",")}") {
+      val parsedFiles = filesOfType.map(cs => (cs, typeBeingTested.fileToRawNode(cs)))
+        .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
+      val goodFileCount = parsedFiles.count(tree => tree.childNodes.nonEmpty)
+      goodFileCount should be >= (1)
+    }
+  }
+
+  protected def parseAndPad(file: FileArtifact) = {
+    val as = SimpleFileBasedArtifactSource(file)
+    val pmv = new ProjectMutableView(as, as)
+    val fmv = pmv.files.get(0)
+    val parsed = typeBeingTested.fileToRawNode(file).get
+    val nodes = TextTreeNodeLifecycle.makeReady(typeBeingTested.name, Seq(parsed), fmv)
+    nodes.head.update(nodes.head.value) // trigger an update to file contents
+    fmv.content
   }
 
   protected def modify(tsFilename: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
@@ -42,7 +58,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         validateResultContainsValidFiles(sm.result)
         sm.result
-      case _ => ???
+      case boohoo => fail(s"It did not successfully modify: $boohoo")
     }
   }
 }

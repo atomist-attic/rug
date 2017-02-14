@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text
 
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree._
+import com.atomist.tree.utils.TreeNodeUtils
 
 import scala.collection.mutable.ListBuffer
 
@@ -40,7 +40,7 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
       super.formatInfo(child)
   }
 
-    // TODO is this right
+  // TODO is this right
   override def childNodeTypes: Set[String] = childNodeNames
 
   override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName == key)
@@ -193,7 +193,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
 object PositionedMutableContainerTreeNode {
   type Report = Seq[String]
 
-
   def pad(pupae: PositionedTreeNode, initialSource: String, topLevel: Boolean = false): (MutableContainerTreeNode, Report) = {
     var report: Seq[String] = Seq()
 
@@ -262,7 +261,7 @@ object PositionedMutableContainerTreeNode {
             say(s"Skipping this mutable terminal tree node. ${sm.startPosition} and lastEndOffset is ${lastEndOffset}")
           }
         case f: TreeNode if "".equals(f.value) =>
-          // It's harmless. Keep it as it may be queried. It won't be updateable
+          // It's harmless. Keep it as it may be queried. It won't be Updatable
           // Because we probably don't know where it lives.
           fieldResults.append(f)
           say(s"Keeping empty node $f")
@@ -287,6 +286,7 @@ object PositionedMutableContainerTreeNode {
     (new MutableButNotPositionedContainerTreeNode(pupae.nodeName, fieldResults), report)
   }
 }
+
 
 /**
   * Conceptually:
@@ -318,3 +318,4 @@ class MutableButNotPositionedContainerTreeNode(
 
   var startPosition: InputPosition = _
 }
+

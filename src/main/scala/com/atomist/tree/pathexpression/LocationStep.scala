@@ -41,11 +41,15 @@ case class LocationStep(axis: AxisSpecifier,
     case pred :: Nil => pred
     case preds => preds.head and combine(preds.tail)
   }
+
+  override def toString = s"${axis}::$test${predicates.mkString("[","][","]")}"
 }
 
 /**
   * Result of parsing a path expression.
   */
-case class PathExpression(
-                           locationSteps: Seq[LocationStep]
-                         )
+case class PathExpression(locationSteps: Seq[LocationStep]) {
+  override def toString = locationSteps.mkString("/")
+
+  def dropLastStep: PathExpression = copy(locationSteps = locationSteps.dropRight(1))
+}

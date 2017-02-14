@@ -25,7 +25,7 @@ object JsonTypeUsageTest {
       |}],
       |  "bin": {
       |  "module-name": "./bin/module-name"
-      |},
+      |   },
       |  "scripts": {
       |    "test": "vows --spec --isolate",
       |    "start": "node index.js",

@@ -48,3 +48,4 @@ com.atomist.rug.kind.yml.YmlType
 com.atomist.rug.kind.json.PairTypeProvider
 com.atomist.rug.kind.java.JavaClassOrInterfaceProvider
 com.atomist.tree.content.text.MutableTerminalTreeNodeTypeProvider
+com.atomist.tree.content.text.OverwritableTextTypeProvider

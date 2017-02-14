@@ -4,7 +4,7 @@ import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, FileType}
 import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView, MutableTreeNodeUpdater}
 import com.atomist.rug.spi.{TypeProvider, Typed}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
 
 /**
@@ -28,12 +28,9 @@ class MicrogrammarTypeProvider(microgrammar: Microgrammar)
   override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
     case f: FileArtifactBackedMutableView =>
       val l: Option[MatchListener] = None
-      val views = microgrammar.findMatches(f.content, l) collect {
-        case moo: MutableContainerTreeNode =>
-          f.registerUpdater(new MutableTreeNodeUpdater(moo))
-          new MutableContainerMutableView(moo, f)
-      }
-      Some(views)
+      val matches: Seq[PositionedTreeNode] = microgrammar.findMatches(f.content, l)
+      Some(TextTreeNodeLifecycle.makeReady(microgrammar.name, matches, f))
+
     case _ => None
   }
 }

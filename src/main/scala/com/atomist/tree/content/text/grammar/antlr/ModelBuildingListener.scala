@@ -29,12 +29,12 @@ class ModelBuildingListener(
                              namingStrategy: AstNodeCreationStrategy)
   extends DefaultListener with LazyLogging {
 
-  private val results = new ListBuffer[MutableContainerTreeNode]()
+  private val results = new ListBuffer[PositionedTreeNode]()
 
   /**
     * @return the nodes corresponding to these rules
     */
-  def ruleNodes: Seq[MutableContainerTreeNode] = results
+  def ruleNodes: Seq[PositionedTreeNode] = results
 
   override def enterEveryRule(ctx: ParserRuleContext): Unit = {
     val rule = this.getRuleByKey(ctx.getRuleIndex)

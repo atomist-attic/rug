@@ -1,8 +1,8 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.{ContainerTreeNode, TerminalTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
 
@@ -11,31 +11,30 @@ import scala.collection.mutable.ListBuffer
   */
 class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMicrogrammar", submatchers: Map[String, Matcher] = Map()) extends Microgrammar {
 
-  override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[MutableContainerTreeNode] = {
+  override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[PositionedTreeNode] = {
     val (matches, dismatches) = findMatchesInternal(input, l)
     val processedNodes = matches.map(outputNode(input))
-
     //println(DismatchReport.detailedReport(dismatches.maxBy(_.lengthOfClosestMatch), input.toString))
     processedNodes
   }
 
-  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): Either[DismatchReport, MutableContainerTreeNode] = {
-    val result = matcher.matchPrefix(InputState(input))
-    result.right.map(matched => outputNode(input)(matched))
+  def strictMatch(input: CharSequence, l: Option[MatchListener] = None): Either[DismatchReport, PositionedTreeNode] = {
+    matcher.matchPrefix(InputState(input)).right.map(outputNode(input))
   }
 
-  private[microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch) = {
+  /* create the match node, named after the microgrammar */
+  private[microgrammar] def outputNode(input: CharSequence)(matchFound: PatternMatch): PositionedTreeNode = {
+    ImmutablePositionedTreeNode(matchFound.node)
     val endOffset = matchFound.node.endPosition
     val startOffset = matchFound.node.startPosition
-    val matchedNode = matchFound.node match {
-      case one: MutableTerminalTreeNode =>
-        new SimpleMutableContainerTreeNode(name, Seq(one), startOffset, endOffset, TreeNode.Signal, Set(name, TreeNode.Dynamic))
-      case  container: MutableContainerTreeNode =>
-        new SimpleMutableContainerTreeNode(name, container.childNodes, startOffset, endOffset, TreeNode.Signal, Set(name, TreeNode.Dynamic))
-      case _ => ???
+    val children = matchFound.node match {
+      case one: TerminalTreeNode =>
+        Seq(one)
+      case container: ContainerTreeNode =>
+        container.childNodes.map(_.asInstanceOf[PositionedTreeNode])
+      case other => throw new IllegalArgumentException(s"What kind of node is not Terminal or Container? An $other node! Boo!")
     }
-    matchedNode.pad(input.toString)
-    matchedNode
+    new ImmutablePositionedTreeNode(name, startOffset, endOffset, children, Set(), TreeNode.Signal)
   }
 
 

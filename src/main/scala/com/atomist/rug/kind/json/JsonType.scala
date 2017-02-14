@@ -1,38 +1,35 @@
 package com.atomist.rug.kind.json
 
 import com.atomist.rug.kind.core._
-import com.atomist.rug.kind.grammar.TypeUnderFile
+import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.rug.spi.{ExportFunction, _}
 import com.atomist.source.FileArtifact
-import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree._
+import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
 import com.atomist.tree.pathexpression.PathExpressionEngine
 import com.atomist.tree.utils.TreeNodeFinders._
-import com.atomist.tree.{MutableTreeNode, TreeNode}
+import com.atomist.tree.utils.TreeNodeUtils
 
 /**
   * Type for JSON files
   */
 class JsonType
-  extends TypeUnderFile {
+  extends AntlrRawFileType(topLevelProduction = "json",
+    FromGrammarAstNodeCreationStrategy,
+    "classpath:grammars/antlr/JSON.g4"
+  ) {
 
   import JsonType._
-
-  private def jsonParser = new JsonParser
-
-  override def description = "JSON file"
 
   override def runtimeClass = classOf[JsonMutableView]
 
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(Extension)
 
-  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
-    jsonParser.parse(f.content, ml)
-  }
-
-  override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
+  override protected def createView(n: UpdatableTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
     new JsonMutableView(f.currentBackingObject, f.parent, n)
   }
+
+  override def description: String = "json"
 }
 
 object JsonType {
@@ -53,14 +50,14 @@ object JsonType {
    ;
    */
   private[json] def findPairsInValueNode(parent: MutableView[_], n: TreeNode): Seq[PairMutableView] = n match {
-    case mtn: MutableContainerTreeNode /*if "value".equals(mtn.nodeName)*/ =>
-      mtn.childNodes flatMap {
-        case p: MutableContainerTreeNode if "pair".equals(p.nodeName) =>
+    case mtn: TreeNode /*if "value".equals(mtn.nodeName)*/ =>
+      mtn.childNodes.collect {
+        case p: UpdatableTreeNode if "pair".equals(p.nodeName) =>
           Seq(new PairMutableView(p, parent))
-        case o: MutableContainerTreeNode if "object".equals(o.nodeName) =>
-          val nodes: Seq[PairMutableView] = o.childrenNamed("pair").map(p => new PairMutableView(p.asInstanceOf[MutableContainerTreeNode], parent))
+        case o: UpdatableTreeNode if "object".equals(o.nodeName) =>
+          val nodes: Seq[PairMutableView] = o.childrenNamed("pair").map(p => new PairMutableView(p.asInstanceOf[UpdatableTreeNode], parent))
           nodes
-      }
+      }.flatten
     case x => Nil
   }
 
@@ -75,11 +72,11 @@ import com.atomist.rug.kind.json.JsonType._
 class JsonMutableView(
                        originalBackingObject: FileArtifact,
                        parent: ProjectMutableView,
-                       originalParsed: MutableContainerTreeNode
+                       originalParsed: UpdatableTreeNode
                      )
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent) {
 
-  private val currentParsed: MutableContainerTreeNode = originalParsed
+  val currentParsed: TreeNode = originalParsed // todo: make private again
 
   override def dirty = true
 
@@ -93,9 +90,7 @@ class JsonMutableView(
   : value
   ;
   */
-  private val soleKid: MutableContainerTreeNode = currentParsed.childrenNamed("value").head match {
-    case mv: MutableContainerTreeNode => mv
-  }
+  private val soleKid: TreeNode = currentParsed.childrenNamed("value").head
 
   override protected def currentContent: String = currentParsed.value
 
@@ -119,9 +114,9 @@ class PairTypeProvider extends TypeProvider(classOf[PairMutableView]) {
    ;
    */
 private class PairMutableView(
-                               originalBackingObject: MutableContainerTreeNode,
+                               originalBackingObject: UpdatableTreeNode,
                                parent: MutableView[_])
-  extends ViewSupport[MutableContainerTreeNode](originalBackingObject, parent) {
+  extends ViewSupport[UpdatableTreeNode](originalBackingObject, parent) {
 
   // The backing node has a different name, as the Antlr
   // grammar doesn't adhere to our capitalization rules
@@ -129,18 +124,23 @@ private class PairMutableView(
 
   private val kids: Seq[MutableView[_]] =
     singleChild(currentBackingObject, "value") match {
-      case Some(value) =>
+      case Some(value: UpdatableTreeNode) =>
         value.childNodes match {
-          case Seq(s: MutableTerminalTreeNode) if "STRING".equals(s.nodeName) =>
+          case Seq(_: PaddingTreeNode) =>
+            Seq(new JsonStringView(value, this))
+          case Seq(s: UpdatableTreeNode) if "STRING".equals(s.nodeName) =>
             Seq(new JsonStringView(s, this))
-          case Seq(mv: MutableContainerTreeNode) if "object" equals mv.nodeName =>
+          case Seq(mv) if "object" equals mv.nodeName =>
             findPairsInValueNode(this, mv)
-          case Seq(arr: MutableContainerTreeNode) if "array".equals(arr.nodeName) =>
+          case Seq(arr) if "array".equals(arr.nodeName) =>
             Nil
-          case Nil => Nil
+          case empty if empty.isEmpty => Nil
+          case tooMany if tooMany.size > 1 =>
+            tooMany.map(f => println(TreeNodeUtils.toShortString(f)))
+            throw new RuntimeException(s"Look, I found too many nodes. There are ${tooMany.size} and ${tooMany.collect{ case p: PaddingTreeNode => p}.size} of them are padding")
         }
-      case None => requiredSingleChild(currentBackingObject, "STRING") match {
-        case s: MutableTerminalTreeNode if "STRING".equals(s.nodeName) =>
+      case _ => requiredSingleChild(currentBackingObject, "STRING") match {
+        case s: UpdatableTreeNode if "STRING".equals(s.nodeName) =>
           Seq(new JsonStringView(s, this))
       }
     }
@@ -161,14 +161,14 @@ private class PairMutableView(
   @ExportFunction(readOnly = false, description = "setValue")
   def setValue(newValue: String): Unit = {
     requiredSingleChild(currentBackingObject, "value") match {
-      case mtn: MutableTreeNode => mtn.update(jsonize(newValue))
+      case mtn: UpdatableTreeNode => mtn.update(jsonize(newValue))
     }
   }
 
   @ExportFunction(readOnly = false, description = "Add a key value")
   def addKeyValue(k: String, v: String): Unit = {
     requiredSingleChild(currentBackingObject, "value") match {
-      case vm: MutableContainerTreeNode =>
+      case vm: UpdatableTreeNode =>
         val index = vm.value.lastIndexOf("\"")
         val split = vm.value.splitAt(index)
         val newContent = s"${jsonize(k)}: ${jsonize(v)}"
@@ -184,12 +184,10 @@ private class PairMutableView(
   * Handle " surrounding JSON strings.
   */
 private class JsonStringView(
-                              originalBackingObject: MutableTerminalTreeNode,
+                              originalBackingObject: UpdatableTreeNode,
                               parent: MutableView[_])
-  extends ViewSupport[MutableTerminalTreeNode](originalBackingObject, parent)
+  extends ViewSupport[UpdatableTreeNode](originalBackingObject, parent)
     with MutableTreeNode {
-
-  override def dirty: Boolean = originalBackingObject.dirty
 
   addTypes(currentBackingObject.nodeTags)
 

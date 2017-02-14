@@ -171,7 +171,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |export let editor = new MgEditor()
       | """.stripMargin
 
-  it should "run microgrammar defined in TypeScript" in pendingUntilFixed {
+  it should "run microgrammar defined in TypeScript" in {
     val (originalPomContent, editedPomContent) = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       ModifiesWithSimpleMicrogrammar))
     editedPomContent.contains("<modelVersion>Foo bar</modelVersion>") should be(true)

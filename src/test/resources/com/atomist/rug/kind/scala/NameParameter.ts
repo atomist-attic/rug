@@ -26,7 +26,7 @@ class NameParameter implements ProjectEditor {
       let oldAssertion = `/src/Directory()/scala//ScalaFile()//termApply[/ctorRefName[@value='AntlrRawFileType']]/termName`
 
       eng.with<any>(project, oldAssertion, termName => {
-          //console.log(termName)
+          console.log(`I am gonna update ${termName}`)
           termName.update(`nodeNamingStrategy = ${termName.value()}`)
       })
   }

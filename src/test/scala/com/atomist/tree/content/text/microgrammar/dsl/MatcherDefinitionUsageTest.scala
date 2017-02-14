@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.tree.content.text.microgrammar.{InputState, MatcherMicrogrammar}
+import com.atomist.tree.content.text.microgrammar.{InputState, MatcherMicrogrammar, MatcherMicrogrammarTest}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
@@ -69,7 +69,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
       ))
 
 
-    val matches = mg.findMatches(html)
+    val matches = MatcherMicrogrammarTest.readyMatchesFromString(mg.findMatches(html), html)
     assert(matches.size === 1)
 
     withClue(matches) {

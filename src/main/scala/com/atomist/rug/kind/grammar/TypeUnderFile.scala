@@ -1,13 +1,14 @@
 package com.atomist.rug.kind.grammar
 
 import com.atomist.rug.kind.core._
-import com.atomist.rug.kind.dynamic.{MutableContainerMutableView, MutableTreeNodeUpdater}
+import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.FileArtifact
-import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
+import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
+import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 import scala.collection.JavaConverters._
 
@@ -42,18 +43,14 @@ abstract class TypeUnderFile
       case _ => None
     }
 
-  private def toView(f: FileArtifactBackedMutableView): Option[MutableView[_]] = {
-    val rawNode = fileToRawNode(f.currentBackingObject)
-    rawNode.map(n => {
-      val mtn = createView(n, f)
-      // Ensure the file is updated based on any changes to the underlying AST at any level
-      mtn match {
-        case m: MutableContainerMutableView =>
-          f.registerUpdater(new MutableTreeNodeUpdater(m.currentBackingObject))
-        case _ =>
-      }
-      mtn
-    })
+  private def toView(f: FileArtifactBackedMutableView): Option[TreeNode] = {
+    val inner = fileToRawNode(f.currentBackingObject) match {
+      case Some(ptn: PositionedTreeNode) =>
+        Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name, ptn, f))
+      case None => None
+      case x => throw new RuntimeException(s"What is $x")
+    }
+    inner.map(createView(_, f))
   }
 
   /**
@@ -62,8 +59,10 @@ abstract class TypeUnderFile
     *
     * @return new mutable view
     */
-  protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableView[_] = {
-    new MutableContainerMutableView(n, f)
+  protected def createView(tn: UpdatableTreeNode, f: FileArtifactBackedMutableView): TreeNode = tn match {
+    case ottn: OverwritableTextTreeNode => ottn
+    case n: MutableView[_] => n // this might not be necessary
+    case n: MutableContainerTreeNode => new MutableContainerMutableView(n, f)
   }
 
   /**
@@ -72,5 +71,6 @@ abstract class TypeUnderFile
     * @param f file with content to parse
     * @return
     */
-  def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode]
+  def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode]
 }
+

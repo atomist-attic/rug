@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.12.0...HEAD
 
+-   New text node structure. See [docs/treenodes.md]().
+
 ## [0.12.0] - 2017-02-14
 
 [0.12.0]: https://github.com/atomist/rug/compare/0.11.0...0.12.0

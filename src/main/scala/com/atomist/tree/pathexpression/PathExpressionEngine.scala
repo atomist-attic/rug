@@ -3,6 +3,7 @@ package com.atomist.tree.pathexpression
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult._
+import com.atomist.tree.utils.TreeNodeUtils
 
 /**
   * Expression engine implementation for our path format
@@ -15,27 +16,47 @@ class PathExpressionEngine extends ExpressionEngine {
                         parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
+   val (result, report) = evaluateAndReport(node, parsed, typeRegistry, nodePreparer)
+    // println("Evaluate Report:\n" + report.mkString("\n"))
+    result
+  }
+
+  private def evaluateAndReport(node: TreeNode,
+                        parsed: PathExpression,
+                        typeRegistry: TypeRegistry,
+                        nodePreparer: Option[NodePreparer]): (ExecutionResult, Seq[String]) = {
+    var report = Seq[String]()
+    def say(something: => String) = {} //report = report :+ something
+
     var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
     for (locationStep <- parsed.locationSteps) {
+      say(s"Checking location step ${locationStep}")
       val nextNodes = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
+         // say("why bother with a special case")
           val next: ExecutionResult = locationStep.follow(n, this, typeRegistry, nodePreparer.getOrElse(n => n))
           next
-        case Right(Nil) =>
+        case Right(s) if s.isEmpty =>
           ExecutionResult(Nil)
         case Right(seq) =>
+          say(s"checking ${seq.size} nodes for matches")
           val kids: List[TreeNode] = seq
             .flatMap(kid =>
               locationStep.follow(kid, this, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)
             .flatten
           ExecutionResult(kids)
-        case failure@Left(msg) => failure
+        case failure@Left(msg) =>
+          say(s"Failure: $msg")
+
+          failure
       }
-      //println(s"After evaluating $locationStep on $nodesToApplyNextStepTo we have $nextNodes")
+    //  say(s"After evaluating $locationStep on ${nodesToApplyNextStepTo.right.get.map(TreeNodeUtils.toShortString).mkString("\n ... and ... \n")} we have $nextNodes")
       nodesToApplyNextStepTo = nextNodes
     }
-    //println(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
-    nodesToApplyNextStepTo
+    say(s"Returning $nodesToApplyNextStepTo when evaluating [$parsed] against $node")
+
+    (nodesToApplyNextStepTo, report.map(" " + _))
   }
+
 }

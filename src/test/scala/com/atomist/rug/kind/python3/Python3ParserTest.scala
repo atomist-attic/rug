@@ -36,7 +36,7 @@ object Python3ParserTest {
       |    platforms=["any"],
       |    long_description=open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
       |)
-    """.stripMargin
+      |""".stripMargin
 
   val dateParserDotPy =
     """

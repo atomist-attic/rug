@@ -35,8 +35,13 @@ trait AnnotatableTreeNode extends TreeNode {
   * will overwrite their child structure.
   * Also adds the ability to add additional types to nodes.
   */
-trait MutableTreeNode extends AnnotatableTreeNode {
+trait MutableTreeNode extends AnnotatableTreeNode  with UpdatableTreeNode {
 
+  def dirty: Boolean
+
+}
+
+trait UpdatableTreeNode extends TreeNode {
   /**
     * Update String contents to this content. May
     * involve updating an entire structure.
@@ -44,7 +49,4 @@ trait MutableTreeNode extends AnnotatableTreeNode {
     * @return
     */
   def update(to: String): Unit
-
-  def dirty: Boolean
-
 }

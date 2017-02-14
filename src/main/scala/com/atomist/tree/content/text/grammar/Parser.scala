@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.grammar
 
-import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.TreeNode
 
 /**
   * Interface for parsers that can parse input into a MutableContainerTreeNode,
@@ -14,6 +14,6 @@ trait Parser {
     * @param ml optional listener that will be notified of matches
     * @return a parsed tree structure if input was valid. Otherwise None
     */
-  def parse(input: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode]
+  def parse(input: String, ml: Option[MatchListener]): Option[TreeNode]
 
 }

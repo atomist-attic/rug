@@ -3,7 +3,7 @@ package com.atomist.rug.kind.grammar
 import java.nio.charset.StandardCharsets
 
 import com.atomist.source.FileArtifact
-import com.atomist.tree.content.text.MutableContainerTreeNode
+import com.atomist.tree.content.text.PositionedTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, AstNodeCreationStrategy}
 import com.atomist.util.Utils.withCloseable
@@ -29,9 +29,11 @@ abstract class AntlrRawFileType(
     resources.map(r => withCloseable(r.getInputStream)(is => IOUtils.toString(is, StandardCharsets.UTF_8)))
   }
 
+  private[kind] def parser = antlrGrammar
+
   private lazy val antlrGrammar = new AntlrGrammar(topLevelProduction, nodeCreationStrategy, g4s: _*)
 
-  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[MutableContainerTreeNode] = {
+  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode] = {
     antlrGrammar.parse(f.content, ml)
   }
 }

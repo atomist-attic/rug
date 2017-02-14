@@ -174,4 +174,17 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "accept literals and variables with whitespace before and after" in {
+    val input =
+      """
+      |<parent>
+      |<groupId>$groupId</groupId>
+      |<artifactId>$artifactId</artifactId>
+      |<version>$version</version>
+      |</parent>
+      |""".stripMargin
+
+    mgp.parseMatcher("Martha", input)
+  }
+
 }

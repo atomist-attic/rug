@@ -1,7 +1,9 @@
 package com.atomist.tree.content.text.grammar.antlr
 
+import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
 import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
-import com.atomist.tree.content.text.{MutableContainerTreeNode, PositionedMutableContainerTreeNode, PositionedMutableContainerTreeNode$}
+import com.atomist.tree.utils.TreeNodeUtils
 import org.antlr.v4.runtime.NoViableAltException
 import org.antlr.v4.runtime.InputMismatchException
 import org.snt.inmemantlr.GenericParser
@@ -25,7 +27,7 @@ class AntlrGrammar(
     ParserSetup(grammars, parser, production)
   }
 
-  override def parse(input: String, ml: Option[MatchListener]): Option[MutableContainerTreeNode] = {
+  override def parse(input: String, ml: Option[MatchListener] = None): Option[PositionedTreeNode] = {
     logger.debug(s"Using grammars:\n$grammars")
     val l = new ModelBuildingListener(production, ml, nodeCreationStrategy)
     try {
@@ -43,11 +45,6 @@ class AntlrGrammar(
       // Return any results we found
     }
 
-    val updatedResult = l.ruleNodes.headOption
-    updatedResult match {
-      case Some(asu: PositionedMutableContainerTreeNode) => asu.pad(input, topLevel = true)
-      case _ =>
-    }
-    updatedResult
+    l.ruleNodes.headOption
   }
 }

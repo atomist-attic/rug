@@ -55,7 +55,7 @@ object RequirementsTxtParser extends CommonTypesParser {
 }
 
 /**
-  * Requirement. Updateable.
+  * Requirement. Updatable.
   * @param packageName package name to bring in
   * @param requirementSpecifier optional version specifier
   * @param version optional version

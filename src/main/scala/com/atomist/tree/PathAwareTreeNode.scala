@@ -1,9 +1,13 @@
 package com.atomist.tree
 
+trait AddressableTreeNode {
+  def address: String
+}
+
 /**
   * Tree node aware of its parentage and path
   */
-trait PathAwareTreeNode extends TreeNode {
+trait PathAwareTreeNode extends TreeNode with AddressableTreeNode {
 
   /**
     * Nullable if at the top level, as we don't want to complicate

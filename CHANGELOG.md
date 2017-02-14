@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.12.0...HEAD
+
+## [0.12.0] - 2017-02-14
+
+[0.12.0]: https://github.com/atomist/rug/compare/0.11.0...0.12.0
+
+Valentine release
 
 ### Added
 
@@ -57,7 +63,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     signature for findAllIn was simplified.  They should also directly
     extend ChildResolver instead of some sort of ViewFinder.
 
-## [0.11.0]
+## [0.11.0] - 2017-02-01
 
 [0.11.0]: https://github.com/atomist/rug/compare/0.10.0...0.11.0
 
@@ -140,7 +146,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   The `@generator` has been deprecated in favor of the `generator`
     keyword
 
-## [0.10.0]
+## [0.10.0] - 2017-01-18
 
 [0.10.0]: https://github.com/atomist/rug/compare/0.9.0...0.10.0
 

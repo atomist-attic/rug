@@ -185,7 +185,6 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     assert(parsed.locationSteps.size === 1)
     parsed.locationSteps.head.predicates(1) match {
       case _: NestedPathExpressionPredicate =>
-    
     }
   }
 
@@ -196,7 +195,6 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     assert(parsed.locationSteps.head.predicates.size === 1)
     parsed.locationSteps.head.predicates.head match {
       case _: OptionalPredicate =>
-    
     }
   }
 
@@ -209,6 +207,13 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
       case _: OptionalPredicate => true
       case _ => false
     } should be (1)
+  }
+
+  it should "parse predicate substring function" in {
+    val pe = """/Push()[@name='brainiac'][contains(name, "foobar")]"""
+    val parsed = pep.parsePathExpression(pe)
+    assert(parsed.locationSteps.size === 1)
+    assert(parsed.locationSteps.head.predicates.size === 2)
   }
 
   it should "parse optional and required predicates" in {
@@ -234,12 +239,11 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
         assert(npepSteps.head.predicates.size === 1)
         npepSteps.head.predicates.head match {
           case _: OptionalPredicate =>
-        
         }
     }
   }
 
-  it should "parse a complicate path expression" in {
+  it should "parse a complicated path expression" in {
     val pe = """/Build()
                |[on::Repo()/channel::ChatChannel()]
                |[triggeredBy::Push()/contains::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()]
@@ -253,7 +257,7 @@ class PathExpressionParserTest extends FlatSpec with Matchers {
     } should be (2)
   }
 
-  it should "parse a complicate path expression with optional predicates" in {
+  it should "parse a complicated path expression with optional predicates" in {
     val pe = """/Build()
                |[on::Repo()/channel::ChatChannel()]?
                |[triggeredBy::Push()/contains::Commit()/author::GitHubId()/hasGithubIdentity::Person()/hasChatIdentity::ChatId()]?

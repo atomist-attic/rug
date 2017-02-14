@@ -14,6 +14,8 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeName: Parser[String] = identifierRefString(Set(), ident)
 
+  private def functionName: Parser[String] = identifierRefString(Set(), "[a-zA-Z][a-zA-Z0-9\\-]+".r)
+
   private def objectType: Parser[String] = identifierRefString(Set(), ident)
 
   private def child: Parser[AxisSpecifier] = opt(s"$ChildAxis::") ^^ {
@@ -56,9 +58,30 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def args: Parser[Seq[String]] = "(" ~> repsep(arg, ",") <~ ")"
 
-  private def booleanMethodInvocation: Parser[Predicate] = "." ~> nodeName ~ args ^^ {
+  private def stringLiteralFunctionArg: Parser[StringLiteralFunctionArg] =
+    (singleQuotedString | doubleQuotedString) ^^ (
+      s => StringLiteralFunctionArg(s)
+      )
+
+  private def relativePathFunctionArg: Parser[RelativePathFunctionArg] =
+    (nonEmptyRelativePathExpression) ^^ (
+      s => RelativePathFunctionArg(s)
+      )
+
+  private def functionArg: Parser[FunctionArg] =
+    stringLiteralFunctionArg |
+      relativePathFunctionArg
+
+  private def functionArgs: Parser[Seq[FunctionArg]] = "(" ~> rep1sep(functionArg, ",") <~ ")"
+
+  private def booleanMethodInvocation: Parser[Predicate] = "." ~> functionName ~ args ^^ {
     case methodName ~ args =>
       FunctionPredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+  }
+
+  private def functionCall: Parser[Predicate] = functionName ~ functionArgs ^^ {
+    case functionName ~ args =>
+      XPathStyleFunctionPredicate(functionName, args)
   }
 
   private def index: Parser[Predicate] = integer ^^ {
@@ -78,6 +101,7 @@ trait PathExpressionParser extends CommonTypesParser {
       booleanMethodInvocation |
       truePredicate |
       falsePredicate |
+      functionCall |
       index |
       nestedPathExpressionPredicate
 
@@ -112,10 +136,14 @@ trait PathExpressionParser extends CommonTypesParser {
   private def descendant: Parser[AxisSpecifier] = (s"$DescendantAxis::" | "/") ^^
     (s => Descendant)
 
+  private def selfAxis: Parser[AxisSpecifier] = (s"$SelfAxis::" | ".") ^^
+    (s => Self)
+
   private def axis: Parser[AxisSpecifier] =
     property |
       navigationAxis |
       descendant |
+      selfAxis |
       child
 
   private def locationStep: Parser[LocationStep] = axis ~ nodeTest ~ rep(predicate) ^^ {
@@ -124,8 +152,21 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private val slashSeparator = "/"
 
-  def relativePathExpression: Parser[PathExpression] = repsep(locationStep, slashSeparator) ^^
-    (steps => PathExpression(steps))
+  def relativePathExpression: Parser[PathExpression] = (selfAxis | repsep(locationStep, slashSeparator)) ^^ {
+    case Self => PathExpression(List(LocationStep(Self, All, Nil)))
+    case steps: List[LocationStep]@unchecked => PathExpression(steps)
+  }
+
+  private def nonEmptyRelativePathExpression: Parser[PathExpression] = new Parser[PathExpression] {
+
+    override def apply(in: Input): ParseResult[PathExpression] = {
+      relativePathExpression(in) match {
+        case s: Success[PathExpression]@unchecked if s.result.locationSteps.nonEmpty => s
+        case s: Success[PathExpression]@unchecked => Failure(s"Path expression has no steps: [${s.result}]", in)
+        case x => x
+      }
+    }
+  }
 
   def absolutePathExpression: Parser[PathExpression] = slashSeparator ~> relativePathExpression
 
@@ -140,6 +181,7 @@ trait PathExpressionParser extends CommonTypesParser {
     }
   }
 }
+
 
 /**
   * Default implementation of PathExpressionParser. Import this

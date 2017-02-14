@@ -60,7 +60,6 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", FirstHandler)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     assert(handlers.size === 1)
-    assert(handlers.head.rootNodeName === "issue")
   }
 
   it should "parse two handlers" in {
@@ -68,8 +67,6 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", Seq(FirstHandler, SecondHandler))), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     assert(handlers.size === 2)
-    handlers.exists(h => h.rootNodeName == "issue") should be(true)
-    handlers.exists(h => h.rootNodeName == "commit") should be(true)
   }
 
   it should "parse single new-style handler" in {
@@ -77,7 +74,6 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(NamedJavaScriptEventHandlerTest.reOpenCloseIssueProgram,NamedJavaScriptEventHandlerTest.issuesStuff)), None, Nil,
       new ConsoleMessageBuilder("XX", null))
     assert(handlers.size === 1)
-    assert(handlers.head.rootNodeName === "issue")
   }
 
   it should "allow a correlationId to be set" in {
@@ -85,7 +81,6 @@ class HandlerArchiveReaderTest extends FlatSpec with Matchers {
     val messageBuilder = new ConsoleMessageBuilder("XX", null)
     val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource("", ThirdHandler)), None, Nil, messageBuilder)
     assert(handlers.size === 1)
-    assert(handlers.head.rootNodeName === "commit")
   }
 
   object TestTreeMaterializer extends TreeMaterializer {

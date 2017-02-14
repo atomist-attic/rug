@@ -148,10 +148,10 @@ class jsPathExpressionEngine(
     val ms = res.matches
     ms.size() match {
       // TODO use more specific exception type
-      case 0 => throw new Exception("No matches found!")
+      case 0 => throw new Exception(s"No matches found for path expression [$pe]")
       case 1 =>
         ms.get(0)
-      case _ => throw new Exception("Too many matches found!")
+      case _ => throw new Exception(s"Too many matches found for path expression [$pe]")
     }
   }
 

@@ -10,8 +10,8 @@ import * as scala from '@atomist/rug/ast/scala/Types'
  * Uses Scala mixin add imports
  */
 class ImportAdder implements ProjectEditor {
-    name: string = "UpgradeScalaTestAssertions"
-    description: string = "Upgrades ScalaTest assertions"
+    name: string = "ImportAdder"
+    description: string = "Adds import"
 
     edit(project: Project) {
       let eng: PathExpressionEngine =

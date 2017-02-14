@@ -21,7 +21,7 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
 
   override def childNodeNames: Set[String] = Set()
 
-  override def address = PathAwareTreeNode.address(this, s"path=${currentBackingObject.path}")
+  override def address: String = PathAwareTreeNode.address(this, s"path=${currentBackingObject.path}")
 
   override protected def toReviewComment(msg: String, severity: Severity): ReviewComment =
     ReviewComment(msg, severity, Some(currentBackingObject.path))
@@ -75,6 +75,9 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   override protected def updateParent(): Unit = {
     parent.updateFile(previousBackingObject, currentBackingObject)
   }
+
+  override def toString: String =
+    s"File:path=[$path];contentLength=${currentBackingObject.contentLength};impl=${super.toString}"
 }
 
 /**

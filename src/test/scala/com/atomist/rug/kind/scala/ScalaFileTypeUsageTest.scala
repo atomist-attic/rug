@@ -92,15 +92,17 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   }
 
   it should "convert printlns to logging" in {
-    //       val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
-    //        println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+//           val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
+//            println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
     modify("ConvertPrintlnsToLogging.ts", UsesPrintlnsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
-        println(theFile.content)
+        //println(theFile.content)
         theFile.content.contains("println") should be (false)
         theFile.content.contains("logger.debug") should be (true)
+        theFile.content.contains("import org.slf4j.LoggerFactory") should be (true)
+        theFile.content.contains("private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))") should be (true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

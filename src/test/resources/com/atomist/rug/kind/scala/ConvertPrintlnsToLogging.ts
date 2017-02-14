@@ -16,6 +16,10 @@ class ConvertPrintlnsToLogging implements ProjectEditor {
 
     logStatement = "logger.debug"
 
+    loggerImport = "org.slf4j.LoggerFactory"
+
+    loggerInstantiation = "private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))"
+
     /*
       Our target looks like this:
      
@@ -40,6 +44,24 @@ class ConvertPrintlnsToLogging implements ProjectEditor {
             .replace("System.out.println", this.logStatement)
             .replace("println", this.logStatement)
         termApply.update(newContent)
+      })
+
+      // We now may have files that use but don't import the logger. Fix them.
+      let nonImportingFiles = 
+        `/src/Directory()/scala//ScalaFile()[//termApply
+            [contains(termSelect, '${this.logStatement}')]]` 
+      eng.with<scala.Source>(project, nonImportingFiles, source => {
+        //console.log(`Found non-importing file ${source.containingFile()}`)     
+        source.addImport(this.loggerImport)
+      })
+
+      // We may have classes using the logger that don't instantiate it. Fix them.
+      let nonInstantiatingTypes = 
+        `/src/Directory()/scala//ScalaFile()//defnClass[//termApply
+            [contains(termSelect, '${this.logStatement}')]]` 
+      eng.with<scala.DefnClass>(project, nonInstantiatingTypes, type => {
+        //console.log(`Found non-importing type ${type}`)     
+        type.addToStartOfBody(this.loggerInstantiation)
       })
   }
 

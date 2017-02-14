@@ -34,7 +34,7 @@ class DefaultEvaluator(
       case ident: IdentifierFunctionArg =>
         val resolved = identifierMap.get(ident.name)
         resolved.getOrElse(
-          throw new UndefinedRugIdentifiersException("unknown", s"Cannot resolve identifier '${ident.parameterName}' referenced in $functionInvocation", Seq(ident.name))
+          throw new UndefinedRugIdentifiersException("unknown", s"Cannot resolve identifier '${ident.name}' referenced in $functionInvocation", Seq(ident.name))
         )
       case fa: FunctionArg => evaluate(fa, as, rc, target, alias, identifierMap, poa)
     }

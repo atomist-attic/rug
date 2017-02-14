@@ -7,27 +7,36 @@ import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpress
 import * as scala from '@atomist/rug/ast/scala/Types'
 
 /**
- * Uses Scala mixin add imports
+ * Removes printlns
  */
-class ImportAdder implements ProjectEditor {
+class RemovePrintlns implements ProjectEditor {
     name: string = "UpgradeScalaTestAssertions"
     description: string = "Upgrades ScalaTest assertions"
 
+    /*
+      Our target looks like this:
+     
+      termApply:[ScalaMetaTreeBacked, -dynamic, termApply]
+            termName:[println]
+            termApplyInfix:[ScalaMetaTreeBacked, -dynamic, termApplyInfix]
+              lit:[1]
+              termName:[+]
+              lit:[2]
+      
+     */
     edit(project: Project) {
       let eng: PathExpressionEngine =
         new ScalaPathExpressionEngine(project.context().pathExpressionEngine())
 
-      let findExistingScalaTestImport = `/src/Directory()/scala//ScalaFile()`   
+      let printlnStatement = 
+        `/src/Directory()/scala//ScalaFile()//termApply[/termName[@value='println']]`   
 
-      eng.with<scala.Source>(project, findExistingScalaTestImport, scalaFile => {
-        scalaFile.addImport("org.scalatest.DiagrammedAssertions._")
-        //if (scalaFile.value().indexOf("DiagrammedAssertions") < 0)
-        //  throw new Error(`Content not right when i asked again: [${scalaFile.value()}]`)
-        // else
-        //   console.log(`Content right when i asked again: [${scalaFile.value()}]`)
+      eng.with<scala.TermApply>(project, printlnStatement, termApply => {
+        //console.log(`The term apply is ${termApply}`)
+        termApply.delete()
       })
   }
 
 }
 
-export let editor = new ImportAdder()
+export let editor = new RemovePrintlns()

@@ -100,8 +100,10 @@ class jsSafeCommittingProxy(
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
-      case _ => AlwaysReturnNull
-    } else node match {
+      case _ =>
+        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
+    }
+    else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
@@ -153,8 +155,6 @@ class jsSafeCommittingProxy(
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
   }
-
-  private object AlwaysReturnNull extends AlwaysReturns(null)
 
   /**
     * Nashorn proxy for a method invocation that use navigation methods on

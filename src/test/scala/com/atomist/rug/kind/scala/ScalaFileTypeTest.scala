@@ -259,8 +259,39 @@ object ScalaFileTypeTest {
       |
     """.stripMargin)
 
+  val UsesPrintlnsSource = StringFileArtifact("src/main/scala/com/atomist/Println.scala",
+    """
+      |package com.atomist
+      |
+      |class Println {
+      |
+      |  println("foo bar")
+      |
+      |  val i = 25
+      |
+      |  println(1 +
+      |       2)
+      |
+      |  def foo() {
+      |   val s = "wepiruwpieuu" + "xxx"
+      |   println(
+      |   toString() + "foo" + (
+      |        1 + 2
+      |   )
+      |   )
+      |   foo("bar")
+      |  }
+      |
+      |}
+      |
+    """.stripMargin)
+
   val PythonTypeSources = SimpleFileBasedArtifactSource(
     Python3Source
+  )
+
+  val UsesPrintlnsSources = SimpleFileBasedArtifactSource(
+    UsesPrintlnsSource
   )
 
   val ScalaTestSources = SimpleFileBasedArtifactSource(

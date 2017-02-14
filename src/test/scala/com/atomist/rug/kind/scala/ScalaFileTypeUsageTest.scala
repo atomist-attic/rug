@@ -77,6 +77,20 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     }
   }
 
+  it should "remove printlns" in {
+//       val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
+//        println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    modify("RemovePrintlns.ts", UsesPrintlnsSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
+        //println(theFile.content)
+        theFile.content.contains("println") should be (false)
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "upgrade ScalaTest assertions" in {
     modify("UpgradeScalaTestAssertions.ts", ScalaTestSources) match {
       case sm: SuccessfulModification =>

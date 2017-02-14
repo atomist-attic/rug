@@ -166,7 +166,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     } {
       val t1 = t
       val output = new StringBuilder(config.licenseHeader)
-        .append(config.separator)
+      output ++= config.separator
       output ++= config.imports
       output ++= "\n"
 

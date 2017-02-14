@@ -82,6 +82,20 @@ object NamedJavaScriptEventHandlerTest {
     |export let OpenIssues = new OpenIssuesExpression()
     |""".stripMargin)
 
+  val pipelineHandler = StringFileArtifact(atomistConfig.handlersRoot + "Handler.ts",
+    s"""
+       |import {Atomist} from "@atomist/rug/operations/Handler"
+       |import {TreeNode} from "@atomist/rug/tree/PathExpression"
+       |declare var atomist: Atomist
+       |
+       |atomist.on<TreeNode, TreeNode>("/Pipeline()[/has::Stage()]", m => {
+       |
+       |   let pipeline = m.root() as any
+       |
+       |   atomist.messageBuilder().regarding(pipeline).withCorrelationId("cid").send()
+       |})
+     """.stripMargin)
+
   val reOpenCloseIssueProgram =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
        |import {Handler, HandlerResult, Message, Event} from '@atomist/rug/operations/Handlers'
@@ -116,6 +130,16 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
     assert(handlers.size === 1)
     val handler = handlers.head
     assert(handler.rootNodeName === "issue")
+    handler.handle(SysEvent,null)
+  }
+
+  it should "extract and run handler that starts with a NodesWithTag" in {
+    val har = new HandlerArchiveReader(treeMaterializer, atomistConfig)
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(pipelineHandler, issuesStuff)), None, Nil,
+      new ConsoleMessageBuilder("XX", SimpleActionRegistry))
+    assert(handlers.size === 1)
+    val handler = handlers.head
+    assert(handler.rootNodeName === "Pipeline")
     handler.handle(SysEvent,null)
   }
 }

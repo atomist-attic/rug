@@ -17,6 +17,8 @@ Valentine release
 
 ### Added
 
+-   Support PathExpressions that start with a NodesWithTag
+
 -   Support for `contains` and `starts-with` path expression functions
 
 -   Beginning of a TypeScript class library to simplify working with tree nodes and

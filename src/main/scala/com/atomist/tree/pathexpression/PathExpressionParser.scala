@@ -14,7 +14,7 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def nodeName: Parser[String] = identifierRefString(Set(), ident)
 
-  private def functionName: Parser[String] = identifierRefString(Set(), ident)
+  private def functionName: Parser[String] = identifierRefString(Set(), "[a-zA-Z][a-zA-Z0-9\\-]+".r)
 
   private def objectType: Parser[String] = identifierRefString(Set(), ident)
 

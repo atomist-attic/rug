@@ -25,7 +25,7 @@ case class XPathStyleFunctionPredicate(override val name: String,
   extends Predicate {
 
   val fun: Function = functionRegistry.find(name, args).getOrElse(
-    throw new IllegalArgumentException(s"No function named [$name] with args [$args]")
+    throw new IllegalArgumentException(s"No function named [$name] with args [$args]: Function registry=\n$functionRegistry")
   )
 
   def evaluate(tn: TreeNode,
@@ -85,10 +85,16 @@ trait FunctionRegistry {
   /**
     * Find a function with the given name that will take these args
     */
-  def find(name: String, args: Seq[FunctionArg]): Option[Function]
+  def find(name: String, args: Seq[FunctionArg]): Option[Function] =
+  functions.find(f => f.name == name)
+
+  def functions: Seq[Function]
+
+  override def toString: String = {
+    s"${getClass.getName}\n${functions.map(f => f.name).sorted.mkString("\n")}"
+  }
 
 }
 
 object DefaultFunctionRegistry
   extends ReflectiveFunctionRegistry(StandardFunctions)
-

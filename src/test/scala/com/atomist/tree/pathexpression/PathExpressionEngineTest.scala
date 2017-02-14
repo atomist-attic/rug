@@ -235,6 +235,26 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     assert(rtn2.right.get === Nil)
   }
 
+  it should "use XPath style starts-with function against ." in {
+    val inputA = "foo"
+    val inputB = "bar"
+    val unmatchedContent = "this is incorrect"
+    val line = inputA + unmatchedContent + inputB
+
+    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
+    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+
+    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+
+    val expr = "/*[starts-with(., 'fo')]"
+    val rtn = ee.evaluate(soo, expr, DefaultTypeRegistry)
+    assert(rtn.right.get === Seq(f1))
+
+    val expr2 = "/*[contains(.,'fxxxxxoo')]"
+    val rtn2 = ee.evaluate(soo, expr2, DefaultTypeRegistry)
+    assert(rtn2.right.get === Nil)
+  }
+
   it should "use XPath style contains function against child" in {
     val inputA = "foo"
     val inputB = "bar"

@@ -2,7 +2,7 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{AddressableTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
@@ -17,12 +17,13 @@ case class NodesWithTag(tag: String)
 
   private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
     typeRegistry.findByName(tag) match {
-      case Some(cr: ChildResolver) => Some(cr)
+      case Some(cr: ChildResolver) =>
+        Some(cr)
       case Some(_) => throw new IllegalStateException(s"type $tag is in the type registry ($typeRegistry) but does not implement ChildResolver")
       case _ => None
     }
 
-  private val eligibleNode: TreeNode => Boolean = n => n.nodeTags.contains(tag)
+  private val eligibleNode: TreeNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
 
   // Attempt to find nodes of the require type under the given node
   private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =
@@ -48,18 +49,16 @@ case class NodesWithTag(tag: String)
         // we might find the Java() node SomeClass.java under the directory "/src"
         // and under "/src/main" and under the actual file.
         // So check that our returned types have distinct backing objects
-        // TODO what happens if there isn't a mutable view with a concept of a backing object?
         var nodeAddressesSeen: Set[String] = Set()
         var toReturn = List.empty[TreeNode]
         found.foreach {
-          case mv: MutableView[_] =>
-            //println(s"I see a node at ${mv.address}")
+          case mv: AddressableTreeNode =>
             if (!nodeAddressesSeen.contains(mv.address)) {
               nodeAddressesSeen = nodeAddressesSeen + mv.address
               toReturn = toReturn :+ mv
             }
           case n =>
-            // There's no concept of a backing object here, so we have to take on trust that
+            // There's no concept of an address here, so we have to take on trust that
             // we didn't find this thing > once
             toReturn = toReturn :+ n
         }

@@ -1,5 +1,6 @@
 package com.atomist.tree.utils
 
+import com.atomist.tree.TreeNode.{Noise, Signal, Undeclared}
 import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
@@ -39,11 +40,17 @@ object TreeNodeUtils {
         case n => n.value.take(cutoff) + "..."
       })
 
-    def info(f: TreeNode) =
-      s"${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
+    def info(f: TreeNode) = {
+      val significance = f.significance match {
+        case Noise => "_"
+        case Signal => "!"
+        case Undeclared => "."
+      }
+      s"${significance} ${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
+    }
 
     def toShortStr(fv: TreeNode, depth: Int, shown: TreeNode => Boolean): String = fv match {
-      case ctn: ContainerTreeNode =>
+      case ctn if ctn.childNodes.nonEmpty =>
         def star(c: TreeNode) = if (shown(c)) "*" else ""
 
         tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")

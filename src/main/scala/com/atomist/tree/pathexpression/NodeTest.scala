@@ -45,10 +45,10 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Self => ExecutionResult(List(tn))
     case Child =>
-      val kids = tn.childNodes.toList
+      val kids = tn.childNodes.filter(_.significance != TreeNode.Noise).toList
       ExecutionResult(kids)
     case Descendant =>
-      val kids = Descendant.allDescendants(tn).toList
+      val kids = Descendant.allDescendants(tn).filter(_.significance != TreeNode.Noise).toList
       ExecutionResult(kids)
     case NavigationAxis(propertyName) =>
       val nodes = tn.childrenNamed(propertyName)
@@ -59,5 +59,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
 /**
   * Return all nodes on the given axis
   */
-object All extends PredicatedNodeTest("All", TruePredicate)
+object All extends PredicatedNodeTest("All", TruePredicate) {
+  override def toString = "*"
+}
 

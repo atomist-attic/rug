@@ -8,7 +8,7 @@ import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, MicrogrammarTypeProvider}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
-import com.atomist.tree.{MutableTreeNode, TreeNode}
+import com.atomist.tree.{MutableTreeNode, TreeNode, UpdatableTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -36,7 +36,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
       nodes.head.nodeTags.contains("modelVersion") should be(true)
     }
     nodes.head match {
-      case mtn: MutableTreeNode =>
+      case mtn: UpdatableTreeNode =>
         mtn.update(highlyImprobableValue)
         val newContent = pmv.findFile("pom.xml").content
         newContent.contains(highlyImprobableValue) should be(true)

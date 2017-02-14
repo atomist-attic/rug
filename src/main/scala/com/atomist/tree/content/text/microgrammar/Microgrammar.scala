@@ -1,7 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
+import com.atomist.tree.content.text.PositionedTreeNode
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.{SimpleMutableContainerTreeNode, MutableContainerTreeNode}
 
 /**
   * A microgrammar instance reflects a grammar that will match part or all of input.
@@ -21,5 +21,5 @@ trait Microgrammar {
     * @param l listener to be notified on matches. Useful for test infrastructure etc
     * @return a sequence of MutableContainerTreeNode's
     */
-  def findMatches(input: CharSequence, l: Option[MatchListener] = None): Seq[MutableContainerTreeNode]
+  def findMatches(input: CharSequence, l: Option[MatchListener] = None): Seq[PositionedTreeNode]
 }

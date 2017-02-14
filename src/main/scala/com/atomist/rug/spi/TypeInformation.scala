@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.OutOfDateNodeException
 
 /**
   * Type information about a language element such as a Type.
@@ -89,6 +90,7 @@ case class TypeOperation(
       methods.head.invoke(target, args: _*)
     } catch {
       case e: InvocationTargetException if e.getCause.isInstanceOf[InstantEditorFailureException] => throw e.getCause // we meant to do this
+      case e: InvocationTargetException if e.getCause.isInstanceOf[OutOfDateNodeException] => throw e.getCause // we meant to do this
       case t: Throwable =>
         val argDiagnostics = args map {
           case null => "null"

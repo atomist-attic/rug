@@ -37,9 +37,9 @@ package object ElmModel {
   /**
     * Model for an Elm module. Mutable. Capable of preserving positions
     * when updating. This is an exemplar of what will probably become a common pattern:
-    * A structure consisting of updateable field types and structures in the FieldValue hierarchy (used for in-place string updates),
+    * A structure consisting of Updatable field types and structures in the FieldValue hierarchy (used for in-place string updates),
     * also exposing an AST for use by callers.
-    * Simple updates can be performed by modifying UpdateableScalarFieldValue instanes.
+    * Simple updates can be performed by modifying UpdatableScalarFieldValue instanes.
     * More complex, structural updates, such as adding a new structure,
     * typically mean updating the AST model, but adding a String field for the
     * FieldValue hierarchy to ensure correct output. Padding can also be created.

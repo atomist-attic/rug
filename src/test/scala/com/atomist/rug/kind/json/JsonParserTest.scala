@@ -7,7 +7,7 @@ class JsonParserTest extends FlatSpec with Matchers {
   import JsonParserTest._
 
   it should "parse simple JSON" in {
-    val jsp = new JsonParser
+    val jsp = (new JsonType).parser
     val parsed = jsp.parse(Simple)
   }
 

@@ -12,7 +12,7 @@ import com.atomist.rug.kind.dynamic._
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.NamespaceUtils._
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
-import com.atomist.rug.spi.{MutableView, TypeRegistry}
+import com.atomist.rug.spi.{MutableView, ReflectiveFunctionExport, TypeRegistry}
 import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
@@ -204,6 +204,9 @@ trait RugOperationSupport extends LazyLogging {
       context match {
         case mv: MutableView[_] =>
           mv.evaluator.evaluate(fi, as, reviewContext, context, withBlock.alias, identifierMap, poa)
+
+        case other: TreeNode =>
+          new DefaultEvaluator(ReflectiveFunctionExport.exportedRegistry(other.getClass)).evaluate(fi, as, reviewContext, context, withBlock.alias, identifierMap, poa)
       }
     case w: WithDoStep =>
       executedSelectedBlock(rugAs, w.wth, as, reviewContext, context, poa, identifierMap)

@@ -34,6 +34,7 @@ case class NamedNodeTest(name: String)
       Right(kids)
     case Descendant =>
       val possibleMatches: List[TreeNode] = Descendant.selfAndAllDescendants(tn).flatMap(n => findUnder(n)).toList
+      // TODO: not removing duplicates? NodesWithTag does. Pretty sure this should too. need to write a test
       Right(possibleMatches)
   }
 

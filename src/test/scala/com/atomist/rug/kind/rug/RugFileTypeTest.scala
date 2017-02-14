@@ -5,7 +5,9 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.rug.dsl.RugFileType
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.content.text.OverwritableTextTreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
+import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 object RugFileTypeTest {
@@ -51,7 +53,7 @@ object RugFileTypeTest {
       |
       |with Project p
       |  do eval { p.name(); }
-    """.stripMargin
+      |""".stripMargin
 
   val ManyParams =
     """editor MyEditor
@@ -206,7 +208,7 @@ class RugFileTypeTest extends FlatSpec with Matchers {
       case mtn: MutableContainerMutableView =>
         val content = mtn.value
         content should equal(helloProjectEditorProject.files.get(0).content)
-      case _ => ???
+      case u: OverwritableTextTreeNode => assert(u.value === helloProjectEditorProject.files.get(0).content)
     }
   }
 
@@ -237,6 +239,8 @@ class RugFileTypeTest extends FlatSpec with Matchers {
   it should "find Rugs using DumbGenerator" in {
     val expr = "//RugFile()[/rug/uses/other_rug[@value='DumbGenerator']]"
     val rtn = ee.evaluate(rugArchive, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
-    assert(rtn.right.get.size === 1)
+    withClue(s"I found ${rtn.right.get.map(TreeNodeUtils.toShortString)}") {
+      assert(rtn.right.get.size === 1)
+    }
   }
 }

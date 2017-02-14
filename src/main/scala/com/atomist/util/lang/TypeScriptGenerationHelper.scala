@@ -41,12 +41,13 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.java.support.PackageInfo>" => "any[]"//TODO
       case "java.util.List<com.atomist.rug.kind.service.ServiceMutableView>" => "any[]"
       case "java.util.List<com.atomist.tree.TreeNode>" => "any[]"
+      case "interface com.atomist.tree.TreeNode" => "TreeNode" // is this right?
       case "List" => "any[]" // TODO improve this
       case "FileArtifactMutableView" => "File"   // TODO this is nasty
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
-      case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]")
+      case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]. Did you export a function with this in its type signature?")
     }
   }
 }

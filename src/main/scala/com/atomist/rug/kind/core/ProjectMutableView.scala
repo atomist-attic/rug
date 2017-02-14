@@ -56,6 +56,8 @@ class ProjectMutableView(
 
   import ProjectMutableView._
 
+  override def toString: String = s"ProjectMutableView around ${currentBackingObject}"
+
   /**
     * Content used only for templates.
     */

@@ -38,21 +38,16 @@ class EqualsToSymbol implements ProjectEditor {
               termName:[equals]
             lit:["cat"]
       */
-      let oldAssertion = `/src/Directory()/scala//ScalaFile()//termApply[/termSelect/*[2][@value='equals']]`
+      let oldAssertion = `/src/Directory()/scala//ScalaFile()//termApply[/termSelect/*[@value='equals']]`;
 
       eng.with<any>(project, oldAssertion, termApply => {
+        //console.log(`Operating on ${termApply}`);
         if (termApply.children().length == 2) { // Should go in path expression when we have "count"
           let leftTerm = termApply.termSelect().children()[0]
           let rightTerm = termApply.children()[1]
 
-          let th = new TreeHelper()
-
-          //console.log(th.findPathFromAncestorWithTag(leftTerm, "File"))
-
-          //console.log(`left=${leftTerm}, right=${rightTerm}`)
-
           if (leftTerm && rightTerm) {
-            let rightValue = rightTerm.children().length > 1 ? `(${rightTerm.value()})` : rightTerm.value() 
+            let rightValue = rightTerm.children().length > 1 ? `(${rightTerm.value()})` : rightTerm.value();
             termApply.update(`${leftTerm.value()} == ${rightValue}`)
           }
         }

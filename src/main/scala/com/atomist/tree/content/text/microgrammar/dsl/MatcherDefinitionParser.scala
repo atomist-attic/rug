@@ -17,7 +17,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   // This parser does NOT skip whitespace, unlike most parser combinators.
   // So we need to override this value.
-  override protected val whiteSpace: ScalaRegex = "".r
+  override val skipWhitespace = false
 
   private def whitespaceSep: Parser[String] = """\s*""".r
 
@@ -46,7 +46,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
     rex |
       break |
       literal |
-      inlineReference()
+      inlineReference
 
   private def concatenation: Parser[Matcher] =
     matcherTerm ~ opt(whitespaceSep) ~ matcherExpression ^^ {
@@ -58,15 +58,14 @@ class MatcherDefinitionParser extends CommonTypesParser {
   private def variableName: Parser[String] = ident.filter(!_.contains(VariableDeclarationToken))
 
   // $name:[.*]
-  private def inlineReference(): Parser[Matcher] =
+  private def inlineReference: Parser[Matcher] =
     VariableDeclarationToken ~> variableName ~ opt(":" ~ rex) ^^ {
       case newName ~ Some(_ ~ regex) => Wrap(regex, newName)
       case matcherName ~ None => Reference(matcherName)
     }
 
   private def matcherExpression: Parser[Matcher] =
-      concatenation |
-      matcherTerm
+    opt(whitespaceSep) ~> (concatenation | matcherTerm) <~ opt(whitespaceSep)
 
   /**
     * Parse the given microgrammar definition given a registry of known matchers.

@@ -74,12 +74,13 @@ class jsPathExpressionEngine(
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
       tp
-    case som : ScriptObjectMirror =>
+    case som: ScriptObjectMirror =>
       throw new RugRuntimeException(null, s"Unrecognized type. It has properties ${som.entrySet().asScala.map(_.getKey).mkString(",")}")
     case x =>
       throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
 
   }
+
 
   /**
     * Evaluate the given path expression.
@@ -91,17 +92,11 @@ class jsPathExpressionEngine(
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: TreeNode, pe: Object): jsMatch = {
-    val parsed: PathExpression = pe match {
-      case som: ScriptObjectMirror =>
-        // Examine a JavaScript object passed to us. It's probably a
-        // TypeScript class with an "expression" property
-        val expr = NashornUtils.stringProperty(som, "expression")
-        PathExpressionParser.parsePathExpression(expr)
-      case expr: String =>
-        PathExpressionParser.parsePathExpression(expr)
-    }
+  def evaluate(root: TreeNode, pe: Object): jsMatch =
+    evaluateParsed(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
 
+
+  private def evaluateParsed(root: TreeNode, parsed: PathExpression) = {
     val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toUnderlyingTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
@@ -131,6 +126,7 @@ class jsPathExpressionEngine(
       val r = evaluate(root, pexpr)
       r.matches.asScala.foreach(m => {
         val args = Seq(m)
+        // println(s"I am calling ${som} with value ${m}")
         som.call("apply", args: _*)
       })
     case _ =>
@@ -149,10 +145,31 @@ class jsPathExpressionEngine(
     ms.size() match {
       // TODO use more specific exception type
       case 0 => throw new Exception(s"No matches found for path expression [$pe]")
-      case 1 =>
-        ms.get(0)
-      case _ => throw new Exception(s"Too many matches found for path expression [$pe]")
+      case 1 => ms.get(0)
+      case more => throw new PathExpressionException(root, pe, s"Too many matches found! Found $more")
     }
+  }
+
+  private def matchReport(root: TreeNode, pe: Object) = {
+    val pathExpression = jsPathExpressionEngine.pathExpressionFromObject(pe)
+
+    def inner(report: Seq[String], lastEmptySteps: Option[PathExpression], steps: PathExpression): Seq[String] = {
+      if (steps.locationSteps.isEmpty) {
+        report // nowhere else to go
+      }
+      else evaluateParsed(root, steps).matches match {
+        case empty if empty.isEmpty => // nothing found, keep looking
+          inner(report, Some(steps), steps.dropLastStep)
+        case nonEmpty => // something was found
+          val dirtyDeets = if (nonEmpty.size > 1) "" else s" = ${nonEmpty.get(0)}"
+          val myReport = Seq(s"${steps} found ${nonEmpty.size}$dirtyDeets")
+          val recentEmptyReport = lastEmptySteps.map(" " + _ + " found 0").toSeq
+          val reportSoFar = myReport ++ recentEmptyReport ++ report
+          inner(reportSoFar.map(" " + _), None, steps.dropLastStep)
+      }
+    }
+
+    inner(Seq(), None, pathExpression).mkString("\n")
   }
 
   /**
@@ -188,8 +205,35 @@ class jsPathExpressionEngine(
 
 }
 
+class PathExpressionException(msg: String) extends RuntimeException(msg) {
+
+  def this(root: TreeNode, pe: Object, problem: String, details: String = "") = {
+    this(PathExpressionException.formatMessage(root, pe, problem, details))
+  }
+}
+
+object PathExpressionException {
+
+  def formatMessage(root: TreeNode, pe: Object, problem: String, details: String): String = {
+    val pePrint = jsPathExpressionEngine.pathExpressionFromObject(pe)
+    val rootString = root.toString
+    val detailString = if (details.isEmpty) "" else s"\n$details"
+    s"$problem evaluating [$pePrint] against [$rootString]$detailString"
+  }
+}
+
 object jsPathExpressionEngine {
 
   val matcherParser = new MatcherDefinitionParser
+
+  def pathExpressionFromObject(pe: Object) = pe match {
+    case som: ScriptObjectMirror =>
+      // Examine a JavaScript object passed to us. It's probably a
+      // TypeScript class with an "expression" property
+      val expr = NashornUtils.stringProperty(som, "expression")
+      PathExpressionParser.parsePathExpression(expr)
+    case expr: String =>
+      PathExpressionParser.parsePathExpression(expr)
+  }
 
 }

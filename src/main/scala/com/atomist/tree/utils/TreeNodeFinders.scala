@@ -31,8 +31,9 @@ object TreeNodeFinders {
 
   def requiredSingleFieldValue(parent: TreeNode, name: String): String = {
     parent.childrenNamed(name) match {
-      case Seq(tn: TerminalTreeNode) => tn.value
-      case Nil => throw new IllegalArgumentException(s"Found no fields for [$name] in $parent: Needed exactly 1")
+      case Seq(tn) => tn.value
+      case s if s.isEmpty => throw new IllegalArgumentException(s"Found no fields for [$name] in $parent: Needed exactly 1")
+      case more => throw new IllegalArgumentException(s"Found ${more.size} fields for [$name] in $parent: Needed exactly 1")
     }
   }
 

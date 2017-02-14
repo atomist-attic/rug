@@ -108,7 +108,7 @@ class jsSafeCommittingProxy(
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
       case _ => throw new RugRuntimeException(null,
-        s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}")
+        s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}. Node tags are ${node.nodeTags}")
     }
   }
 

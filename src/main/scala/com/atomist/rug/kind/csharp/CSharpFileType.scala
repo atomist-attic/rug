@@ -1,11 +1,7 @@
 package com.atomist.rug.kind.csharp
 
-import com.atomist.rug.kind.core.FileArtifactBackedMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
-import com.atomist.rug.kind.grammar.{AntlrRawFileType, RawNodeUnderFileMutableView}
-import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
+import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
-import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionParser}
 
@@ -23,17 +19,11 @@ class CSharpFileType
 
   import CSharpFileType._
 
-  override def runtimeClass = classOf[CSharpFileMutableView]
-
   override def description = "C# file"
 
   override def isOfType(f: FileArtifact): Boolean =
     f.name.endsWith(CSharpExtension)
 
-  override protected def createView(n: MutableContainerTreeNode, f: FileArtifactBackedMutableView): MutableContainerMutableView = {
-    // Create a special view
-    new CSharpFileMutableView(n, f)
-  }
 }
 
 object CSharpFileMutableView {
@@ -41,25 +31,4 @@ object CSharpFileMutableView {
   import PathExpressionParser.parseString
 
   val FirstUsingStatement: PathExpression = "//using_directive[1]"
-}
-
-/**
-  * Special type to hold top level methods on CSharp files
-  */
-class CSharpFileMutableView(topLevelNode: MutableContainerTreeNode, f: FileArtifactBackedMutableView)
-  extends RawNodeUnderFileMutableView(topLevelNode, f) {
-
-  import CSharpFileMutableView._
-
-  @ExportFunction(readOnly = false, description = "Add a using if it isn't already present")
-  def addUsing(@ExportFunctionParameterDescription(
-    name = "newUsing",
-    description = "New using (just the package)")
-               newUsing: String): Unit = {
-    val newUsingStatement = s"using $newUsing;"
-    if (!f.content.contains(newUsingStatement))
-      doWithNodesMatchingPath(FirstUsingStatement, mtn =>
-        mtn.update(s"${mtn.value}\n$newUsingStatement\n")
-      )
-  }
 }

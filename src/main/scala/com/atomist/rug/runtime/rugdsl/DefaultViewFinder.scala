@@ -51,7 +51,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
   def findAllIn(rugAs: ArtifactSource, selected: Selected, context: TreeNode,
                 poa: ProjectOperationArguments, identifierMap: Map[String, Object]): SelectedChildrenOrSuggestedKinds = {
 
-    val fromIdentifierInScope: Option[Seq[MutableView[_]]] = identifierMap.get(selected.kind).flatMap(typ => {
+    val fromIdentifierInScope: Option[Seq[TreeNode]] = identifierMap.get(selected.kind).flatMap(typ => {
       logger.debug(s"Getting type '${selected.kind}' from $typ")
       (typ, context) match {
         case (mg: Microgrammar, f: FileArtifactBackedMutableView) =>
@@ -73,7 +73,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
             case Right(nodes) =>
               //nodes.map(tn => new MutableContainerTreeNodeMutableView(tn.asInstanceOf[MutableContainerTreeNode], context))
               Some(nodes map {
-                case mv: MutableView[_] => mv
+                case mv: TreeNode => mv
               })
             case Left(_) =>
               Some(Nil)
@@ -140,6 +140,8 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         v match {
           case v: MutableView[_] =>
             v.evaluator.evaluate[MutableView[_], Boolean](predicate, null, null, v, targetAlias, identifierMap, poa)
+          case _ =>
+            DefaultEvaluator.evaluate(predicate, null, null, v, targetAlias, identifierMap, poa)
         }
     }
   }

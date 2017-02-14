@@ -3,6 +3,7 @@ package com.atomist.rug.kind.csharp
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
+import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.ConsoleMatchListener
@@ -93,14 +94,14 @@ object CSharpFileTypeTest {
 
 }
 
-class CSharpFileTypeTest extends FlatSpec with Matchers {
+class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
 
   import CSharpFileTypeTest._
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
 
-  val csFileType = new CSharpFileType
+  val typeBeingTested = new CSharpFileType
 
 
   it should "ignore ill-formed file without error" in {
@@ -111,25 +112,25 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
   }
 
   it should "parse hello world" in {
-    val csharps = csFileType.findAllIn(helloWorldProject)
+    val csharps = typeBeingTested.findAllIn(helloWorldProject)
     assert(csharps.size === 1)
   }
 
   it should "parse hello world and write out correctly" in {
-    val parsed = csFileType.fileToRawNode(StringFileArtifact("HelloWorld.cs", HelloWorld), Some(ConsoleMatchListener)).get
-    val parsedValue = parsed.value
+    val parsedValue = parseAndPad(StringFileArtifact("HelloWorld.cs", HelloWorld))
     withClue(s"Unexpected content: [$parsedValue]") {
       parsedValue should equal(helloWorldProject.files.get(0).content)
     }
   }
 
   it should "parse hello world into mutable view and write out unchanged" in {
-    val csharps = csFileType.findAllIn(helloWorldProject)
+    val csharps = typeBeingTested.findAllIn(helloWorldProject)
+    val initialContent = helloWorldProject.files.get(0).content
     assert(csharps.size === 1)
     csharps.head.head match {
-      case mtn: MutableContainerMutableView =>
-        val content = mtn.value
-        content should equal(helloWorldProject.files.get(0).content)
+      case mtn =>
+        val content = helloWorldProject.files.get(0).content
+        content should equal(initialContent)
     }
   }
 
@@ -140,9 +141,9 @@ class CSharpFileTypeTest extends FlatSpec with Matchers {
   }
 
   it should "find specification exception class" in {
-    val csharps: Option[Seq[TreeNode]] = csFileType.findAllIn(new ProjectMutableView(EmptyArtifactSource(), exceptionProject))
+    val csharps: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(new ProjectMutableView(EmptyArtifactSource(), exceptionProject))
     assert(csharps.size === 1)
-    val csharpFileNode = csharps.get.head.asInstanceOf[MutableContainerMutableView]
+    val csharpFileNode = csharps.get.head
 
     val expr = "//specific_catch_clause//class_type[@value='IndexOutOfRangeException']"
     ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {

@@ -5,11 +5,11 @@ import javax.script.{ScriptContext, SimpleBindings}
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.common.support.ProjectOperationParameterSupport
 import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
-import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.js.interop.jsSafeCommittingProxy
+import com.atomist.rug.runtime.js.interop.{PathExpressionException, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -18,6 +18,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
   * Superclass for all operations that delegate to JavaScript.
@@ -99,7 +100,21 @@ abstract class JavaScriptInvokingProjectOperation(
       case x => x
     }
 
-    clone.asInstanceOf[ScriptObjectMirror].callMember(member,processedArgs: _* )
+    val som = clone.asInstanceOf[ScriptObjectMirror]
+    try {
+      som.callMember(member, processedArgs: _*)
+    } catch {
+      case NonFatal(e) =>
+        if (!som.hasMember(member)) {
+          throw new RugRuntimeException(null, s"Could not invoke member $member on $jsVar, because it doesn't have it", e)
+        }
+        e.getCause match {
+          case pxe: PathExpressionException =>
+            throw pxe
+          case _ =>
+            throw e
+        }
+    }
   }
 
   /**

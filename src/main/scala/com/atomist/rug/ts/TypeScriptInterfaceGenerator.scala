@@ -19,13 +19,10 @@ import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
 
-  val target = if (args.length < 1) "target/Core.ts" else args.head
-
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "Core.ts")))
-  Utils.withCloseable(new PrintWriter(target))(_.write(output.allFiles.head.content))
-  println(s"Written to $target")
+  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> "target/Core.ts")))
+  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
 
 /**
@@ -56,7 +53,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   private case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo], parent: String = root) {
 
     override def toString: String = {
-      val output = new StringBuilder("")
+      val output = new StringBuilder
       output ++= emitDocComment(description)
       output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
@@ -65,20 +62,29 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     }
   }
 
-  private case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String) {
+  private case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String, description: Option[String]) {
 
-    private val comment =
-      if (params.isEmpty)
-        ""
-      else
-        (for (p <- params)
-          yield s"$indent//$p")
-          .mkString("\n") + "\n"
+    private val comment = {
+      val builder = new StringBuilder(s"$indent/**\n")
+      builder ++= s"$indent  * ${description.getOrElse("")}\n"
+      builder ++= s"$indent  *\n"
+
+      if (!params.isEmpty) {
+        for (p <- params)
+          yield builder ++= s"$indent  * ${p.comment}\n"
+      }
+
+      if (returnType != "void")
+        builder ++= s"$indent  * @returns {${returnType}}\n"
+
+      builder ++= s"$indent  */\n"
+      builder.toString
+    }
 
     override def toString = s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
-  private class MethodParam(val name: String, val paramType: String) {
+  private class MethodParam(val name: String, val paramType: String, val description: Option[String]) {
 
     def canEqual(a: Any): Boolean = a.isInstanceOf[MethodParam]
 
@@ -91,11 +97,13 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     override def hashCode: Int = paramType.hashCode
 
     override def toString = s"$name: $paramType"
+
+    def comment: String = s"@param $name {$paramType} ${description.getOrElse("")}"
   }
 
   private object MethodParam {
 
-    def apply(name: String, paramType: String) = new MethodParam(name, paramType)
+    def apply(name: String, paramType: String, description: Option[String]) = new MethodParam(name, paramType, description)
   }
 
   addParameter(Parameter(OutputPathParam, ".*")
@@ -137,9 +145,9 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       val params =
         for (p <- op.parameters)
           yield
-            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType))
+            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType), p.description)
 
-      methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType))
+      methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType), Some(op.description))
     }
     methods
   }
@@ -158,7 +166,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     } {
       val t1 = t
       val output = new StringBuilder(config.licenseHeader)
-      output ++= config.separator
+        .append(config.separator)
       output ++= config.imports
       output ++= "\n"
 

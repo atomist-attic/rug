@@ -20,7 +20,8 @@ class jsSafeCommittingProxy(
                              val node: TreeNode,
                              commandRegistry: CommandRegistry = DefaultCommandRegistry,
                              typeRegistry: TypeRegistry = DefaultTypeRegistry)
-  extends AbstractJSObject with TreeNode {
+  extends AbstractJSObject
+    with TreeNode {
 
   override def toString: String = s"SafeCommittingProxy around $node"
 
@@ -48,14 +49,12 @@ class jsSafeCommittingProxy(
     node.childrenNamed(key)
       .map(n => new jsSafeCommittingProxy(n, commandRegistry, typeRegistry))
 
-  //-----------------------------------------------------
-
   /**
     * A user is adding a named member e.g.
     * shouldTerm.dispatch_me = function(name) { ...
-    * We want to save it and invoke it in getMember if necessary
+    * We want to save it and invoke it in getMember if necessary.
     *
-    * @param name  name of the member
+    * @param name name of the member
     * @param value function the user is adding in JavaScript
     */
   override def setMember(name: String, value: Object): Unit = value match {
@@ -65,25 +64,22 @@ class jsSafeCommittingProxy(
     case x =>
       //println(s"Adding non-function member [$name]")
       additionalMembers = additionalMembers ++ Map(name -> x)
-
   }
 
   override def getMember(name: String): AnyRef = {
-    //println(s"getMember: [$name]")
+    // println(s"getMember: [$name]")
     // First, look for an added member
     additionalMembers.get(name) match {
       case Some(som: ScriptObjectMirror) =>
-        //println(s"Going with added value [$som] for [$name]")
+        // println(s"Going with added value [$som] for [$name]")
         som
       case Some(x) =>
-        //println(s"Going with added non-function value [$x] for [$name]")
+        // println(s"Going with added non-function value [$x] for [$name]")
         x
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
-      case None if name == "toString" =>
-        new AlwaysReturns(node.toString)
-      case _ =>
-        invokeConsideringTypeInformation(name)
+      case None if name == "toString" => new AlwaysReturns(node.toString)
+      case _ => invokeConsideringTypeInformation(name)
     }
   }
 
@@ -94,8 +90,7 @@ class jsSafeCommittingProxy(
           op => name.equals(op.name))
         if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
           invokeGivenNoMatchingOperationInTypeInformation(name, st)
-        }
-        else
+        } else
           new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
       case _ =>
         throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
@@ -105,10 +100,8 @@ class jsSafeCommittingProxy(
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
-      case _ =>
-        AlwaysReturnNull
-    }
-    else node match {
+      case _ => AlwaysReturnNull
+    } else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
@@ -119,7 +112,7 @@ class jsSafeCommittingProxy(
 
   /**
     * Nashorn proxy for a method invocation that delegates to the
-    * underlying node using reflection
+    * underlying node using reflection.
     */
   private class FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name: String, possibleOps: Seq[TypeOperation])
     extends AbstractJSObject {
@@ -130,11 +123,9 @@ class jsSafeCommittingProxy(
       possibleOps.find(op => op.parameters.size == args.size) match {
         case None =>
           commandRegistry.findByNodeAndName(node, name) match {
-            case Some(c) =>
-              c.invokeOn(node)
-            case _ =>
-              throw new RugRuntimeException(null,
-                s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
+            case Some(c) => c.invokeOn(node)
+            case _ => throw new RugRuntimeException(null,
+              s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
           }
         case Some(op) =>
           // Reflective invocation
@@ -161,7 +152,6 @@ class jsSafeCommittingProxy(
     override def isFunction: Boolean = true
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
-
   }
 
   private object AlwaysReturnNull extends AlwaysReturns(null)
@@ -194,7 +184,7 @@ class jsSafeCommittingProxy(
             case null :: Nil => null
             case head :: Nil => head
             case more => more.head
-            //throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
+            // throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
           }
         case _ => node
       }
@@ -232,11 +222,10 @@ object jsSafeCommittingProxy {
 
   def wrapOne(n: TreeNode, cr: CommandRegistry = DefaultCommandRegistry): jsSafeCommittingProxy =
     new jsSafeCommittingProxy(n, cr)
-
 }
 
 /**
-  * Return a type that exposes all the operations on the given set of types
+  * Return a type that exposes all the operations on the given set of types.
   *
   * @param types set of types to expose
   */

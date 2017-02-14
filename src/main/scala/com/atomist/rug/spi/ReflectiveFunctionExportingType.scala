@@ -39,11 +39,10 @@ object ReflectiveFunctionExport {
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {
     m.getParameters.map(p =>
-      if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription]))
-        TypeParameter(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).name(),
-          p.getParameterizedType.toString,
-          Some(p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription]).description()))
-      else
+      if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription])) {
+        val annotation = p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription])
+        TypeParameter(annotation.name(), p.getParameterizedType.toString, Some(annotation.description()))
+      } else
         TypeParameter(p.getName, p.getParameterizedType.toString, None)
     )
   }

@@ -115,7 +115,6 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
       new ConsoleMessageBuilder("XX", SimpleActionRegistry))
     assert(handlers.size === 1)
     val handler = handlers.head
-    assert(handler.rootNodeName === "issue")
     handler.handle(SysEvent,null)
   }
 }

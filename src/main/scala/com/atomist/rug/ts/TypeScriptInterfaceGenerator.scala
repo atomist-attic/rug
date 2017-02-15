@@ -74,13 +74,13 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       builder ++= s"$indent  * ${description.getOrElse("")}\n"
       builder ++= s"$indent  *\n"
 
-      if (!params.isEmpty) {
+      if (params.nonEmpty) {
         for (p <- params)
           yield builder ++= s"$indent  * ${p.comment}\n"
       }
 
       if (returnType != "void")
-        builder ++= s"$indent  * @returns {${returnType}}\n"
+        builder ++= s"$indent  * @returns {$returnType}\n"
 
       builder ++= s"$indent  */\n"
       builder.toString
@@ -144,7 +144,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
           .toList
 
         // Add superclasses
-        for (i <- 0 until superclasses.size) {
+        for (i <- superclasses.indices) {
           val ops = exportedOperations(superclasses(i))
           val parent = if (i == superclasses.size - 1) root else Typed.typeToTypeName(superclasses(i + 1))
           val name = Typed.typeToTypeName(superclasses(i))
@@ -152,7 +152,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
         }
 
         // Add leaf class
-        val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses(0))
+        val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses.head)
         interfaceTypes += InterfaceType(t.name, t.description, allMethods(t), parent)
       })
     })
@@ -193,25 +193,33 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       t <- interfaceTypes
       if !alreadyGenerated.contains(t)
     } {
-      val t1 = t
       val output = new StringBuilder(config.licenseHeader)
       output ++= config.separator
       output ++= config.imports
       output ++= "\n"
 
+      val currentType = t
       val returnTypes = new ListBuffer[String]
-      interfaceTypes.foreach(t => t1.methods.foreach(m => {
+      interfaceTypes.foreach(t => currentType.methods.foreach(m => {
         val returnType = StringUtils.removeEnd(m.returnType, "[]")
-        if (!t1.name.equals(t.name) && returnType.equals(t.name))
+        if (!currentType.name.equals(t.name) && returnType.equals(t.name))
           returnTypes += returnType
       }))
+
+      val parent = t.parent
+      val imports = ListBuffer.empty[String]
       returnTypes.distinct.foreach(rt => {
-        output ++= s"""import {$rt} from "./$rt""""
-        output ++= "\n"
+        if (!imports.contains(parent)) {
+          output ++= s"""import {$rt} from "./$rt""""
+          output ++= "\n"
+          imports.append(rt)
+        }
       })
 
-      if (t.parent != root)
-        output ++= s"""import {${t.parent}} from "./${t.parent}""""
+      if (parent != root && !imports.contains(parent)) {
+          output ++= s"""import {$parent} from "./$parent""""
+          imports.append(parent)
+      }
 
       output ++= s"\nexport {${t.name}}\n"
       output ++= t.toString
@@ -219,7 +227,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
       val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
       tsInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
-      alreadyGenerated.append(t)
+      alreadyGenerated += t
     }
 
     // Write Core.ts

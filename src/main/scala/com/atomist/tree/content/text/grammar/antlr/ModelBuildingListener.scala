@@ -150,7 +150,6 @@ class ModelBuildingListener(
     val unwanted = unwantedDuplicates(deduped)
     val filtered = deduped.filterNot(unwanted.contains(_))
     require(unwantedDuplicates(filtered).isEmpty)
-
     filtered
   }
 
@@ -179,7 +178,10 @@ class ModelBuildingListener(
         // For some reason, some grammars put the EOF on the token input stream
         Nil
       case ct: Token =>
-        val sf = new MutableTerminalTreeNode(name, ct.getText, position(ct))
+        val sf = new MutableTerminalTreeNode(
+          namingStrategy.nameForTerminal(name, ct.getText),
+          ct.getText,
+          position(ct))
         sf.addType(name)
         Seq(sf)
       case tn: TerminalNode =>
@@ -205,6 +207,8 @@ class ModelBuildingListener(
   * methods they care about
   */
 trait AstNodeCreationStrategy {
+
+  def nameForTerminal(rawName: String, content: String): String = rawName
 
   def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
 

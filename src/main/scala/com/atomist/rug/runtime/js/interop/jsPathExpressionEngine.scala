@@ -144,9 +144,9 @@ class jsPathExpressionEngine(
     val ms = res.matches
     ms.size() match {
       // TODO use more specific exception type
-      case 0 => throw new Exception(s"No matches found for path expression [$pe]")
+      case 0 => throw new Exception(s"No matches found for path expression [${jsPathExpressionEngine.pathExpressionFromObject(pe)}]")
       case 1 => ms.get(0)
-      case more => throw new PathExpressionException(root, pe, s"Too many matches found! Found $more")
+      case more => throw new PathExpressionException(root, pe, s"Too many matches found for path expression [${jsPathExpressionEngine.pathExpressionFromObject(pe)}! Found $more")
     }
   }
 
@@ -226,7 +226,10 @@ object jsPathExpressionEngine {
 
   val matcherParser = new MatcherDefinitionParser
 
-  def pathExpressionFromObject(pe: Object) = pe match {
+  /**
+    * Parse path expression from a JavaScript-backed object with an "expression" property or a string
+    */
+  def pathExpressionFromObject(pe: Object): PathExpression = pe match {
     case som: ScriptObjectMirror =>
       // Examine a JavaScript object passed to us. It's probably a
       // TypeScript class with an "expression" property

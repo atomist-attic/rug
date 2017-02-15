@@ -41,10 +41,13 @@ trait Typed {
   def description: String
 
   /**
-    * Expose type information. Return an instance of StaticTypeInformation if
-    * operations are known to help with compile time validation and tooling.
-    *
-    * @return type information
+    * Operations on the type
     */
-  def typeInformation: TypeOperations
+  def operations: Seq[TypeOperation]
+
+  /**
+    * Parent of this type if it participates in a hierarchy. Otherwise None
+    */
+  def parent: Option[Typed] = None
+
 }

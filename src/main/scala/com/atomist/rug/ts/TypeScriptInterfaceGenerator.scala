@@ -133,7 +133,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     allTypes.map(t => InterfaceType(t.name, t.description, allMethods(t)))
 
   private def allMethods(t: Typed): Seq[MethodInfo] =
-    allMethods(t.typeInformation.operations)
+    allMethods(t.operations)
 
   private def allMethods(ops: Seq[TypeOperation]): Seq[MethodInfo] = {
     val methods = new ListBuffer[MethodInfo]

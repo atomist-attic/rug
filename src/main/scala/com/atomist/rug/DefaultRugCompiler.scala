@@ -3,7 +3,7 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl._
-import com.atomist.rug.spi.{TypeOperations, TypeRegistry}
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 
 /**
@@ -37,7 +37,7 @@ class DefaultRugCompiler(evaluator: Evaluator,
         val kind = typeRegistry.findByName(w.kind).getOrElse(
           throw new UndefinedRugTypeException(prog.name, s"Extension type '${w.kind}' is unknown", w.kind)
         )
-        val st = kind.typeInformation
+        val st = kind
         val knownOpNames = st.operations.map(_.name)
         val missingFileFunctions = w.doSteps.collect {
           case dds: FunctionDoStep if !knownOpNames.contains(dds.function) =>

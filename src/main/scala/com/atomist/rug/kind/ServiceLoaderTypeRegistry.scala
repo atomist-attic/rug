@@ -23,7 +23,7 @@ class ServiceLoaderTypeRegistry
     ServiceLoader.load(classOf[Typed]).asScala.map {
       case t: Typed =>
         logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")
-        val st = t.typeInformation
+        val st = t
         logger.debug(s"Found operations: ${st.operations.map(_.name).mkString(",")}")
         t.name -> t
       case wtf =>

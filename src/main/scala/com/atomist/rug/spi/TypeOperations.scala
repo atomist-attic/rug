@@ -8,19 +8,6 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 
 /**
-  * Operations exposed by a Type.
-  */
-trait TypeOperations {
-
-  /**
-    * Operations known on the type
-    */
-  def operations: Seq[TypeOperation]
-
-}
-
-
-/**
   * Parameter to a Rug type.
   */
 case class TypeParameter(
@@ -92,15 +79,15 @@ case class TypeOperation(
 
 object TypeOperation {
 
-  val TreeNodeTypeInformation: TypeOperations =
-    new ReflectiveTypeOperations(classOf[TreeNode])
+  val TreeNodeTypeInformation: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(classOf[TreeNode]).operations
 
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def typeInformation: TypeOperations = TreeNodeTypeInformation
+    override def operations = TreeNodeTypeInformation
   }
 
   val TreeNodeOperations: Set[String] =
-    TreeNodeTypeInformation.operations.map(_.name).toSet
+    TreeNodeTypeInformation.map(_.name).toSet
 }

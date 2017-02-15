@@ -84,7 +84,7 @@ class jsSafeCommittingProxy(
   }
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
-    val st = typ.typeInformation
+    val st = typ
     val possibleOps = st.operations.filter(
       op => name.equals(op.name))
     if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
@@ -95,7 +95,7 @@ class jsSafeCommittingProxy(
   }
 
 
-  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: TypeOperations) = {
+  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
@@ -245,10 +245,8 @@ private case class UnionType(types: Set[Typed]) extends Typed {
   override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
 
   // TODO what about duplicate names?
-  override val typeInformation: TypeOperations = {
-    val allOps: Set[TypeOperation] = typesToUnion.map(_.typeInformation).flatMap(_.operations)
-    new TypeOperations {
-      override def operations: Seq[TypeOperation] = allOps.toSeq
-    }
+  override val operations: Seq[TypeOperation] = {
+    val allOps: Set[TypeOperation] = typesToUnion.flatMap(_.operations)
+    allOps.toSeq
   }
 }

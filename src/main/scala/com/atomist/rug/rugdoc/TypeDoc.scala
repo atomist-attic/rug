@@ -71,7 +71,7 @@ class TypeDoc(
 
   private def typesToContext: util.List[util.Map[String,Object]] = {
     typeRegistry.types map { t =>
-      val operations: Seq[TypeOperation] = t.typeInformation.operations
+      val operations: Seq[TypeOperation] = t.operations
       val ops: Seq[util.Map[String, Object]] = operations map { o =>
         val params: Seq[util.Map[String, String]] = o.parameters map { p =>
           Map(

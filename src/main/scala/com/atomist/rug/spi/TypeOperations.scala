@@ -8,30 +8,6 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 
 /**
-  * Type information about a language element such as a Type.
-  * Useful for tooling and document generation as well as
-  * compile time validation.
-  */
-sealed trait TypeInformation
-
-/**
-  * TypeInformation subtrait indicating when operations
-  * on the type are not known.
-  */
-trait DynamicTypeInformation extends TypeInformation
-
-/**
-  * Trait that types should extend when all operations on the type are known.
-  * ReflectiveStaticTypeInformation computes this automatically using reflection.
-  *
-  * @see [[ReflectiveStaticTypeInformation]]
-  */
-trait StaticTypeInformation extends TypeInformation {
-
-  def operations: Seq[TypeOperation]
-}
-
-/**
   * Parameter to a Rug type.
   */
 case class TypeParameter(
@@ -103,15 +79,15 @@ case class TypeOperation(
 
 object TypeOperation {
 
-  val TreeNodeTypeInformation: StaticTypeInformation =
-    new ReflectiveStaticTypeInformation(classOf[TreeNode])
+  val TreeNodeTypeInformation: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(classOf[TreeNode]).operations
 
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def typeInformation: TypeInformation = TreeNodeTypeInformation
+    override def operations = TreeNodeTypeInformation
   }
 
   val TreeNodeOperations: Set[String] =
-    TreeNodeTypeInformation.operations.map(_.name).toSet
+    TreeNodeTypeInformation.map(_.name).toSet
 }

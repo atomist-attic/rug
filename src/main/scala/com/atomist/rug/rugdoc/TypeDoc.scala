@@ -11,11 +11,11 @@ import com.atomist.project.common.template.{MergeContext, VelocityMergeTool}
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.spi.{StaticTypeInformation, TypeOperation, TypeRegistry}
+import com.atomist.rug.spi.{TypeOperation, TypeRegistry}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.apache.commons.io.IOUtils
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 object TypeDoc {
 
@@ -71,10 +71,7 @@ class TypeDoc(
 
   private def typesToContext: util.List[util.Map[String,Object]] = {
     typeRegistry.types map { t =>
-      val operations: Seq[TypeOperation] = t.typeInformation match {
-        case o: StaticTypeInformation => o.operations
-        case _ => Seq.empty
-      }
+      val operations: Seq[TypeOperation] = t.operations
       val ops: Seq[util.Map[String, Object]] = operations map { o =>
         val params: Seq[util.Map[String, String]] = o.parameters map { p =>
           Map(

@@ -5,12 +5,12 @@ package com.atomist.rug.spi
   * Types with methods with @ExportFunction annotations should
   * return this type, passing their own class as argument.
   *
-  * @param classToExamine
+  * @param classToExamine class to look for annotated operations on
   * @see ExportFunction
   */
-class ReflectiveStaticTypeInformation(classToExamine: Class[_]) extends StaticTypeInformation {
+class ReflectiveTypeOperationFinder(classToExamine: Class[_]) {
 
-  override val operations: Seq[TypeOperation] = {
+  val operations: Seq[TypeOperation] = {
     ReflectiveFunctionExport.exportedOperations(classToExamine)
       .sortWith((a, b) => a.name < b.name)
   }
@@ -24,8 +24,8 @@ trait ReflectivelyTypedType extends Type {
     *
     * @return type information.
     */
-  final override val typeInformation: TypeInformation =
-    new ReflectiveStaticTypeInformation(runtimeClass)
+  final override val operations: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(runtimeClass).operations
 }
 
 /**
@@ -37,6 +37,6 @@ abstract class TypeProvider(c: Class[_]) extends Typed {
 
   override val name: String = Typed.typeToTypeName(c)
 
-  override def typeInformation: TypeInformation =
-    new ReflectiveStaticTypeInformation(c)
+  override def operations: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(c).operations
 }

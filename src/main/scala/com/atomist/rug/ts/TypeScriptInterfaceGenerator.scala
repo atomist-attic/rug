@@ -187,6 +187,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     val alreadyGenerated = ListBuffer.empty[InterfaceType]
     val interfaceTypes = allInterfaceTypes(typeRegistry.types.sortWith(typeSort))
     val pathParam = poa.stringParamValue(OutputPathParam)
+    val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
 
     for {
       t <- interfaceTypes
@@ -199,8 +200,6 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       output ++= s"\nexport {${t.name}}\n"
       output ++= t.toString
       output ++= config.separator
-
-      val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
       tsInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
       alreadyGenerated += t
     }

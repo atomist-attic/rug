@@ -68,9 +68,8 @@ class JavaScriptContext(rugAs: ArtifactSource,
     }
   }
 
-
   /**
-    * Information about a JavaScript var exposed in the project scripts
+    * Information about a JavaScript var exposed in the project scripts.
     *
     * @param key                name of the var
     * @param scriptObjectMirror interface for working with Var
@@ -78,7 +77,7 @@ class JavaScriptContext(rugAs: ArtifactSource,
   case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {}
 
   /**
-    * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key
+    * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key.
     *
     * @return ScriptObjectMirror objects for all vars known to the engine
     */

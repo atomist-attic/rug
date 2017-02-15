@@ -13,7 +13,6 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   it should "return root node with / expression" in {
     val tn = new ParsedMutableContainerTreeNode("name")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")

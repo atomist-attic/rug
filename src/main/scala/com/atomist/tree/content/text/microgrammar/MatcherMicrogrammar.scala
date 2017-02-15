@@ -37,7 +37,6 @@ class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMic
     new ImmutablePositionedTreeNode(name, startOffset, endOffset, children, Set(), TreeNode.Signal)
   }
 
-
   private[microgrammar] def findMatchesInternal(input: CharSequence,
                                                 listeners: Option[MatchListener]): (Seq[PatternMatch], Seq[DismatchReport]) = {
     val matches = ListBuffer.empty[PatternMatch]

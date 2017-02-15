@@ -4,7 +4,6 @@ import com.atomist.rug.spi.{ExportFunction, TypeProvider, Typed}
 import com.atomist.tree.TreeNode.{Noise, Signal}
 import com.atomist.tree.{AddressableTreeNode, ContainerTreeNode, TreeNode, UpdatableTreeNode}
 
-
 trait OverwritableTextTreeNodeChild {
 
   def setParent(p: OverwritableTextTreeNodeParent,
@@ -27,7 +26,6 @@ class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableText
 
   override def description: String = "Generic text container"
 }
-
 
 /**
   * Serves as a mutable, updatable-from-rug hierarchy
@@ -201,8 +199,6 @@ class OverwritableTextTreeNode(name: String,
       ch.setParent(this, determineLocationStep(visibleChildren, ch), rootNode)
     case _ => // padding, whatever
   }
-
-
 }
 
 object OverwritableTextTreeNode {
@@ -236,8 +232,6 @@ object OverwritableTextTreeNode {
       s"$thisChildsName[$thisChildsIndex]"
     }
   }
-
-
 }
 
 class OutOfDateNodeException(msg: String) extends RuntimeException(msg)

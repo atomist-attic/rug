@@ -13,7 +13,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
   val testRunner = new TestRunner
 
-
   it should "fail when not finding editor" in {
     val f = StringFileArtifact("src/main/java/Dog.java", "class Dog {}")
     val prog =
@@ -268,7 +267,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
 
     val rp = new DefaultRugPipeline()
 
-
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(edProg), edProg))
     val eds = rp.create(as, namespace)
     val testProg = RugTestParser.parse(StringFileArtifact("x.rt", prog))
@@ -276,7 +274,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
     assert(executedTests.tests.size === 1)
     executedTests.tests.head match {
       case t if t.passed =>
-    
     }
   }
 
@@ -604,7 +601,6 @@ class TestRunnerTest extends FlatSpec with Matchers {
 class MoreTestRunnerTest extends FlatSpec with Matchers {
   val testRunner = new TestRunner
 
-
   it should "pass the assertion when a precondition restricts an editor from running" in {
     val prog =
       """
@@ -655,7 +651,6 @@ class MoreTestRunnerTest extends FlatSpec with Matchers {
 
 class EvenMoreTestRunnerTest extends FlatSpec with Matchers {
   val testRunner = new TestRunner
-
 
   it should "pass the assertion when preconditions restrict an editor from running" in {
     val prog =

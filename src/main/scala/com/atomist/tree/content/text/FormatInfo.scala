@@ -43,7 +43,6 @@ object FormatInfo {
 
 }
 
-
 /**
   * Information about the format of a node within a file
   */

@@ -12,7 +12,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   "XmlMutableView" should "add a new block as a child of another block" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val newNodeContent = "<plugin><groupId>com.atomist</groupId><artifactId>our-great-plugin</artifactId></plugin>"
 
     val newNodeName = "plugin"
@@ -41,7 +40,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "report if an element is present according to xpath" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val validXPath = "//project/dependencies"
     val invalidXPath = "//project/stuff"
 
@@ -53,7 +51,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "get a value from an element with text content" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val xpathToElementWithTextValue = "//project/groupId"
 
     xv.getTextContentFor(xpathToElementWithTextValue) should be ("atomist")
@@ -61,7 +58,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "set a value on an element with text content" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val xpathToElementWithTextValue = "/project/groupId"
 
@@ -74,7 +70,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "add or replace an existing node with a new node" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val replacementNode = "project.build.sourceEncoding"
     val xPathToParentNode = s"/project/properties"
@@ -103,7 +98,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "delete the specified node" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val replacementNode = "project.build.sourceEncoding"
     val xPathToParentNode = s"/project/properties"
     val fullXPathToNode = s"$xPathToParentNode/$replacementNode"
@@ -118,7 +112,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "delete the specific node among many peers" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val fullXPathToNode = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-actuator']/.."
 
     xv.deleteNode(fullXPathToNode)
@@ -130,7 +123,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "replace an existing node when an XPath condition is met" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val nodeToReplaceXpathSelector = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-actuator']/.."
     val xPathToPlaceToInsertContent = "/project/dependencies"
@@ -148,7 +140,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
   it should "add a new node when an XPath condition is not met" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val nodeToReplaceXpathSelector = "/project/dependencies/dependency/artifactId[text()='spring-boot-starter-web-DUMMY']/.."
     val xPathToPlaceToInsertContent = "/project/dependencies"
     val nodeName = "dependency"
@@ -164,7 +155,6 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
 
   it should "replace the right child element when many are available" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val artifactId = "git-commit-id-plugin"
     val groupId = "pl.project13.maven"

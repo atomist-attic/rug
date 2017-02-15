@@ -20,7 +20,6 @@ class OverwriteableTextTreeNodeTypeScriptTest extends FlatSpec with Matchers {
     val target = ParsingTargets.NewStartSpringIoProject
     val fileThatWillBeModified = "pom.xml"
 
-
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
@@ -34,7 +33,5 @@ class OverwriteableTextTreeNodeTypeScriptTest extends FlatSpec with Matchers {
     an[OutOfDateNodeException] should be thrownBy {
       projectEditor.modify(target, parameters)
     }
-
   }
-
 }

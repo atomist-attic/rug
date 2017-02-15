@@ -25,6 +25,4 @@ class ScalaFileType extends TypeUnderFile {
         None
     }
   }
-
 }
-

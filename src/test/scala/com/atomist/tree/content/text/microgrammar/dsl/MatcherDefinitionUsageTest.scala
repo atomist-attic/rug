@@ -8,7 +8,6 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
-
   it should "match literal" in {
     val matcher = mgp.parseMatcher("foo", "def foo")
     matcher.matchPrefix(InputState("def foo thing")) match {
@@ -67,7 +66,6 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
       mgp.parseMatcher("emoji",
         """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[^\"]+§" class="$name:§[\sa-zA-Z0-9_\-]*§"""
       ))
-
 
     val matches = MatcherMicrogrammarTest.readyMatchesFromString(mg.findMatches(html), html)
     assert(matches.size === 1)

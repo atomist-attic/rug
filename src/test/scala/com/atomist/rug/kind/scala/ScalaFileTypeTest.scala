@@ -161,7 +161,6 @@ object ScalaFileTypeTest {
   def projectWithBogusScala =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(BogusScala))
 
-
   val HelloWorldScala = StringFileArtifact("Hello.scala",
     """
       |class Hello {
@@ -305,12 +304,6 @@ object ScalaFileTypeTest {
   def helloWorldProject =
     new ProjectMutableView(SimpleFileBasedArtifactSource(HelloWorldScala))
 
-
   def exceptionsProject =
     new ProjectMutableView(SimpleFileBasedArtifactSource(Exceptions))
-
-
-
-
-
 }

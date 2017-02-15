@@ -84,10 +84,8 @@ object CSharpFileTypeTest {
 
   def helloWorldProject = new ProjectMutableView(EmptyArtifactSource(), HelloWorldSources)
 
-
   def projectWithBogusCSharp = new ProjectMutableView(EmptyArtifactSource(),
     HelloWorldSources + StringFileArtifact("bogus.cs", "And this is nothing like C#"))
-
 
   def exceptionProject =
     SimpleFileBasedArtifactSource(StringFileArtifact("src/exception.cs", Exceptions))
@@ -100,9 +98,7 @@ class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   val typeBeingTested = new CSharpFileType
-
 
   it should "ignore ill-formed file without error" in {
     val cs = new CSharpFileType

@@ -30,7 +30,6 @@ class JavaScriptBackedTypeProvider(
   }
 }
 
-
 /**
   * TreeNode backed by a JavaScript object
   */

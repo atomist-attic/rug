@@ -19,7 +19,6 @@ class UsesTest extends FlatSpec with Matchers {
     )
   )
 
-
   it should "not allow using unknown editor" in {
     val prog =
       """

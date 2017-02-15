@@ -54,7 +54,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
       _padded = true
     }
 
-
   // We're not yet padded. Screen out noise
   private def removeNoise(isNoise: TreeNode => Boolean): Unit = {
     if (padded)
@@ -189,7 +188,6 @@ abstract class PositionedMutableContainerTreeNode(val nodeName: String)
     }}"
 }
 
-
 object PositionedMutableContainerTreeNode {
   type Report = Seq[String]
 
@@ -287,7 +285,6 @@ object PositionedMutableContainerTreeNode {
   }
 }
 
-
 /**
   * Conceptually:
   * We parse PositionedTreeNodes, and then we pad them and they become MutableTreeNodes.
@@ -318,4 +315,3 @@ class MutableButNotPositionedContainerTreeNode(
 
   var startPosition: InputPosition = _
 }
-

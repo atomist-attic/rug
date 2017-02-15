@@ -8,7 +8,6 @@ class RugFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override protected  def typeBeingTested: AntlrRawFileType = new RugFileType
 
-
   import RugFileTypeTest._
 
   it should "enumerate editors in a Rug DSL" in {

@@ -2,7 +2,6 @@ package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 
-
 object MatcherMicrogrammarConstruction {
 
   private val matcherParser = new MatcherDefinitionParser()

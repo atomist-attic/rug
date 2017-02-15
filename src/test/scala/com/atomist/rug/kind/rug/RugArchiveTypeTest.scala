@@ -37,12 +37,10 @@ class RugArchiveTypeTest extends FlatSpec
       Seq(StringFileArtifact(".atomist/editors/BananaToCarrot.rug", StartingRug
     )))
 
-
   val InputProject =
     new SimpleFileBasedArtifactSource("my-rug-archive",
       Seq(StringFileArtifact("whatever.txt", "armadillo banana carrots"
       )))
-
 
   it should "convert a rug to TS" in {
     val resultOfRugEditor = executeRug(StartingRug, InputProject)

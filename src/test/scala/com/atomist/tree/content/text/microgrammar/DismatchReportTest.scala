@@ -20,4 +20,3 @@ class DismatchReportTest extends FlatSpec with Matchers {
     //      |                       ~""".stripMargin) should be(true)
   }
 }
-

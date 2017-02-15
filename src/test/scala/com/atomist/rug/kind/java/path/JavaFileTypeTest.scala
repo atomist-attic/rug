@@ -17,7 +17,6 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new JavaFileType
 
-
   it should "ignore ill-formed file without error" in {
     val javas = typeBeingTested.findAllIn(projectWithBogusJava)
     // Should have silently ignored the bogus file
@@ -130,13 +129,6 @@ object JavaFileTypeTest {
   def helloWorldProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldJava))
 
-
   def exceptionsProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(Exceptions))
-
-
-
-
-
 }
-

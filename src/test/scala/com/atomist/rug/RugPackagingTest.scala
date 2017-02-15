@@ -12,7 +12,6 @@ class RugPackagingTest extends FlatSpec with Matchers {
 
   val rp = new DefaultRugPipeline()
 
-
   it should "compile validly packaged programs" in {
     val as = new SimpleFileBasedArtifactSource("", Seq(
       StringFileArtifact(fileBase + "First.rug", "editor First  Second"),

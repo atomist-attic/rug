@@ -25,7 +25,6 @@ class EveryPomUsageTest extends FlatSpec with Matchers {
       StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)
     )
 
-
     val result = doModification(progArtifact, as, EmptyArtifactSource(""),
       SimpleProjectOperationArguments("", Map.empty[String,Object]))
 

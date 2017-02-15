@@ -7,7 +7,6 @@ class RugPredicateParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
-
   it should "parse simple with" in {
     val prog =
       s"""

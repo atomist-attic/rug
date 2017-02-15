@@ -81,7 +81,6 @@ class jsPathExpressionEngine(
 
   }
 
-
   /**
     * Evaluate the given path expression.
     *
@@ -94,7 +93,6 @@ class jsPathExpressionEngine(
     */
   def evaluate(root: TreeNode, pe: Object): jsMatch =
     evaluateParsed(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
-
 
   private def evaluateParsed(root: TreeNode, parsed: PathExpression) = {
     val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toUnderlyingTreeNode(root), parsed)

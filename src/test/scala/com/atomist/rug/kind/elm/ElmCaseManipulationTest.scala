@@ -89,7 +89,6 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
                          params: Map[String, String] = Map()): ArtifactSource = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
 
-
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(runtime.defaultFilenameFor(program), program))
     val eds = runtime.create(as,None)
     assert(eds.size === 1)

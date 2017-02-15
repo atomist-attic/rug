@@ -41,7 +41,6 @@ class PositivePredicateTest extends FlatSpec with Matchers {
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
 
-
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
 
@@ -54,7 +53,6 @@ class PositivePredicateTest extends FlatSpec with Matchers {
     val source = StringFileArtifact("Banana.elm", original)
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
-
 
     val result = elmExecute(elmProject, editor, Map[String, String](),
       runtime = new DefaultRugPipeline())
@@ -99,7 +97,6 @@ class NegativePredicateTest extends FlatSpec with Matchers {
     val source = StringFileArtifact("Banana.elm", original)
 
     val elmProject = new SimpleFileBasedArtifactSource("", Seq(source))
-
 
     an [TestDidNotModifyException] should be thrownBy {
       elmExecute(elmProject, editor, Map[String, String](),

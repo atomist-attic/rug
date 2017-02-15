@@ -41,7 +41,6 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-
   val EditorWithImports = StringFileArtifact(atomistConfig.editorsRoot + "/EditorWithImports.rug",
     """
       |editor EditorWithImports
@@ -292,24 +291,19 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   }
 }
 
-
 class FakeServiceSource(val projects: Seq[ArtifactSource]) extends ServiceSource with IssueRouter {
 
   val updatePersister = new FakeUpdatePersister
-
 
   val teamId = "atomist-test"
 
   override def pathExpressionEngine: jsPathExpressionEngine =
     new jsPathExpressionEngine(teamContext = this)
 
-
   override def messageBuilder: MessageBuilder =
     new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
 
-
   val issues = ListBuffer.empty[Issue]
-
 
   override def services: Seq[Service] =
     projects.map(proj => Service(proj, updatePersister, issueRouter = this, messageBuilder = messageBuilder))

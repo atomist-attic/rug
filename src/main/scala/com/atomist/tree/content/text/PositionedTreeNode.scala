@@ -10,4 +10,3 @@ trait PositionedTreeNode extends TreeNode with Positioned {
   def hasSamePositionAs(that: PositionedTreeNode): Boolean =
     this.startPosition.offset == that.startPosition.offset
 }
-

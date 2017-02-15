@@ -73,4 +73,3 @@ abstract class TypeUnderFile
     */
   def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode]
 }
-

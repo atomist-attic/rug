@@ -94,7 +94,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
-
   it should "parse = literal string in predicates" in
     parseLiteralStringInPredicates(EqualsLiteralStringInPredicate)
 
@@ -634,8 +633,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     assert(parsed.publishedName === Some("Triplet"))
   }
 
-
-
   it should "pick up multiple @tags annotations on operation" in {
     val prog =
       s"""
@@ -767,7 +764,6 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val filename = "test.txt"
     val as = new SimpleFileBasedArtifactSource("name", Seq(StringFileArtifact(filename, "some content")))
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-
 
     val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Seq.empty))
     val f = r.findFile(".gitignore").get

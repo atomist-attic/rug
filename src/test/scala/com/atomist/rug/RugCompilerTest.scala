@@ -23,7 +23,6 @@ object RugCompilerTest extends LazyLogging {
     )
   )
 
-
   def show(as: ArtifactSource): Unit = {
     as.allFiles.foreach(f => {
       logger.debug(f.path + "\n" + f.content + "\n\n")
@@ -38,7 +37,6 @@ class RugCompilerTest extends FlatSpec with Matchers {
   val compiler: RugCompiler = new DefaultRugCompiler(
     new DefaultEvaluator(fr),
     DefaultTypeRegistry)
-
 
   it should "demand referenced kinds exist" in {
     val bogusType = "what_in_gods_holy_name_are_you_blathering_about"

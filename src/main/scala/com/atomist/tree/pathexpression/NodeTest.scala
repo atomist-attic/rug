@@ -62,4 +62,3 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
 object All extends PredicatedNodeTest("All", TruePredicate) {
   override def toString = "*"
 }
-

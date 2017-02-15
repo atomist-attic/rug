@@ -66,7 +66,6 @@ class MustacheMergeToolTest extends FlatSpec with Matchers {
 
   val mt = new MustacheMergeTool(new EmptyArtifactSource(""))
 
-
   it should "strip .mustache extension" in {
     val name = "template_.mustache"
     mt.toInPlaceFilePath(name) should equal ("template")

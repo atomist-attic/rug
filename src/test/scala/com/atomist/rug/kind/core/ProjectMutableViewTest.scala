@@ -258,7 +258,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
-
     val gitDirectoryPath = s"dirToDelete"
     pmv.directoryExists(gitDirectoryPath) should be(true)
     assert(pmv.dirty === false)
@@ -270,7 +269,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "handle deleting of a file" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
-
 
     val fileToDelete = "src/main/resources/application.properties"
     pmv.fileExists(fileToDelete) should be(true)
@@ -284,7 +282,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
 
-
     val src = "pom.xml"
     val dest = "foobar/pom2.xml"
     pmv.copyFile(src, dest)
@@ -295,7 +292,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "handle creating a directory" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
-
 
     val directoryToCreate = "static"
     val pathToDirectory = "src/main/resources"
@@ -310,7 +306,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "create directory and intermediate directories if not present" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
-
 
     val directoryAndIntermdiateDirectoriesToCreate = "src/main/resources/parent/static/stuff"
     pmv.directoryExists(directoryAndIntermdiateDirectoriesToCreate) should be(false)

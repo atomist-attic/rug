@@ -14,8 +14,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       StringFileArtifact("filename", "some content")
     )
   )
-
-
+  
   it should "use valid precondition in same file using reviewer" in
     validPreconditionInSameFile(
       """

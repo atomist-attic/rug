@@ -113,7 +113,6 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
     }
   }
 
-
   def invokePredicate(rugAs: ArtifactSource,
                       poa: ProjectOperationArguments,
                       identifierMap: Map[String, Object],
@@ -145,9 +144,6 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
         }
     }
   }
-
-
-
 }
 
 object DefaultViewFinder extends DefaultViewFinder(DefaultTypeRegistry)

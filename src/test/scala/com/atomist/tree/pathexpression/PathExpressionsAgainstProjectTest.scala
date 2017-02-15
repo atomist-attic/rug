@@ -20,7 +20,6 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   it should "not find missing property in project" in {
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)

@@ -13,7 +13,6 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   it should "parse simple class without error" in {
     val source =
       """class Foo(bar: String, i: Int)
@@ -21,7 +20,6 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
 
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
-  
   }
 
   it should "satisfy simple path expression" in {
@@ -54,5 +52,4 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
-
 }

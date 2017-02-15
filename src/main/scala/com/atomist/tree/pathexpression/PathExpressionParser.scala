@@ -182,7 +182,6 @@ trait PathExpressionParser extends CommonTypesParser {
   }
 }
 
-
 /**
   * Default implementation of PathExpressionParser. Import this
   * class for default conversion from Strings to path expressions. 

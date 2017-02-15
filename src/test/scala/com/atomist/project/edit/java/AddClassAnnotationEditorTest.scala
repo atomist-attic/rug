@@ -16,7 +16,6 @@ class AddClassAnnotationEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
-
   val args = SimpleProjectOperationArguments.Empty
 
   it should "apply annotations where needed" in {

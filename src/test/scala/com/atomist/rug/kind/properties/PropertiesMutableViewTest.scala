@@ -12,7 +12,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   "PropertiesMutableView" should "get an existing valid property" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     propertiesView.getValue("server.port") should be ("8080")
 
     propertiesView.dirty equals false
@@ -21,7 +20,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   it should "fail to get a property that doesn't exist" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     propertiesView.getValue("server.portlet") should be ("")
 
     propertiesView.dirty equals false
@@ -29,7 +27,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
 
   it should "set a property that exists" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val preExistingPropertyKey = "server.port"
     val newValueToBeSet = "8181"
@@ -40,7 +37,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
 
   it should "add a property that does not exist" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val newPropertyKey = "server.portlet"
     val newValueToBeSet = "8181"
@@ -68,7 +64,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
   it should "provide access to a list of keys" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
-
     val keys = propertiesView.keys
     assert(keys.size === 4)
     propertiesView.dirty equals false
@@ -76,7 +71,6 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
 
   it should "add two new properties and format correctly" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
 
     val keys = propertiesView.keys
     assert(keys.size === 4)

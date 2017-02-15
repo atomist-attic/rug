@@ -22,7 +22,6 @@ class ProjectEditorTest extends FlatSpec with Matchers {
     javaSourcePath = ""
   )
 
-
   val args = SimpleProjectOperationArguments.Empty
 
   val ed: ProjectEditor = new ProjectEditorSupport {

@@ -143,7 +143,6 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
 
-
     val newString: String = " over the lazy dog"
     fmv.mustContain(newString)
     assert(fmv.content === initialContent + newString)
@@ -154,7 +153,6 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
 
-
     fmv.mustContain("over the lazy dog")
     assert(fmv.content === initialContent)
   }
@@ -163,7 +161,6 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     val initialContent: String = "The quick brown jumped over the lazy dog"
     val f = StringFileArtifact("name",  initialContent)
     val fmv = new FileMutableView(f, null)
-
 
     fmv.mustContain("over the lazy dog")
     fmv.mustContain("over the lazy dog")

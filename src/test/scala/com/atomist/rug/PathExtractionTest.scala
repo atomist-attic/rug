@@ -25,7 +25,6 @@ class PathExtractionTest extends FlatSpec with Matchers {
       """.stripMargin
     val rp = new DefaultRugPipeline
 
-
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
     val ed = rp.create(as,None).head
 
@@ -51,9 +50,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       """.stripMargin
     val rp = new DefaultRugPipeline
 
-
     val rugAs = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
-
 
     val ed = rp.create(rugAs,None).head
 
@@ -80,9 +77,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
       """.stripMargin
     val rp = new DefaultRugPipeline
 
-
     val rugAs = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", prog))
-
 
     val ed = rp.create(rugAs,None).head
 

@@ -159,7 +159,6 @@ object SimpleActionRegistry extends ActionRegistry {
 
 object SysEvent extends SystemEvent ("blah", "issue", 0l)
 
-
 class IssueTreeNode extends TerminalTreeNode {
 
   override def nodeName: String = "issue"
@@ -173,13 +172,11 @@ class IssueTreeNode extends TerminalTreeNode {
   val repo: String = "rug"
 
   val owner: String = "atomist"
-
 }
 
 object TestTreeMaterializer extends TreeMaterializer {
 
   override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = new IssueTreeNode()
-
 
   override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = rawRootNode
 }

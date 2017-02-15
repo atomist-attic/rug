@@ -9,7 +9,6 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new CSharpFileType
 
-
   it should "enumerate usings in simple project" in {
     val r = modify("ListImports.ts", HelloWorldSources)
     r match {

@@ -3,7 +3,6 @@ package com.atomist.rug.spi
 import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
 
-
 /**
   * Exposed to Rug "with" and "from" blocks, and access from JavaScript.
   * Typically backed by an object from another hierarchy.
@@ -52,7 +51,6 @@ trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
     * Commit all changes, invoking updaters and calling parent if necessary.
     */
   def commit(): Unit
-
 }
 
 /**

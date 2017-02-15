@@ -46,7 +46,6 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
       new File("src/test/scala/com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.scala")))
     val fileThatWillBeModified = "MicrogrammarTypeScriptTest.scala"
 
-
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)

@@ -51,7 +51,6 @@ class FailureModeTest extends FlatSpec with Matchers {
       )
     )
 
-
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
     assert(eds.size === 1)

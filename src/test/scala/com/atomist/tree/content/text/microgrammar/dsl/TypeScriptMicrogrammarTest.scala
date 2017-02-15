@@ -249,7 +249,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed
   }
 
-
   it should "navigate nested using property" in {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingProperty)))

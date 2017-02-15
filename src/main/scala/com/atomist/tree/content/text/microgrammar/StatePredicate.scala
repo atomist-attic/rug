@@ -29,4 +29,3 @@ trait StatePredicate[R <: Any] extends InputConsumer {
   override def consume(c: Char): StatePredicate[R]
 
 }
-

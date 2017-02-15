@@ -8,7 +8,6 @@ class ParsingErrorReportingTest extends FlatSpec with Matchers {
 
   val ri: RugParser = new ParserCombinatorRugParser()
 
-
   it should "give good error message for non reserved word" in {
     val prog =
       s"""

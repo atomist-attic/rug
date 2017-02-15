@@ -66,8 +66,6 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
   /**
     * Match all input, which must exactly match input.
     */
-
-
   it should "parse 1 match of 2 parts in whole string and replace both keys" in {
     val g = aWasaB
     val input = "Henry was aged 19"
@@ -514,15 +512,12 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       Regex("[A-Z][a-z]+", Some("name")) ~? Literal("was aged") ~? Regex("[0-9]+", Some("age"))
     )
 
-
   protected def matchAnnotatedJavaFields: Microgrammar = {
     val visibility: Matcher = "public" | "private"
     val annotation = "@" ~ Regex("[a-zA-Z0-9]+", Some("annotationType"))
     val field = annotation ~~ visibility ~~ Regex("[a-zA-Z0-9]+", Some("type")) ~~ Regex("[a-zA-Z0-9]+", Some("name"))
     new MatcherMicrogrammar(field)
-
   }
-
 }
 
 class RepMatcherTest extends FlatSpec with Matchers {

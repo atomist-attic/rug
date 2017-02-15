@@ -33,7 +33,6 @@ object RugEditorTest {
 
 }
 
-
 class RugEditorTest extends FlatSpec with Matchers {
 
   import RugEditorTest._
@@ -107,7 +106,6 @@ class RugEditorTest extends FlatSpec with Matchers {
   }
 }
 
-
 class RugExecutorIsNoLongerSupportedTest extends FlatSpec with Matchers {
 
   it should "Give a great error message if someone has an old executor in Rug DSL" in {
@@ -124,5 +122,4 @@ class RugExecutorIsNoLongerSupportedTest extends FlatSpec with Matchers {
       case bre: BadRugException => assert(bre.getMessage === "The Rug DSL no longer supports executors. Try writing it in TypeScript!")
     }
   }
-
 }

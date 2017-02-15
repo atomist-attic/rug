@@ -62,7 +62,6 @@ class YmlMutableViewTest extends FlatSpec with Matchers {
     )
   )
 
-
   it should "find key in simple yml" in {
     val simpleYml =
       """

@@ -16,7 +16,6 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
-
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
     soo.pad(line)
 
@@ -37,9 +36,7 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length))
 
-
     val soo = new SimpleMutableContainerTreeNode("x", Seq(f1, f2), startOf(line), endOf(line))
-
 
     val newInputB = "barnacles"
     assert(soo.dirty === false)
@@ -59,7 +56,6 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
 
     val newInputB = "barnacles"
@@ -78,7 +74,6 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
 
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 1))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, 1 + inputA.length + unmatchedContent.length))
-
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
     soo.fieldValues.head.nodeName.contains("pad") should be(true)
@@ -104,13 +99,10 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-
     val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
 
-
     val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line))
-
 
     val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
 
@@ -144,14 +136,11 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val f1 = new MutableTerminalTreeNode("f1", inputA, LineHoldingOffsetInputPosition(line, 0))
     val f2 = new MutableTerminalTreeNode("f2", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
 
-
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
-
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Signal)
-
 
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f1, f2, f3), startOf(line), endOf(line))
     topLevel.pad(line)
@@ -188,10 +177,8 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
-
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
-
 
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f3), startOf(line), endOf(line), significance = TreeNode.Signal)
     topLevel.fieldValues.contains(ff2) should be(false)
@@ -234,14 +221,11 @@ class SimpleMutableContainerTreeNodeTest extends FlatSpec with Matchers {
     val ff1 = new MutableTerminalTreeNode("ff1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
     val ff2 = new MutableTerminalTreeNode("ff2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + moreContent.length))
 
-
     val extraNoiseLayer = new SimpleMutableContainerTreeNode("extraNoiseLayer", Seq(ff1, ff2), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
 
-
     val f3 = new SimpleMutableContainerTreeNode("f3", Seq(extraNoiseLayer), ff1.startPosition, endOf(line),
       significance = TreeNode.Noise)
-
 
     val topLevel = new SimpleMutableContainerTreeNode("full-line", Seq(f3), startOf(line), endOf(line), significance = TreeNode.Signal)
     topLevel.fieldValues.contains(ff2) should be(false)

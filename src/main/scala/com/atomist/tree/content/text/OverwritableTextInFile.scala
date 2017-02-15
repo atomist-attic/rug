@@ -94,7 +94,6 @@ class OverwritableTextInFile(dynamicType: String,
       result
     }
 
-
   private def claimChildren(): Unit = allKids.foreach {
     case ch: OverwritableTextTreeNodeChild =>
       ch.setParent(this, determineLocationStep(visibleChildren, ch), this)
@@ -108,6 +107,4 @@ class OverwritableTextInFile(dynamicType: String,
 
     s"$dynamicType()[$thisChildsIndex]"
   }
-
 }
-

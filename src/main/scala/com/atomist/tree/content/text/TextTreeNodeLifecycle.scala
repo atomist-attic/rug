@@ -29,7 +29,6 @@ object TextTreeNodeLifecycle {
     makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact).head
   }
 
-
   /**
     * Some or all of the file has been parsed into some PositionedTreeNodes. (Microgrammars parse some. Antlr grammars parse all)
     *

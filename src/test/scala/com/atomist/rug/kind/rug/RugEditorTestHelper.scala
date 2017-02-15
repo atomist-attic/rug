@@ -15,13 +15,11 @@ trait RugEditorTestHelper extends Matchers {
                  params: Map[String, String] = Map()): ArtifactSource = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
 
-
     val editorName = parseRugForEditorName(program)
     val editorPath = s".atomist/editors/$editorName.rug"
 
     val rugArchive = new SimpleFileBasedArtifactSource(DefaultRugArchive,
       StringFileArtifact(editorPath, program))
-
 
     val eds = runtime.create(rugArchive,None)
     assert(eds.size === 1)

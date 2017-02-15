@@ -6,7 +6,6 @@ import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFi
 import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.util.Timing._
 
-
 class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
 
   val SimpleProjectEditorWithParametersArray: String =
@@ -117,7 +116,6 @@ class JavaScriptOperationFinderTest  extends FlatSpec with Matchers {
     }
     println(s"1000000 runs took: -> ${run1000000/1000000d} ms/run")
   }
-
 
   private  def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))

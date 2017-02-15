@@ -133,53 +133,42 @@ object RugFileTypeTest {
       StringFileArtifact("HelloProject.rug", HelloProject)
     ))
 
-
   val DumbAndDumberGenerator: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("DumbGenerator.rug", DumbGenerator),
       StringFileArtifact("DumberGenerator.rug", DumberGenerator)
     ))
 
-
   val TwoEditors: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("TwoEditors.rug", SomeEditors)
     ))
-
 
   val ManyParamsEditor: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("ManyParamsEditor.rug", ManyParams)
     ))
 
-
   val UsesVariousEditor: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("UsesVariousEditor.rug", UsesVarious)
     ))
-
 
   val SomeUsingSemverEditor: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("SomeUsingSemverEditor.rug", SomeUsingSemver)
     ))
 
-
   val UsingOldGeneratorAnnotationEditor: ArtifactSource = new SimpleFileBasedArtifactSource("name",
     Seq(
       StringFileArtifact("UsingOldGeneratorAnnotationEditor.rug", UsingOldGeneratorAnnotation)
     ))
 
-
-
-
   def helloProjectEditorProject = new ProjectMutableView(EmptyArtifactSource(),
     HelloProjectEditor)
 
-
   def multiRugsInASingleRugFile = new ProjectMutableView(EmptyArtifactSource(),
     TwoEditors)
-
 
   def rugArchive = new ProjectMutableView(EmptyArtifactSource(),
     HelloProjectEditor + DumbAndDumberGenerator + TwoEditors + UsingOldGeneratorAnnotationEditor)
@@ -192,9 +181,7 @@ class RugFileTypeTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   val rugFileType = new RugFileType
-
 
   it should "load a basic Rug" in {
     val rugs = rugFileType.findAllIn(helloProjectEditorProject)

@@ -47,7 +47,6 @@ class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
         |}
       """.stripMargin
 
-
     /* someday, expand this test to be in ts */
     val inTypescriptYouWould =
       s""" n -> n.update(`FunctionCall($${n.reArg()},Some($${n.nameArg()})`)"""
@@ -70,7 +69,6 @@ class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
 
   }
 }
-
 
 class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 
@@ -145,7 +143,6 @@ object ExercisePathExpression extends FlatSpec with Matchers {
       new UsageSpecificTypeRegistry(DefaultTypeRegistry,
         Seq(new MicrogrammarTypeProvider(microgrammar)))
 
-
     new PathExpressionEngine().evaluate(pmv, pathExpression, typeRegistryWithMicrogrammar)
   }
 
@@ -157,7 +154,6 @@ object ExercisePathExpression extends FlatSpec with Matchers {
       case Right(b) => fail("This was supposed to fail")
     }
   }
-
 
   val input: String =
     """There was a banana. It crossed the street. A car ran over it.

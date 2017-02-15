@@ -14,7 +14,6 @@ class ApplicationPropertiesToApplicationYmlEditorTest extends FlatSpec with Matc
 
   val eap = new ExtractApplicationProperties(JavaAssertions.ApplicationPropertiesFilePath)
 
-
   val SpringDocsSampleFile = StringFileArtifact(JavaAssertions.ApplicationPropertiesFilePath,
     """
       |spring.application.name=cruncher

@@ -17,7 +17,6 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
 
   private val pex = new PathExpressionEngine
 
-
   it should "find Python file type using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
@@ -63,7 +62,6 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
       //println(s"Was empty: $x")
     }
   }
-
 
   private def matchReport(pex: PathExpressionEngine, root: TreeNode, pe: PathExpression, typeRegistry: TypeRegistry) = {
     val pathExpression = pe

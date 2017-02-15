@@ -225,7 +225,6 @@ trait AstNodeCreationStrategy {
   */
 object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
 
-
 /**
   * Empty container field value including fieldName information about possible fields,
   * that are not present in this instance. This allows Rug type checking to work.

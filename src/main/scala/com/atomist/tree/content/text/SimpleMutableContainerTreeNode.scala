@@ -72,7 +72,6 @@ object SimpleMutableContainerTreeNode {
   def wrap(name: String, tn: PositionedTreeNode): SimpleMutableContainerTreeNode =
     wrap(name, Seq(tn), significance = TreeNode.Signal) // we wouldn't be wrapping one node without a reason
 
-
   /**
     * Create a padded, mutable tree from the given tree and complete input.
     * Ignore non PositionedTreeNode descendants.

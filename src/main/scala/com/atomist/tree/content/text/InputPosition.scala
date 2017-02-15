@@ -39,4 +39,3 @@ trait InputPosition {
   def takeTo(content: CharSequence, end: InputPosition): CharSequence =
     content.subSequence(this.offset, end.offset)
 }
-

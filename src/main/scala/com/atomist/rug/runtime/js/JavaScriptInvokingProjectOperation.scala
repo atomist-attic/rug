@@ -54,8 +54,6 @@ abstract class JavaScriptInvokingProjectOperation(
     _context = ctx
   }
 
-
-
   protected def context: Seq[ProjectOperation] = {
     _context
   }
@@ -66,7 +64,6 @@ abstract class JavaScriptInvokingProjectOperation(
     case s: String => s
     case _ => name
   }
-
 
   /**
     * Convenience method that will try `__name` first for decorated things
@@ -202,7 +199,6 @@ abstract class JavaScriptInvokingProjectOperation(
     }else{
       parameter.setRequired(true)
     }
-
 
     parameter.addTags(readTagsFromMetadata(details))
 

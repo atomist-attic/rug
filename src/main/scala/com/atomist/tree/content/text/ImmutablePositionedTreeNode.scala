@@ -1,11 +1,9 @@
 package com.atomist.tree.content.text
 
-import com.atomist.tree.{PaddingTreeNode, TreeNode}
 import com.atomist.tree.TreeNode.{Noise, Significance}
-import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.{PaddingTreeNode, TreeNode}
 
 import scala.collection.mutable.ListBuffer
-
 
 case class ImmutablePositionedTreeNode(override val nodeName: String,
                                        override val startPosition: InputPosition,
@@ -25,7 +23,6 @@ case class ImmutablePositionedTreeNode(override val nodeName: String,
 
   override def childrenNamed(key: String): Seq[TreeNode] = childNodes.filter(_.nodeName == key)
 }
-
 
 object ImmutablePositionedTreeNode {
 

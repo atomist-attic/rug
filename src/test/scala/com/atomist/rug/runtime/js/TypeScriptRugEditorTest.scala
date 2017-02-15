@@ -73,7 +73,6 @@ object TypeScriptRugEditorTest {
        |export let myeditor = new SimpleEditor()
     """.stripMargin
 
-
   val SimpleLetStyleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core'

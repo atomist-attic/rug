@@ -75,4 +75,3 @@ class ConsoleMessageBuilder(teamId: String, actionRegistry: ActionRegistry)
   m => println(m),
   actionRegistry
 )
-

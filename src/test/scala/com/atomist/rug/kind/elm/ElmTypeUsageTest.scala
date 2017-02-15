@@ -18,7 +18,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler()))
 
-
   it should "rename module using native Rug predicate" in doRename(
     """
       |@description "Renames an Elm module"
@@ -178,11 +177,7 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 
     val usesTodoSource = makeUsesTodoSource(oldModuleName)
 
-    val elmProject = new SimpleFileBasedArtifactSource("", Seq(
-      todoSource, usesTodoSource
-    )
-    )
-
+    val elmProject = new SimpleFileBasedArtifactSource("", Seq(todoSource, usesTodoSource))
 
     val result = elmExecute(elmProject, program, Map(
       "old_name" -> oldModuleName,
@@ -785,7 +780,6 @@ class ElmTypeUsageTest extends FlatSpec with Matchers {
 object ElmTypeUsageTest extends FlatSpec {
 
   class TestDidNotModifyException extends RuntimeException
-
 
   def elmExecute(elmProject: ArtifactSource, program: String,
                  params: Map[String, String] = Map(),

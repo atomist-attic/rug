@@ -32,7 +32,6 @@ case class Regex(regex: String, givenName: Option[String] = None, config: Matche
       Left(DismatchReport("we have reached the end"))
 }
 
-
 object Whitespace extends Discard(Regex("""\s+""", None))
 
 object WhitespaceOrNewLine extends Discard(Regex("""[\s\n]+""", Some("whitespace-or-newline")))

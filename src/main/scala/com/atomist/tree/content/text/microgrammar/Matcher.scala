@@ -111,7 +111,6 @@ object Matcher {
   }
 }
 
-
 /**
   * Trait extended by Matchers that are configurable.
   */

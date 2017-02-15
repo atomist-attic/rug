@@ -58,7 +58,6 @@ object JavaTypeUsageTest extends Matchers {
     )
   )
 
-
   def executeJava(program: String, rugPath: String, as: ArtifactSource = JavaAndText): ArtifactSource = {
     val r = attemptToModify(program, rugPath, as, Map[String, String]())
     r match {
@@ -88,7 +87,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   import JavaTypeUsageTest._
 
   private  val tsPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler))
-
 
   it should "find boot package using let and rug" in {
     val program =
@@ -358,7 +356,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val as = new SimpleFileBasedArtifactSource("", Seq(dog, cat, squirrel))
 
-
     val result = executeJava(program,"editors/ClassAnnotated.rug",  as)
     result.allFiles.foreach(f => logger.debug(f.path + "\n" + f.content + "\n"))
 
@@ -466,7 +463,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin)
     val as = new SimpleFileBasedArtifactSource("", Seq(impl))
 
-
     val (pkg, ann) = ("com.foo", "Baz")
 
     val program =
@@ -495,7 +491,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin)
 
     val as = new SimpleFileBasedArtifactSource("", Seq(childFile, parentFile))
-
 
     val (pkg, ann) = ("com.foo", "Baz")
 
@@ -526,7 +521,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |}
       """.stripMargin)
     val as = new SimpleFileBasedArtifactSource("", Seq(childFile, parentFile))
-
 
     val (pkg, ann) = ("com.foo", "Baz")
 
@@ -559,7 +553,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin)
 
     val as = new SimpleFileBasedArtifactSource("", Seq(notRelevantFile, impl))
-
 
     val newHeader = "It appears that Rod still likes long names"
     val program =
@@ -609,7 +602,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val as = new SimpleFileBasedArtifactSource("", Seq(interfaceFile, impl))
 
-
     val program =
       s"""
          |editor ClassAnnotated
@@ -634,7 +626,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val abstractFile = StringFileArtifact("src/main/java/AbstractAbsquatulator.java", "public abstract class AbstractAbsquatulator implements Absquatulated {}")
     val concreteFile = StringFileArtifact("src/main/java/Absquatulator.java", "public class Absquatulator extends AbstractAbsquatulator {}")
     val as = new SimpleFileBasedArtifactSource("", Seq(interfaceFile, abstractFile, concreteFile))
-
 
     val program =
       s"""

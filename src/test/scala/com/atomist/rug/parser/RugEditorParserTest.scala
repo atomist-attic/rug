@@ -8,7 +8,6 @@ class RugEditorParserTest extends FlatSpec with Matchers {
 
   val ri = new ParserCombinatorRugParser
 
-
   it should "parse simplest program" in
     simplestProgram("'Description'")
 

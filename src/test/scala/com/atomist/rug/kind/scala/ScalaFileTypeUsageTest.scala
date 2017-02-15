@@ -118,6 +118,4 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
-
 }
-

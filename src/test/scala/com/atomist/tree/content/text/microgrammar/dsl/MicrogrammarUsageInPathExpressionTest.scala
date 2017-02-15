@@ -21,9 +21,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-
   val mgp = new MatcherDefinitionParser
-
 
   it should "use simple microgrammar to match in single file" in
     useSimpleMicrogrammarAgainstSingleFile
@@ -55,7 +53,6 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val mg: MatcherMicrogrammar = new MatcherMicrogrammar(
       mgp.parseMatcher("pom",
         "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"), "pom")
-
 
     val matches = mg.findMatches(proj.findFile("pom.xml").get.content)
     assert(matches.length === 1)

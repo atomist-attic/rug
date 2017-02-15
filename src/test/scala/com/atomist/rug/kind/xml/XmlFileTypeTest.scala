@@ -14,7 +14,6 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
 
   private  val pex = new PathExpressionEngine
 
-
   it should "find XML file type using path expression" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)

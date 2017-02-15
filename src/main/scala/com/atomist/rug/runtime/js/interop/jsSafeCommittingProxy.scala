@@ -89,8 +89,7 @@ class jsSafeCommittingProxy(
       op => name.equals(op.name))
     if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
-    }
-    else
+    } else
       new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
   }
 
@@ -100,9 +99,7 @@ class jsSafeCommittingProxy(
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
-        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${
-          node.nodeName
-        }]")
+        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${ node.nodeName}]")
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
@@ -239,8 +236,7 @@ private case class UnionType(types: Set[Typed]) extends Typed {
   override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
 
   // TODO what about duplicate names?
-  override val operations: Seq[TypeOperation] = {
-    val allOps: Set[TypeOperation] = typesToUnion.flatMap(_.operations)
-    allOps.toSeq
-  }
+  override val operations: Seq[TypeOperation] =
+    typesToUnion.flatMap(_.operations).toSeq
+
 }

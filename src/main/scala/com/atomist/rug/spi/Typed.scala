@@ -41,7 +41,7 @@ trait Typed {
   def description: String
 
   /**
-    * Operations on the type
+    * Operations on the type.
     */
   def operations: Seq[TypeOperation]
 

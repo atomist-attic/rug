@@ -8,7 +8,7 @@ import com.atomist.tree.TreeNode
   * as in Scala parsing Positional. Fields can be added in subclass constructors or via superclass
   * methods.
   *
-  * @param nodeName name
+  * @param nodeName name of the node
   */
 class ParsedMutableContainerTreeNode(nodeName: String)
   extends PositionedMutableContainerTreeNode(nodeName) {
@@ -17,6 +17,6 @@ class ParsedMutableContainerTreeNode(nodeName: String)
 
   var endPosition: InputPosition = _
 
-  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName.equals(key))
+  override def childrenNamed(key: String): Seq[TreeNode] = fieldValues.filter(n => n.nodeName == key)
 
 }

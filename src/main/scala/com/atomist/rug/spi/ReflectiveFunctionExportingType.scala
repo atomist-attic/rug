@@ -20,11 +20,11 @@ object ReflectiveFunctionExport {
       .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
       .map(new ReflectiveRugFunction[FunctionTarget, Any](_))
 
-  def exportedOperations(c: Class[_]): Seq[TypeOperation] =
+  def allExportedOperations(c: Class[_]): Seq[TypeOperation] =
     if (c == null) Nil
     else operations(ReflectionUtils.getAllDeclaredMethods(c))
 
-  def exportedDirectOperations(c: Class[_]): Seq[TypeOperation] =
+  def exportedOperations(c: Class[_]): Seq[TypeOperation] =
     if (c == null) Nil
     else operations(c.getDeclaredMethods)
 

@@ -46,8 +46,7 @@ class jsSafeCommittingProxy(
   override def childNodeTypes: Set[String] = node.childNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] =
-    node.childrenNamed(key)
-      .map(n => new jsSafeCommittingProxy(n, commandRegistry, typeRegistry))
+    node.childrenNamed(key).map(new jsSafeCommittingProxy(_, commandRegistry, typeRegistry))
 
   /**
     * A user is adding a named member e.g.
@@ -59,10 +58,10 @@ class jsSafeCommittingProxy(
     */
   override def setMember(name: String, value: Object): Unit = value match {
     case som: ScriptObjectMirror =>
-      //println(s"Adding function member [$name]")
+      // println(s"Adding function member [$name]")
       additionalMembers = additionalMembers ++ Map(name -> som)
     case x =>
-      //println(s"Adding non-function member [$name]")
+      // println(s"Adding non-function member [$name]")
       additionalMembers = additionalMembers ++ Map(name -> x)
   }
 
@@ -85,7 +84,7 @@ class jsSafeCommittingProxy(
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val st = typ
-    val possibleOps = st.operations.filter(
+    val possibleOps = st.allOperations.filter(
       op => name.equals(op.name))
     if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
@@ -93,7 +92,6 @@ class jsSafeCommittingProxy(
     else
       new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
   }
-
 
   private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
@@ -110,7 +108,7 @@ class jsSafeCommittingProxy(
         sobtn.invoke(name)
       case _ => throw new RugRuntimeException(null,
         s"Attempt to invoke method [$name] on type [${typ.description}]: " +
-          s"No exported method with that name: Found ${st.operations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
+          s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
     }
   }
 
@@ -135,16 +133,13 @@ class jsSafeCommittingProxy(
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
           node match {
-            //case c: { def commit(): Unit } =>
-            case c: MutableView[_] if !op.readOnly =>
-              c.commit()
+            // case c: { def commit(): Unit } =>
+            case c: MutableView[_] if !op.readOnly => c.commit()
             case _ =>
           }
-          // The returned type needs to be wrapped if it's
-          // a collection
+          // The returned type needs to be wrapped if it's a collection
           returned match {
-            case l: java.util.List[_] =>
-              new JavaScriptArray(l)
+            case l: java.util.List[_] => new JavaScriptArray(l)
             case _ => returned
           }
       }
@@ -240,8 +235,9 @@ private case class UnionType(types: Set[Typed]) extends Typed {
   override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
 
   // TODO what about duplicate names?
-  override val operations: Seq[TypeOperation] = {
-    val allOps: Set[TypeOperation] = typesToUnion.flatMap(_.operations)
-    allOps.toSeq
-  }
+  override val allOperations: Seq[TypeOperation] =
+    typesToUnion.flatMap(_.allOperations).toSeq
+
+  override val operations: Seq[TypeOperation] =
+    typesToUnion.flatMap(_.operations).toSeq
 }

@@ -16,9 +16,8 @@ object Typed {
 
   def typeToTypeName(tc: Class[_], searchable: Boolean = true): String = {
     val raw = trimSuffix(TreeNodeSuffix, trimSuffix(MutableViewSuffix, tc.getSimpleName))
-    if (!searchable)
-      JavaHelpers.lowerize(raw)
-    else raw
+    if (searchable) raw
+    else JavaHelpers.lowerize(raw)
   }
 }
 
@@ -29,7 +28,7 @@ object Typed {
 trait Typed {
 
   /**
-    * Name for use in Rug scripts. e.g "file" in "with File f"
+    * Name for use in Rug scripts. e.g "file" in "with File f".
     *
     * @return alias for use in Rug scripts
     */
@@ -41,13 +40,12 @@ trait Typed {
   def description: String
 
   /**
-    * Operations on the type
+    * Operations on the type including its inheritance hierarchy.
     */
-  def operations: Seq[TypeOperation]
+  def allOperations: Seq[TypeOperation]
 
   /**
-    * Parent of this type if it participates in a hierarchy. Otherwise None
+    * Operations on the type.
     */
-  def parent: Option[Typed] = None
-
+  def operations: Seq[TypeOperation]
 }

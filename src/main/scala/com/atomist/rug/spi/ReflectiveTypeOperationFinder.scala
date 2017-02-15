@@ -10,10 +10,13 @@ package com.atomist.rug.spi
   */
 class ReflectiveTypeOperationFinder(classToExamine: Class[_]) {
 
-  val operations: Seq[TypeOperation] = {
+  val allOperations: Seq[TypeOperation] =
+    ReflectiveFunctionExport.allExportedOperations(classToExamine)
+      .sortWith((a, b) => a.name < b.name)
+
+  val operations: Seq[TypeOperation] =
     ReflectiveFunctionExport.exportedOperations(classToExamine)
       .sortWith((a, b) => a.name < b.name)
-  }
 }
 
 trait ReflectivelyTypedType extends Type {
@@ -24,6 +27,9 @@ trait ReflectivelyTypedType extends Type {
     *
     * @return type information.
     */
+  final override val allOperations: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(runtimeClass).allOperations
+
   final override val operations: Seq[TypeOperation] =
     new ReflectiveTypeOperationFinder(runtimeClass).operations
 }
@@ -31,11 +37,15 @@ trait ReflectivelyTypedType extends Type {
 /**
   * Extended by classes that can describe existing types that aren't exposed to
   * top level navigation
+  *
   * @param c class to expose
   */
 abstract class TypeProvider(c: Class[_]) extends Typed {
 
   override val name: String = Typed.typeToTypeName(c)
+
+  override def allOperations: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(c).allOperations
 
   override def operations: Seq[TypeOperation] =
     new ReflectiveTypeOperationFinder(c).operations

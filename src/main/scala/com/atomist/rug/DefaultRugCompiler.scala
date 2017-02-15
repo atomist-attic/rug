@@ -38,7 +38,7 @@ class DefaultRugCompiler(evaluator: Evaluator,
           throw new UndefinedRugTypeException(prog.name, s"Extension type '${w.kind}' is unknown", w.kind)
         )
         val st = kind
-        val knownOpNames = st.operations.map(_.name)
+        val knownOpNames = st.allOperations.map(_.name)
         val missingFileFunctions = w.doSteps.collect {
           case dds: FunctionDoStep if !knownOpNames.contains(dds.function) =>
             dds.function

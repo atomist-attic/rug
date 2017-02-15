@@ -24,7 +24,7 @@ class ServiceLoaderTypeRegistry
       case t: Typed =>
         logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")
         val st = t
-        logger.debug(s"Found operations: ${st.operations.map(_.name).mkString(",")}")
+        logger.debug(s"Found operations: ${st.allOperations.map(_.name).mkString(",")}")
         t.name -> t
       case wtf =>
         throw new RugRuntimeException("ExtensionType", s"Type class ${wtf.getClass} must implement Typed interface", null)

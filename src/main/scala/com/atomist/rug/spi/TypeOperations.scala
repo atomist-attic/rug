@@ -24,7 +24,7 @@ case class TypeParameter(
 
 /**
   * Operation on an exported Rug type. Typically annotated with an
-  * [[ExportFunction]] annotation
+  * [[ExportFunction]] annotation.
   *
   * @param name        name of the type
   * @param description description of the type. May be used in generated code
@@ -79,15 +79,19 @@ case class TypeOperation(
 
 object TypeOperation {
 
-  val TreeNodeTypeInformation: Seq[TypeOperation] =
+  val TreeNodeAllTypeOperations: Seq[TypeOperation] =
+    new ReflectiveTypeOperationFinder(classOf[TreeNode]).allOperations
+
+  val TreeNodeTypeOperations: Seq[TypeOperation] =
     new ReflectiveTypeOperationFinder(classOf[TreeNode]).operations
 
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def operations = TreeNodeTypeInformation
+    override def allOperations = TreeNodeAllTypeOperations
+    override def operations = TreeNodeTypeOperations
   }
 
   val TreeNodeOperations: Set[String] =
-    TreeNodeTypeInformation.map(_.name).toSet
+    TreeNodeAllTypeOperations.map(_.name).toSet
 }

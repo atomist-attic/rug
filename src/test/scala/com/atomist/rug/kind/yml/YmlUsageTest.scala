@@ -7,8 +7,7 @@ import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class YmlUsageTest extends FlatSpec with Matchers {
-  import com.atomist.rug.TestUtils._
+object YmlUsageTest {
 
   val xYml =
     """
@@ -89,18 +88,25 @@ class YmlUsageTest extends FlatSpec with Matchers {
 
   val allAS = Seq((singleAS, 1), (yamlAS, 3), (fullAS, 3))
 
+}
+
+class YmlUsageTest extends FlatSpec with Matchers {
+
+  import com.atomist.rug.TestUtils._
+  import YmlUsageTest._
+
   private def runProgAndCheck(prog: String, as: ArtifactSource, mods: Int): ArtifactSource = {
     val progArtifact: ArtifactSource = new SimpleFileBasedArtifactSource(DefaultRugArchive,
       StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)
     )
 
     val modAttempt = attemptModification(progArtifact, as, EmptyArtifactSource(""),
-      SimpleProjectOperationArguments("", Map.empty[String,Object]))
+      SimpleProjectOperationArguments("", Map.empty[String, Object]))
 
     modAttempt match {
       case sm: SuccessfulModification if sm.result.cachedDeltas.size == mods =>
         sm.result
-      case _: NoModificationNeeded  if mods == 0 =>
+      case _: NoModificationNeeded if mods == 0 =>
         as
       case ma =>
         fail(s"incorrect number of changes: $mods; $prog; $as; $ma")

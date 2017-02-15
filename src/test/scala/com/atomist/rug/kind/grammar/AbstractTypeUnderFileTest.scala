@@ -3,8 +3,10 @@ package com.atomist.rug.kind.grammar
 import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.TestUtils
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.{OverwritableTextTreeNode, TextTreeNodeLifecycle}
 import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
@@ -38,7 +40,18 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
     }
   }
 
-  protected def parseAndPad(file: FileArtifact) = {
+  /**
+    * Require successful evaluation of this expression against the given root node
+    */
+  protected def evaluatePathExpression(tn: TreeNode, pe: String): Seq[TreeNode] = {
+    import com.atomist.tree.pathexpression.PathExpressionParser._
+    expressionEngine.evaluate(tn, pe, DefaultTypeRegistry) match {
+      case Right(nodes) => nodes
+      case Left(x) => fail(s"Path expression failure: $x executing [$pe]")
+    }
+  }
+
+  protected def parseAndPad(file: FileArtifact): String = {
     val as = SimpleFileBasedArtifactSource(file)
     val pmv = new ProjectMutableView(as, as)
     val fmv = pmv.files.get(0)

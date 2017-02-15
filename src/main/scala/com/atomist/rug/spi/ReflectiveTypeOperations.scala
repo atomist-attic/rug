@@ -8,7 +8,7 @@ package com.atomist.rug.spi
   * @param classToExamine class to look for annotated operations on
   * @see ExportFunction
   */
-class ReflectiveTypeInformation(classToExamine: Class[_]) extends TypeInformation {
+class ReflectiveTypeOperations(classToExamine: Class[_]) extends TypeOperations {
 
   override val operations: Seq[TypeOperation] = {
     ReflectiveFunctionExport.exportedOperations(classToExamine)
@@ -24,8 +24,8 @@ trait ReflectivelyTypedType extends Type {
     *
     * @return type information.
     */
-  final override val typeInformation: TypeInformation =
-    new ReflectiveTypeInformation(runtimeClass)
+  final override val typeInformation: TypeOperations =
+    new ReflectiveTypeOperations(runtimeClass)
 }
 
 /**
@@ -37,6 +37,6 @@ abstract class TypeProvider(c: Class[_]) extends Typed {
 
   override val name: String = Typed.typeToTypeName(c)
 
-  override def typeInformation: TypeInformation =
-    new ReflectiveTypeInformation(c)
+  override def typeInformation: TypeOperations =
+    new ReflectiveTypeOperations(c)
 }

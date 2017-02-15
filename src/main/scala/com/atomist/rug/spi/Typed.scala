@@ -46,5 +46,5 @@ trait Typed {
     *
     * @return type information
     */
-  def typeInformation: TypeInformation
+  def typeInformation: TypeOperations
 }

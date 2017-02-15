@@ -95,7 +95,7 @@ class jsSafeCommittingProxy(
   }
 
 
-  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: TypeInformation) = {
+  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: TypeOperations) = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
@@ -245,9 +245,9 @@ private case class UnionType(types: Set[Typed]) extends Typed {
   override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
 
   // TODO what about duplicate names?
-  override val typeInformation: TypeInformation = {
+  override val typeInformation: TypeOperations = {
     val allOps: Set[TypeOperation] = typesToUnion.map(_.typeInformation).flatMap(_.operations)
-    new TypeInformation {
+    new TypeOperations {
       override def operations: Seq[TypeOperation] = allOps.toSeq
     }
   }

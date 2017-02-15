@@ -3,7 +3,7 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl._
-import com.atomist.rug.spi.{TypeInformation, TypeRegistry}
+import com.atomist.rug.spi.{TypeOperations, TypeRegistry}
 import com.atomist.source.ArtifactSource
 
 /**

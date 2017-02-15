@@ -8,11 +8,9 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 
 /**
-  * Type information about a language element such as a Type.
-  * Useful for tooling and document generation as well as
-  * compile time validation.
+  * Operations exposed by a Type.
   */
-trait TypeInformation {
+trait TypeOperations {
 
   /**
     * Operations known on the type
@@ -94,13 +92,13 @@ case class TypeOperation(
 
 object TypeOperation {
 
-  val TreeNodeTypeInformation: TypeInformation =
-    new ReflectiveTypeInformation(classOf[TreeNode])
+  val TreeNodeTypeInformation: TypeOperations =
+    new ReflectiveTypeOperations(classOf[TreeNode])
 
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
     override def description: String = "TreeNode operations"
-    override def typeInformation: TypeInformation = TreeNodeTypeInformation
+    override def typeInformation: TypeOperations = TreeNodeTypeInformation
   }
 
   val TreeNodeOperations: Set[String] =

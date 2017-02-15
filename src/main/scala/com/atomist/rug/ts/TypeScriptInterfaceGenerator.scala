@@ -182,11 +182,10 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   }
 
   private def emitInterfaces(poa: ProjectOperationArguments): Seq[FileArtifact] = {
-    val alreadyGenerated = ListBuffer.empty[InterfaceType]
     val tsInterfaces = ListBuffer.empty[StringFileArtifact]
 
-    val allTypes = typeRegistry.types.sortWith(typeSort)
-    val interfaceTypes = allInterfaceTypes(allTypes)
+    val alreadyGenerated = ListBuffer.empty[InterfaceType]
+    val interfaceTypes = allInterfaceTypes(typeRegistry.types.sortWith(typeSort))
     val pathParam = poa.stringParamValue(OutputPathParam)
 
     for {
@@ -196,31 +195,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       val output = new StringBuilder(config.licenseHeader)
       output ++= config.separator
       output ++= config.imports
-      output ++= "\n"
-
-      val currentType = t
-      val returnTypes = new ListBuffer[String]
-      interfaceTypes.foreach(t => currentType.methods.foreach(m => {
-        val returnType = StringUtils.removeEnd(m.returnType, "[]")
-        if (!currentType.name.equals(t.name) && returnType.equals(t.name))
-          returnTypes += returnType
-      }))
-
-      val parent = t.parent
-      val imports = ListBuffer.empty[String]
-      returnTypes.distinct.foreach(rt => {
-        if (!imports.contains(parent)) {
-          output ++= s"""import {$rt} from "./$rt""""
-          output ++= "\n"
-          imports.append(rt)
-        }
-      })
-
-      if (parent != root && !imports.contains(parent)) {
-          output ++= s"""import {$parent} from "./$parent""""
-          imports.append(parent)
-      }
-
+      output ++= getImports(interfaceTypes, t)
       output ++= s"\nexport {${t.name}}\n"
       output ++= t.toString
       output ++= config.separator
@@ -230,21 +205,21 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       alreadyGenerated += t
     }
 
-    // Write Core.ts
+    // Add Core.ts
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-
-    alreadyGenerated.foreach(t => {
-      output ++= s"""import {${t.name}} from "./${t.name}""""
-      output ++= "\n"
-    })
-    output ++= "\n"
-    alreadyGenerated.foreach(t => {
-      output ++= s"export {${t.name}}\n"
-    })
-
+    output ++= alreadyGenerated.map(t => s"""import {${t.name}} from "./${t.name}"""").mkString("\n")
+    output ++= config.separator
+    output ++= alreadyGenerated.map(t => s"export {${t.name}}").mkString("\n")
     tsInterfaces += StringFileArtifact(pathParam, output.toString())
+
     tsInterfaces
+  }
+
+  private def getImports(interfaceTypes: Seq[InterfaceType], currentType: InterfaceType) = {
+    val imports = interfaceTypes.map(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
+      .filter(currentType.name != t.name && _ == t.name)).flatten.toList
+    (currentType.parent :: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 
   override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
@@ -268,8 +243,8 @@ case class InterfaceGenerationConfig(
 
   val imports: String =
     """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
-       |import {ProjectContext} from '../operations/ProjectEditor' """
-      .stripMargin
+       |import {ProjectContext} from '../operations/ProjectEditor'
+       |""".stripMargin
 
   val licenseHeader: String =
     """|/*

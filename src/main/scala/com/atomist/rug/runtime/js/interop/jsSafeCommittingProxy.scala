@@ -54,7 +54,7 @@ class jsSafeCommittingProxy(
     * shouldTerm.dispatch_me = function(name) { ...
     * We want to save it and invoke it in getMember if necessary.
     *
-    * @param name name of the member
+    * @param name  name of the member
     * @param value function the user is adding in JavaScript
     */
   override def setMember(name: String, value: Object): Unit = value match {
@@ -83,32 +83,39 @@ class jsSafeCommittingProxy(
     }
   }
 
-  private def invokeConsideringTypeInformation(name: String): AnyRef =
-    typ.typeInformation match {
-      case st: StaticTypeInformation =>
-        val possibleOps = st.operations.filter(
-          op => name.equals(op.name))
-        if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
-          invokeGivenNoMatchingOperationInTypeInformation(name, st)
-        } else
-          new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
-      case _ =>
-        throw new IllegalStateException(s"No static type information is available for type [${typ.description}]: Probably an internal error")
+  private def invokeConsideringTypeInformation(name: String): AnyRef = {
+    val st = typ.typeInformation
+    val possibleOps = st.operations.filter(
+      op => name.equals(op.name))
+    if (possibleOps.isEmpty && commandRegistry.findByNodeAndName(node, name).isEmpty) {
+      invokeGivenNoMatchingOperationInTypeInformation(name, st)
     }
+    else
+      new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+  }
 
-  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: StaticTypeInformation) = {
+
+  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: TypeInformation) = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
-        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
+        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${
+          node.nodeName
+        }]")
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
       case _ => throw new RugRuntimeException(null,
-        s"Attempt to invoke method [$name] on type [${typ.description}]: No exported method with that name: Found ${st.operations.map(_.name)}. Node tags are ${node.nodeTags}")
+        s"Attempt to invoke method [$name] on type [${
+          typ.description
+        }]: No exported method with that name: Found ${
+          st.operations.map(_.name)
+        }. Node tags are ${
+          node.nodeTags
+        }")
     }
   }
 
@@ -239,10 +246,8 @@ private case class UnionType(types: Set[Typed]) extends Typed {
 
   // TODO what about duplicate names?
   override val typeInformation: TypeInformation = {
-    val allOps: Set[TypeOperation] = (typesToUnion.map(_.typeInformation) collect {
-      case sti: StaticTypeInformation => sti.operations
-    }).flatten
-    new StaticTypeInformation {
+    val allOps: Set[TypeOperation] = typesToUnion.map(_.typeInformation).flatMap(_.operations)
+    new TypeInformation {
       override def operations: Seq[TypeOperation] = allOps.toSeq
     }
   }

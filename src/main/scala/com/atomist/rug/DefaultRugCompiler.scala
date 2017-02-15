@@ -3,14 +3,14 @@ package com.atomist.rug
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl._
-import com.atomist.rug.spi.{StaticTypeInformation, TypeRegistry}
+import com.atomist.rug.spi.{TypeInformation, TypeRegistry}
 import com.atomist.source.ArtifactSource
 
 /**
   * Compiles Rug programs into ProjectEditor instances
   */
 class DefaultRugCompiler(evaluator: Evaluator,
-                          typeRegistry: TypeRegistry)
+                         typeRegistry: TypeRegistry)
   extends RugCompiler {
 
   @throws[BadRugException]
@@ -37,18 +37,15 @@ class DefaultRugCompiler(evaluator: Evaluator,
         val kind = typeRegistry.findByName(w.kind).getOrElse(
           throw new UndefinedRugTypeException(prog.name, s"Extension type '${w.kind}' is unknown", w.kind)
         )
-        kind.typeInformation match {
-          case st: StaticTypeInformation =>
-            val knownOpNames = st.operations.map(_.name)
-            val missingFileFunctions = w.doSteps.collect {
-              case dds: FunctionDoStep if !knownOpNames.contains(dds.function) =>
-                dds.function
-            }
-            if (missingFileFunctions.nonEmpty) {
-              val msg = s"Unknown function reference(s) on type ${w.kind} with alias ${w.alias}: [${missingFileFunctions.mkString(",")}]"
-              throw new UndefinedRugFunctionsException(prog.name, msg, missingFileFunctions.toSet)
-            }
-          case _ => // Can't validate the operation calls
+        val st = kind.typeInformation
+        val knownOpNames = st.operations.map(_.name)
+        val missingFileFunctions = w.doSteps.collect {
+          case dds: FunctionDoStep if !knownOpNames.contains(dds.function) =>
+            dds.function
+        }
+        if (missingFileFunctions.nonEmpty) {
+          val msg = s"Unknown function reference(s) on type ${w.kind} with alias ${w.alias}: [${missingFileFunctions.mkString(",")}]"
+          throw new UndefinedRugFunctionsException(prog.name, msg, missingFileFunctions.toSet)
         }
     }
   }

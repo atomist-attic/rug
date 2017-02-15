@@ -23,11 +23,8 @@ class ServiceLoaderTypeRegistry
     ServiceLoader.load(classOf[Typed]).asScala.map {
       case t: Typed =>
         logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")
-        t.typeInformation match {
-          case st: StaticTypeInformation =>
-            logger.debug(s"Found operations: ${st.operations.map(_.name).mkString(",")}")
-          case _ =>
-        }
+        val st = t.typeInformation
+        logger.debug(s"Found operations: ${st.operations.map(_.name).mkString(",")}")
         t.name -> t
       case wtf =>
         throw new RugRuntimeException("ExtensionType", s"Type class ${wtf.getClass} must implement Typed interface", null)

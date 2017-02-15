@@ -9,12 +9,15 @@ import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.TreeNode
 import com.atomist.util.Utils
 import com.atomist.util.lang.TypeScriptGenerationHelper
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.{ClassUtils, StringUtils}
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
@@ -129,8 +132,35 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
        | */""".stripMargin
   }
 
-  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] =
-    allTypes.map(t => InterfaceType(t.name, t.description, allMethods(t)))
+  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
+    val interfaceTypes = new ListBuffer[InterfaceType]
+
+    allTypes.foreach(t => {
+      t.operations.foreach(op => {
+        val superclasses = ClassUtils.hierarchy(op.definedOn, ClassUtils.Interfaces.INCLUDE).asScala
+          .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
+          .filterNot(c => classOf[TreeNode] == c) // Ignore TreeNode as it's already present in TS file
+          .drop(1) // Drop leaf class
+          .toList
+
+        // Add superclasses
+        for (i <- 0 until superclasses.size) {
+          val ops = exportedOperations(superclasses(i))
+          val parent = if (i == superclasses.size - 1) root else Typed.typeToTypeName(superclasses(i + 1))
+          val name = Typed.typeToTypeName(superclasses(i))
+          interfaceTypes += InterfaceType(name, name, allMethods(ops), parent)
+        }
+
+        // Add leaf class
+        val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses(0))
+        interfaceTypes += InterfaceType(t.name, t.description, allMethods(t), parent)
+      })
+    })
+
+    (interfaceTypes.groupBy(it => it.name) map {
+      case (_, l) => l.head
+    }).toSeq
+  }
 
   private def allMethods(t: Typed): Seq[MethodInfo] =
     allMethods(t.allOperations)
@@ -180,23 +210,29 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
         output ++= "\n"
       })
 
-      output ++= "\n"
+      if (t.parent != root)
+        output ++= s"""import {${t.parent}} from "./${t.parent}""""
+
+      output ++= s"\nexport {${t.name}}\n"
       output ++= t.toString
       output ++= config.separator
-      output ++= s"export {${t.name}}\n"
 
       val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
       tsInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
       alreadyGenerated.append(t)
     }
 
+    // Write Core.ts
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
 
     alreadyGenerated.foreach(t => {
       output ++= s"""import {${t.name}} from "./${t.name}""""
       output ++= "\n"
-      output ++= s"export {${t.name}}\n\n"
+    })
+    output ++= "\n"
+    alreadyGenerated.foreach(t => {
+      output ++= s"export {${t.name}}\n"
     })
 
     tsInterfaces += StringFileArtifact(pathParam, output.toString())

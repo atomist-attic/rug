@@ -5,11 +5,6 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.project.{Executor, ProjectOperation}
 
-object Operations {
-
-  val Empty = Operations(Nil, Nil, Nil, Nil)
-}
-
 /**
   * A group of ProjectOperation objects that we can add to other groups.
   */

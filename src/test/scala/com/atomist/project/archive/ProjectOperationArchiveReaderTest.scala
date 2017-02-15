@@ -87,9 +87,11 @@ class ProjectOperationArchiveReaderTest extends FlatSpec with Matchers {
   //https://github.com/atomist/rug/issues/258
   it should "only describe a single project_name parameter if it's declared" in {
     val apc = new ProjectOperationArchiveReader(atomistConfig)
-    val ops = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(GeneratorWithoutProjectName, EditorWithProjectName, AnotherEditorWithProjectName)), None, Nil)
+    val ops: Operations = apc.findOperations(new SimpleFileBasedArtifactSource("", Seq(GeneratorWithoutProjectName, EditorWithProjectName, AnotherEditorWithProjectName)), None, Nil)
     assert(ops.generators.size === 1)
     assert(ops.generators.head.parameters.size === 1)
+    ops.toString.contains("Published") should be (true)
+    ops.toString.contains("Stuff") should be (true)
   }
 
   it should "parse single editor" in {

@@ -1,27 +1,22 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
-import com.atomist.rug.spi._
+import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
+import com.atomist.rug.spi.{ExportFunction, _}
 import com.atomist.tree.TreeNode
 
 /**
   * Type representing a line within a file
-  * @param evaluator used to evaluate expressions
   */
-class LineType(
-                evaluator: Evaluator
-              )
-  extends Type(evaluator)
+class LineType
+  extends Type(DefaultEvaluator)
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Represents a line within a text file"
 
   /** Describe the MutableView subclass to allow for reflective function export */
-  override def runtimeClass = classOf[LineMutableView]
+  override def runtimeClass: Class[LineMutableView] = classOf[LineMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: TreeNode): Option[Seq[LineMutableView]] = {
     context match {
       case fa: FileMutableView =>
         Some(fa.originalBackingObject.content.lines
@@ -42,7 +37,7 @@ class LineMutableView(
   extends ViewSupport[String](originalBackingObject, parent)
     with TerminalView[String] {
 
-  override def nodeName: String = s"Line#${linenum}"
+  override def nodeName: String = s"Line#$linenum"
 
   override def childNodeNames: Set[String] = Set()
 
@@ -54,15 +49,18 @@ class LineMutableView(
   }
 
   @ExportFunction(readOnly = true, description = "Return this line's content")
-  def content(): String = currentBackingObject
+  override def value: String = currentBackingObject
 
-  @ExportFunction(readOnly = true, description = "Line number")
+  @ExportFunction(readOnly = true, description = "Return this line's content")
+  @Deprecated
+  def content: String = value
+
+  @ExportFunction(readOnly = true, description = "Line number from 0")
   def num: Int = linenum
 
-  /**
-    * Update the parent after changing this class. Subclasses can override
-    * this implementation, which does nothing.
-    */
+  @ExportFunction(readOnly = true, description = "Line number from 1")
+  def numFrom1: Int = linenum + 1
+
   override protected def updateParent(): Unit = {
     applied(parent)
   }
@@ -74,7 +72,7 @@ class LineMutableView(
         l <- f.content.lines
       } yield {
         val newL = if (i == num)
-          content()
+          value
         else l
         i += 1
         newL

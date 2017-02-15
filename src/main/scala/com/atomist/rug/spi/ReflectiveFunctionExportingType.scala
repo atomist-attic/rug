@@ -21,7 +21,15 @@ object ReflectiveFunctionExport {
       .map(new ReflectiveRugFunction[FunctionTarget, Any](_))
 
   def exportedOperations(c: Class[_]): Seq[TypeOperation] =
-    ReflectionUtils.getAllDeclaredMethods(c)
+    if (c == null) Nil
+    else operations(ReflectionUtils.getAllDeclaredMethods(c))
+
+  def exportedDirectOperations(c: Class[_]): Seq[TypeOperation] =
+    if (c == null) Nil
+    else operations(c.getDeclaredMethods)
+
+  private def operations(methods: Array[Method]) =
+    methods
       .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
       .map(m => {
         val a = m.getAnnotation(classOf[ExportFunction])

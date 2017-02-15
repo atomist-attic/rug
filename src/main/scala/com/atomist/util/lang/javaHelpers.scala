@@ -60,7 +60,7 @@ object JavaHelpers {
     * Take a Java property name and produce a delimited String of all lower case.
     *
     * @param javaPropertyName Java property name like bigThing
-    * @return delimited string like big_think (delimiter is _ in this example)
+    * @return delimited string like big_thing (delimiter is _ in this example)
     */
   def toLowerCaseDelimited(javaPropertyName: String, delim: String = "_"): String = {
     val chars: Seq[String] = javaPropertyName.map(c =>

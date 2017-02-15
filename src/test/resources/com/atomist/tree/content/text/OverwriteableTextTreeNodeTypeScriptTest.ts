@@ -39,7 +39,7 @@ $whateverElse
         let mgNode = `/File()[@name="pom.xml"]/parent()`
 
         eng.with<any>(project, mgNode, parent => {
-            console.log(`I matched: ${parent}`);
+            //console.log(`I matched: ${parent}`);
             let versionNumber = parent.version();
             parent.update("Everything under me is now invalidated! wahaha!");
             versionNumber.update("This should fail!!")

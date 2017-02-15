@@ -34,7 +34,7 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   }
 
   it should "add using and verify" in {
-    val r = modifyAndReparseSuccessfully("AddImport.ts", HelloWorldSources)
+    val r = modifyAndReparseSuccessfully("AddUsing.ts", HelloWorldSources)
     val f = r.findFile("src/hello.cs").get
     f.content.contains("using System;") should be(true)
     f.content.contains("using System.Linq;") should be(true)

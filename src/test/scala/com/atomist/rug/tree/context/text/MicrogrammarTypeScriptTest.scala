@@ -18,7 +18,6 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     val target = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/test/scala/com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.scala")))
     val fileThatWillBeModified = "MicrogrammarTypeScriptTest.scala"
 
-
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
@@ -61,7 +60,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
         val contents = sm.result.findFile(fileThatWillBeModified).get.content
         withClue(s"contents of $fileThatWillBeModified are:<$contents>") {
           // check the results
-          println("\n" + contents + "\n")
+          //println("\n" + contents + "\n")
           contents.contains("val matches = strictMatchAndFakeAFile(aWasaB, \"Henry was aged 19\")") should be(true)
         }
       case boo =>

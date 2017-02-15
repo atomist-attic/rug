@@ -21,7 +21,7 @@ class ScalaFileType extends TypeUnderFile {
         val ourTree = new ScalaMetaTreeBackedTreeNode(ast)
         Some(ourTree)
       case other =>
-        println(s"Failure to parse Scala Meta: $other")
+        //println(s"Failure to parse Scala Meta: $other")
         None
     }
   }

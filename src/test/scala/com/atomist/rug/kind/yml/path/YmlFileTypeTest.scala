@@ -19,12 +19,16 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "find scalar using path expression key" in {
+  it should "find scalar using path expression key" in pendingUntilFixed {
     val f = StringFileArtifact("test.yml", YmlUsageTestTargets.xYml)
     val tn = typeBeingTested.fileToRawNode(f).get
     println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
-    val nodes = evaluatePathExpression(tn, "/group")
+    var nodes = evaluatePathExpression(tn, "/group")
+    assert(nodes.size == 1)
+    assert(nodes.head.value === "queen")
+
+    nodes = evaluatePathExpression(tn, "/group/value")
     assert(nodes.size == 1)
     assert(nodes.head.value === "queen")
   }

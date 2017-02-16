@@ -49,8 +49,8 @@ trait PathExpressionParser extends CommonTypesParser {
   private def methodInvocationTest: Parser[Predicate] = "." ~> nodeName ~ args ~ EqualsToken ~ literal ^^ {
     case methodName ~ args ~ _ ~ literal =>
       FunctionPredicate(s".$methodName", (n, among) => {
-        val invoked = invokeMethod[Any](n, methodName, args)
-        Objects.equals(literal, invoked)
+        val rO = invokeMethodIfPresent[Any](n, methodName, args)
+        rO.exists(invoked => Objects.equals(literal, invoked))
       })
   }
 
@@ -76,7 +76,9 @@ trait PathExpressionParser extends CommonTypesParser {
 
   private def booleanMethodInvocation: Parser[Predicate] = "." ~> functionName ~ args ^^ {
     case methodName ~ args =>
-      FunctionPredicate(s".$methodName", (n, among) => invokeMethod[Boolean](n, methodName, args))
+      FunctionPredicate(s".$methodName", (n, among) =>
+        invokeMethodIfPresent[Boolean](n, methodName, args).getOrElse(false)
+      )
   }
 
   private def functionCall: Parser[Predicate] = functionName ~ functionArgs ^^ {

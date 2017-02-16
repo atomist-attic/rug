@@ -91,7 +91,8 @@ class DefaultEvaluator(
             .getOrElse(
               throw new UndefinedRugFunctionsException(null,
                 s"Unregistered function '${ff.function}' on ${ic.target.getClass}: " +
-                  s"Known functions [${functionRegistry.functions.mkString(",")}]; target was ${ic.target}",
+                  s"Known functions are [${functionRegistry.functions.map(_.name).toList.sorted.mkString(",")}]" +
+                  s"; target was ${ic.target}",
                 Set(ff.function)))
           logger.debug(s"Invoking ${ff.function}")
           val r = backingFunction.invoke(ic)

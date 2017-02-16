@@ -1,3 +1,6 @@
+# Add a line in each file for each published type.
+# Picked up by JDK service loader
+# A file with this name can be added in each JAR file
 
 com.atomist.rug.kind.core.LineType
 com.atomist.rug.kind.core.FileType
@@ -41,6 +44,7 @@ com.atomist.rug.kind.xml.XmlType
 com.atomist.rug.kind.xml.XmlFileType
 
 com.atomist.rug.kind.yml.YmlType
+com.atomist.rug.kind.yml.path.YmlFileType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider

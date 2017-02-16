@@ -44,22 +44,26 @@ object JavaScriptOperationFinder {
 
   // TODO clean up this dispatch/signature stuff - too coupled
   private def operationsFromVars(rugAs: ArtifactSource, jsc: JavaScriptContext): Seq[JavaScriptInvokingProjectOperation] = {
-    jsc.vars.map(v => (v, extractOperation(v.scriptObjectMirror))) collect {
-      case (v, Some(EditorType)) =>
-        new JavaScriptInvokingProjectEditor(jsc, v.scriptObjectMirror, rugAs)
-      case (v, Some(ReviewerType)) =>
-        new JavaScriptInvokingProjectReviewer(jsc, v.scriptObjectMirror, rugAs)
-      case (v, Some(GeneratorType)) =>
+    jsc.vars.map(o => extractOperation(o.scriptObjectMirror)) collect {
+      case Some((EditorType, v)) =>
+        new JavaScriptInvokingProjectEditor(jsc, v, rugAs)
+      case Some((ReviewerType, v)) =>
+        new JavaScriptInvokingProjectReviewer(jsc, v, rugAs)
+      case Some((GeneratorType, v)) =>
         // TODO properly fix the following
         import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
         val project: ArtifactSource = removeAtomistTemplateContent(rugAs)
-        new JavaScriptInvokingProjectGenerator(jsc, v.scriptObjectMirror, rugAs, project)
-      case (v, Some(ExecutorType)) =>
-        new JavaScriptInvokingExecutor(jsc, v.scriptObjectMirror, rugAs)
+        new JavaScriptInvokingProjectGenerator(jsc, v, rugAs, project)
+      case Some((ExecutorType, v)) =>
+        new JavaScriptInvokingExecutor(jsc, v, rugAs)
     }
   }
 
-  private def extractOperation(obj: ScriptObjectMirror): Option[String] = {
+  private def extractOperation(exported: ScriptObjectMirror): Option[(String, ScriptObjectMirror)] = {
+    val obj = exported.getMember("prototype") match {
+      case modern: ScriptObjectMirror => modern
+      case _ => exported
+    }
     KnownSignatures.find {
       case JsRugOperationSignature(_, fns, props) =>
         val fnCount = fns.count(fn => {
@@ -70,7 +74,7 @@ object JavaScriptOperationFinder {
         })
         fnCount == fns.size && propsCount == props.size
     } match {
-      case Some(JsRugOperationSignature(kind,_, _)) => Some(kind)
+      case Some(JsRugOperationSignature(kind,_, _)) => Some(kind, obj)
       case _ => Option.empty
     }
   }

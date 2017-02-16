@@ -29,7 +29,7 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
-      |export let myeditor = new SimpleEditor();
+      |export {SimpleEditor}
     """.stripMargin
 
   val SimpleEditorWithBasicParameter =
@@ -47,7 +47,7 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
       |    }
       |}
-      |export let myeditor = new SimpleEditor()
+      |export {SimpleEditor}
     """.stripMargin
 
   val SimpleEditorWithBasicNameParameter =
@@ -70,7 +70,7 @@ object TypeScriptRugEditorTest {
        |        if(this.description !== "Not reserved") throw new Error("Darn - description is reserved it seems");
        |    }
        |}
-       |export let myeditor = new SimpleEditor()
+       |export {SimpleEditor}
     """.stripMargin
 
   val SimpleLetStyleEditorWithoutParameters =
@@ -99,7 +99,7 @@ object TypeScriptRugEditorTest {
       |    }
       |}
       |
-      |export let myeditor = new SimpleEditor()
+      |export {SimpleEditor}
     """.stripMargin
 
   val SimpleEditorInvokingOtherEditor =
@@ -113,7 +113,7 @@ object TypeScriptRugEditorTest {
       |        project.editWith("other", { otherParam: "Anders Hjelsberg is God" });
       |    }
       |}
-      |export let myeditor = new SimpleEditor()
+      |export {SimpleEditor}
 
     """.stripMargin
 
@@ -134,7 +134,7 @@ object TypeScriptRugEditorTest {
        |      project.editWith("other", { otherParam: "Anders Hjelsberg is God" })
        |    }
        |  }
-       |export let myeditor = new SimpleEditor()
+       |export {SimpleEditor}
     """.stripMargin
 
   val SimpleGenerator =
@@ -155,7 +155,7 @@ object TypeScriptRugEditorTest {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
-      |export let gen = new SimpleGenerator()
+      |export {SimpleGenerator}
     """.stripMargin
 
   val SimpleEditorTaggedAndMeta =
@@ -177,7 +177,7 @@ object TypeScriptRugEditorTest {
        |      project.addFile("src/from/typescript", this.content)
        |    }
        |  }
-       |export let myeditor = new SimpleEditor()
+       |export {SimpleEditor}
     """.stripMargin
 
     val SimpleTsUtil =
@@ -208,7 +208,7 @@ object TypeScriptRugEditorTest {
       |    }
       |}
       |
-      |export let myeditor = new SimpleEditor()
+      |export {SimpleEditor}
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
@@ -248,7 +248,7 @@ object TypeScriptRugEditorTest {
         |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
         |    }
         |  }
-        |  export let myeditor = new ConstructedEditor()
+        |export {SimpleEditor}
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
@@ -283,7 +283,7 @@ object TypeScriptRugEditorTest {
       |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
       |    }
       |  }
-      |  export let myeditor = new ConstructedEditor()
+      |export {SimpleEditor}
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWith: String =
@@ -322,7 +322,7 @@ object TypeScriptRugEditorTest {
       |    }
       |  }
       |
-      |  export let myeditor = new ConstructedEditor()
+      |export {SimpleEditor}
       | """.stripMargin
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
@@ -359,7 +359,7 @@ object TypeScriptRugEditorTest {
       |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
       |    }
       |  }
-      |  export let myeditor = new ConstructedEditor()
+      |export {SimpleEditor}
       | """.stripMargin
 
 }

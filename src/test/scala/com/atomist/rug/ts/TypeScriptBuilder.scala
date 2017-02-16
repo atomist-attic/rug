@@ -10,8 +10,9 @@ import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSour
 import com.atomist.source.filter.ArtifactFilter
 
 /**
-  * Helps us compile TypeScript archives.
-  * in a node_modules directory that was copied there by a maven goal called copy-ts, which takes it from src/main/typescript
+  * Helps us compile TypeScript archives
+  * in a node_modules directory that was copied there by a
+  * Maven goal called copy-ts, which takes it from src/main/typescript
   */
 object TypeScriptBuilder {
 
@@ -31,8 +32,6 @@ object TypeScriptBuilder {
   /**
     * Compile the given archive contents along with our generated TypeScript model
     */
-  def compileWithModel(tsAs: ArtifactSource): ArtifactSource = {
+  def compileWithModel(tsAs: ArtifactSource): ArtifactSource =
     compiler.compile(userModel + tsAs)
-  }
-
 }

@@ -28,6 +28,9 @@ class FileMutableView(
   @ExportFunction(readOnly = true, description = "Is this a Java file?")
   def isJava: Boolean = currentBackingObject.name.endsWith(".java")
 
+  @ExportFunction(readOnly = true, description = "Is this a Scala file?")
+  def isScala: Boolean = currentBackingObject.name.endsWith(".scala")
+
   @ExportFunction(readOnly = false, description = "Set entire file content to new string")
   def setContent(@ExportFunctionParameterDescription(name = "newContent",
     description = "The content to set the file to")

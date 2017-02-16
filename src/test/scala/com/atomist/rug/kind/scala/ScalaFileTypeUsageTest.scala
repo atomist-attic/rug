@@ -3,8 +3,6 @@ package com.atomist.rug.kind.scala
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.SimpleFileBasedArtifactSource
-import com.atomist.tree.utils.TreeNodeUtils
-import org.scalatest.DiagrammedAssertions._
 
 /**
   * Tests for realistic Scala scenarios
@@ -22,7 +20,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(Python3Source.path).get
         //println(theFile.content)
-        theFile.content.contains("nodeNamingStrategy =") should be (true)
+        theFile.content.contains("nodeNamingStrategy =") should be(true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -53,56 +51,53 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "not upgrade to DiagrammedAssertions when not needed using ScalaHelper" in
     notUpgradeToDiagrammedAssertionsWhenNotNeeded("ImportAdder.ts")
 
-  private def notUpgradeToDiagrammedAssertionsWhenNotNeeded(sideFile: String)  {
+  private def notUpgradeToDiagrammedAssertionsWhenNotNeeded(sideFile: String) {
     val testWithImportAlready = OldStyleScalaTest.withContent(diagrammedAssertionsImport + "\n" + OldStyleScalaTest.content)
     modify(sideFile, SimpleFileBasedArtifactSource(testWithImportAlready)) match {
       case _: NoModificationNeeded =>
-        // OK
+      // OK
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
   it should "change a.equals(b)" in {
-//    val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
-//    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
+    // val tn = typeBeingTested.fileToRawNode(UsesDotEquals).get
+    //println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     modify("EqualsToSymbol.ts", UsesDotEqualsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesDotEquals.path).get
         //println(theFile.content)
-        theFile.content.contains("==") should be (true)
-        theFile.content.contains("equals") should be (false)
+        theFile.content.contains("==") should be(true)
+        theFile.content.contains("equals") should be(false)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
   it should "remove printlns" in {
-//       val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
-//        println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
+    // val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     modify("RemovePrintlns.ts", UsesPrintlnsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
         //println(theFile.content)
-        theFile.content.contains("println") should be (false)
+        theFile.content.contains("println") should be(false)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
   it should "convert printlns to logging" in {
-//           val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
-//            println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
+    // val tn = typeBeingTested.fileToRawNode(UsesPrintlnsSource).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     modify("ConvertPrintlnsToLogging.ts", UsesPrintlnsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
         //println(theFile.content)
-        theFile.content.contains("println") should be (false)
-        theFile.content.contains("logger.debug") should be (true)
-        theFile.content.contains("import org.slf4j.LoggerFactory") should be (true)
-        theFile.content.contains("private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))") should be (true)
+        theFile.content.contains("println") should be(false)
+        theFile.content.contains("logger.debug") should be(true)
+        theFile.content.contains("import org.slf4j.LoggerFactory") should be(true)
+        theFile.content.contains("private lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))") should be(true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -113,7 +108,17 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(OldStyleScalaTest.path).get
         //println(theFile.content)
-        theFile.content.contains("===") should be (true)
+        theFile.content.contains("===") should be(true)
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  it should "remove double spacing from Scala file" in pendingUntilFixed {
+    modify("RemoveDoubleSpacedLines.ts", UsesDoubleSpacedSources) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile(DoubleSpacedSource.path).get
+        //println(theFile.content)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

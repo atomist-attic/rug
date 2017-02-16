@@ -79,7 +79,6 @@
             <artifactId>scalameta_${scala.binary.version}</artifactId>
             <version>1.4.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.github.spullara.mustache.java</groupId>
             <artifactId>compiler</artifactId>
@@ -290,7 +289,6 @@
                     </args>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>scoverage-maven-plugin</artifactId>

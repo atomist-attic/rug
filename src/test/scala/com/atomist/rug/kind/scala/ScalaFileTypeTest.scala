@@ -284,6 +284,40 @@ object ScalaFileTypeTest {
       |
     """.stripMargin)
 
+  val DoubleSpacedSource = StringFileArtifact("src/main/scala/com/atomist/DoubleSpace.scala",
+    """
+      |package com.atomist
+      |
+      |
+      |class DoubleSpace {
+      |
+      |  println("foo bar")
+      |
+      |
+      |  val i = 25
+      |
+      |  System.out.println("things")
+      |
+      |
+      |  println(1 +
+      |       2)
+      |
+      |  def foo() {
+      |   val s = "wepiruwpieuu" + "xxx"
+      |   println(
+      |   toString() + "foo" + (
+      |        1 + 2
+      |   )
+      |   )
+      |   foo("bar")
+      |  }
+      |
+      |
+      |}
+      |
+      |
+    """.stripMargin)
+
   val PythonTypeSources = SimpleFileBasedArtifactSource(
     Python3Source
   )
@@ -299,6 +333,10 @@ object ScalaFileTypeTest {
   val UsesDotEqualsSources = SimpleFileBasedArtifactSource(
     UsesDotEquals
    //,  OldStyleScalaTest
+  )
+
+  val UsesDoubleSpacedSources = SimpleFileBasedArtifactSource(
+    DoubleSpacedSource
   )
 
   def helloWorldProject =

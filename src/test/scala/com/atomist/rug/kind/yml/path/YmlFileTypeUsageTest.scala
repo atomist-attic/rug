@@ -17,7 +17,7 @@ class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
 //    allAS.foreach(asChanges => runProgAndCheck(prog, asChanges._1, 0))
 //  }
 
-  it should "change group value with native Rug function" in {
+  it should "change group value with native Rug function" in pendingUntilFixed {
     val prog =
       """
         |editor YmlEdit

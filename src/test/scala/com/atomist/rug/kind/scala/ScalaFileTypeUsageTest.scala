@@ -19,7 +19,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("NameParameter.ts", PythonTypeSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(Python3Source.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         theFile.content.contains("nodeNamingStrategy =") should be(true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -38,7 +38,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify(sideFile, ScalaTestSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(OldStyleScalaTest.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         assert(theFile.content.contains(diagrammedAssertionsImport) === true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -66,7 +66,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("EqualsToSymbol.ts", UsesDotEqualsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesDotEquals.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         theFile.content.contains("==") should be(true)
         theFile.content.contains("equals") should be(false)
         validateResultContainsValidFiles(sm.result)
@@ -80,7 +80,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("RemovePrintlns.ts", UsesPrintlnsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         theFile.content.contains("println") should be(false)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -93,7 +93,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("ConvertPrintlnsToLogging.ts", UsesPrintlnsSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(UsesPrintlnsSource.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         theFile.content.contains("println") should be(false)
         theFile.content.contains("logger.debug") should be(true)
         theFile.content.contains("import org.slf4j.LoggerFactory") should be(true)
@@ -107,7 +107,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("UpgradeScalaTestAssertions.ts", ScalaTestSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(OldStyleScalaTest.path).get
-        //println(theFile.content)
+        // println(theFile.content)
         theFile.content.contains("===") should be(true)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -118,7 +118,8 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     modify("RemoveDoubleSpacedLines.ts", UsesDoubleSpacedSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(DoubleSpacedSource.path).get
-        println(theFile.content)
+        // println(theFile.content)
+        theFile.content shouldNot include regex "\n$\n$"
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

@@ -316,6 +316,7 @@ object ScalaFileTypeTest {
       |}
       |
       |
+      |
     """.stripMargin)
 
   val PythonTypeSources = SimpleFileBasedArtifactSource(

@@ -19,7 +19,7 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "parse and run path expression" in {
+  it should "parse and run path expression using name" in {
     val f = StringFileArtifact("test.yml", YmlUsageTest.xYml)
     val tn = typeBeingTested.fileToRawNode(f).get
     println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
@@ -28,5 +28,16 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(nodes.size == 1)
     val nodes2 = evaluatePathExpression(tn, "/dependencies/*")
     assert(nodes2.size === 12)
+    assert(nodes2.last.value === "God Save the Queen")
+  }
+
+  it should "parse and run path expression using type" in {
+    val f = StringFileArtifact("test.yml", YmlUsageTest.xYml)
+    val tn = typeBeingTested.fileToRawNode(f).get
+    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    val nodes2 = evaluatePathExpression(tn, "/Sequence()[@name='dependencies']/*")
+    assert(nodes2.size === 12)
+    assert(nodes2.last.value === "God Save the Queen")
   }
 }

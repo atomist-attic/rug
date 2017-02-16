@@ -15,25 +15,39 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
-  * Uses SnakeYaml
+  * Uses SnakeYaml.
   */
 class YmlFileType extends TypeUnderFile {
 
-  private sealed trait State {
+  import YmlFileType._
 
-    def handle(content: String, e: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode]): State
+  private case class Input(content: String, event: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode])
+
+  private abstract sealed class State {
+
+    final def transition(transitionPayload: Input): State = {
+      val identity: PartialFunction[Input, State] = {
+        case _ => this
+      }
+      on.orElse(identity)(transitionPayload)
+    }
+
+    protected def on: PartialFunction[Input, State]
   }
 
-  val yaml = new Yaml()
+  // SnakeYAML parser
+  private val yaml = new Yaml()
 
   override def description: String = "YAML file"
 
   override def isOfType(f: FileArtifact): Boolean =
     f.name.endsWith(".yml") | f.name.endsWith(".yaml")
 
+  /**
+    * Uses a state machine to handle SnakeYAML events, which include node positions.
+    */
   override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[PositionedTreeNode] = {
-
-    var state: State = Open
+    var state: State = SeekingKey
 
     val root = new ParsedMutableContainerTreeNode(f.name)
     root.startPosition = OffsetInputPosition(0)
@@ -46,8 +60,7 @@ class YmlFileType extends TypeUnderFile {
     nodeStack.push(root)
 
     for (e <- events) {
-      println(e)
-      state = state.handle(f.content, e, nodeStack)
+      state = state.transition(Input(f.content, e, nodeStack))
     }
 
     validateStructure(root)
@@ -55,36 +68,28 @@ class YmlFileType extends TypeUnderFile {
     Some(root)
   }
 
+  
+  private case object SeekingKey extends State {
 
-  /**
-    * We're open to a sequence of scala
-    */
-  private case object Open extends State {
-
-    override def handle(content: String, e: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode]): State = e match {
-      case s: ScalarEvent =>
+    protected override def on = {
+      case Input(content, s: ScalarEvent, _) =>
         SeenKey(keyTerminal = scalarToTreeNode(content, s))
-      //      case _: CollectionStartEvent | CollectionStartEvent =>
-      //        Blank
-      case _ =>
-        // Ignore
-        Open
     }
   }
 
-  // TODO rewrite with partial functions to get inheritance, ignoring and returning same state in other cases
   private case class SeenKey(keyTerminal: PositionedTreeNode) extends State {
 
-    override def handle(content: String, e: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode]): State =
-      e match {
-        case s: ScalarEvent =>
-          // Scalar key with value. just get out of there
+    protected def on = {
+        case Input(content, s: ScalarEvent, nodeStack) =>
+          // Scalar key with value. Add as a child of present node and return to Open state
           val value = scalarToTreeNode(content, s)
           val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.nodeName, Seq(value), significance = TreeNode.Signal)
           nodeStack.top.insertFieldCheckingPosition(container)
-          Open
-        case sse: SequenceStartEvent =>
-          val newContainer = new ParsedMutableContainerTreeNode(keyTerminal.nodeName)
+          SeekingKey
+        case Input(content, sse: SequenceStartEvent, nodeStack) =>
+          val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) SequenceType else keyTerminal.value
+          val newContainer = new ParsedMutableContainerTreeNode(containerName)
+          newContainer.addType(SequenceType)
           newContainer.startPosition = markToPosition(content, sse, skipLeadingQuote = false)
           nodeStack.top.appendField(newContainer)
           nodeStack.push(newContainer)
@@ -92,17 +97,15 @@ class YmlFileType extends TypeUnderFile {
       }
   }
 
-
   private case object InCollection extends State {
 
-    override def handle(content: String, e: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode]): State = e match {
-      case see: SequenceEndEvent =>
+    protected override def on = {
+      case Input(content, see: SequenceEndEvent, nodeStack) =>
         nodeStack.top.endPosition = markToPosition(content, see, skipLeadingQuote = false)
         nodeStack.pop()
-        Open
-      case s: ScalarEvent =>
+        SeekingKey
+      case Input(content, s: ScalarEvent, nodeStack) =>
         val sf = scalarToTreeNode(content, s)
-        //println(sf)
         nodeStack.top.insertFieldCheckingPosition(sf)
         InCollection
     }
@@ -110,14 +113,16 @@ class YmlFileType extends TypeUnderFile {
 
 
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
-    val name = if (se.getValue.exists(c => c.isWhitespace)) "scalar" else se.getValue
+    val name = if (canBeUsedAsNodeName(se.getValue)) ScalarType else se.getValue
     val sf = new MutableTerminalTreeNode(name,
       se.getValue,
       markToPosition(in, se, skipLeadingQuote = true)
     )
-    sf.addType("scalar")
+    sf.addType(ScalarType)
     sf
   }
+
+  private def canBeUsedAsNodeName(s: String) = s.exists(c => c.isWhitespace)
 
   /**
     * Strip the leading " if necessary
@@ -157,3 +162,12 @@ class YmlFileType extends TypeUnderFile {
 
 }
 
+
+object YmlFileType {
+
+  val SequenceType = "Sequence"
+
+  val KeyType = "Key"
+
+  val ScalarType = "Scalar"
+}

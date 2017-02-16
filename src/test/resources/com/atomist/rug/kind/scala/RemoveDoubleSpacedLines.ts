@@ -10,12 +10,16 @@ class RemoveDoubleSpacedLines implements ProjectEditor {
     name: string = "RemoveDoubleSpacedLines"
     description: string = "Remove double spacing"
 
+    private targetExtensions = [ ".java", ".scala"]
+
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
 
         eng.with<File>(project, `/src//File()`, f => {
-            // console.log(`The file is ${f}`)
-            f.regexpReplace("\n\n$", "\n")
+            if (this.targetExtensions.filter(suffix => f.name().indexOf(suffix) > -1).length) {
+                console.log(`The file is ${f}`)
+                f.regexpReplace("\n\n", "\n")
+            }
         })
     }
 }

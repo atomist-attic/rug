@@ -114,11 +114,11 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "remove double spacing from Scala file" in pendingUntilFixed {
+  it should "remove double spacing from Scala file" in {
     modify("RemoveDoubleSpacedLines.ts", UsesDoubleSpacedSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(DoubleSpacedSource.path).get
-        //println(theFile.content)
+        println(theFile.content)
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

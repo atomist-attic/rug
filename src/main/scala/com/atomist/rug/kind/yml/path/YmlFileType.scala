@@ -88,9 +88,9 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
 
     protected def on = {
         case Input(content, s: ScalarEvent, nodeStack) =>
-          // Scalar key with value. Add as a child of present node and return to Open state
+          // Scalar key with value. Add a container a child of present node and return to Open state
           val value = scalarToTreeNode(content, s)
-          val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.nodeName, Seq(value), significance = TreeNode.Signal)
+          val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.value, Seq(value), significance = TreeNode.Signal)
           nodeStack.top.insertFieldCheckingPosition(container)
           SeekingKey
         case Input(content, sse: SequenceStartEvent, nodeStack) =>
@@ -120,7 +120,7 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
 
 
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
-    val name = if (canBeUsedAsNodeName(se.getValue)) ScalarType else se.getValue
+    val name = ScalarName
     val sf = new MutableTerminalTreeNode(name,
       se.getValue,
       markToPosition(in, se, skipLeadingQuote = true)
@@ -177,4 +177,6 @@ object YmlFileType {
   val KeyType = "Key"
 
   val ScalarType = "Scalar"
+
+  val ScalarName = "value"
 }

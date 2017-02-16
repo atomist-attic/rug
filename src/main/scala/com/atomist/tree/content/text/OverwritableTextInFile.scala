@@ -17,7 +17,8 @@ import com.atomist.tree.TreeNode.Noise
   * @param allKids     the OverwritableTextTreeNodes
   */
 class OverwritableTextInFile(dynamicType: String,
-                             allKids: Seq[TreeNode])
+                             allKids: Seq[TreeNode],
+                             postProcess: String => String)
   extends OverwritableTextTreeNodeParent {
 
   import OverwritableTextTreeNode._
@@ -38,7 +39,7 @@ class OverwritableTextInFile(dynamicType: String,
 
   override def commit(): Unit = requireReady {
     _value = allKids.map(_.value).mkString("") // some child has changed
-    fileView.updateTo(StringFileArtifact.updated(fileView.currentBackingObject, _value))
+    fileView.updateTo(StringFileArtifact.updated(fileView.currentBackingObject, postProcess(_value)))
     fileView.commit()
   }
 

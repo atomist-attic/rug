@@ -36,7 +36,10 @@ object ImmutablePositionedTreeNode {
       from.significance)
   }
 
-  def pad(typeName: String, pupae: Seq[PositionedTreeNode], initialSource: String): OverwritableTextInFile = {
+  def pad(typeName: String,
+          pupae: Seq[PositionedTreeNode],
+          initialSource: String,
+          postProcess: String => String): OverwritableTextInFile = {
     val wrapper = ImmutablePositionedTreeNode("wrapper",
       OffsetInputPosition(0),
       OffsetInputPosition(initialSource.length),
@@ -47,7 +50,7 @@ object ImmutablePositionedTreeNode {
     val resolved = fightWithSiblings(collapsed)
     val result = padInternal(resolved, initialSource)
 
-    new OverwritableTextInFile(typeName, result.allKidsIncludingPadding)
+    new OverwritableTextInFile(typeName, result.allKidsIncludingPadding, postProcess)
   }
 
   private def collapseNoise(n: PositionedTreeNode): ImmutablePositionedTreeNode = {

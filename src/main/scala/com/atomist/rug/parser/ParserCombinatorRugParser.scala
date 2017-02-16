@@ -12,9 +12,7 @@ import scala.util.matching.Regex
 /**
   * Use Scala parser combinator to Parse Rug scripts.
   */
-class ParserCombinatorRugParser(
-                                 identifierResolver: IdentifierResolver = DefaultIdentifierResolver
-                               )
+class ParserCombinatorRugParser(identifierResolver: IdentifierResolver = DefaultIdentifierResolver)
   extends CommonRugProductionsParser
     with RugParser {
 
@@ -67,14 +65,12 @@ class ParserCombinatorRugParser(
 
   object Generator extends Op
 
-  case class OperationSpec(
-                            op: Op,
-                            name: String,
-                            tags: Seq[String],
-                            description: String,
-                            publishedName: Option[String] = None,
-                            imports: Seq[Import]
-                          )
+  case class OperationSpec(op: Op,
+                           name: String,
+                           tags: Seq[String],
+                           description: String,
+                           publishedName: Option[String] = None,
+                           imports: Seq[Import])
 
   private def operationSpec(operationToken: String): Parser[OperationSpec] =
     rep(annotation) ~ operationToken ~ capitalizedIdentifier ~ rep(uses) ^^ {

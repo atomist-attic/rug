@@ -374,12 +374,12 @@
                                 <phase>process-test-resources</phase>
                             </execution>
                             <execution>
-                                <id>gulp build</id>
+                                <id>gulp typedoc</id>
                                 <goals>
                                     <goal>gulp</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>build --gulpfile .atomist/node_modules/@atomist/rug/gulpfile.js</arguments>
+                                    <arguments>typedoc --gulpfile .atomist/node_modules/@atomist/rug/gulpfile.js</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>

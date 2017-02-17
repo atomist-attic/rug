@@ -17,7 +17,6 @@ import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
   */
 class jsSafeCommittingProxy(
                              val node: TreeNode,
-                             behaviourRegistry: TreeNodeBehaviourRegistry = DefaultTreeNodeBehaviourRegistry,
                              typeRegistry: TypeRegistry = DefaultTypeRegistry)
   extends AbstractJSObject
     with TreeNode {
@@ -45,7 +44,7 @@ class jsSafeCommittingProxy(
   override def childNodeTypes: Set[String] = node.childNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] =
-    node.childrenNamed(key).map(new jsSafeCommittingProxy(_, behaviourRegistry, typeRegistry))
+    node.childrenNamed(key).map(new jsSafeCommittingProxy(_, typeRegistry))
 
   /**
     * A user is adding a named member e.g.
@@ -85,7 +84,7 @@ class jsSafeCommittingProxy(
     val st = typ
     val possibleOps = st.allOperations.filter(
       op => name.equals(op.name))
-    if (possibleOps.isEmpty && behaviourRegistry.findByNodeAndName(node, name).isEmpty) {
+    if (possibleOps.isEmpty){
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
     }
     else
@@ -122,12 +121,8 @@ class jsSafeCommittingProxy(
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       possibleOps.find(op => op.parameters.size == args.size) match {
-        case None =>
-          behaviourRegistry.findByNodeAndName(node, name) match {
-            case Some(c) => c.invokeOn(node)
-            case _ => throw new RugRuntimeException(null,
+        case None => throw new RugRuntimeException(null,
               s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
-          }
         case Some(op) =>
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
@@ -210,14 +205,14 @@ object jsSafeCommittingProxy {
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[TreeNode], cr: TreeNodeBehaviourRegistry = DefaultTreeNodeBehaviourRegistry): java.util.List[jsSafeCommittingProxy] = {
+  def wrap(nodes: Seq[TreeNode]): java.util.List[jsSafeCommittingProxy] = {
     new JavaScriptArray(
-      nodes.map(n => wrapOne(n, cr))
+      nodes.map(n => wrapOne(n))
         .asJava)
   }
 
-  def wrapOne(n: TreeNode, cr: TreeNodeBehaviourRegistry = DefaultTreeNodeBehaviourRegistry): jsSafeCommittingProxy =
-    new jsSafeCommittingProxy(n, cr)
+  def wrapOne(n: TreeNode): jsSafeCommittingProxy =
+    new jsSafeCommittingProxy(n)
 }
 
 /**

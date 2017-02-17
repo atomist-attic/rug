@@ -111,6 +111,7 @@ class PlanBuilder {
             SimpleParameterValue(name, value)
           }
       }
+
       val (name, coordinates) = jsInstruction.getMember("name") match {
         case name: String =>
           (name, None)
@@ -118,19 +119,15 @@ class PlanBuilder {
           val name = o.getMember("name").asInstanceOf[String]
           val coordinates = MavenCoordinate(
             o.getMember("group").asInstanceOf[String],
-            o.getMember("artifact").asInstanceOf[String],
-            o.getMember("version") match {
-              case v: String => Some(v)
-              case _ => None
-            }
-          )
+            o.getMember("artifact").asInstanceOf[String])
           (name, Some(coordinates))
       }
-      Instruction.Detail(
-        name,
-        coordinates,
-        parameters
-      )
+
+      val project_name = jsInstruction.getMember("project") match {
+        case project_name: String => Some(project_name)
+        case _ => None
+      }
+    Instruction.Detail(name,coordinates,parameters,project_name)
   }
 
   def constructCallback(callback: Object): Option[Callback] = {

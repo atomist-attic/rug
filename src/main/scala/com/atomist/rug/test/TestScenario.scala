@@ -5,7 +5,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.{Computation, Predicate, RunOtherOperation}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, DefaultViewFinder, RugOperationSupport}
-import com.atomist.rug.{EmptyRugFunctionRegistry, Import}
+import com.atomist.rug.{EmptyRugDslFunctionRegistry, Import}
 import com.atomist.source._
 
 /**
@@ -29,7 +29,7 @@ case class TestScenario(
 
   override val kindRegistry = DefaultTypeRegistry
 
-  override val evaluator = new DefaultEvaluator(new EmptyRugFunctionRegistry)
+  override val evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry)
 
   override def namespace: Option[String] = None
 

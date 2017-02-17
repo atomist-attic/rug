@@ -22,7 +22,7 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message, Json} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -102,8 +102,8 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
             Presentable(
             Instruction.Command(Instruction.Detail(
               "n",
-              Some(MavenCoordinate("g", "a", Some("v"))),
-              Nil
+              Some(MavenCoordinate("g", "a")),
+              Nil, None
             )),None)
           ),
           Some("w00t")),
@@ -117,9 +117,9 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
             SimpleParameterValue("method", "GET"),
             SimpleParameterValue("url", "http://youtube.com?search=kitty&safe=true"),
             SimpleParameterValue("as", "JSON")
-          )
+          ), None
         )),
-          Some(Instruction.Respond(Instruction.Detail("Kitties", None, Nil))),
+          Some(Instruction.Respond(Instruction.Detail("Kitties", None, Nil, None))),
           Some(Message(MessageText("No kitties for you today!"), Nil, None))
         ),
         Respondable(Instruction.Edit(Instruction.Detail(
@@ -127,11 +127,11 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
           None,
           Seq(
             SimpleParameterValue("message", "planception")
-          )
+          ), None
         )),
           Some(Plan(
             Seq(Message(MessageText("this is a plan that is in another plan"), Nil, None)),
-            Seq(Respondable(Instruction.Generate(Instruction.Detail("createSomething", None, Nil)), Some(Plan(Nil, Nil)), None))
+            Seq(Respondable(Instruction.Generate(Instruction.Detail("createSomething", None, Nil, None)), Some(Plan(Nil, Nil)), None))
           )),
           Some(Message(MessageText("Error!"), Nil, None))
         )

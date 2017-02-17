@@ -7,7 +7,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.rugdsl.{ContextAwareProjectOperation, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.rug.{DefaultRugPipeline, EmptyRugFunctionRegistry, Import}
+import com.atomist.rug.{DefaultRugPipeline, EmptyRugDslFunctionRegistry, Import}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
@@ -18,7 +18,7 @@ import scala.collection.Seq
   */
 class RugDslArchiveReader(
                            atomistConfig: AtomistConfig = DefaultAtomistConfig,
-                           evaluator: Evaluator = new DefaultEvaluator(new EmptyRugFunctionRegistry),
+                           evaluator: Evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry),
                            typeRegistry: TypeRegistry = DefaultTypeRegistry
                          )
   extends LazyLogging

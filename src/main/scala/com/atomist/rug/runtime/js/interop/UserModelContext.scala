@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
-import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
+import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
 /**
   * Context exposed to user JavaScript.

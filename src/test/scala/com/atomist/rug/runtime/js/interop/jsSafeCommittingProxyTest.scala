@@ -4,7 +4,7 @@ import java.util.Collections
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{FileMutableView, FileType}
-import com.atomist.rug.spi.{Command, CommandRegistry}
+import com.atomist.rug.spi.{TreeNodeBehaviour, TreeNodeBehaviourRegistry}
 import com.atomist.source.StringFileArtifact
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.AbstractJSObject
@@ -31,8 +31,8 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
   it should "not allow invocation of registered command function" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val fc = new FakeCommand
-    val sc = new jsSafeCommittingProxy(fmv, new FakeCommandRegistry(fc))
+    val fc = new FakeTreeNodeBehaviour
+    val sc = new jsSafeCommittingProxy(fmv, new FakeTreeNodeBehaviourRegistry(fc))
     val ajs: AbstractJSObject = sc.getMember("execute").asInstanceOf[AbstractJSObject]
     val afc = ajs.call(fmv, null)
     assert(fc.fmv === fmv)
@@ -42,7 +42,7 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
   it should "fail for unregistered command function" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)
-    val sc = new jsSafeCommittingProxy(fmv, new FakeCommandRegistry)
+    val sc = new jsSafeCommittingProxy(fmv, new FakeTreeNodeBehaviourRegistry)
     intercept[RugRuntimeException] {
       sc.getMember("delete")
     }
@@ -50,17 +50,17 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 
 }
 
-class FakeCommandRegistry(fakeCommand: FakeCommand = new FakeCommand) extends CommandRegistry {
+class FakeTreeNodeBehaviourRegistry(fakeCommand: FakeTreeNodeBehaviour = new FakeTreeNodeBehaviour) extends TreeNodeBehaviourRegistry {
 
-  override def findByNodeAndName(treeNode: TreeNode, name: String): Option[Command[TreeNode]] = {
+  override def findByNodeAndName(treeNode: TreeNode, name: String): Option[TreeNodeBehaviour[TreeNode]] = {
     name match {
-      case "execute" => Option(fakeCommand.asInstanceOf[Command[TreeNode]])
+      case "execute" => Option(fakeCommand.asInstanceOf[TreeNodeBehaviour[TreeNode]])
       case _ => Option.empty
     }
   }
 }
 
-class FakeCommand extends Command[FileMutableView] {
+class FakeTreeNodeBehaviour extends TreeNodeBehaviour[FileMutableView] {
   override def nodeTypes = Collections.singleton("file")
 
   override def name: String = "execute"

@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime.execution
+package com.atomist.rug.runtime.plans
 
 import com.atomist.rug.spi.Handlers.Instruction.Respond
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
@@ -10,11 +10,11 @@ import scala.concurrent.Future
 
 import com.atomist.rug.spi.JavaHandlersConverter._
 
-class LocalPlanExecutor(messageDeliverer: MessageDeliverer,
-                        instructionExecutor: InstructionExecutor,
-                        nestedPlanExecutor: Option[PlanExecutor] = None) extends PlanExecutor {
+class LocalPlanRunner(messageDeliverer: MessageDeliverer,
+                      instructionRunner: InstructionPlanner,
+                      nestedRunner: Option[PlanRunner] = None) extends PlanRunner {
 
-  override def execute(plan: Plan, callbackInput: AnyRef): Future[PlanResult] = {
+  override def run(plan: Plan, callbackInput: AnyRef): Future[PlanResult] = {
     val messageLog: Seq[MessageDeliveryError] = plan.messages.flatMap { message =>
       Try(messageDeliverer.deliver(toJavaMessage(message), callbackInput)) match {
         case ScalaFailure(e) =>  Some(MessageDeliveryError(message, e))
@@ -23,7 +23,7 @@ class LocalPlanExecutor(messageDeliverer: MessageDeliverer,
     }
     val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
       Future {
-        Try { instructionExecutor.execute(toJavaInstruction(respondable.instruction), callbackInput) } match {
+        Try { instructionRunner.run(toJavaInstruction(respondable.instruction), callbackInput) } match {
           case ScalaFailure(t) =>
             Seq(InstructionError(respondable.instruction, t))
           case ScalaSuccess(r) =>
@@ -56,12 +56,12 @@ class LocalPlanExecutor(messageDeliverer: MessageDeliverer,
       messageDeliverer.deliver(toJavaMessage(m), instructionResult.orNull)
       None
     case r: Respond =>
-      instructionExecutor.execute(toJavaInstruction(r), instructionResult.orNull)
+      instructionRunner.run(toJavaInstruction(r), instructionResult.orNull)
       None
     case p: Plan =>
-      val planExecutor = nestedPlanExecutor.getOrElse(new LocalPlanExecutor(messageDeliverer, instructionExecutor, nestedPlanExecutor))
-      val planExecution = planExecutor.execute(p, instructionResult.orNull)
-      Some(NestedPlanExecution(p, planExecution))
+      val planRunner = nestedRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedRunner))
+      val planResult = planRunner.run(p, instructionResult.orNull)
+      Some(NestedPlanRun(p, planResult))
   }
 
 }

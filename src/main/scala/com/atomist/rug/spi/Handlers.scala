@@ -69,7 +69,7 @@ object Handlers {
     def error: Throwable
   }
   case class InstructionResponse(instruction: Instruction, response: Response) extends PlanLogEvent
-  case class NestedPlanExecution(plan: Plan, planResult: Future[PlanResult]) extends PlanLogEvent
+  case class NestedPlanRun(plan: Plan, planResult: Future[PlanResult]) extends PlanLogEvent
   case class InstructionError(instruction: Instruction, error: Throwable) extends PlanLogError
   case class MessageDeliveryError(message: Message, error: Throwable) extends PlanLogError
   case class CallbackError(callback: Callback, error: Throwable) extends PlanLogError

@@ -1,12 +1,12 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
-import com.atomist.plan.TreeMaterializer
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.InstructionResponse
 import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.TreeMaterializer
 import org.scalatest.{FlatSpec, Matchers}
 
 class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{

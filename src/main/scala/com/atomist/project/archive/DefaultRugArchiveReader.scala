@@ -1,6 +1,5 @@
 package com.atomist.project.archive
 
-import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.EmptyRugFunctionRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
@@ -8,6 +7,7 @@ import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.TreeMaterializer
 
 /**
   * Use to read _all_ rugs from an archive

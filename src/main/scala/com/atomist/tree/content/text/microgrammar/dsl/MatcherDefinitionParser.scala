@@ -92,8 +92,6 @@ object MatcherDefinitionParser {
   val BreakCloseToken = "¡"
   val RegexpOpenToken = "§"
   val RegexpCloseToken = "§"
-  val PredicateOpenToken = "["
-  val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
   val StrictLiteralOpen = "⟦"
   val StrictLiteralClose = "⟧"
@@ -108,8 +106,6 @@ object MatcherDefinitionParser {
   val AnythingButReservedCharacters: ScalaRegex =
     anythingBut(Set(
       """\s""", // whitespace
-      escape(PredicateOpenToken),
-      escape(PredicateCloseToken),
       escape(BreakOpenToken), // didn't include BreakCloseToken because they're currently identical
       escape(RegexpOpenToken),  // didn't include RegexpCloseToken because they're currently identical
       VariableDeclarationToken

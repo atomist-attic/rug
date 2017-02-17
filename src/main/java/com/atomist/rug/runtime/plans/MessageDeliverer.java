@@ -1,4 +1,4 @@
-package com.atomist.rug.runtime.execution;
+package com.atomist.rug.runtime.plans;
 
 import com.atomist.rug.spi.JavaHandlers.Message;
 

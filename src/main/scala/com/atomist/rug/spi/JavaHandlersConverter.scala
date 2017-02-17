@@ -10,16 +10,16 @@ import com.atomist.rug.spi.Handlers.Status.Failure
 
 object JavaHandlersConverter {
 
-  def toScalaResponse(reponse: JavaResponse): ScalaResponse = {
-    val status = Option(reponse.status) match {
+  def toScalaResponse(response: JavaResponse): ScalaResponse = {
+    val status = Option(response.status) match {
       case Some(s) => Status.from(s.toLowerCase())
       case _ => Failure
     }
     ScalaResponse(
       status,
-      Option(reponse.msg),
-      Option(reponse.code),
-      Option(reponse.body)
+      Option(response.msg),
+      Option(response.code),
+      Option(response.body)
     )
   }
 

@@ -13,21 +13,21 @@ import java.util.{List => JList}
 class JavaHandlersConverterTest extends FunSpec with Matchers with DiagrammedAssertions with OneInstancePerTest  {
 
   it ("should convert minimal Java Response to Scala Response") {
-    val javaReponse = JavaResponse(Success.toString, null, 0, null)
+    val javaResponse = JavaResponse(Success.toString, null, 0, null)
     val scalaResponse = ScalaResponse(Success, None, Some(0), None)
-    assert(toScalaResponse(javaReponse) == scalaResponse)
+    assert(toScalaResponse(javaResponse) == scalaResponse)
   }
 
   it ("should convert Java Response with missing status to Failure Scala Response") {
-    val javaReponse = JavaResponse(null, null, 0, null)
+    val javaResponse = JavaResponse(null, null, 0, null)
     val scalaResponse = ScalaResponse(Failure, None, Some(0), None)
-    assert(toScalaResponse(javaReponse) == scalaResponse)
+    assert(toScalaResponse(javaResponse) == scalaResponse)
   }
 
   it ("should convert Java Response to Scala Response") {
-    val javaReponse = JavaResponse("failure", "message1", 42, "body")
+    val javaResponse = JavaResponse("failure", "message1", 42, "body")
     val scalaResponse = ScalaResponse(Failure, Some("message1"), Some(42), Some("body"))
-    assert(toScalaResponse(javaReponse) == scalaResponse)
+    assert(toScalaResponse(javaResponse) == scalaResponse)
   }
 
   it ("should convert minimal Scala Instruction to Java Instruction") {

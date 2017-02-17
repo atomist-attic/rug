@@ -88,4 +88,14 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(nodes2.size === 12)
     assert(nodes2.last.value === "God Save the Queen")
   }
+
+  it should "parse and run path expression against YamlOrgStart invoice" in pendingUntilFixed {
+    val f = StringFileArtifact("test.yml", YmlUsageTestTargets.YamlOrgStart)
+    val tn = typeBeingTested.fileToRawNode(f).get
+    //println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    val nodes = evaluatePathExpression(tn, "//bill-to/given")
+    assert(nodes.size == 1)
+  }
+
 }

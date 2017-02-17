@@ -1,11 +1,13 @@
 package com.atomist.tree
 
-import com.atomist.rug.spi.{ExportFunction, Typed}
+import com.atomist.graph.GraphNode
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.TreeNode.Significance
-import com.atomist.util.{Visitable, Visitor}
 
 /**
-  * Represents a node in a tree. May be terminal or non-terminal.
+  * Represents a node in a tree. A tree is a graph that is
+  * hierarchical but non-cyclical.
+  * May be terminal or non-terminal.
   * This is a core Rug abstraction. Path expressions run against TreeNodes.
   * Rug types are TreeNodes. Some TreeNodes are updatable, some are
   * purely for reference.
@@ -13,26 +15,24 @@ import com.atomist.util.{Visitable, Visitor}
   * an Issue in an issue tracker, by an AST element in a programming language source file,
   * or by a file or directory.
   */
-trait TreeNode extends Visitable {
-
-  @ExportFunction(readOnly = true, description = "Name of the node")
-  def nodeName: String
-
-  @deprecated("Please don't use this", "0.10.0")
-  @ExportFunction(readOnly = true, description = "Tags attached to the node")
-  def nodeType: Set[String] = nodeTags
-
-  /**
-    * Tags for the node, such as "File" or "JavaType". There may be multiple
-    * nodes in a tree with the same tags, and multiple tags on the one node.
-    * A common use of tags is type.
-    * @return tags for the node.
-    */
-  @ExportFunction(readOnly = true, description = "Tags attached to the node")
-  def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
+trait TreeNode extends GraphNode {
 
   @ExportFunction(readOnly = true, description = "Node content")
   def value: String
+
+  def relatedNodes: Seq[GraphNode] = childNodes
+
+  def relatedNodesNamed(key: String): Seq[GraphNode] = childrenNamed(key)
+
+  def childrenNamed(key: String): Seq[TreeNode]
+
+  override def relatedNodeNames: Set[String] = childNodeNames
+
+  override def relatedNodeTypes: Set[String] = childNodeTypes
+
+  def childNodeNames: Set[String]
+
+  def childNodeTypes: Set[String]
 
   /**
     * Return all visible children of this node
@@ -51,19 +51,6 @@ trait TreeNode extends Visitable {
     import scala.collection.JavaConverters._
     childNodes.asJava
   }
-
-  def childNodeNames: Set[String]
-
-  def childNodeTypes: Set[String]
-
-  override def accept(v: Visitor, depth: Int): Unit = {
-    if (v.visit(this, depth))
-      childNodes.foreach(_.accept(v, depth + 1))
-  }
-
-  def count: Int = childNodes.size
-
-  def childrenNamed(key: String): Seq[TreeNode]
 
   /**
     * Is this tree node here to help other nodes

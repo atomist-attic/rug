@@ -2,8 +2,7 @@ package com.atomist.rug.spi
 
 import com.atomist.param.ParameterValue
 import com.atomist.rug.spi.Handlers.MessageBody
-
-import java.util.{List =>JList}
+import java.util.{List => JList}
 
 /**
   * Beans that map to the @atomist/rug/operations/operations/Handlers

@@ -6,8 +6,7 @@ import com.atomist.rug.spi.Handlers._
 
 import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 import com.atomist.rug.spi.JavaHandlersConverter._
 
@@ -15,49 +14,54 @@ class LocalPlanExecutor(messageDeliverer: MessageDeliverer,
                         instructionExecutor: InstructionExecutor,
                         nestedPlanExecutor: Option[PlanExecutor] = None) extends PlanExecutor {
 
-  private var instructionToReponseFutures: Map[Instruction, Future[Option[Response]]] = Map()
-  private var messageDeliveryErrors: Map[Message, Throwable] = Map()
-  private var instructionErrors: Map[Instruction, Throwable] = Map()
-  private var callbackErrors: Map[Callback, Throwable] = Map()
-
-  override def execute(plan: Plan, callbackInput: AnyRef): PlanResponse = {
-    plan.messages.foreach { message =>
-      Try(messageDeliverer.deliver(toJavaMessage(message), callbackInput)).recover {
-        case e => messageDeliveryErrors += (message -> e)
+  override def execute(plan: Plan, callbackInput: AnyRef): Future[PlanResult] = {
+    val messageLog: Seq[MessageDeliveryError] = plan.messages.flatMap { message =>
+      Try(messageDeliverer.deliver(toJavaMessage(message), callbackInput)) match {
+        case ScalaFailure(e) =>  Some(MessageDeliveryError(message, e))
+        case ScalaSuccess(_) => None
       }
     }
-    plan.instructions.foreach{ respondable =>
-      val f = Future {
+    val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
+      Future {
         Try { instructionExecutor.execute(toJavaInstruction(respondable.instruction), callbackInput) } match {
           case ScalaFailure(t) =>
-            instructionErrors += (respondable.instruction -> t)
-            None
+            Seq(InstructionError(respondable.instruction, t))
           case ScalaSuccess(r) =>
             val response = toScalaResponse(r)
             val callbackOption = response match {
               case Response(Success, _, _, _) => respondable.onSuccess
               case Response(Failure, _, _, _) => respondable.onFailure
             }
-            callbackOption.foreach { callback =>
-              Try(handleCallback(callback, response.body)).recover {
-                case e => callbackErrors += (callback -> e)
+            val callbackResultOption: Option[PlanLogEvent] = callbackOption.flatMap { callback =>
+              Try(handleCallback(callback, response.body)) match {
+                case ScalaFailure(error) =>
+                  Some(CallbackError(callback, error))
+                case ScalaSuccess(nestedPlanExecutionOption) =>
+                  nestedPlanExecutionOption
               }
             }
-            Some(response)
+            Seq(
+              Some(InstructionResponse(respondable.instruction, response)),
+              callbackResultOption
+            ).flatten
         }
       }
-      instructionToReponseFutures += (respondable.instruction -> f)
     }
-    val futureResponses = Future.traverse(instructionToReponseFutures) { case (k, f) => f.map(k -> _) } map(_.toMap)
-    val instructionToReponseTrys = Await.result(futureResponses, Duration.Inf)
-    val instructionToReponses = instructionToReponseTrys.flatMap { case (k, t) => t.map(k -> _) }
-    PlanResponse(instructionToReponses, messageDeliveryErrors, instructionErrors, callbackErrors)
+    val futureInstructionLog: Future[Seq[PlanLogEvent]] = Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)
+    futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))
   }
 
-  private def handleCallback(callback: Callback, instructionResult: Option[AnyRef]): Unit = callback match {
-    case m: Message => messageDeliverer.deliver(toJavaMessage(m), instructionResult.orNull)
-    case r: Respond => instructionExecutor.execute(toJavaInstruction(r), instructionResult.orNull)
-    case p: Plan => nestedPlanExecutor.getOrElse(this).execute(p, instructionResult.orNull)
+  private def handleCallback(callback: Callback, instructionResult: Option[AnyRef]): Option[PlanLogEvent] = callback match {
+    case m: Message =>
+      messageDeliverer.deliver(toJavaMessage(m), instructionResult.orNull)
+      None
+    case r: Respond =>
+      instructionExecutor.execute(toJavaInstruction(r), instructionResult.orNull)
+      None
+    case p: Plan =>
+      val planExecutor = nestedPlanExecutor.getOrElse(new LocalPlanExecutor(messageDeliverer, instructionExecutor, nestedPlanExecutor))
+      val planExecution = planExecutor.execute(p, instructionResult.orNull)
+      Some(NestedPlanExecution(p, planExecution))
   }
 
 }

@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
-import com.atomist.plan.TreeMaterializer
+import com.atomist.tree.TreeMaterializer
 import com.atomist.tree.pathexpression.PathExpressionEngine
 
 class JavaScriptHandlerContext(val teamId: String,

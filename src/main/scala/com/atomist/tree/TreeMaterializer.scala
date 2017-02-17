@@ -1,7 +1,6 @@
-package com.atomist.plan
+package com.atomist.tree
 
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.PathExpression
 
 /**

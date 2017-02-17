@@ -5,9 +5,9 @@ import java.util.Set
 import com.atomist.tree.TreeNode
 
 /**
-  * Simple command that attaches behaviour to the a TreeNode.
+  * Attaches behaviour to the a TreeNode.
   */
-trait Command[T <: TreeNode] {
+trait TreeNodeBehaviour[T <: TreeNode] {
 
   /**
     * The TreeNode the name function should become available
@@ -20,7 +20,7 @@ trait Command[T <: TreeNode] {
   def name: String
 
   /**
-    * Invoke the command on the given TreeNode
+    * Invoke the function on the given TreeNode
     */
   def invokeOn(treeNode: T): Object
 }

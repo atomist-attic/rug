@@ -1,12 +1,12 @@
 package com.atomist.project.archive
 
-import com.atomist.plan.TreeMaterializer
 import com.atomist.rug.runtime.js.TestTreeMaterializer
 import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.source.file.ClassPathArtifactSource
+import com.atomist.tree.TreeMaterializer
 import org.scalatest.{FlatSpec, Matchers}
 
 class JavaScriptRugArchiveReaderTest extends FlatSpec with Matchers {

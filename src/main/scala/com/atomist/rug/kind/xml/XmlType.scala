@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.xml
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
@@ -17,7 +18,7 @@ class XmlType(
 
   override def runtimeClass = classOf[XmlMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
     context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject.allFiles

@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.rug.archive
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 class RugArchiveProjectType
   extends Type(DefaultEvaluator)
@@ -15,7 +15,7 @@ class RugArchiveProjectType
   def description: String = "Rug archive"
 
   // Members declared in com.atomist.rug.kind.dynamic.ViewFinder
-  override def findAllIn(context: TreeNode): Option[Seq[com.atomist.rug.spi.MutableView[_]]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[com.atomist.rug.spi.MutableView[_]]] = {
     context match {
       case pv: ProjectMutableView if pv.directoryExists(".atomist") =>
         Some(Seq(new RugArchiveProjectMutableView(pv)))

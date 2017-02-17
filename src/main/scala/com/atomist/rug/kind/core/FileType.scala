@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
@@ -18,7 +19,7 @@ class FileType(
 
   override def runtimeClass = classOf[FileMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
     case pmv: ProjectMutableView =>
       Some(pmv.currentBackingObject.allFiles.map(f => new FileMutableView(f, pmv)))
     case _ => None

@@ -2,6 +2,7 @@ package com.atomist.rug.kind.java
 
 import java.util.{List => JList}
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
@@ -27,7 +28,7 @@ class JavaProjectType(
 
   override def runtimeClass = classOf[JavaProjectMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
     context match {
       case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
         Some(Seq(new JavaProjectMutableView(pv)))

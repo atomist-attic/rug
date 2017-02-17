@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
@@ -18,7 +19,7 @@ class ProjectType(
 
   override def runtimeClass = classOf[ProjectMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = {
     // Special case where we want only one
     context match {
       case pmv: ProjectMutableView =>

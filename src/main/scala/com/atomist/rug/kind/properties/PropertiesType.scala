@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.properties
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 class PropertiesType(
                       evaluator: Evaluator
@@ -17,7 +17,7 @@ class PropertiesType(
 
   override def runtimeClass = classOf[PropertiesMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
     context match {
       case fmv: FileMutableView =>
         Some(Seq(fmv.originalBackingObject)

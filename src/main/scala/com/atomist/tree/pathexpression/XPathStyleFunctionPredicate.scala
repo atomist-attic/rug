@@ -4,7 +4,8 @@ import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
 import XPathTypes._
-import com.atomist.graph.{GraphNode, GraphNodeUtils}
+import com.atomist.graph.GraphNode
+import com.atomist.tree.utils.NodeUtils
 
 /**
   * Handles an XPath predicate based on a function call
@@ -47,7 +48,7 @@ case class XPathStyleFunctionPredicate(override val name: String,
       case s: StringLiteralFunctionArg => s.s
       case rpe: RelativePathFunctionArg => ee.evaluate(contextNode, rpe.pe, tr, np) match {
         case Right(l) if l.nonEmpty =>
-          GraphNodeUtils.value(l.head)
+          NodeUtils.value(l.head)
         case _ => ""
       }
     }

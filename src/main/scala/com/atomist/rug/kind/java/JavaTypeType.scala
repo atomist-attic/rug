@@ -1,11 +1,11 @@
 package com.atomist.rug.kind.java
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
 
@@ -26,7 +26,7 @@ class JavaTypeType(evaluator: Evaluator)
 
   override def runtimeClass = classOf[JavaClassOrInterfaceView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>
         Some(JavaProjectMutableView(pv).javaSourceViews.flatMap(_.childrenNamed(JavaTypeAlias)))
       case fmv: FileArtifactBackedMutableView =>

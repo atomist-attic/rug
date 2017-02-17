@@ -1,13 +1,12 @@
 package com.atomist.rug.kind.yml.path
 
-import com.atomist.graph.GraphNodeUtils
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yml.YmlUsageTestTargets
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.{MutableTreeNode, TreeNode, UpdatableTreeNode}
 import com.atomist.tree.content.text.OverwritableTextTreeNode
-import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
 
 class YmlFileTypeTest extends AbstractTypeUnderFileTest {
 
@@ -30,7 +29,7 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
 
     val nodes = evaluatePathExpression(tn, "/artifact")
     assert(nodes.size == 1)
-    assert(GraphNodeUtils.value(nodes.head) === "A Night at the Opera")
+    assert(NodeUtils.value(nodes.head) === "A Night at the Opera")
   }
 
   it should "find scala value in quotes and modify" in {
@@ -77,7 +76,7 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(nodes.size == 1)
     val nodes2 = evaluatePathExpression(tn, "/dependencies/*")
     assert(nodes2.size === 12)
-    assert(GraphNodeUtils.value(nodes2.last) === "God Save the Queen")
+    assert(NodeUtils.value(nodes2.last) === "God Save the Queen")
   }
 
   it should "parse and run path expression using type" in {
@@ -87,7 +86,7 @@ class YmlFileTypeTest extends AbstractTypeUnderFileTest {
 
     val nodes2 = evaluatePathExpression(tn, "/Sequence()[@name='dependencies']/*")
     assert(nodes2.size === 12)
-    assert(GraphNodeUtils.value(nodes2.last) === "God Save the Queen")
+    assert(NodeUtils.value(nodes2.last) === "God Save the Queen")
   }
 
   it should "parse and run path expression against YamlOrgStart invoice" in pendingUntilFixed {

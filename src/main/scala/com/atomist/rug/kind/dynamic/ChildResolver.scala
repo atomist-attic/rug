@@ -13,10 +13,6 @@ trait ChildResolver {
     *
     * @param context
     */
-  def findAllIn(context: TreeNode): Option[Seq[TreeNode]]
+  def findAllIn(context: GraphNode): Option[Seq[TreeNode]]
 
-  def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
-    case tn: TreeNode => findAllIn(tn)
-    case _ => None
-  }
 }

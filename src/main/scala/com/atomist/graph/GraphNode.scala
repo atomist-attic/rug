@@ -1,7 +1,6 @@
 package com.atomist.graph
 
 import com.atomist.rug.spi.{ExportFunction, Typed}
-import com.atomist.tree.TreeNode
 import com.atomist.util.{Visitable, Visitor}
 
 /**
@@ -41,13 +40,4 @@ trait GraphNode extends Visitable {
 
   def relatedNodesNamed(key: String): Seq[GraphNode]
 
-}
-
-
-object GraphNodeUtils {
-
-  def value(gn: GraphNode): String = gn match {
-    case tn: TreeNode => tn.value
-    case _ => ""
-  }
 }

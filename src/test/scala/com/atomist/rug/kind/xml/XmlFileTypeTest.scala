@@ -1,13 +1,13 @@
 package com.atomist.rug.kind.xml
 
-import com.atomist.graph.{GraphNode, GraphNodeUtils}
+import com.atomist.graph.GraphNode
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.pathexpression.{PathExpressionEngine, PathExpressionParser}
-import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -60,8 +60,8 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
 //    println(results.map(n => n.asInstanceOf[MutableContainerMutableView].currentBackingObject.asInstanceOf[PositionedTreeNode].startPosition))
 //    results.tail.head.value should be ("<groupId>org.springframework.boot</groupId>")
 //    results.head.value should be ("<groupId>com.example</groupId>")
-    results.exists(r => GraphNodeUtils.value(r) == "<groupId>org.springframework.boot</groupId>") should be (true)
-    results.exists(r => GraphNodeUtils.value(r) == "<groupId>com.example</groupId>") should be (true)
+    results.exists(r => NodeUtils.value(r) == "<groupId>org.springframework.boot</groupId>") should be (true)
+    results.exists(r => NodeUtils.value(r) == "<groupId>com.example</groupId>") should be (true)
   }
 
   it should "drill down to named XML element" in {

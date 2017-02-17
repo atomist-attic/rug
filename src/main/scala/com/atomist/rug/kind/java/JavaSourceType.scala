@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.java
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -22,7 +22,7 @@ class JavaSourceType(evaluator: Evaluator)
 
   override def runtimeClass = classOf[JavaSourceMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>
         Some(JavaProjectMutableView(pv).javaSourceViews)
       case fmv: FileArtifactBackedMutableView =>

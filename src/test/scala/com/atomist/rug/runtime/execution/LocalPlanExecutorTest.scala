@@ -14,6 +14,10 @@ import org.scalatest._
 import com.atomist.rug.spi.JavaHandlersConverter._
 import com.atomist.rug.spi.JavaHandlers.{Response => JavaResponse}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+
 class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAssertions with OneInstancePerTest with MockitoSugar  {
 
   val messageDeliverer = mock[MessageDeliverer]
@@ -25,9 +29,9 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
   it ("should execute empty plan") {
     val plan = Plan(Nil, Nil)
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedPlanResponse = PlanResponse(Map(), Map(), Map(), Map())
-    assert(actualPlanResponse == expectedPlanResponse)
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanResponse = PlanResult(Seq())
+    assert(actualPlanResult == expectedPlanResponse)
 
     verifyNoMoreInteractions(messageDeliverer, instructionExecutor, nestedPlanExecutor)
   }
@@ -71,19 +75,21 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
       }
     }
     when(instructionExecutor.execute(any(), any())).thenAnswer(instructionNameAsSuccessResponseBody)
+    when(nestedPlanExecutor.execute(any(), any())).thenReturn(Future {
+      PlanResult(Seq(MessageDeliveryError(Message(MessageText("nested plan"), Nil, None), null)))
+    })
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedPlanResponse = PlanResponse(
-      Map(
-        Edit(Detail("edit1", None, List())) -> Response(Success, None, Some(0), Some("edit1")),
-        Edit(Detail("edit2", None, List())) -> Response(Success, None, Some(0), Some("edit2")),
-        Edit(Detail("edit3", None, List())) -> Response(Success, None, Some(0), Some("edit3")),
-        Edit(Detail("edit4", None, List())) -> Response(Success, None, Some(0), Some("edit4"))
-      ),
-      Map(),Map(),Map()
-    )
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanLog = Set(
+      InstructionResponse(Edit(Detail("edit1", None, List())), Response(Success, None, Some(0), Some("edit1"))),
+      InstructionResponse(Edit(Detail("edit2", None, List())), Response(Success, None, Some(0), Some("edit2"))),
+      InstructionResponse(Edit(Detail("edit3", None, List())), Response(Success, None, Some(0), Some("edit3"))),
+      InstructionResponse(Edit(Detail("edit4", None, List())), Response(Success, None, Some(0), Some("edit4"))),
+      NestedPlanExecution(Plan(List(Message(MessageText("nested plan"), Nil, None)), Nil),
+        Future(PlanResult(List(MessageDeliveryError(Message(MessageText("nested plan"), Nil, None), null)))))
+      )
 
-    assert(actualPlanResponse == expectedPlanResponse)
+    assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
     verify(messageDeliverer).deliver(toJavaMessage(
       Message(MessageText("message1"), Seq(Presentable(Generate(Detail("generate1", None, Nil)), Some("label1"))), None)),
@@ -116,12 +122,11 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
     }
     when(instructionExecutor.execute(any(), any())).thenAnswer(instructionNameAsFailureResponseBody)
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedPlanResponse = PlanResponse(Map(
-      Edit(Detail("edit2", None, List())) -> Response(Failure, None, Some(0), Some("edit2"))),
-      Map(),Map(),Map()
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanLog = Set(
+      InstructionResponse(Edit(Detail("edit2", None, List())), Response(Failure, None, Some(0), Some("edit2")))
     )
-    assert(actualPlanResponse == expectedPlanResponse)
+    assert(actualPlanResult.log.toSet == expectedPlanLog)
 
     val inOrder = Mockito.inOrder(messageDeliverer, instructionExecutor, nestedPlanExecutor)
     inOrder.verify(instructionExecutor).execute(toJavaInstruction(Edit(Detail("edit2", None, Nil))), "plan input")
@@ -129,7 +134,13 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
     verifyNoMoreInteractions(messageDeliverer, instructionExecutor, nestedPlanExecutor)
   }
 
-  val makeErrorsComparable = (errorMap: Map[_ <: Any, Throwable]) => errorMap.map{ case (k, v) => (k, v.getMessage)}
+  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => log.map {
+    case InstructionResponse(i, r) => (i, r)
+    case NestedPlanExecution(p, f) => (p, f.value.get)
+    case InstructionError(i, e) => (i, e.getMessage)
+    case MessageDeliveryError(m, e) => (m, e.getMessage)
+    case CallbackError(c, e) => (c, e.getMessage)
+  }
 
   it ("should handle error during message delivery") {
     val plan = Plan(
@@ -144,12 +155,11 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
     )
     when(messageDeliverer.deliver(any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedErrors = Map(Message(MessageText("message1"), List(), None) -> new IllegalArgumentException("Uh oh!"))
-    assert(actualPlanResponse.instructionResponses == Map())
-    assert(makeErrorsComparable(actualPlanResponse.messageDeliveryErrors) == makeErrorsComparable(expectedErrors))
-    assert(actualPlanResponse.instructionErrors == Map())
-    assert(actualPlanResponse.callbackErrors == Map())
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanLog = Set(
+      MessageDeliveryError(Message(MessageText("message1"), List(), None), new IllegalArgumentException("Uh oh!"))
+    )
+    assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
   }
 
   it ("should handle error during respondable instruction execution") {
@@ -165,12 +175,11 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
     )
     when(instructionExecutor.execute(any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedErrors = Map(Edit(Detail("fail", None, List())) -> new IllegalArgumentException("Uh oh!"))
-    assert(actualPlanResponse.instructionResponses == Map())
-    assert(actualPlanResponse.messageDeliveryErrors == Map())
-    assert(makeErrorsComparable(actualPlanResponse.instructionErrors) == makeErrorsComparable(expectedErrors))
-    assert(actualPlanResponse.callbackErrors == Map())
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanLog = Set(
+      InstructionError(Edit(Detail("fail", None, List())), new IllegalArgumentException("Uh oh!"))
+    )
+    assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
   }
 
   it ("should handle failing respondable callback") {
@@ -187,12 +196,12 @@ class LocalPlanExecutorTest extends FunSpec with Matchers with DiagrammedAsserti
     when(instructionExecutor.execute(any(), any())).thenReturn(JavaResponse(Success.toString, null, 0, null))
     when(nestedPlanExecutor.execute(any(), any())).thenThrow(new IllegalStateException("Uh oh!"))
 
-    val actualPlanResponse = planExecuter.execute(plan, "plan input")
-    val expectedErrors = Map(Plan(List(Message(MessageText("fail"), List(), None)), List()) -> new IllegalStateException("Uh oh!"))
-    assert(actualPlanResponse.instructionResponses == Map(Edit(Detail("edit", None, List())) -> Response(Success, None, Some(0), None)))
-    assert(actualPlanResponse.messageDeliveryErrors == Map())
-    assert(actualPlanResponse.instructionErrors == Map())
-    assert(makeErrorsComparable(actualPlanResponse.callbackErrors) == makeErrorsComparable(expectedErrors))
+    val actualPlanResult = Await.result(planExecuter.execute(plan, "plan input"), 10.seconds)
+    val expectedPlanLog = Set(
+      InstructionResponse(Edit(Detail("edit", None, List())), Response(Success, None, Some(0), None)),
+      CallbackError(Plan(List(Message(MessageText("fail"), List(), None)), List()), new IllegalArgumentException("Uh oh!"))
+    )
+    assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
   }
 
 }

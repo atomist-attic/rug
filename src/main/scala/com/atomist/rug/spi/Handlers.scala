@@ -3,6 +3,8 @@ package com.atomist.rug.spi
 import com.atomist.param.ParameterValue
 import com.atomist.rug.spi.Handlers.Instruction.Detail
 
+import scala.concurrent.Future
+
 /**
   * Beans that map to the @atomist/rug/operations/operations/Handlers
   */
@@ -61,12 +63,17 @@ object Handlers {
                          code: Option[Int] = None,
                          body: Option[AnyRef] = None)
 
-  case class PlanResponse(
-                           instructionResponses: Map[Instruction, Response],
-                           messageDeliveryErrors: Map[Message, Throwable],
-                           instructionErrors: Map[Instruction, Throwable],
-                           callbackErrors: Map[Callback, Throwable]
-                         )
+  case class PlanResult(log: Seq[PlanLogEvent])
+  sealed trait PlanLogEvent
+  sealed trait PlanLogError extends PlanLogEvent {
+    def error: Throwable
+  }
+  case class InstructionResponse(instruction: Instruction, response: Response) extends PlanLogEvent
+  case class NestedPlanExecution(plan: Plan, planResult: Future[PlanResult]) extends PlanLogEvent
+  case class InstructionError(instruction: Instruction, error: Throwable) extends PlanLogError
+  case class MessageDeliveryError(message: Message, error: Throwable) extends PlanLogError
+  case class CallbackError(callback: Callback, error: Throwable) extends PlanLogError
+
   sealed trait Status
   object Status {
     case object Success extends Status

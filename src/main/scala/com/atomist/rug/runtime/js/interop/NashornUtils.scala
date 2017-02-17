@@ -19,7 +19,6 @@ object NashornUtils {
   def toJavaType(nashornReturn: Object): Object = nashornReturn match {
     case s: ConsString => s.toString
     case r: ScriptObjectMirror if r.isArray =>
-      //println(s"Array size is ${r.values().size()}")
       r.values().asScala
     case x => x
   }
@@ -42,7 +41,6 @@ object NashornUtils {
 
   def toScalaSeq(nashornReturn: Object): Seq[Object] = nashornReturn match {
     case r: ScriptObjectMirror if r.isArray =>
-      //println(s"Array size is ${r.values().size()}")
       r.values().asScala.toSeq
   }
 

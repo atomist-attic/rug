@@ -2,19 +2,20 @@ package com.atomist.rug.tree.context.text
 
 import java.io.File
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.runtime.js.{JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import org.scalatest.{FlatSpec, Matchers}
-import com.atomist.rug.ts.TypeScriptBuilder
 
 class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
 
   it should "use Microgrammar from TypeScript" in {
 
     val tsEditorResource = "com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.ts"
-    val parameters = SimpleProjectOperationArguments.Empty
+    val parameters = SimpleParameterValues.Empty
     val target = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/test/scala/com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.scala")))
     val fileThatWillBeModified = "MicrogrammarTypeScriptTest.scala"
 
@@ -23,7 +24,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-    val projectEditor = JavaScriptOperationFinder.fromJavaScriptArchive(artifactSourceWithRugNpmModule).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val projectEditor = SimpleJavaScriptProjectOperationFinder.find(artifactSourceWithRugNpmModule).editors.head
 
     // apply the operation
     projectEditor.modify(target, parameters) match {
@@ -41,7 +42,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
 
   it should "Apply a sample editor " in {
     val tsEditorResource = "com/atomist/rug/tree/context/text/MicrogrammarTypeScriptSampleEditor.ts"
-    val parameters = SimpleProjectOperationArguments.Empty
+    val parameters = SimpleParameterValues.Empty
     val target = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(
       new File("src/test/scala/com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.scala")))
     val fileThatWillBeModified = "MicrogrammarTypeScriptTest.scala"
@@ -51,7 +52,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-    val projectEditor = JavaScriptOperationFinder.fromJavaScriptArchive(artifactSourceWithRugNpmModule).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val projectEditor = SimpleJavaScriptProjectOperationFinder.find(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
 
     // apply the operation
     projectEditor.modify(target, parameters) match {

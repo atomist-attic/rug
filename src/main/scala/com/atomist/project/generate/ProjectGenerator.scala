@@ -1,7 +1,8 @@
 package com.atomist.project.generate
 
+import com.atomist.param.ParameterValues
+import com.atomist.project.ProjectDelta
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.{ProjectDelta, ProjectOperationArguments}
 import com.atomist.source.ArtifactSource
 
 /**
@@ -9,8 +10,9 @@ import com.atomist.source.ArtifactSource
   * given parameter values, which should match
   * parameters specified in the parameters() method.
   */
-trait ProjectGenerator extends ProjectDelta {
+trait ProjectGenerator
+  extends ProjectDelta {
 
   @throws(classOf[InvalidParametersException])
-  def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource
+  def generate(projectName: String, poa: ParameterValues): ArtifactSource
 }

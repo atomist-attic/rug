@@ -2,10 +2,11 @@ package com.atomist.rug.kind.core
 
 import java.util.{Collections, Objects}
 
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
@@ -40,7 +41,7 @@ class ProjectMutableView(
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
                           projectOperations: Seq[ProjectOperation] = Nil,
-                          ctx: UserModelContext = LocalAtomistFacade)
+                          ctx: UserModelContext = LocalAtomistContext)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
     with ChangeLogging[ArtifactSource] {
 
@@ -407,7 +408,7 @@ class ProjectMutableView(
     }.headOption.getOrElse(
       throw new RugRuntimeException(name, s"Cannot find project editor [$editorName]")
     )
-    ed.modify(currentBackingObject, SimpleProjectOperationArguments("invocation", params)) match {
+    ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
       case sm: SuccessfulModification =>
         updateTo(sm.result)
       case nmn: NoModificationNeeded => currentBackingObject
@@ -448,8 +449,8 @@ class ProjectMutableView(
     */
   protected def applyEditor(
                              ed: ProjectEditor,
-                             poa: ProjectOperationArguments = SimpleProjectOperationArguments.Empty): ArtifactSource = {
-    ed.modify(currentBackingObject, SimpleProjectOperationArguments.Empty) match {
+                             poa: ParameterValues = SimpleParameterValues.Empty): ArtifactSource = {
+    ed.modify(currentBackingObject, poa) match {
       case sm: SuccessfulModification => sm.result
       case nmn: NoModificationNeeded => currentBackingObject
       case wtf =>

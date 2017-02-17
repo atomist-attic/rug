@@ -2,12 +2,11 @@ package com.atomist.rug.ts
 
 import java.io.PrintWriter
 
-import com.atomist.param.Parameter
+import com.atomist.param.{Parameter, ParameterValues, SimpleParameterValues}
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.project.{ProjectOperationArguments, SimpleProjectOperationArguments}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
@@ -26,7 +25,7 @@ object TypeScriptInterfaceGenerator extends App {
 
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate("", SimpleProjectOperationArguments("", Map(generator.OutputPathParam -> target)))
+  val output = generator.generate("", SimpleParameterValues( Map(generator.OutputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
 
@@ -39,7 +38,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig())
   extends ProjectGenerator
     with ProjectEditor
-    with ProjectOperationParameterSupport {
+    with ProjectOperationSupport {
 
   val DefaultTemplateName = "ts.vm"
 
@@ -117,7 +116,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     .setDefaultValue(DefaultFilename))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
-  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
     val createdFiles = emitInterfaces(poa)
     new SimpleFileBasedArtifactSource("Rug user model", createdFiles)
   }
@@ -181,9 +180,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     methods
   }
 
-  private def emitInterfaces(poa: ProjectOperationArguments): Seq[FileArtifact] = {
+  private def emitInterfaces(poa: ParameterValues): Seq[FileArtifact] = {
     val tsInterfaces = ListBuffer.empty[StringFileArtifact]
-
     val alreadyGenerated = ListBuffer.empty[InterfaceType]
     val interfaceTypes = allInterfaceTypes(typeRegistry.types.sortWith(typeSort))
     val pathParam = poa.stringParamValue(OutputPathParam)
@@ -216,12 +214,12 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   }
 
   private def getImports(interfaceTypes: Seq[InterfaceType], currentType: InterfaceType) = {
-    val imports = interfaceTypes.map(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
-      .filter(currentType.name != t.name && _ == t.name)).flatten.toList
+    val imports = interfaceTypes.flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
+      .filter(currentType.name != t.name && _ == t.name)).toList
     (currentType.parent :: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 
-  override def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
+  override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
     val createdFile = emitInterfaces(poa)
     val r = as + createdFile
     SuccessfulModification(r)

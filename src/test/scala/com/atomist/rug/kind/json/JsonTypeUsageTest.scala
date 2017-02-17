@@ -1,12 +1,10 @@
 package com.atomist.rug.kind.json
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
-import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
+import com.atomist.rug._
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
-import com.atomist.rug._
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -162,7 +160,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
     val newName = "Foo"
 
     val r = doModification(prog, as, EmptyArtifactSource(InterpreterRugPipeline.DefaultRugArchive),
-      SimpleProjectOperationArguments("", Map(
+      SimpleParameterValues( Map(
       "new_name" -> newName
     )), pipeline = pipeline)
 

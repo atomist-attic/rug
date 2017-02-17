@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -53,7 +53,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       """.stripMargin
     val unguarded = create(prog(false))
     assert(unguarded.applicability(simpleAs).canApply === true)
-    unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+    unguarded.modify(simpleAs, SimpleParameterValues.Empty)
     match {
       case sm: SuccessfulModification =>
       
@@ -61,7 +61,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     }
     val guarded = create(prog(true))
     assert(guarded.applicability(simpleAs).canApply === false)
-    guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+    guarded.modify(simpleAs, SimpleParameterValues.Empty)
     match {
       case nmn: NoModificationNeeded =>
       
@@ -124,7 +124,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     for (doit <- shouldDoIts) {
       val ja = create(doit)
       assert(ja.applicability(simpleAs).canApply === true)
-      ja.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+      ja.modify(simpleAs, SimpleParameterValues.Empty)
       match {
         case sm: SuccessfulModification =>
         
@@ -135,7 +135,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     for (dont <- shouldNotDoIts) {
       val nein = create(dont)
       assert(nein.applicability(simpleAs).canApply === false)
-      nein.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+      nein.modify(simpleAs, SimpleParameterValues.Empty)
       match {
         case nmn: NoModificationNeeded =>
         
@@ -171,7 +171,7 @@ class ConditionsTest extends FlatSpec with Matchers {
       """.stripMargin
     val harmlessGuard = create(prog)
     assert(harmlessGuard.applicability(simpleAs).canApply === true)
-    harmlessGuard.modify(simpleAs, SimpleProjectOperationArguments.Empty)
+    harmlessGuard.modify(simpleAs, SimpleParameterValues.Empty)
   }
 
   it should "reject missing precondition" in {
@@ -263,7 +263,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     val unguarded = create(postconditionProg(""))
     assert(unguarded.applicability(simpleAs).canApply === true)
     unguarded.meetsPostcondition(simpleAs) should be(false)
-    unguarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    unguarded.modify(simpleAs, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
       
       case _ => ???
@@ -274,7 +274,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     val guarded = create(postconditionProg("postcondition AlwaysGripe"))
     assert(guarded.applicability(simpleAs).canApply === true)
     guarded.meetsPostcondition(simpleAs) should be(false)
-    guarded.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    guarded.modify(simpleAs, SimpleParameterValues.Empty) match {
       case fm: FailedModificationAttempt =>
       
       case _ => ???
@@ -285,7 +285,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     val guarded2 = create(postconditionProg("postcondition DidIt"))
     assert(guarded2.applicability(simpleAs).canApply === true)
     guarded2.meetsPostcondition(simpleAs) should be(false)
-    guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    guarded2.modify(simpleAs, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         guarded2.meetsPostcondition(sm.result) should be(true)
       case _ => ???
@@ -296,7 +296,7 @@ class ConditionsTest extends FlatSpec with Matchers {
     val guarded2 = create(postconditionProg("postcondition NeverGripes"))
     //guarded2.applicability(simpleAs).canApply should be (false)
     guarded2.meetsPostcondition(simpleAs) should be(true)
-    guarded2.modify(simpleAs, SimpleProjectOperationArguments.Empty) match {
+    guarded2.modify(simpleAs, SimpleParameterValues.Empty) match {
       case sm: NoModificationNeeded =>
       
       case _ => ???

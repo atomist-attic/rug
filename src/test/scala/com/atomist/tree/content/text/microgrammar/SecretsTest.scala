@@ -1,6 +1,6 @@
 package com.atomist.tree.content.text.microgrammar
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
@@ -65,7 +65,7 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("application.yml", inYml))
-    val rr = ed.review(target, SimpleProjectOperationArguments.Empty)
+    val rr = ed.review(target, SimpleParameterValues.Empty)
     assert(rr.comments.size === 3)
   }
 }

@@ -1,12 +1,11 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
-import com.atomist.rug.{CompilerChainPipeline, DefaultRugPipeline}
+import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.test.RugTestRunnerTestSupport
-import com.atomist.rug.ts.RugTranspiler
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -42,7 +41,7 @@ class OverloadedMethodRunnerTest extends FlatSpec with Matchers with RugTestRunn
   // Return new content
   private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Map(
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(Map(
       "foo" -> "bar"
     )))
   }

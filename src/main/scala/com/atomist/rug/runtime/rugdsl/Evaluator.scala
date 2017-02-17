@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
 import com.atomist.source.ArtifactSource
 import com.atomist.util.scalaparsing.ToEvaluate
@@ -22,5 +22,5 @@ trait Evaluator {
                                         target: T,
                                         alias: String,
                                         identifierMap: Map[String, Object],
-                                        poa: ProjectOperationArguments): R
+                                        poa: ParameterValues): R
 }

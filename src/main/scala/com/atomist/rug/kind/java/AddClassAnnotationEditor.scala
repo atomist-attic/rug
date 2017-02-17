@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.{JavaConstants, JavaHelpers, JavaParserUtils}
 import com.github.javaparser.JavaParser
@@ -41,7 +41,7 @@ class AddClassAnnotationEditor(selector: ClassOrInterfaceDeclaration => Boolean,
     annotatedFiles
   }
 
-  override protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit] = {
+  override protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ParameterValues): Option[CompilationUnit] = {
     val modifiedTypes: Traversable[ClassOrInterfaceDeclaration] = cu.getTypes.asScala. collect {
       case coit: ClassOrInterfaceDeclaration if selector(coit) && JavaTypeType.annotationAddedTo(coit, annotationName) =>
         coit

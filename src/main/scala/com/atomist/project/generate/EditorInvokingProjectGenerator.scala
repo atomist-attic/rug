@@ -1,7 +1,6 @@
 package com.atomist.project.generate
 
 import com.atomist.param._
-import com.atomist.project.ProjectOperationArguments
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
@@ -30,7 +29,7 @@ class EditorInvokingProjectGenerator(val name: String,
   override def description: String = editor.description
 
   @throws(classOf[InvalidParametersException])
-  override def generate(projectName: String, poa: ProjectOperationArguments): ArtifactSource = {
+  override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
     val project = new EmptyArtifactSource(projectName) + startProject
     editor.modify(project, poa) match {
       case sm: SuccessfulModification =>

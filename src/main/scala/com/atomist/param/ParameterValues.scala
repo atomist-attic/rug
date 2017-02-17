@@ -35,4 +35,10 @@ trait ParameterValues {
     case s: String => s.toString
     case _ => throw new IllegalArgumentException(s"'$name' is not a String")
   }
+
+  override def toString(): String = {
+    val parms = new StringBuilder()
+    parameterValues.foreach(p => parms.append(s"${p.getName} -> ${p.getValue}\n"))
+    parms.toString()
+  }
 }

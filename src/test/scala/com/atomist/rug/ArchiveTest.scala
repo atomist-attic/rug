@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -126,7 +126,7 @@ class ArchiveTest extends FlatSpec with Matchers {
       fail(s"Did not find editor with name '$editorName': Have [${eds.map(_.name)}] " +
         s"\n${ArtifactSourceUtils.prettyListFiles(rugAs)}")
 
-    peO.get.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments("", Map[String, String](
+    peO.get.asInstanceOf[ProjectEditor].modify(project, SimpleParameterValues(Map[String, String](
     )))
   }
 }

@@ -1,7 +1,8 @@
 package com.atomist.project.review
 
+import com.atomist.param.ParameterValues
 import com.atomist.project.review.Severity.Severity
-import com.atomist.project.{ProjectDelta, ProjectOperationArguments}
+import com.atomist.project.ProjectDelta
 import com.atomist.source.ArtifactSource
 
 case class ReviewResult(
@@ -32,5 +33,5 @@ case class ReviewComment(
 trait ProjectReviewer extends ProjectDelta {
 
   def review(as: ArtifactSource,
-            pos: ProjectOperationArguments): ReviewResult
+            pos: ParameterValues): ReviewResult
 }

@@ -1,14 +1,13 @@
 package com.atomist.rug
 
-import com.atomist.param.Parameter
-import com.atomist.util.scalaparsing.SimpleLiteral
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.{Parameter, SimpleParameterValues}
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.rug.parser._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, LambdaPredicate, RugDrivenProjectEditor}
 import com.atomist.source._
+import com.atomist.util.scalaparsing.SimpleLiteral
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -165,7 +164,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
 
     // Now try the editor
     //show(RugCompilerTest.JavaAndText)
-    val r = pe.modify(RugCompilerTest.JavaAndText, SimpleProjectOperationArguments.Empty)
+    val r = pe.modify(RugCompilerTest.JavaAndText, SimpleParameterValues.Empty)
     r match {
       case sm: SuccessfulModification =>
         //show(sm.result)

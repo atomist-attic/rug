@@ -1,10 +1,10 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.Tag
+import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -212,7 +212,6 @@ object TypeScriptRugEditorTest {
     """.stripMargin
 
     val EditorInjectedWithPathExpressionObject: String =
-
       """import {Project,File} from '@atomist/rug/model/Core'
         |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
         |import {Parameter, Editor, Tags} from '@atomist/rug/operations/Decorators'
@@ -252,7 +251,6 @@ object TypeScriptRugEditorTest {
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
-
     """import {Project, File} from '@atomist/rug/model/Core'
       |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
@@ -397,7 +395,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
-    override protected  def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
       SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
     }
 
@@ -426,7 +424,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       SimpleEditorWithRelativeDependency)
     val dep = StringFileArtifact(s".atomist/editors/Foo.ts", SimpleTsUtil)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simple, dep))
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
   }
 
   it should "find parameter metadata" in {
@@ -485,13 +483,13 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "send editor bad input and get appropriate response" in {
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
     // This should not work beause it doesn't meet the content pattern
-    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Bjarn Stroustrup is God"))))
+    an[IllformedParametersException] should be thrownBy (jsed.modify(target, SimpleParameterValues(Map("content" -> "Bjarn Stroustrup is God"))))
   }
 
   it should "handle default parameter values" in {
@@ -507,12 +505,13 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     assert(p.getMaxLength === 100)
   }
 
-  private  def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptInvokingProjectEditor, SuccessfulModification) = {
+  private  def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Constructed")
+
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
-    jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed"))) match {
+    jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
       //sm.comment.contains("OK") should be(true)
         sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
@@ -520,29 +519,32 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       case _ => ???
     }
   }
-  private  def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectGenerator = {
+
+  private  def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectGenerator = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectGenerator]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
     assert(jsed.name === "SimpleGenerator")
+
     jsed.setContext(others)
 
-    val prj = jsed.generate("woot", SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God")))
+    val prj = jsed.generate("woot", SimpleParameterValues( Map("content" -> "Anders Hjelsberg is God")))
     assert(prj.id.name === "woot")
 
     jsed
   }
 
-  private  def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
+
     jsed.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    jsed.modify(target, SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))) match {
+    jsed.modify(target, SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God"))) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
         sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
@@ -551,15 +553,16 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private  def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(TypeScriptBuilder.compileWithModel(as)).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
+
     jsed.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    val p = SimpleProjectOperationArguments("", Map("content" -> "Anders Hjelsberg is God"))
+    val p = SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God"))
     jsed.modify(target, p) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)

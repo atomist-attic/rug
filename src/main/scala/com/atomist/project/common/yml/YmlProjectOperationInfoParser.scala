@@ -52,16 +52,6 @@ private class BoundProjectOperationInfo extends TemplateBasedProjectOperationInf
   @JsonProperty("name")
   var name: String = _
 
-  @JsonProperty("group")
-  var _group: String = _
-
-  override def group = Option(_group)
-
-  @JsonProperty("version")
-  var _version: String = _
-
-  override def version = Option(_version)
-
   @JsonProperty("description")
   var description: String = _
 

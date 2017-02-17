@@ -71,3 +71,6 @@ class RugJavaScriptException(msg: String, rootCause: ScriptException)
 
 class InvalidRugTestScenarioName(msg: String)
   extends BadRugException(msg)
+
+class InvalidHandlerResultException(msg: String)
+  extends BadRugException(msg)

@@ -1,9 +1,9 @@
 package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptProjectOperationFinder}
 import com.atomist.rug.compiler.Compiler
-import com.atomist.rug.runtime.js.JavaScriptOperationFinder
+import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.source.{ArtifactSource, FileArtifact}
 
@@ -22,12 +22,14 @@ class CompilerChainPipeline(compilers: Seq[Compiler],
   override def create(rugArchive: ArtifactSource,
                       namespace: Option[String],
                       knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
-    val ops = JavaScriptOperationFinder.fromJavaScriptArchive(comps.reduce(_ compose _)(rugArchive))
-    ops foreach {
+
+    val jsFinder = new JavaScriptProjectOperationFinder(new JavaScriptContext(comps.reduce(_ compose _)(rugArchive)))
+    val ops = jsFinder.find(namespace, knownOperations)
+    ops.projectOperations foreach {
       case capo: ContextAwareProjectOperation =>
-        capo.setContext(ops)
+        capo.setContext(ops.projectOperations)
     }
-    ops
+    ops.projectOperations
   }
 
   @throws[BadRugPackagingException]

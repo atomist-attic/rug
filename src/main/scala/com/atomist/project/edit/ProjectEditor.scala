@@ -1,7 +1,8 @@
 package com.atomist.project.edit
 
+import com.atomist.param.ParameterValues
 import com.atomist.project.common.MissingParametersException
-import com.atomist.project.{ProjectDelta, ProjectOperationArguments}
+import com.atomist.project.ProjectDelta
 import com.atomist.source.ArtifactSource
 
 /**
@@ -24,7 +25,7 @@ trait ProjectEditor extends ProjectDelta {
     * @throws MissingParametersException if any parameters are missing
     */
   @throws[MissingParametersException]
-  def modify(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt
+  def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt
 
   /**
     * Is this editor potentially applicable to the given ArtifactSource?

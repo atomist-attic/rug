@@ -1,12 +1,12 @@
 package com.atomist.rug.parser
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.{BadRugSyntaxException, DefaultRugPipeline, InvalidRugAnnotationValueException}
-import com.atomist.util.scalaparsing._
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.SaveAllDescendantsVisitor
+import com.atomist.util.scalaparsing._
 import org.scalatest.{FlatSpec, Matchers}
 
 object CommonRugParserTest {
@@ -764,8 +764,7 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val filename = "test.txt"
     val as = new SimpleFileBasedArtifactSource("name", Seq(StringFileArtifact(filename, "some content")))
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-
-    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleProjectOperationArguments("", Seq.empty))
+    val r = doModification(pas, as, EmptyArtifactSource(""), SimpleParameterValues.Empty)
     val f = r.findFile(".gitignore").get
     f.content.contains(s"elm-stuff${System.lineSeparator()}target") should be(true)
   }

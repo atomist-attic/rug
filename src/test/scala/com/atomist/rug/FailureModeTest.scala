@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -55,6 +55,6 @@ class FailureModeTest extends FlatSpec with Matchers {
     val eds = runtime.createFromString(prog)
     assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
-    pe.modify(as, SimpleProjectOperationArguments.Empty)
+    pe.modify(as, SimpleParameterValues.Empty)
   }
 }

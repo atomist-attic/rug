@@ -1,7 +1,7 @@
 package com.atomist.project.edit
 
-import com.atomist.project.ProjectOperationArguments
-import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.param.ParameterValues
+import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.source.ArtifactSource
 
 /**
@@ -10,7 +10,7 @@ import com.atomist.source.ArtifactSource
   */
 trait ProjectEditorSupport
   extends ProjectEditor
-  with ProjectOperationParameterSupport {
+  with ProjectOperationSupport {
 
   /**
     * Should we fail if we were called are are not applicable?
@@ -26,19 +26,21 @@ trait ProjectEditorSupport
     */
   def failOnNoModification: Boolean = false
 
-  override def modify(as: ArtifactSource, args: ProjectOperationArguments): ModificationAttempt = {
+  def modify(as: ArtifactSource, args: ParameterValues): ModificationAttempt = {
     val poa = addDefaultParameterValues(args)
     validateParameters(poa)
 
-    val r =
-      if (!applicability(as).canApply) failOnNotApplicable match {
-        case true => FailedModificationAttempt(s"Can't apply $this to ${as.getIdString}")
-        case false => NoModificationNeeded(s"Can't apply $this to ${as.getIdString}")
-      } else if (meetsPostcondition(as)) {
-        NoModificationNeeded(s"Artifact source meets postcondition already")
+    val r = if (!applicability(as).canApply) {
+      if (failOnNotApplicable) {
+        FailedModificationAttempt(s"Can't apply $this to ${as.getIdString}")
       } else {
-        modifyInternal(as, poa)
+        NoModificationNeeded(s"Can't apply $this to ${as.getIdString}")
       }
+    } else if (meetsPostcondition(as)) {
+      NoModificationNeeded(s"Artifact source meets postcondition already")
+    } else {
+      modifyInternal(as, poa)
+    }
 
     // We may need to make it fail-fast
     r match {
@@ -48,5 +50,5 @@ trait ProjectEditorSupport
     }
   }
 
-  protected def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt
+  protected def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt
 }

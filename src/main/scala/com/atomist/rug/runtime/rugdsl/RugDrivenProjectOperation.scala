@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.ProjectOperation
-import com.atomist.project.common.support.ProjectOperationParameterSupport
+import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.rug._
 import com.atomist.rug.runtime.NamespaceUtils
 import com.atomist.rug.spi.TypeRegistry
@@ -29,7 +29,7 @@ abstract class RugDrivenProjectOperation(
                                           val kindRegistry: TypeRegistry,
                                           val namespace: Option[String])
   extends ContextAwareProjectOperation
-    with ProjectOperationParameterSupport
+    with ProjectOperationSupport
     with RugOperationSupport
     with LazyLogging {
 

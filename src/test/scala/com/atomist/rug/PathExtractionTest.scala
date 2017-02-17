@@ -1,7 +1,7 @@
 package com.atomist.rug
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -29,7 +29,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
     val ed = rp.create(as,None).head
 
     // Check it works OK with these parameters
-    ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty) match {
+    ed.asInstanceOf[ProjectEditor].modify(project, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
         assert(f.content === "foo=bar")
@@ -55,7 +55,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
     val ed = rp.create(rugAs,None).head
 
     // Check it works OK with these parameters
-    ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty)
+    ed.asInstanceOf[ProjectEditor].modify(project, SimpleParameterValues.Empty)
     match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get
@@ -82,7 +82,7 @@ class PathExtractionTest extends FlatSpec with Matchers {
     val ed = rp.create(rugAs,None).head
 
     // Check it works OK with these parameters
-    ed.asInstanceOf[ProjectEditor].modify(project, SimpleProjectOperationArguments.Empty)
+    ed.asInstanceOf[ProjectEditor].modify(project, SimpleParameterValues.Empty)
     match {
       case sm: SuccessfulModification =>
         val f = sm.result.findFile("src/main/resources/application.properties").get

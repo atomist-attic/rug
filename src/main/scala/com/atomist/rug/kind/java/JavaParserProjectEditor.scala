@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.project.ProjectOperationArguments
+import com.atomist.param.ParameterValues
 import com.atomist.project.common.JavaTag
 import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.java.support.{JavaAssertions, JavaFilesExtractor}
@@ -28,7 +28,7 @@ abstract class JavaParserProjectEditor(val name: String,
     Applicability(JavaAssertions.isJava(as), "IsJava")
   }
 
-  protected final override def modifyInternal(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
+  protected final override def modifyInternal(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
     val javaFiles = extractJavaFiles(as)
 
     val filesAndCompilationUnits = GitHubJavaParserExtractor(javaFiles.asJava)
@@ -63,5 +63,5 @@ abstract class JavaParserProjectEditor(val name: String,
     * @param cu the compilation unit
     * @return modified compilation unit if a change was made
     */
-  protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ProjectOperationArguments): Option[CompilationUnit]
+  protected def maybeModifyCompilationUnit(cu: CompilationUnit, poa: ParameterValues): Option[CompilationUnit]
 }

@@ -1,10 +1,11 @@
 package com.atomist.rug.runtime.rugdsl
 
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.project.predicate.ProjectPredicate
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
+import com.atomist.project.ProjectOperation
 import com.atomist.rug._
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.{Computation, RunOtherOperation, ScriptBlockAction, With}
@@ -45,7 +46,7 @@ class RugDrivenProjectEditor(
 
   import Timing._
 
-  override protected def modifyInternal(as: ArtifactSource, poa: ProjectOperationArguments): ModificationAttempt = {
+  override protected def modifyInternal(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
     val tr = time {
       val reviewContext: ReviewContext = null
       val context = new ProjectMutableView(rugAs, as, atomistConfig = DefaultAtomistConfig)
@@ -97,8 +98,8 @@ class RugDrivenProjectEditor(
     * If we use a predicate, it should hold. This means that their logic will be the opposite.
     */
   private def evaluateCondition(pre: Condition, as: ArtifactSource): Boolean = getCondition(pre) match {
-    case rev: ProjectReviewer => rev.review(as, SimpleProjectOperationArguments.Empty).comments.isEmpty
-    case pred: ProjectPredicate => pred.holds(as, SimpleProjectOperationArguments.Empty)
+    case rev: ProjectReviewer => rev.review(as, SimpleParameterValues.Empty).comments.isEmpty
+    case pred: ProjectPredicate => pred.holds(as, SimpleParameterValues.Empty)
   }
 
   private def isMatch(pre: Condition, op: ProjectOperation): Boolean = {

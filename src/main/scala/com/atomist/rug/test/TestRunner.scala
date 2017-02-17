@@ -1,9 +1,10 @@
 package com.atomist.rug.test
 
+import com.atomist.param.ParameterValues
+import com.atomist.project.ProjectOperation
 import com.atomist.project.common.{InvalidParametersException, MissingParametersException}
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments}
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils}
 
 /**
@@ -13,12 +14,12 @@ import com.atomist.source.{ArtifactSource, ArtifactSourceUtils}
 class TestEventLog {
 
   private var _input: Option[ArtifactSource] = None
-  private var params: Option[ProjectOperationArguments] = None
+  private var params: Option[ParameterValues] = None
   private var _output: Option[ArtifactSource] = None
 
   def recordInput(input: ArtifactSource): Unit = _input = Some(input)
 
-  def recordParameters(poa: ProjectOperationArguments): Unit = params = Some(poa)
+  def recordParameters(poa: ParameterValues): Unit = params = Some(poa)
 
   def recordOutput(output: ArtifactSource): Unit = _output = Some(output)
 
@@ -26,7 +27,7 @@ class TestEventLog {
 
   def output: Option[ArtifactSource] = _output
 
-  def parameters: Option[ProjectOperationArguments] = params
+  def parameters: Option[ParameterValues] = params
 }
 
 object EmptyTestEventLog extends TestEventLog
@@ -92,7 +93,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
         eventLog.recordInput(input)
       }
 
-      val poa: ProjectOperationArguments = test.args
+      val poa: ParameterValues = test.args
       eventLog.recordParameters(poa)
 
       if (test.givenInvocations.nonEmpty) {
@@ -156,7 +157,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
       // TODO should publish events rather than sysout
       executionLog.log(s"Executing scenario ${test.name}...")
 
-      val poa: ProjectOperationArguments = test.args
+      val poa: ParameterValues = test.args
       eventLog.recordParameters(poa)
 
       if (test.givenInvocations.nonEmpty) {

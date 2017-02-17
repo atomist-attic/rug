@@ -1,7 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.plan.{IdentityTreeMaterializer, TreeMaterializer}
-import com.atomist.rug.kind.service.{ConsoleMessageBuilder, EmptyActionRegistry, MessageBuilder, TeamContext}
 
 /**
   * Context exposed to user JavaScript.
@@ -23,20 +22,25 @@ trait UserServices {
 }
 
 /**
-  * Entry point to Atomist system
+  * Information available for invocation within a team
   */
-trait AtomistFacade extends UserModelContext with TeamContext {
+trait TeamContext {
 
-  def on(s: String, handler: Any): Unit
+  /**
+    * Id of the team we're working on behalf of
+    */
+  def teamId: String
 
-  def messageBuilder: MessageBuilder
+  /**
+    * Used to hydrate nodes before running a path expression
+    */
+  def treeMaterializer: TreeMaterializer = IdentityTreeMaterializer
 
 }
-
-class DefaultAtomistFacade(
+class DefaultAtomistContext(
                             val teamId: String,
                             override val treeMaterializer: TreeMaterializer = IdentityTreeMaterializer)
-  extends AtomistFacade {
+  extends UserModelContext with TeamContext {
 
   def on(s: String, handler: Any): Unit = {
     throw new UnsupportedOperationException("Event registration not supported")
@@ -45,13 +49,10 @@ class DefaultAtomistFacade(
   override val registry = Map(
     "PathExpressionEngine" -> new jsPathExpressionEngine(this)
   )
-
-  override def messageBuilder: MessageBuilder =
-    new ConsoleMessageBuilder(teamId, EmptyActionRegistry)
 }
 
 /**
   * Used for Project editing only, when team id isn't needed
   */
-object LocalAtomistFacade
-  extends DefaultAtomistFacade("PROJECT_ONLY")
+object LocalAtomistContext
+  extends DefaultAtomistContext("PROJECT_ONLY")

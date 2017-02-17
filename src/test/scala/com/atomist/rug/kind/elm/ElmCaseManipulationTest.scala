@@ -1,13 +1,13 @@
 package com.atomist.rug.kind.elm
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.OptionValues._
+import org.scalatest.{FlatSpec, Matchers}
 
 class ElmCaseManipulationTest extends FlatSpec with Matchers {
 
@@ -94,7 +94,7 @@ class ElmCaseManipulationTest extends FlatSpec with Matchers {
     assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 
-    val r = pe.modify(elmProject, SimpleProjectOperationArguments("", params))
+    val r = pe.modify(elmProject, SimpleParameterValues(params))
     r match {
       case sm: SuccessfulModification =>
         //show(sm.result)

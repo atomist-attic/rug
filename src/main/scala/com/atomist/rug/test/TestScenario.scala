@@ -1,7 +1,7 @@
 package com.atomist.rug.test
 
-import com.atomist.param.Parameter
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
+import com.atomist.param.{Parameter, ParameterValues, SimpleParameterValues}
+import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.{Computation, Predicate, RunOtherOperation}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, DefaultViewFinder, RugOperationSupport}
@@ -64,8 +64,8 @@ case class TestScenario(
     *
     * @return ProjectOperationArguments created from editor invocation
     */
-  def args: ProjectOperationArguments = {
-    parametersForOtherOperation(editorInvocation, SimpleProjectOperationArguments.Empty)
+  def args: ParameterValues = {
+    parametersForOtherOperation(editorInvocation, SimpleParameterValues.Empty)
   }
 }
 

@@ -1,28 +1,19 @@
 package com.atomist.project
 
 import com.atomist.param.{Parameter, Tag}
-import com.atomist.tree.content.project.ResourceSpecifier
+import com.atomist.rug.runtime.ParameterizedRug
 
 import scala.beans.BeanProperty
 
-case class SimpleProjectOperationInfo(
+case class SimpleParameterizedRug(
                                        @BeanProperty name: String,
                                        @BeanProperty description: String,
-                                       override val group: Option[String],
-                                       override val version: Option[String],
                                        @BeanProperty tags: Seq[Tag],
                                        @BeanProperty parameters: Seq[Parameter])
-  extends ProjectOperationInfo {
+  extends ParameterizedRug {
 
-  def this(poi: ProjectOperationInfo) =
-    this(poi.name, poi.description, poi.group, poi.version, poi.tags, poi.parameters)
-
-  // For Jackson and other bean-oriented mappers
-  def getGroup: String = group.orNull
-
-  def geVersion: String = version.orNull
-
-  def getGav: ResourceSpecifier = gav.orNull
+  def this(poi: ParameterizedRug) =
+    this(poi.name, poi.description, poi.tags, poi.parameters)
 }
 
 /**

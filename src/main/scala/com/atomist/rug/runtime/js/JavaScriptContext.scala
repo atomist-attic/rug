@@ -20,7 +20,7 @@ import scala.collection.JavaConverters._
   *
   * One of these per rug please, or else they may stomp on one-another
   */
-class JavaScriptContext(rugAs: ArtifactSource,
+class JavaScriptContext(val rugAs: ArtifactSource,
                         atomistConfig: AtomistConfig = DefaultAtomistConfig,
                         bindings: Bindings = new SimpleBindings()) extends LazyLogging {
 
@@ -69,26 +69,16 @@ class JavaScriptContext(rugAs: ArtifactSource,
   }
 
   /**
-    * Information about a JavaScript var exposed in the project scripts.
-    *
-    * @param key                name of the var
-    * @param scriptObjectMirror interface for working with Var
-    */
-  case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {}
-
-  /**
     * Return all the vars known to the engine that expose ScriptObjectMirror objects, with the key.
     *
     * @return ScriptObjectMirror objects for all vars known to the engine
     */
   def vars: Seq[Var] = {
-    val res = engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
+    engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE)
       .get("exports").asInstanceOf[ScriptObjectMirror]
-      .asScala
-      .foldLeft(Seq[Var]())((acc: Seq[Var], kv) => {
-        acc ++ extractVars(kv._2.asInstanceOf[ScriptObjectMirror])
-      })
-    res
+      .asScala.collect {
+      case (_, v: ScriptObjectMirror) => extractVars(v)
+    }.flatten.toSeq
   }
 
   private def extractVars(obj: ScriptObjectMirror): Seq[Var] = {
@@ -121,5 +111,11 @@ class JavaScriptContext(rugAs: ArtifactSource,
       new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
     }
   }
-
 }
+/**
+  * Information about a JavaScript var exposed in the project scripts
+  *
+  * @param key                name of the var
+  * @param scriptObjectMirror interface for working with Var
+  */
+case class Var(key: String, scriptObjectMirror: ScriptObjectMirror) {}

@@ -1,7 +1,6 @@
 package com.atomist.rug.rugdoc
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.rug.compiler.typescript.TypeScriptCompiler
+import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptBuilder, TypeScriptInterfaceGenerator}
 import com.atomist.source.{FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
@@ -13,7 +12,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
   it should "generate compilable typescript file" in {
     val td = new TypeScriptInterfaceGenerator()
     // Make it put the generated files where our compiler will look for them
-    val output = td.generate("", SimpleProjectOperationArguments("",
+    val output = td.generate("", SimpleParameterValues(
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
     assert(output.allFiles.size > 1)
 

@@ -2,7 +2,7 @@ package com.atomist.rug.kind.elm
 
 import java.io.File
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.EditorInvokingProjectGenerator
@@ -12,8 +12,8 @@ import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.{DefaultRugCompiler, InterpreterRugPipeline}
 import com.atomist.source.ArtifactSource
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
-import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.OptionValues._
+import org.scalatest.{FlatSpec, Matchers}
 
 class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
@@ -61,8 +61,7 @@ class ElmNewStaticPageTest extends FlatSpec with Matchers {
 
     val freshArtifactSource =
       gen.generate("",
-        SimpleProjectOperationArguments(
-          "wut",
+        SimpleParameterValues(
           parameters))
     freshArtifactSource
   }

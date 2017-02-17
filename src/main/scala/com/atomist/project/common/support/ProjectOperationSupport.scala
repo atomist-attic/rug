@@ -1,12 +1,14 @@
 package com.atomist.project.common.support
 
-import com.atomist.param.{ParameterValue, ParameterValues, Tag}
+import com.atomist.param.{ParameterizedSupport, Tag}
 import com.atomist.project.ProjectOperation
 
 /**
   * Adds convenient tag and parameter computation support.
   */
-trait ProjectOperationSupport extends ProjectOperation {
+trait ProjectOperationSupport
+  extends ProjectOperation
+   with ParameterizedSupport{
 
   private var _tags: Seq[Tag] = Nil
 

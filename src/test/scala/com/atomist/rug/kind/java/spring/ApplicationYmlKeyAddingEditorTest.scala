@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.java.spring
 
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.SimpleProjectOperationArguments
 import com.atomist.project.edit.SuccessfulModification
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -13,7 +13,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYmlPath) should not be defined
     val r = ApplicationYmlKeyAddingEditor.modify(target,
-      SimpleProjectOperationArguments.Empty)
+      SimpleParameterValues.Empty)
     r match {
       case sma: SuccessfulModification =>
         val yamlFile = sma.result.findFile(ApplicationYmlPath)
@@ -31,7 +31,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYmlPath) should not be defined
     val r = ApplicationYmlKeyAddingEditor.modify(target,
-      SimpleProjectOperationArguments.singleParam("name", townPropertyName, townPropertyValue))
+      SimpleParameterValues(townPropertyName, townPropertyValue))
     r match {
       case sma: SuccessfulModification =>
         val yamlFile = sma.result.findFile(ApplicationYmlPath)
@@ -50,7 +50,7 @@ class ApplicationYmlKeyAddingEditorTest extends FlatSpec with Matchers {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYmlPath) should not be defined
     val r = ApplicationYmlKeyAddingEditor.modify(target,
-      SimpleProjectOperationArguments.singleParam("name", s"$homeScopedPropertyName$scopeSeparator$townPropertyName", townPropertyValue))
+      SimpleParameterValues(s"$homeScopedPropertyName$scopeSeparator$townPropertyName", townPropertyValue))
     r match {
       case sma: SuccessfulModification =>
         val yamlFile = sma.result.findFile(ApplicationYmlPath)

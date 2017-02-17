@@ -2,11 +2,10 @@ package com.atomist.util.lang
 
 import java.util
 
-import com.atomist.project.SimpleProjectOperationArguments
-import com.atomist.project.edit.NoModificationNeeded
-import com.atomist.rug.TestUtils
-import com.atomist.rug.runtime.js.interop.UserModelContext
-import com.atomist.rug.runtime.js.{JavaScriptContext, JavaScriptInvokingProjectEditor, JavaScriptOperationFinder}
+import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
+import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor}
+import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -234,17 +233,17 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       EditorWithFancyListArray))
   }
 
-  private  def invokeAndVerifyConstructed(tsf: FileArtifact): JavaScriptInvokingProjectEditor = {
+  private  def invokeAndVerifyConstructed(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = JavaScriptOperationFinder.fromJavaScriptArchive(as).head.asInstanceOf[JavaScriptInvokingProjectEditor]
+    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
     assert(jsed.name === "Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
     val lyzt = new util.ArrayList[String]()
     lyzt.add("blah")
-    jsed.modify(target, SimpleProjectOperationArguments("", Map("packageName" -> "com.atomist.crushed", "strings" -> new JavaScriptArray(lyzt)))) match {
+    jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed", "strings" -> new JavaScriptArray(lyzt)))) match {
       case sm: NoModificationNeeded =>
       sm.comment.contains("OK") should be(true)
       case _ => ???

@@ -1,9 +1,10 @@
 package com.atomist.rug.runtime.rugdsl
 
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
-import com.atomist.project.{ProjectOperation, ProjectOperationArguments, SimpleProjectOperationArguments}
-import com.atomist.rug.{BadRugException, DefaultRugPipeline}
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.{BadRugException, DefaultRugPipeline}
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -42,7 +43,7 @@ class RugEditorTest extends FlatSpec with Matchers {
   }
 
   val otherEditor: ProjectEditor = new ProjectEditorSupport {
-    override protected  def modifyInternal(as: ArtifactSource, pmi: ProjectOperationArguments): ModificationAttempt = {
+    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
       SuccessfulModification(as + StringFileArtifact("src/from/typescript",
         pmi.stringParamValue("otherParam")))
     }
@@ -63,7 +64,7 @@ class RugEditorTest extends FlatSpec with Matchers {
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    val p = SimpleProjectOperationArguments("", Map[String, Object]())
+    val p = SimpleParameterValues( Map[String, Object]())
     red.modify(target, p) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
@@ -94,7 +95,7 @@ class RugEditorTest extends FlatSpec with Matchers {
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("README", "I dub thee... Flounder"))
 
-    val p = SimpleProjectOperationArguments("", Map[String, Object]())
+    val p = SimpleParameterValues( Map[String, Object]())
     red.modify(target, p) match {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)

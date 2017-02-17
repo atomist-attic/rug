@@ -1,6 +1,6 @@
 package com.atomist.rug
 
-import com.atomist.project.SimpleProjectOperationArguments
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.review.{ProjectReviewer, ReviewResult, Severity}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -87,7 +87,7 @@ class ReviewerExecutionTest extends FlatSpec with Matchers {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val eds = runtime.createFromString(prog)
     val pe = eds.head.asInstanceOf[ProjectReviewer]
-    pe.review(as, SimpleProjectOperationArguments.Empty)
+    pe.review(as, SimpleParameterValues.Empty)
   }
 
 }

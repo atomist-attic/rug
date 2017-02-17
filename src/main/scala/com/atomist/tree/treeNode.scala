@@ -8,8 +8,8 @@ import com.atomist.tree.TreeNode.Significance
   * Represents a node in a tree. A tree is a graph that is
   * hierarchical but non-cyclical.
   * May be terminal or non-terminal.
-  * This is a core Rug abstraction. Path expressions run against TreeNodes.
-  * Rug types are TreeNodes. Some TreeNodes are updatable, some are
+  *
+  * Many Rug types are TreeNodes. Some TreeNodes are updatable, some are
   * purely for reference.
   * A TreeNode may be backed by a resource such as
   * an Issue in an issue tracker, by an AST element in a programming language source file,
@@ -20,9 +20,9 @@ trait TreeNode extends GraphNode {
   @ExportFunction(readOnly = true, description = "Node content")
   def value: String
 
-  def relatedNodes: Seq[GraphNode] = childNodes
+  def relatedNodes: Seq[TreeNode] = childNodes
 
-  def relatedNodesNamed(key: String): Seq[GraphNode] = childrenNamed(key)
+  def relatedNodesNamed(key: String): Seq[TreeNode] = childrenNamed(key)
 
   def childrenNamed(key: String): Seq[TreeNode]
 

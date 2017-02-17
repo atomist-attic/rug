@@ -25,7 +25,7 @@ class PathExpressionEngine extends ExpressionEngine {
                         parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): (ExecutionResult, Seq[String]) = {
-    var report = Seq[String]()
+    val report = Seq[String]()
     def say(something: => String) = {} //report = report :+ something
 
     var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))

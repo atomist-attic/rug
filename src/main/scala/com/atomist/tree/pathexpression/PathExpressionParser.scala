@@ -3,7 +3,7 @@ package com.atomist.tree.pathexpression
 import java.util.Objects
 
 import com.atomist.source.StringFileArtifact
-import com.atomist.tree.content.text.TreeNodeOperations._
+import com.atomist.tree.utils.NodeUtils._
 import com.atomist.tree.pathexpression.PathExpressionParsingConstants._
 import com.atomist.util.scalaparsing.CommonTypesParser
 

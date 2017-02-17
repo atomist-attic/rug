@@ -364,22 +364,22 @@
                                 <phase>generate-sources</phase>
                             </execution>
                             <execution>
-                                <id>install typescript</id>
+                                <id>install typescript and typedoc</id>
                                 <goals>
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install typescript</arguments>
+                                    <arguments>install --save-dev typescript typedoc gulp gulp-typedoc</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
                             <execution>
-                                <id>install typedoc</id>
+                                <id>gulp build</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>gulp</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install typedoc --save-dev</arguments>
+                                    <arguments>build --gulpfile .atomist/node_modules/@atomist/rug/gulpfile.js</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
@@ -445,25 +445,6 @@
                                     <tasks>
                                         <mkdir dir="target/.atomist/node_modules/@atomist/rug/model"/>
                                     </tasks>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-typedoc</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>process-test-resources</phase>
-                                <configuration>
-                                    <target>
-                                        <exec executable="target/node_modules/typedoc/bin/typedoc" failonerror="true">
-                                            <arg value ="--module"/>
-                                            <arg value ="commonjs"/>
-                                            <arg value="--out"/>
-                                            <arg value="target/.atomist/node_modules/@atomist/rug/typedoc"/>
-                                            <arg value="target/.atomist/node_modules/@atomist/rug"/>
-                                            <arg value="target/.atomist/node_modules/@atomist/rug"/>
-                                        </exec>
-                                    </target>
                                 </configuration>
                             </execution>
                         </executions>

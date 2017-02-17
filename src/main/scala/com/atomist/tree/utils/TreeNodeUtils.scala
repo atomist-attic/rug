@@ -1,5 +1,6 @@
 package com.atomist.tree.utils
 
+import com.atomist.graph.GraphNode
 import com.atomist.tree.TreeNode.{Noise, Signal, Undeclared}
 import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
@@ -24,36 +25,42 @@ object TreeNodeUtils {
     * @param tn node to represent
     * @return string representation of the node
     */
-  def toShortString(tn: TreeNode): String = {
+  def toShortString(tn: GraphNode): String = {
 
     def tabs(n: Int) = List.fill(n)("\t").mkString("")
 
-    def offset(fv: TreeNode): String = fv match {
+    def offset(fv: GraphNode): String = fv match {
       case pf: PositionedTreeNode => s"${pf.startPosition.offset}-${pf.endPosition.offset}"
       case _ => ""
     }
 
-    def showValue(n: TreeNode, cutoff: Int) = inlineReturns(
+    def showValue(n: GraphNode, cutoff: Int) = inlineReturns(
       n match {
         case cn: PositionedMutableContainerTreeNode if !cn.padded => ""
-        case n if n.value.length < cutoff => n.value
-        case n => n.value.take(cutoff) + "..."
+        case n: TreeNode if n.value.length < cutoff => n.value
+        case n: TreeNode => n.value.take(cutoff) + "..."
+        case x => x.nodeName
       })
 
-    def info(f: TreeNode) = {
-      val significance = f.significance match {
-        case Noise => "_"
-        case Signal => "!"
-        case Undeclared => "."
+    def info(f: GraphNode) = {
+      val significance = f match {
+        case tn: TreeNode =>
+          tn.significance match {
+            case Noise => "_"
+            case Signal => "!"
+            case Undeclared => "."
+          }
+        case _ => ""
       }
+
       s"${significance} ${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
     }
 
-    def toShortStr(fv: TreeNode, depth: Int, shown: TreeNode => Boolean): String = fv match {
-      case ctn if ctn.childNodes.nonEmpty =>
-        def star(c: TreeNode) = if (shown(c)) "*" else ""
+    def toShortStr(fv: GraphNode, depth: Int, shown: GraphNode => Boolean): String = fv match {
+      case ctn if ctn.relatedNodes.nonEmpty =>
+        def star(c: GraphNode) = if (shown(c)) "*" else ""
 
-        tabs(depth) + info(ctn) + (if (ctn.childNodes.nonEmpty) ":\n" else "") + ctn.childNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")
+        tabs(depth) + info(ctn) + (if (ctn.relatedNodes.nonEmpty) ":\n" else "") + ctn.relatedNodes.map(c => star(c) + toShortStr(c, depth + 1, shown)).mkString("\n")
       case f => tabs(depth) + info(f) + "\n"
     }
 
@@ -75,7 +82,9 @@ object TreeNodeUtils {
     case tn => s"${tn.nodeName}:[${tn.nodeTags.mkString(", ")}]"
   }
 
-  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode => String): Seq[String] = {
+  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode => String): Seq[String]
+
+  = {
     val shorterString = nodeStringifier(tn)
     val lines = shorterString +:
       tn.childNodes.flatMap(tn => toShorterStringInternal(tn, nodeStringifier))

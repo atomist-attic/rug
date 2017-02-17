@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.{MutableView, TypeRegistry}
 import com.atomist.tree.{AddressableTreeNode, TreeNode}
@@ -23,20 +24,20 @@ case class NodesWithTag(tag: String)
       case _ => None
     }
 
-  private val eligibleNode: TreeNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
+  private val eligibleNode: GraphNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
 
   // Attempt to find nodes of the require type under the given node
-  private def findMeUnder(tn: TreeNode, typeRegistry: TypeRegistry): Seq[TreeNode] =
-    tn.childNodes.filter(eligibleNode) match {
+  private def findMeUnder(tn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
+    tn.relatedNodes.filter(eligibleNode) match {
       case Nil =>
         childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
       case kids => kids
     }
 
-  override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
+  override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     axis match {
       case NavigationAxis(propertyName) =>
-        val nodes = tn.childrenNamed(propertyName).filter(eligibleNode)
+        val nodes = tn.relatedNodesNamed(propertyName).filter(eligibleNode)
         ExecutionResult(nodes)
       case Self => ExecutionResult(List(tn).filter(eligibleNode))
       case Child =>
@@ -50,7 +51,7 @@ case class NodesWithTag(tag: String)
         // and under "/src/main" and under the actual file.
         // So check that our returned types have distinct backing objects
         var nodeAddressesSeen: Set[String] = Set()
-        var toReturn = List.empty[TreeNode]
+        var toReturn = List.empty[GraphNode]
         found.foreach {
           case mv: AddressableTreeNode =>
             if (!nodeAddressesSeen.contains(mv.address)) {

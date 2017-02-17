@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text
 
+import com.atomist.graph.GraphNode
 import com.atomist.tree.TreeNode
 import org.springframework.util.ReflectionUtils
 
@@ -13,7 +14,7 @@ object TreeNodeOperations {
   /**
     * Invoke the given method if it exists and returns the appropriate type
     */
-  def invokeMethodIfPresent[T](n: TreeNode, methodName: String, args: Seq[String] = Nil)
+  def invokeMethodIfPresent[T](n: GraphNode, methodName: String, args: Seq[String] = Nil)
                               (implicit tag: ClassTag[T]): Option[T] = {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).find(
       m => m.getName == methodName && m.getParameterCount == args.size && {

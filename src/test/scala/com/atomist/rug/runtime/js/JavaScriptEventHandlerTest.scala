@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.SimpleParameterValue
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
@@ -161,7 +162,7 @@ class IssueTreeNode extends TerminalTreeNode {
 
 object TestTreeMaterializer extends TreeMaterializer {
 
-  override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = new IssueTreeNode()
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = new IssueTreeNode()
 
-  override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = rawRootNode
+  override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression): GraphNode = rawRootNode
 }

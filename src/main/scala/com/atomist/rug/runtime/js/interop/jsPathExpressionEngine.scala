@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js.interop
 import java.util
 import java.util.Collections
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
@@ -105,9 +106,9 @@ class jsPathExpressionEngine(
   }
 
   // If the node is a SafeCommittingProxy, find the underlying object
-  private def toUnderlyingTreeNode(o: TreeNode): TreeNode = o match {
+  private def toUnderlyingTreeNode(o: GraphNode): GraphNode = o match {
     case scp: jsSafeCommittingProxy => scp.node
-    case tn: TreeNode => tn
+    case tn: GraphNode => tn
   }
 
   /**

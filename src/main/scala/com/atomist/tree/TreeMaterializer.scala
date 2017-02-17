@@ -1,5 +1,6 @@
 package com.atomist.tree
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.SystemEvent
 import com.atomist.tree.pathexpression.PathExpression
 
@@ -18,14 +19,14 @@ trait TreeMaterializer {
     * @param pe Path expression
     * @return the root node against which the expression should be evaluated.
     */
-  def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode
+  def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode
 
   /**
     * Given a root node, hydrate it in order to be able to evaluate the given path expression.
     *
     * @return the hydrated root node against which the expression should be evaluated.
     */
-  def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode
+  def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression): GraphNode
 }
 
 /**
@@ -33,9 +34,9 @@ trait TreeMaterializer {
   */
 object IdentityTreeMaterializer extends TreeMaterializer {
 
-  override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = ???
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = ???
 
-  override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = {
+  override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression): GraphNode = {
     // println(s"Hydrating $rawRootNode")
     rawRootNode
   }

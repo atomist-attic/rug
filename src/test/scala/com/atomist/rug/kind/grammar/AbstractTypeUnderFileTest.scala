@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.grammar
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.TestUtils
@@ -43,7 +44,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
   /**
     * Require successful evaluation of this expression against the given root node
     */
-  protected def evaluatePathExpression(tn: TreeNode, pe: String): Seq[TreeNode] = {
+  protected def evaluatePathExpression(tn: GraphNode, pe: String): Seq[GraphNode] = {
     import com.atomist.tree.pathexpression.PathExpressionParser._
     expressionEngine.evaluate(tn, pe, DefaultTypeRegistry) match {
       case Right(nodes) => nodes

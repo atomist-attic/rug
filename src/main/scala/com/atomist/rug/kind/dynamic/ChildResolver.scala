@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.dynamic
 
+import com.atomist.graph.GraphNode
 import com.atomist.tree.TreeNode
 
 /**
@@ -13,4 +14,9 @@ trait ChildResolver {
     * @param context
     */
   def findAllIn(context: TreeNode): Option[Seq[TreeNode]]
+
+  def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
+    case tn: TreeNode => findAllIn(tn)
+    case _ => None
+  }
 }

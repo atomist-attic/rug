@@ -3,8 +3,8 @@ package com.atomist.tree.pathexpression
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
-
 import XPathTypes._
+import com.atomist.graph.{GraphNode, GraphNodeUtils}
 
 /**
   * Handles an XPath predicate based on a function call
@@ -21,8 +21,8 @@ case class XPathStyleFunctionPredicate(override val name: String,
     throw new IllegalArgumentException(s"No function named [$name] with args [$args]: Function registry=\n$functionRegistry")
   )
 
-  def evaluate(tn: TreeNode,
-               among: Seq[TreeNode],
+  def evaluate(tn: GraphNode,
+               among: Seq[GraphNode],
                ee: ExpressionEngine,
                typeRegistry: TypeRegistry,
                nodePreparer: Option[NodePreparer]): Boolean = {
@@ -32,7 +32,8 @@ case class XPathStyleFunctionPredicate(override val name: String,
     fun.invoke(convertedArgs) == true
   }
 
-  private def convertToRequiredType(fa: FunctionArg, requiredType: XPathType, contextNode: TreeNode, ee: ExpressionEngine,
+  private def convertToRequiredType(fa: FunctionArg, requiredType: XPathType,
+                                    contextNode: GraphNode, ee: ExpressionEngine,
                                     tr: TypeRegistry, np: Option[NodePreparer]): Any =
     requiredType match {
       case String => convertToString(fa, contextNode, ee, tr, np)
@@ -41,12 +42,12 @@ case class XPathStyleFunctionPredicate(override val name: String,
     }
 
   // See XPath spec 4.2
-  private def convertToString(fa: FunctionArg, contextNode: TreeNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): String = {
+  private def convertToString(fa: FunctionArg, contextNode: GraphNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): String = {
     val value = fa match {
       case s: StringLiteralFunctionArg => s.s
       case rpe: RelativePathFunctionArg => ee.evaluate(contextNode, rpe.pe, tr, np) match {
         case Right(l) if l.nonEmpty =>
-          l.head.value
+          GraphNodeUtils.value(l.head)
         case _ => ""
       }
     }
@@ -54,7 +55,7 @@ case class XPathStyleFunctionPredicate(override val name: String,
     value
   }
 
-  private def convertToBoolean(fa: FunctionArg, contextNode: TreeNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): Boolean = fa match {
+  private def convertToBoolean(fa: FunctionArg, contextNode: GraphNode, ee: ExpressionEngine, tr: TypeRegistry, np: Option[NodePreparer]): Boolean = fa match {
     case s: StringLiteralFunctionArg => s.s == "true"
     case rpe: RelativePathFunctionArg => ee.evaluate(contextNode, rpe.pe, tr, np) match {
       case Right(l) if l.nonEmpty => true

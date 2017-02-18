@@ -78,6 +78,17 @@ class YmlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYmlUsa
     assert(r.findFile("x.yml").get.content == YmlUsageTestTargets.YamlOrgStart.replace("Chris", "Christine"))
   }
 
+  it should "change raw string" in {
+    modify("ChangeRaw.ts", YmlUsageTestTargets.singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        println(theFile.content)
+        assert(theFile.content === YmlUsageTestTargets.xYml.replace("queen", "Jefferson Airplane"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "change quoted string" in {
     modify("ChangeQuoted.ts", YmlUsageTestTargets.singleAS) match {
       case sm: SuccessfulModification =>

@@ -7,26 +7,26 @@ import * as yaml from '@atomist/rug/ast/yaml/YamlPathExpressionEngine'
 /**
  * Uses Scala mixin add imports
  */
-class ChangeQuoted implements ProjectEditor {
-    name: string = "ChangeQuoted"
+class ChangeRaw implements ProjectEditor {
+    name: string = "ChangeRaw"
     description: string = "Adds import"
 
     edit(project: Project) {
       let eng: PathExpressionEngine =
         new yaml.YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-      let findDependencies = `/*[@name='x.yml']/YmlFile()/dependencies/*[contains(., "Bohemian")]`   
+      let findDependencies = `/*[@name='x.yml']/YmlFile()/group`   
 
       eng.with<yaml.YamlValue>(project, findDependencies, ymlValue => {
         //console.log(`Raw value is [${ymlValue.value()}]`)
-        if (ymlValue.value() != `"Bohemian Rhapsody"`)
-            throw new Error(`[${ymlValue.value()}] doesn't contain "`)
-        if (ymlValue.text() != "Bohemian Rhapsody")
-            throw new Error(`[${ymlValue.text()}] DOES contain "`)
-        ymlValue.updateText("White Rabbit")
+        if (ymlValue.value() != "queen")
+            throw new Error(`[${ymlValue.value()}] not 'queen'"`)
+        if (ymlValue.text() != "queen")
+            throw new Error(`[${ymlValue.text()}] not 'queen'`)
+        ymlValue.updateText("Jefferson Airplane")
       })
   }
 
 }
 
-export let editor = new ChangeQuoted()
+export let editor = new ChangeRaw()

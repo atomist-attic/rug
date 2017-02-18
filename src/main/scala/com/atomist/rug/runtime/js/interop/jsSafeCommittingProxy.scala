@@ -97,9 +97,7 @@ class jsSafeCommittingProxy(
       case navigation if navigation == "parent" || node.childNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
-        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${
-          node.nodeName
-        }]")
+        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
@@ -137,8 +135,11 @@ class jsSafeCommittingProxy(
             case _ =>
           }
           // The returned type needs to be wrapped if it's a collection
+          import scala.collection.JavaConverters._
           returned match {
             case l: java.util.List[_] => new JavaScriptArray(l)
+            case s: Seq[_] => new JavaScriptArray(s.asJava)
+            case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
             case _ => returned
           }
       }

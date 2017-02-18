@@ -4,7 +4,9 @@ import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} 
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 
-import * as yaml from '@atomist/rug/ast/yaml/YamlPathExpressionEngine'
+import * as yaml from '@atomist/rug/ast/yaml/Types'
+
+import {YamlPathExpressionEngine} from '@atomist/rug/ast/yaml/YamlPathExpressionEngine'
 
 class ChangeGt implements ProjectEditor {
     name: string = "ChangeGt"
@@ -15,11 +17,11 @@ class ChangeGt implements ProjectEditor {
 
     edit(project: Project) {
       let eng: PathExpressionEngine =
-        new yaml.YamlPathExpressionEngine(project.context().pathExpressionEngine())
+        new YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
       let findDependencies = `/*[@name='x.yml']/YmlFile()/comments`   
 
-      eng.with<yaml.YamlValue>(project, findDependencies, ymlValue => {
+      eng.with<yaml.YamlString>(project, findDependencies, ymlValue => {
         //console.log(`Raw value is [${ymlValue.value()}]`)
         console.log(`Text value is [${ymlValue.text()}]`)
         if (ymlValue.value().charAt(0) != ">")
@@ -29,7 +31,6 @@ class ChangeGt implements ProjectEditor {
         ymlValue.updateText(this.newComment)
       })
   }
-
 }
 
 export let editor = new ChangeGt()

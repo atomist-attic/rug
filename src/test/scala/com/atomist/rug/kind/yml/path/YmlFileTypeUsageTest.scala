@@ -124,6 +124,20 @@ class YmlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYmlUsa
     }
   }
 
+  it should "add to sequence" in pendingUntilFixed {
+    modify("AddToSequence.ts", singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        println(theFile.content)
+        //assert(theFile.content === xYml.replace("queen", "Jefferson Airplane"))
+        assert(theFile.content.contains("Not There"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  it should "remove from sequence" is pending
+
   it should "change multiple documents in one file" is pending
 
 }

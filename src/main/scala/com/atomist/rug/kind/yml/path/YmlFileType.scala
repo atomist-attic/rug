@@ -142,17 +142,15 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
 
   /**
     * Value will be the full structure.
-    *
-    * @param in
-    * @param se
-    * @return
     */
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
     val startPos = markToPosition(in, se.getStartMark)
     val fullValue = in.substring(
       startPos.offset,
       markToPosition(in, se.getEndMark).offset)
-    new MutableTerminalTreeNode(ScalarName, fullValue, startPos)
+    val f = new MutableTerminalTreeNode(ScalarName, fullValue, startPos)
+    f.addType(ScalarType)
+    f
   }
 
   private def canBeUsedAsNodeName(s: String) = s.exists(c => c.isWhitespace)

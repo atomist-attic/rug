@@ -119,7 +119,6 @@ class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
     println(s"1000000 runs took: -> ${run1000000/1000000d} ms/run")
   }
 
-
   private  def invokeAndVerifySimple(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head

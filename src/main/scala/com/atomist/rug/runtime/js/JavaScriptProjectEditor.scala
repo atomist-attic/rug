@@ -9,7 +9,6 @@ import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-
 /**
   * Find Editors in a Nashorn
   */

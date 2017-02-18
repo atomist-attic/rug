@@ -27,9 +27,6 @@ abstract class BaseJavaScriptHandlerFinder[T <: Rug](ctx: JavaScriptHandlerConte
 
   /**
     * Is the supplied thing valid at all?
-    *
-    * @param obj
-    * @return
     */
   protected def isValidHandler(obj: ScriptObjectMirror): Boolean = {
     obj.hasMember("__kind") && obj.hasMember("__name") && obj.hasMember("__description") && obj.hasMember("handle")
@@ -49,11 +46,8 @@ abstract class BaseJavaScriptHandlerFinder[T <: Rug](ctx: JavaScriptHandlerConte
 
   /**
     * Either read the parameters field or look for annotated parameters
-    *
-    * @return
     */
   protected def parameters(someVar: ScriptObjectMirror): Seq[Parameter] = {
     parameters(someVar, Seq("__parameters"))
   }
 }
-

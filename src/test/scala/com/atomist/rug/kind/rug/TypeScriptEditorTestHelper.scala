@@ -1,6 +1,5 @@
 package com.atomist.rug.kind.rug
 
-
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
@@ -19,8 +18,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
   def executeTypescript(editorName: String, program: String,
                         target: ArtifactSource,
                         params: Map[String, String] = Map(),
-                        others: Seq[ProjectOperation] = Nil)
-  : ArtifactSource = {
+                        others: Seq[ProjectOperation] = Nil): ArtifactSource = {
 
     val cas = {
       val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
@@ -30,7 +28,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
     val eds = SimpleJavaScriptProjectOperationFinder.find(cas).editors
 
     if (eds.isEmpty) {
-      print(program);
+      print(program)
       throw new Exception("No editor was parsed")
     }
 
@@ -38,7 +36,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
     assert(jsed.name === editorName)
     jsed.setContext(others)
 
-    val pe = eds.head.asInstanceOf[ProjectEditor]
+    val pe = eds.head
     pe.modify(target, SimpleParameterValues( params)) match {
       case sm: SuccessfulModification =>
         sm.result
@@ -46,5 +44,4 @@ trait TypeScriptEditorTestHelper extends Matchers {
         fail("This modification was not successful: " + um)
     }
   }
-
 }

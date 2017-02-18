@@ -20,7 +20,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
-
 object RugOperationSupport {
 
   val YmlFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")

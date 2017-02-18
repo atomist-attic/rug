@@ -5,7 +5,6 @@ package com.atomist.param
   */
 trait Parameterized {
 
-
   /**
     * Convenience method subclasses can use to identify any missing parameters.
     *

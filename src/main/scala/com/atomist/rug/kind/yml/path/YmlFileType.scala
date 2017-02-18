@@ -118,7 +118,6 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
     }
   }
 
-
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
     val name = ScalarName
     val sf = new MutableTerminalTreeNode(name,
@@ -166,9 +165,7 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
     }
     tn.accept(v, 0)
   }
-
 }
-
 
 object YmlFileType {
 

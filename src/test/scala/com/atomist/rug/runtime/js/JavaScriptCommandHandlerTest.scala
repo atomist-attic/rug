@@ -10,8 +10,8 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeMaterializer
 import org.scalatest.{FlatSpec, Matchers}
 
-
 class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
+
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
   val treeMaterializer: TreeMaterializer = TestTreeMaterializer
 

@@ -8,7 +8,6 @@ import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js._
 import com.atomist.source.ArtifactSource
 
-
 /**
   * Convenience, but expensive as JavaScriptContext is not reused
   * Also namespace/otherops not used. Really only for test/fun.
@@ -32,10 +31,10 @@ class JavaScriptProjectOperationFinder(jsc: JavaScriptContext) {
   )
 
   /**
+    *  Finds rugs.
     *
-    * @param namespace
-    * @param otherRugs - other rugs brought in via manifest deps
-    * @return
+    * @param namespace the namespace
+    * @param otherRugs other rugs brought in via manifest deps
     */
   def find(namespace: Option[String], otherRugs: Seq[Rug]): Rugs = {
     //TODO make better use of namespace/otherRugs etc.
@@ -50,5 +49,3 @@ class JavaScriptProjectOperationFinder(jsc: JavaScriptContext) {
     )
   }
 }
-
-

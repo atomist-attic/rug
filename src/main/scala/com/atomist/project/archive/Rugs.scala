@@ -27,7 +27,6 @@ case class Rugs(
   def eventHandlerNames: Seq[String] = names(eventHandlers)
   def responseHandlerNames: Seq[String] = names(responseHandlers)
 
-
   private def names(rugs: Seq[Rug]): Seq[String] = rugs.map(r => r.name)
 
   override def toString: String = {

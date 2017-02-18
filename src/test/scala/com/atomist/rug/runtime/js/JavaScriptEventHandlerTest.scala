@@ -11,8 +11,8 @@ import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer, TreeNode}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
 
-
 object JavaScriptEventHandlerTest {
+
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
   val treeMaterializer: TreeMaterializer = TestTreeMaterializer
 

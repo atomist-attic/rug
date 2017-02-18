@@ -32,12 +32,6 @@ class JavaScriptEventHandlerFinder(ctx: JavaScriptHandlerContext)
 
 /**
   * An invokable JS based handler for System Events
-  * @param pathExpressionStr
-  * @param handler
-  * @param ctx
-  * @param name
-  * @param description
-  * @param tags
   */
 class JavaScriptEventHandler(jsc: JavaScriptContext,
                               handler: ScriptObjectMirror,
@@ -83,7 +77,6 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   }
 
 }
-
 
 /**
   * Represents an event that drives a handler

@@ -84,7 +84,6 @@ object YmlUsageTestTargets {
   val allAS: Seq[(SimpleFileBasedArtifactSource, Int)] =
     Seq((singleAS, 1), (yamlAS, 3), (fullAS, 3))
 
-
   // --- !clarkevans.com/^invoice
   val YamlOrgStart =
     """
@@ -119,5 +118,3 @@ object YmlUsageTestTargets {
     """.stripMargin
 
 }
-
-

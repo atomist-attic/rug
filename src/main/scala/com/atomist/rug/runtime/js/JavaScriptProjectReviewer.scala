@@ -25,12 +25,12 @@ class JavaScriptProjectReviewerFinder
   }
 }
 
-
 /**
-  * A project reviewer
+  * A project reviewer.
+  *
   * @param jsc
   * @param jsVar
-  * @param rugAs  backing artifact source for the Rug archive
+  * @param rugAs backing artifact source for the Rug archive
   */
 class JavaScriptProjectReviewer(
                                          jsc: JavaScriptContext,

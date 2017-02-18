@@ -2,6 +2,7 @@ package com.atomist.rug.kind.yml.path
 
 import com.atomist.rug.kind.yml.{AbstractYmlUsageTest, YmlUsageTestTargets}
 import com.atomist.rug.kind.yml.YmlUsageTestTargets.allAS
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 
 class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
 
@@ -9,12 +10,12 @@ class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
     val newContent = "Marx Brothers"
     val prog =
       s"""
-        |editor YmlEdit
-        |
+         |editor YmlEdit
+         |
         |let group = $$(/*[@name='x.yml']/YmlFile()/group)
-        |
+         |
         |with group
-        |     do update "$newContent"
+         |     do update "$newContent"
       """.stripMargin
     allAS.foreach(asChanges => {
       val r = runProgAndCheck(prog, asChanges._1, 1)
@@ -54,5 +55,29 @@ class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
       assert(r.findFile("x.yml").get.content == YmlUsageTestTargets.xYml.replace("Death", "Life"))
     })
   }
+
+  it should "update string in start YAML example" in {
+    val prog =
+      s"""
+         |editor YmlEdit
+         |
+         |let billTo = $$(//YmlFile()//*[@name='bill-to']/given/value)
+         |
+         |with billTo begin
+         |     do update "Christine"
+         |end
+      """.stripMargin
+    val r = runProgAndCheck(prog,
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YmlUsageTestTargets.YamlOrgStart)),
+      1)
+    assert(r.findFile("x.yml").get.content == YmlUsageTestTargets.YamlOrgStart.replace("Chris", "Christine"))
+  }
+
+  it should "change | string" is pending
+
+  it should "change > string" is pending
+
+  it should "change multiple documents in one file" is pending
+
 
 }

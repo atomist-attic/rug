@@ -3,13 +3,14 @@ package com.atomist.rug.kind.yml.path
 import java.io.InputStreamReader
 
 import com.atomist.rug.kind.grammar.TypeUnderFile
+import com.atomist.rug.kind.yml.path.YmlFileType._
 import com.atomist.source.FileArtifact
-import com.atomist.tree.TreeNode
+import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.util.{Visitable, Visitor}
 import com.typesafe.scalalogging.LazyLogging
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.error.Mark
 import org.yaml.snakeyaml.events._
 
 import scala.collection.JavaConverters._
@@ -19,8 +20,6 @@ import scala.collection.mutable
   * Uses SnakeYaml.
   */
 class YmlFileType extends TypeUnderFile with LazyLogging {
-
-  import YmlFileType._
 
   private case class Input(content: String, event: Event, nodeStack: mutable.Stack[ParsedMutableContainerTreeNode])
 
@@ -54,122 +53,122 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
     * Uses a state machine to handle SnakeYAML events, which include node positions.
     */
   override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[PositionedTreeNode] = {
-    var state: State = SeekingKey
-
-    val root = new ParsedMutableContainerTreeNode(f.name)
-    root.startPosition = OffsetInputPosition(0)
-    root.endPosition = OffsetInputPosition(f.contentLength)
 
     val events: Iterable[Event] = yaml.parse(new InputStreamReader(f.inputStream())).asScala
 
-    // Node we're currently adding to
+    // We're currently adding to the node on top of the stack
     val nodeStack: mutable.Stack[ParsedMutableContainerTreeNode] = new mutable.Stack()
+    var state: State = InDocument
+
+    // TODO do this for each doc
+    val root = new ParsedMutableContainerTreeNode(f.name)
+    root.startPosition = OffsetInputPosition(0)
+    root.endPosition = OffsetInputPosition(f.contentLength)
     nodeStack.push(root)
 
     for (e <- events) {
+      val oldState = state
       state = state.transition(Input(f.content, e, nodeStack))
+      //println(s"$e from $oldState to $state")
     }
 
-    validateStructure(root)
     root.pad(f.content)
     Some(root)
   }
 
-  
-  private case object SeekingKey extends State {
+
+  private case object InDocument extends State {
 
     protected override def on = {
       case Input(content, s: ScalarEvent, _) =>
-        SeenKey(keyTerminal = scalarToTreeNode(content, s))
+        SeenKey(keyTerminal = scalarToTreeNode(content, s), this)
     }
   }
 
-  private case class SeenKey(keyTerminal: PositionedTreeNode) extends State {
+  private case class SeenKey(keyTerminal: PositionedTreeNode, previousState: State)
+    extends State {
 
     protected def on = {
-        case Input(content, s: ScalarEvent, nodeStack) =>
-          // Scalar key with value. Add a container a child of present node and return to Open state
-          val value = scalarToTreeNode(content, s)
-          val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.value, Seq(value), significance = TreeNode.Signal)
-          nodeStack.top.insertFieldCheckingPosition(container)
-          SeekingKey
-        case Input(content, sse: SequenceStartEvent, nodeStack) =>
-          val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) SequenceType else keyTerminal.value
-          val newContainer = new ParsedMutableContainerTreeNode(containerName)
-          newContainer.addType(SequenceType)
-          newContainer.startPosition = markToPosition(content, sse, skipLeadingQuote = false)
-          nodeStack.top.appendField(newContainer)
-          nodeStack.push(newContainer)
-          InCollection
-      }
+      case Input(content, s: ScalarEvent, nodeStack) =>
+        // Scalar key with value. Add a container a child of present node and return to Open state
+        val value = scalarToTreeNode(content, s)
+        val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.value, Seq(value), significance = TreeNode.Signal)
+        nodeStack.top.insertFieldCheckingPosition(container)
+        previousState
+      case Input(content, sse: SequenceStartEvent, nodeStack) =>
+        val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) SequenceType else keyTerminal.value
+        val newContainer = new ParsedMutableContainerTreeNode(containerName)
+        newContainer.addType(SequenceType)
+        newContainer.startPosition = markToPosition(content, sse.getStartMark)
+        nodeStack.top.appendField(newContainer)
+        nodeStack.push(newContainer)
+        InSequence(previousState)
+      case Input(content, mse: MappingStartEvent, nodeStack) =>
+        val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) MappingType else keyTerminal.value
+        val newContainer = new ParsedMutableContainerTreeNode(containerName)
+        newContainer.addType(MappingType)
+        newContainer.startPosition = markToPosition(content, mse.getStartMark)
+        nodeStack.top.appendField(newContainer)
+        nodeStack.push(newContainer)
+        InMapping(previousState)
+    }
   }
 
-  private case object InCollection extends State {
+  private case class InMapping(previousState: State) extends State {
+
+    protected override def on = {
+      case Input(content, see: MappingEndEvent, nodeStack) =>
+        nodeStack.top.endPosition = markToPosition(content, see.getStartMark)
+        nodeStack.pop()
+        previousState
+      case Input(content, s: ScalarEvent, _) =>
+        SeenKey(keyTerminal = scalarToTreeNode(content, s), this)
+    }
+  }
+
+  private case class InSequence(previousState: State) extends State {
 
     protected override def on = {
       case Input(content, see: SequenceEndEvent, nodeStack) =>
-        nodeStack.top.endPosition = markToPosition(content, see, skipLeadingQuote = false)
+        nodeStack.top.endPosition = markToPosition(content, see.getStartMark)
         nodeStack.pop()
-        SeekingKey
+        previousState
       case Input(content, s: ScalarEvent, nodeStack) =>
         val sf = scalarToTreeNode(content, s)
         nodeStack.top.insertFieldCheckingPosition(sf)
-        InCollection
+        this
     }
   }
 
+  /**
+    * Value will be the full structure.
+    *
+    * @param in
+    * @param se
+    * @return
+    */
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
-    val name = ScalarName
-    val sf = new MutableTerminalTreeNode(name,
-      se.getValue,
-      markToPosition(in, se, skipLeadingQuote = true)
-    )
-    sf.addType(ScalarType)
-    sf
+    val startPos = markToPosition(in, se.getStartMark)
+    val fullValue = in.substring(
+      startPos.offset,
+      markToPosition(in, se.getEndMark).offset)
+    new MutableTerminalTreeNode(ScalarName, fullValue, startPos)
   }
 
   private def canBeUsedAsNodeName(s: String) = s.exists(c => c.isWhitespace)
 
-  /**
-    * Strip the leading " if necessary
-    */
-  private def markToPosition(in: String, s: Event, skipLeadingQuote: Boolean): InputPosition = {
-    val m = s.getStartMark
+  private def markToPosition(in: String, m: Mark): InputPosition = {
     // Snake YAML shows positions in toStrings from 1 but returns them from 0
-    val rawOff = LineInputPositionImpl(in, m.getLine + 1, m.getColumn + 1)
-    // Special handling if we have a " included in the content. We skip it
-    val off = if (skipLeadingQuote && in.charAt(rawOff.offset) == '"')
-      rawOff + 1
-    else
-      rawOff
-    s match {
-      case se: ScalarEvent =>
-        val calculatedValue = in.substring(off.offset, off.offset + se.getValue.length)
-        require(calculatedValue == se.getValue,
-          s"calculated [$calculatedValue] but expected [${se.getValue}]")
-      case _ =>
-    }
-    off
-  }
-
-  private def validateStructure(tn: TreeNode): Unit = {
-    val v = new Visitor {
-      override def visit(v: Visitable, depth: Int): Boolean = {
-        v match {
-          case ptn: PositionedTreeNode =>
-            require(ptn.startPosition != null, s"Node with name [${ptn.nodeName}] must have start position set")
-            require(ptn.endPosition != null, s"Node with name [${ptn.nodeName}] must have end position set")
-        }
-        true
-      }
-    }
-    tn.accept(v, 0)
+    LineInputPositionImpl(in, m.getLine + 1, m.getColumn + 1)
   }
 }
+
 
 object YmlFileType {
 
   val SequenceType = "Sequence"
+
+  val MappingType = "Mapping"
 
   val KeyType = "Key"
 

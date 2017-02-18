@@ -15,7 +15,7 @@ class ChangeRaw implements ProjectEditor {
       let eng: PathExpressionEngine =
         new yaml.YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-      let findDependencies = `/*[@name='x.yml']/YmlFile()/group`   
+      let findDependencies = `/*[@name='x.yml']/YmlFile()/group/value`   
 
       eng.with<yaml.YamlValue>(project, findDependencies, ymlValue => {
         //console.log(`Raw value is [${ymlValue.value()}]`)

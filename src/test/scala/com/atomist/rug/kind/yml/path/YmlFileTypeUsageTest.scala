@@ -2,14 +2,14 @@ package com.atomist.rug.kind.yml.path
 
 import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
-import com.atomist.rug.kind.scala.ScalaFileTypeTest.{Python3Source, PythonTypeSources}
 import com.atomist.rug.kind.yml.{AbstractYmlUsageTest, YmlUsageTestTargets}
-import com.atomist.rug.kind.yml.YmlUsageTestTargets.allAS
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 
 class YmlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYmlUsageTest  {
 
   override protected def typeBeingTested: TypeUnderFile = new YmlFileType
+
+  import YmlUsageTestTargets._
 
   it should "change scalar value value" in {
     val newContent = "Marx Brothers"
@@ -79,28 +79,50 @@ class YmlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYmlUsa
   }
 
   it should "change raw string" in {
-    modify("ChangeRaw.ts", YmlUsageTestTargets.singleAS) match {
+    modify("ChangeRaw.ts", singleAS) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
         println(theFile.content)
-        assert(theFile.content === YmlUsageTestTargets.xYml.replace("queen", "Jefferson Airplane"))
+        assert(theFile.content === xYml.replace("queen", "Jefferson Airplane"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
   it should "change quoted string" in {
-    modify("ChangeQuoted.ts", YmlUsageTestTargets.singleAS) match {
+    modify("ChangeQuoted.ts", singleAS) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
         println(theFile.content)
-        assert(theFile.content === YmlUsageTestTargets.xYml.replace("Bohemian Rhapsody", "White Rabbit"))
+        assert(theFile.content === xYml.replace("Bohemian Rhapsody", "White Rabbit"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
-  it should "change > string" is pending
+  it should "change | string" is pending
+
+  it should "change > string" in pendingUntilFixed {
+    val oldComment =
+      """>
+        |    Late afternoon is best.
+        |    Backup contact is Nancy
+        |    Billsmer @ 338-4338.""".stripMargin
+    val newComment = "This is the new comment"
+    val rawNewComment =
+      s""">
+        |    $newComment""".stripMargin
+    modify("ChangeGt.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)),
+      Map("newComment" -> newComment)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        println(theFile.content)
+        assert(theFile.content === YamlOrgStart.replace(oldComment, rawNewComment))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
 
   it should "change multiple documents in one file" is pending
 

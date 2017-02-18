@@ -9,7 +9,7 @@ import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
 import org.yaml.snakeyaml.Yaml
 
-abstract class AbstractYmlUsageTest extends FlatSpec with Matchers {
+trait AbstractYmlUsageTest extends FlatSpec with Matchers {
 
   private val parser = new Yaml()
 

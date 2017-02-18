@@ -1,10 +1,15 @@
 package com.atomist.rug.kind.yml.path
 
+import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
+import com.atomist.rug.kind.scala.ScalaFileTypeTest.{Python3Source, PythonTypeSources}
 import com.atomist.rug.kind.yml.{AbstractYmlUsageTest, YmlUsageTestTargets}
 import com.atomist.rug.kind.yml.YmlUsageTestTargets.allAS
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 
-class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
+class YmlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYmlUsageTest  {
+
+  override protected def typeBeingTested: TypeUnderFile = new YmlFileType
 
   it should "change scalar value value" in {
     val newContent = "Marx Brothers"
@@ -73,11 +78,19 @@ class YmlFileTypeUsageTest extends AbstractYmlUsageTest {
     assert(r.findFile("x.yml").get.content == YmlUsageTestTargets.YamlOrgStart.replace("Chris", "Christine"))
   }
 
-  it should "change | string" is pending
+  it should "change quoted string" in {
+    modify("ChangeQuoted.ts", YmlUsageTestTargets.singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        println(theFile.content)
+        assert(theFile.content === YmlUsageTestTargets.xYml.replace("Bohemian Rhapsody", "White Rabbit"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
 
   it should "change > string" is pending
 
   it should "change multiple documents in one file" is pending
-
 
 }

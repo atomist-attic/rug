@@ -6,7 +6,7 @@ import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 
 /**
   * Allows select (with/from) navigation over any structured data that can
-  * be put into our TreeNode tree structure
+  * be put into our TreeNode tree structure.
   */
 class ContainerTreeNodeView[O <: ContainerTreeNode](
                                                      originalBackingObject: O,
@@ -49,10 +49,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
     }
 
   /**
-    * Subclasses can override this if they want to return mutable views
-    *
-    * @param o
-    * @return
+    * Subclasses can override this if they want to return mutable views.
     */
   protected def viewFrom(o: ContainerTreeNode): ContainerTreeNodeView[_] = {
     new ContainerTreeNodeView(o, this)
@@ -86,8 +83,7 @@ class ScalarValueView(
 
   @ExportFunction(readOnly = false, description = "Update the value of the sole key")
   def setValue(@ExportFunctionParameterDescription(name = "name",
-    description = "The new value")
-               newValue: String): Unit = {
+    description = "The new value") newValue: String): Unit = {
     originalBackingObject.update(newValue)
     commit()
   }

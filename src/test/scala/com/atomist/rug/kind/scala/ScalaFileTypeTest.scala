@@ -62,7 +62,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         assert(nodes.head.value === "ThePlaneHasFlownIntoTheMountain")
-      case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+      case wtf => fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     assert(scalaFileNode.value === Exceptions.content)
@@ -83,7 +83,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         val mut = nodes.head.asInstanceOf[UpdatableTreeNode]
         mut.update(newException)
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
@@ -112,7 +112,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         
         }
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceAll("ThePlaneHasFlownIntoTheMountain", newException)
@@ -141,7 +141,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         //println(terminals)
         terminals(1).asInstanceOf[UpdatableTreeNode].update(newException)
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)

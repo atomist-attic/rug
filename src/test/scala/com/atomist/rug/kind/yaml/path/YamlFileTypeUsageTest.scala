@@ -5,7 +5,7 @@ import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.{AbstractYamlUsageTest, YamlUsageTestTargets}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 
-class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlUsageTest  {
+class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlUsageTest {
 
   override protected def typeBeingTested: TypeUnderFile = new YamlFileType
 
@@ -102,7 +102,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
 
   it should "change | string" is pending
 
-  it should "change > string" in pendingUntilFixed {
+  it should "change > string" in {
     val oldComment =
       """>
         |    Late afternoon is best.
@@ -111,13 +111,14 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     val newComment = "This is the new comment"
     val rawNewComment =
       s""">
-        |    $newComment""".stripMargin
+         |    $newComment""".stripMargin
+
     modify("ChangeGt.ts",
       SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)),
       Map("newComment" -> newComment)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(theFile.content)
+        // println(theFile.content)
         assert(theFile.content === YamlOrgStart.replace(oldComment, rawNewComment))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -129,7 +130,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
         println(theFile.content)
-        //assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
+        // assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
         assert(theFile.content.contains("Not There"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -139,5 +140,4 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
   it should "remove from sequence" is pending
 
   it should "change multiple documents in one file" is pending
-
 }

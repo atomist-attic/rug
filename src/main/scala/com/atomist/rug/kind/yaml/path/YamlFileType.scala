@@ -9,6 +9,7 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.io.IOUtils
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.Mark
 import org.yaml.snakeyaml.events._
@@ -53,8 +54,8 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     * Uses a state machine to handle SnakeYAML events, which include node positions.
     */
   override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[PositionedTreeNode] = {
-
-    val events: Iterable[Event] = yaml.parse(new InputStreamReader(f.inputStream())).asScala
+    val reader = new InputStreamReader(f.inputStream())
+    val events: Iterable[Event] = yaml.parse(reader).asScala
 
     // We're currently adding to the node on top of the stack
     val nodeStack: mutable.Stack[ParsedMutableContainerTreeNode] = new mutable.Stack()
@@ -71,6 +72,7 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
       state = state.transition(Input(f.content, e, nodeStack))
       // println(s"$e from $oldState to $state")
     }
+    IOUtils.closeQuietly(reader)
 
     root.pad(f.content)
     Some(root)
@@ -92,6 +94,7 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
         // Scalar key with value. Add a container a child of present node and return to Open state
         val value = scalarToTreeNode(content, s)
         val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.value, Seq(value), significance = TreeNode.Signal)
+        container.addType(ScalarType)
         nodeStack.top.insertFieldCheckingPosition(container)
         previousState
       case Input(content, sse: SequenceStartEvent, nodeStack) =>
@@ -152,7 +155,7 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     f
   }
 
-  private def canBeUsedAsNodeName(s: String) = s.exists(c => c.isWhitespace)
+  private def canBeUsedAsNodeName(s: String) = s.exists(_.isWhitespace)
 
   private def markToPosition(in: String, m: Mark): InputPosition = {
     // Snake YAML shows positions in toStrings from 1 but returns them from 0

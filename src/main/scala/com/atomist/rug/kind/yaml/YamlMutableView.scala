@@ -72,5 +72,5 @@ private[yaml] class YamlModel(val yaml: String) {
 
   def setKey(name: String, value: String): Unit = map.put(name, value)
 
-  def dump(key: String): Option[String] = valueOf(key).map(n => y.dump(n))
+  def dump(key: String): Option[String] = valueOf(key).map(y.dump(_))
 }

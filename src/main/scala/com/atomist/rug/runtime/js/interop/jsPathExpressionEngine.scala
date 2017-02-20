@@ -47,10 +47,9 @@ class jsPathExpressionEngine(
 
   /**
     * Return a customized version of this path expression engine for use in a specific
-    * context, with its own microgrammar types
+    * context, with its own microgrammar types.
     *
     * @param dynamicType JavaScript rest dynamic type definitions.
-    *                    Presently,
     * @return customized instance of this engine
     */
   def addType(dynamicType: Object): jsPathExpressionEngine = {
@@ -66,7 +65,7 @@ class jsPathExpressionEngine(
       val name = stringProperty(som, "name")
       val grammar = stringProperty(som, "grammar")
       val submatchers = toJavaMap(som.getMember("submatchers"))
-      //println(s"Parsing $name=$grammar with ${matcherRegistry}")
+      // println(s"Parsing $name=$grammar with ${matcherRegistry}")
       val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar, submatchers)
       new MicrogrammarTypeProvider(mg)
     case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
@@ -112,7 +111,7 @@ class jsPathExpressionEngine(
 
   /**
     * Evaluate the path expression, applying a function
-    * to each result
+    * to each result.
     *
     * @param root  node to evaluate path expression against
     * @param pexpr path expression (compiled or string)
@@ -133,7 +132,7 @@ class jsPathExpressionEngine(
   /**
     * Return a single match to the given path expression. Throw an exception otherwise.
     *
-    * @param root root of Tree. SafeComittingProxy wrapping a TreeNode
+    * @param root root of Tree. SafeCommittingProxy wrapping a TreeNode
     * @param pe   path expression of object
     */
   def scalar(root: TreeNode, pe: Object): jsSafeCommittingProxy = {
@@ -171,7 +170,7 @@ class jsPathExpressionEngine(
 
   /**
     * Convenience method to avoid overloading in TypeScript,
-    * which can cause problems with inheritance
+    * which can cause problems with inheritance.
     */
   def scalarStr(root: TreeNode, pe: String): jsSafeCommittingProxy =
     scalar(root, pe)
@@ -182,7 +181,7 @@ class jsPathExpressionEngine(
   def as(root: TreeNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")
 
   /**
-    * Find the children of the current node of the named type
+    * Find the children of the current node of the named type.
     *
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
@@ -199,7 +198,6 @@ class jsPathExpressionEngine(
       case _ => ???
     }
   }
-
 }
 
 class PathExpressionException(msg: String) extends RuntimeException(msg) {
@@ -224,7 +222,7 @@ object jsPathExpressionEngine {
   val matcherParser = new MatcherDefinitionParser
 
   /**
-    * Parse path expression from a JavaScript-backed object with an "expression" property or a string
+    * Parse path expression from a JavaScript-backed object with an "expression" property or a string.
     */
   def pathExpressionFromObject(pe: Object): PathExpression = pe match {
     case som: ScriptObjectMirror =>

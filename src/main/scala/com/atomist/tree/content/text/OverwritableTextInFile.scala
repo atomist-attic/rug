@@ -27,7 +27,7 @@ class OverwritableTextInFile(dynamicType: String,
 
   def setParent(fmv: MutableView[FileArtifact]): Unit = {
     if (state != Unready)
-      throw new IllegalStateException("wat you can only set the parent once")
+      throw new IllegalStateException("You can only set the parent once")
     fileView = fmv
     claimChildren()
     state = Ready
@@ -55,8 +55,8 @@ class OverwritableTextInFile(dynamicType: String,
 
   override def childrenNamed(key: String): Seq[TreeNode] = visibleChildren.filter(_.nodeName == key)
 
-  /*
-   * called by descendants to find their position in the file
+  /**
+   * Called by descendants to find their position in the file.
    */
   def formatInfo(child: TreeNode): FormatInfo = {
     def descs(f: OverwritableTextTreeNode): Seq[TreeNode] = {

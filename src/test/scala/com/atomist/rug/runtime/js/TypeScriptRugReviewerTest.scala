@@ -195,7 +195,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     assert(singleComment.column === Some(1))
   }
 
-  it should "find long lines" in pendingUntilFixed {
+  it should "find no long lines" in {
     val target = SimpleFileBasedArtifactSource(
       StringFileArtifact("x", "No long lines"),
       StringFileArtifact("y",
@@ -206,8 +206,29 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
         """.stripMargin)
     )
     val rev = TestUtils.reviewerInSideFile(this, "FindLongLines.ts")
-    val rr = rev.review(target, SimpleParameterValues(Map("maxLength" -> "10")))
-    rr.comments shouldBe(empty)
+    val rr = rev.review(target, SimpleParameterValues(Map("maxLength" -> "100")))
+    rr.comments shouldBe empty
+  }
+
+  it should "find two long lines" in {
+    val target = SimpleFileBasedArtifactSource(
+      StringFileArtifact("x", "No long lines"),
+      StringFileArtifact("y",
+        """
+          |May be an issue
+          |if we set an insanely low threshold for line length
+          |but that would be crazy
+        """.stripMargin)
+    )
+    val rev = TestUtils.reviewerInSideFile(this, "FindLongLines.ts")
+    val rr = rev.review(target, SimpleParameterValues(Map("maxLength" -> "20")))
+    assert(rr.comments.size === 2)
+    val first = rr.comments.head
+    val second = rr.comments(1)
+    assert(first.fileName === Some("y"))
+    assert(second.fileName === Some("y"))
+    assert(first.line === Some(2))
+    assert(second.line === Some(3))
   }
 
   private  def reviewSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {

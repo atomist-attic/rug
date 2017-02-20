@@ -12,7 +12,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import scala.collection.JavaConverters._
 
 /**
-  * Find Reviewers in a Nashorn
+  * Find Reviewers in a Rug archive processed using Nashorn
   */
 class JavaScriptProjectReviewerFinder
   extends JavaScriptProjectOperationFinder[JavaScriptProjectReviewer] {
@@ -28,16 +28,13 @@ class JavaScriptProjectReviewerFinder
 
 /**
   * A project reviewer.
-  *
-  * @param jsc
-  * @param jsVar
   * @param rugAs backing artifact source for the Rug archive
   */
 class JavaScriptProjectReviewer(
-                                         jsc: JavaScriptContext,
-                                         jsVar: ScriptObjectMirror,
-                                         rugAs: ArtifactSource
-                                       )
+                                 jsc: JavaScriptContext,
+                                 jsVar: ScriptObjectMirror,
+                                 rugAs: ArtifactSource
+                               )
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectReviewer {
 
@@ -70,9 +67,10 @@ class JavaScriptProjectReviewer(
         if (som.isArray) {
           val convertedComments:Iterable[ReviewComment] = som.asScala.values.map {
             case commentSom: ScriptObjectMirror =>
+              val severity = Severity(NashornUtils.stringProperty(commentSom, "severity", "" + Severity.MAJOR.id).toInt)
               ReviewComment(
                 NashornUtils.stringProperty(commentSom, "comment", ""),
-                Severity(commentSom.get("severity").toString.toInt),
+                severity,
                 commentSom.get("fileName") match {
                   case null => None
                   case fileName: String => Option(fileName)
@@ -88,7 +86,8 @@ class JavaScriptProjectReviewer(
               )
           }
           ReviewResult(responseNote, convertedComments.to)
-        } else {
+        }
+        else {
           ReviewResult(responseNote)
         }
     }

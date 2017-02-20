@@ -1,8 +1,11 @@
 import {Project} from '@atomist/rug/model/Core'
 import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
-import {File} from '@atomist/rug/model/Core'
+import {Line} from '@atomist/rug/model/Core'
+import {PathExpressionEngine,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {ReviewResult, ReviewComment, Severity} from '@atomist/rug/operations/RugOperation'
 import {Parameter, Reviewer} from '@atomist/rug/operations/Decorators'
+import {DecoratingPathExpressionEngine} from '@atomist/rug/ast/DecoratingPathExpressionEngine'
+
 
 @Reviewer("Simple", "A nice little editor")
 class FindLongLines implements ProjectReviewer {
@@ -12,15 +15,30 @@ class FindLongLines implements ProjectReviewer {
     @Parameter({description: "Max line length", pattern: "^.*$"})
     maxLength: number = 100
 
-    review(project: Project, {content} : {content: string}) {
-      return new ReviewResult(content,
-           [new ReviewComment(
-            content,
-            Severity.Broken,
-            "file.txt",
-            1,
-            1)]
-        );
+    review(project: Project) {
+     
+        let eng: PathExpressionEngine = 
+            new DecoratingPathExpressionEngine(project.context().pathExpressionEngine())
+
+        let comments: ReviewComment[] = []
+
+        let longLines = `//File()/Line()`   
+
+      eng.with<Line>(project, longLines, l => {
+          //console.log(`Checking [${l}]`)
+          if (l.length() > this.maxLength) {
+            let rc = new ReviewComment(
+                    this.name,
+                    Severity.Major,
+                    l.file().path(),
+                    l.num(),
+                    1)
+            comments.push(rc)
+        }
+       
+      })
+
+       return new ReviewResult(this.name, comments)
     }
   }
 

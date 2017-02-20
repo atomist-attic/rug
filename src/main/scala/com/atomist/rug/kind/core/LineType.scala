@@ -41,6 +41,9 @@ class LineMutableView(
 
   override def childNodeNames: Set[String] = Set()
 
+  @ExportFunction(readOnly = true, description = "Containing file")
+  def file: FileMutableView = parent
+
   @ExportFunction(readOnly = false, description = "Update this line's content")
   def update(@ExportFunctionParameterDescription(name = "s2",
     description = "The content to update this line to")
@@ -60,6 +63,9 @@ class LineMutableView(
 
   @ExportFunction(readOnly = true, description = "Line number from 1")
   def numFrom1: Int = linenum + 1
+
+  @ExportFunction(readOnly = true, description = "Line length")
+  def length: Int = value.length
 
   override protected def updateParent(): Unit = {
     applied(parent)
@@ -81,4 +87,7 @@ class LineMutableView(
     f.setContent(newContent)
     f
   }
+
+  override def toString(): String =
+    s"${parent.path}:$numFrom1;value=[$value];hc=$hashCode"
 }

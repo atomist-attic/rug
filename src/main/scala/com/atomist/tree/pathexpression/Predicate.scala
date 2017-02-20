@@ -2,9 +2,9 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.content.text.TreeNodeOperations
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+import com.atomist.tree.utils.NodeUtils
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
@@ -175,7 +175,7 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
         //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
         result
       }
-      else TreeNodeOperations.invokeMethodIfPresent[String](n, property).contains(expectedValue)
+      else NodeUtils.invokeMethodIfPresent[String](n, property).contains(expectedValue)
     }
   }
 }

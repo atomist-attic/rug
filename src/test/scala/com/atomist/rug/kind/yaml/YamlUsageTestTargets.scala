@@ -76,7 +76,7 @@ object YamlUsageTestTargets {
       StringFileArtifact("README.md", "This is a README\n"),
       StringFileArtifact("x.yml", xYaml),
       StringFileArtifact("src/main/y.yml", yYaml),
-      StringFileArtifact("src/main/not-yaml.txt", "Not YAML file.\n\nWe should not find this.\n"),
+      StringFileArtifact("src/main/not-yml.txt", "Not YAML file.\n\nWe should not find this.\n"),
       StringFileArtifact("target/build/z.yml", zYaml)
     )
   )

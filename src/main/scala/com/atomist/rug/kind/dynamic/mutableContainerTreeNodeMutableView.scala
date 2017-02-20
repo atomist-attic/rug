@@ -37,7 +37,7 @@ class MutableContainerMutableView(
 
   override def dirty: Boolean = originalBackingObject.dirty
 
-  override def address = {
+  override def address: String = {
       val myType = originalBackingObject.nodeTags.mkString(",")
       if (parent == null)
         s"Root Mutable Container of type ${myType}" // this would be weird, but it could happen in test
@@ -51,7 +51,8 @@ class MutableContainerMutableView(
           if (myIndex == -1)
             ""
           else
-            s"[$myIndex]"
+            // XPath indexes from 1
+            s"[${myIndex + 1}]"
         }
 
         s"${parent.address}$parentTest/$myType()[name=$nodeName]"

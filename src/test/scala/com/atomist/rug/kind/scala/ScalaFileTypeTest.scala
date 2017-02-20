@@ -94,6 +94,23 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     //updatedFile.dirty should be(true)
   }
 
+  it should "find path to specific exception catch" in {
+    val proj = exceptionsProject
+    val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
+    val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
+
+    val path = proj.pathTo(exceptionsProject.files.get(0).path, "ScalaFile", 9, 5)
+    //println(s"Path=$path")
+    assert(path.contains(exceptionsProject.files.get(0).path))
+
+    // Check that the path matches
+    evaluatePathExpression(proj, path) match {
+      case nodes if nodes.size == 1 =>
+        //println(nodes)
+      case _ => fail
+    }
+  }
+
   it should "find and modify multiple points" in {
     val proj = exceptionsProject
     val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
@@ -109,7 +126,6 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         nodes.foreach {
           case mut: UpdatableTreeNode => mut.update(newException)
           case _ =>
-        
         }
       case wtf =>
         fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))

@@ -6,5 +6,5 @@ trait Positioned {
 
   def endPosition: InputPosition
 
-  def length = endPosition - startPosition
+  def length: Int = endPosition - startPosition
 }

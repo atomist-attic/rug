@@ -1,8 +1,8 @@
 package com.atomist.tree.content.text
 
-import com.atomist.rug.spi.MutableView
-import com.atomist.source.{FileArtifact, StringFileArtifact}
-import com.atomist.tree.TreeNode
+import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.source.StringFileArtifact
+import com.atomist.tree.{AddressableTreeNode, TreeNode}
 import com.atomist.tree.TreeNode.Noise
 
 /**
@@ -14,18 +14,19 @@ import com.atomist.tree.TreeNode.Noise
   * This should be invisible in the path expression tree.
   *
   * @param dynamicType the type represented by each of the nodes underneath.
-  * @param allKids the OverwritableTextTreeNodes
+  * @param allKids     the OverwritableTextTreeNodes
   */
 class OverwritableTextInFile(dynamicType: String,
                              allKids: Seq[TreeNode])
   extends OverwritableTextTreeNodeParent {
+
   import OverwritableTextTreeNode._
 
   private var state: LifecyclePhase = Unready
   private var _value: String = allKids.map(_.value).mkString("")
   private val visibleChildren = allKids.filter(_.significance != Noise)
 
-  def setParent(fmv: MutableView[FileArtifact]): Unit = {
+  def setParent(fmv: FileArtifactBackedMutableView): Unit = {
     if (state != Unready)
       throw new IllegalStateException("wat you can only set the parent once")
     fileView = fmv
@@ -33,7 +34,7 @@ class OverwritableTextInFile(dynamicType: String,
     state = Ready
   }
 
-  private[text] var fileView: MutableView[FileArtifact] = _
+  private[text] var fileView: FileArtifactBackedMutableView = _
 
   override def commit(): Unit = requireReady {
     _value = allKids.map(_.value).mkString("") // some child has changed
@@ -55,27 +56,75 @@ class OverwritableTextInFile(dynamicType: String,
 
   override def childrenNamed(key: String): Seq[TreeNode] = visibleChildren.filter(_.nodeName == key)
 
+  private case class NodeAndPath(node: TreeNode, path: Seq[TreeNode])
+
+  /**
+    * All descendants of this node with position info, with their paths
+    */
+  private def descendants: Seq[NodeAndPath] = {
+    def descs(f: OverwritableTextTreeNode, path: Seq[TreeNode]): Seq[NodeAndPath] = {
+      NodeAndPath(f, path) +: f.allKidsIncludingPadding.flatMap {
+        case d: OverwritableTextTreeNode => descs(d, path :+ d)
+        case n => Seq(NodeAndPath(n, path))
+      }
+    }
+
+    NodeAndPath(this, Nil) +: allKids.flatMap {
+      case d: OverwritableTextTreeNode => descs(d, Seq(this))
+      case n => Seq(NodeAndPath(n, Seq(this)))
+    }
+  }
+
+  /**
+    * Return the node at this position in the file, if known
+    */
+  private def nodeAndPathAt(pos: InputPosition): Option[NodeAndPath] = {
+    val terminalDescendants = descendants.filter(np => np.node.childNodes.isEmpty)
+    val stringToLeft = new StringBuilder
+    val nodesBefore =
+      for {
+        n <- terminalDescendants
+        if stringToLeft.size < pos.offset
+      }
+        yield {
+          stringToLeft.append(n.node.value)
+          n
+        }
+    nodesBefore.lastOption
+  }
+
+  /**
+    * Try to find an addressable node at this position in the file
+    */
+  def nodeAt(pos: InputPosition): Option[AddressableTreeNode] = {
+    nodeAndPathAt(pos) flatMap {
+      case NodeAndPath(atb: AddressableTreeNode, _) => Some(atb)
+      case NodeAndPath(_, path) =>
+        (path.reverse collect {
+          case atb: AddressableTreeNode => atb
+        }).headOption
+    }
+  }
+
+  /**
+    * Find the node at this position in the file
+    */
+  def rawNodeAt(pos: InputPosition): Option[TreeNode] = {
+    nodeAndPathAt(pos).map(np => {
+      np.node
+    })
+  }
+
   /*
    * called by descendants to find their position in the file
    */
   def formatInfo(child: TreeNode): FormatInfo = {
-    def descs(f: OverwritableTextTreeNode): Seq[TreeNode] = {
-      f +: f.allKidsIncludingPadding.flatMap {
-        case d: OverwritableTextTreeNode => descs(d)
-        case n => Seq(n)
-      }
-    }
-
-    val descendants = this +: allKids.flatMap {
-      case d: OverwritableTextTreeNode => descs(d)
-      case n => Seq(n)
-    }
-
-    if (!descendants.contains(child))
+    val descs = descendants.map(_.node)
+    if (!descs.contains(child))
       throw new IllegalStateException(s"I can't find my child: $child")
     else {
       // Build string to the left
-      val leftFields = descendants.takeWhile(f => f != child)
+      val leftFields = descs.takeWhile(f => f != child)
       val stringToLeft = leftFields
         .filter(_.childNodes.isEmpty)
         .map(_.value).mkString("")
@@ -89,10 +138,10 @@ class OverwritableTextInFile(dynamicType: String,
   /* mine */
 
   private def requireReady[T](result: => T): T = {
-      if (state != Ready)
-        throw new IllegalStateException(s"This is only valid when the node is Ready but I am in $state")
-      result
-    }
+    if (state != Ready)
+      throw new IllegalStateException(s"This is only valid when the node is Ready but I am in $state")
+    result
+  }
 
   private def claimChildren(): Unit = allKids.foreach {
     case ch: OverwritableTextTreeNodeChild =>
@@ -104,7 +153,7 @@ class OverwritableTextInFile(dynamicType: String,
     val thisChildsName = forChild.nodeName
     val childrenBeforeThisWithTheSameName = visibleChildren.takeWhile(_ != forChild).filter(_.nodeName == thisChildsName)
     val thisChildsIndex = childrenBeforeThisWithTheSameName.size
-
-    s"$dynamicType()[$thisChildsIndex]"
+    // XPath indexes from 1
+    s"$dynamicType()[${thisChildsIndex + 1}]"
   }
 }

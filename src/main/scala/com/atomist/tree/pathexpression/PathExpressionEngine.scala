@@ -3,7 +3,6 @@ package com.atomist.tree.pathexpression
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult._
-import com.atomist.tree.utils.TreeNodeUtils
 
 /**
   * Expression engine implementation for our path format

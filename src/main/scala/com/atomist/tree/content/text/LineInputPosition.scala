@@ -23,30 +23,35 @@ trait LineInputPosition extends InputPosition {
 /**
   * InputPosition implementation given line position, from 1:1.
   *
-  * @param input input string
+  * @param input     input string
   * @param lineFrom1 line (from 1)
-  * @param colFrom1 column (from 1)
+  * @param colFrom1  column (from 1)
   */
 case class LineInputPositionImpl(input: String, lineFrom1: Int, colFrom1: Int)
   extends LineInputPosition {
 
   override val offset: Int = {
-    var offs = 0
-    var line = 1
-    var col = 1
-    for {
-      c <- input
-      if !(line == lineFrom1 && col == colFrom1)
-    } c match {
-      case `c` if c == '\n' || c == '\r' =>
-        line += 1
-        col = 1
-        offs += 1
-      case _ =>
-        col += 1
-        offs += 1
-    }
+    if (lineFrom1 < 1)
+      0
+    else {
+      var offs = 0
+      var line = 1
+      var col = 1
+      for {
+        c <- input.dropRight(1)
+        if !(line >= lineFrom1 && col >= colFrom1)
+      }
+        c match {
+          case `c` if c == '\n' || c == '\r' =>
+            line += 1
+            col = 1
+            offs += 1
+          case _ =>
+            col += 1
+            offs += 1
+        }
 
-    offs
+      offs
+    }
   }
 }

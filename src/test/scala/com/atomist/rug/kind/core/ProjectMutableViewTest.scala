@@ -345,6 +345,54 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     backingPMV.countFilesInDirectory("xxx") should be(0)
   }
 
+  it should "return null on invalid file location request: no such type" in {
+    val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
+      StringFileArtifact("x", "wopeiruowieuoriu")))
+    assert(pmv.pathTo("x", "GastricBroodingFrog", 1, 1) === null)
+  }
+
+  it should "return null on invalid file location request: no such file" in {
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""))
+    assert(pmv.pathTo("x", "Line", 1, 1) === null)
+  }
+
+  it should "not crash on location request: index out of bounds" in {
+    val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
+      StringFileArtifact("Foo.java",
+        """
+          |public class Foo {
+          |}
+        """.stripMargin)
+    ))
+    pmv.pathTo("Foo.java", "JavaFile", -1, 10)
+    pmv.pathTo("Foo.java", "JavaFile", 10000, 10)
+  }
+
+  it should "return file path on location request not in a structure" in {
+    val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
+      StringFileArtifact("Foo.java",
+        """
+          |public class Foo {
+          |}
+        """.stripMargin)
+    ))
+    // This is just padding
+    val path = pmv.pathTo("Foo.java", "JavaFile", 1, 1)
+    assert(path == "/File()[@path='Foo.java']/JavaFile()")
+  }
+
+  it should "return non-null on valid file location request" in {
+    val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
+      StringFileArtifact("Foo.java",
+        """
+          |public class Foo {
+          |}
+        """.stripMargin)
+    ))
+    val path = pmv.pathTo("Foo.java", "JavaFile", 1, 2)
+    assert(path.contains("classDeclaration"))
+  }
+
   private  def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)

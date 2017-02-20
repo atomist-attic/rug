@@ -1,6 +1,10 @@
 package com.atomist.tree
 
-trait AddressableTreeNode {
+/**
+  * Node that knows its address in hierarchy
+  */
+trait AddressableTreeNode extends TreeNode {
+
   def address: String
 }
 
@@ -15,8 +19,7 @@ trait PathAwareTreeNode extends TreeNode with AddressableTreeNode {
     */
   def parent: PathAwareTreeNode
 
-  /* really this should be a path expression but let's start somewhere */
-  def address: String = PathAwareTreeNode.address(this, s"name=$nodeName")
+  override def address: String = PathAwareTreeNode.address(this, s"[@name='$nodeName']")
 }
 
 object PathAwareTreeNode {

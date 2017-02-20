@@ -1,6 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.rug.spi.TypeRegistry
+import com.atomist.tree.content.text.TreeNodeOperations
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -163,14 +164,11 @@ case class PropertyValuePredicate(property: String, expectedValue: String) exten
     else {
       val extracted = n.childrenNamed(property)
       if (extracted.size == 1) {
-        val result = extracted.head.value.equals(expectedValue)
+        val result = extracted.head.value == expectedValue
         //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
         result
       }
-      else {
-        // TODO try to invoke a method?
-        false
-      }
+      else TreeNodeOperations.invokeMethodIfPresent[String](n, property).contains(expectedValue)
     }
   }
 }

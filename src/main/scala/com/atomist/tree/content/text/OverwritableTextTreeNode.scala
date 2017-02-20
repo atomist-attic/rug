@@ -1,6 +1,8 @@
 package com.atomist.tree.content.text
 
-import com.atomist.rug.spi.{ExportFunction, TypeProvider, Typed}
+import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.rug.spi.{ExportFunction, MutableView, TypeProvider, Typed}
+import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode.{Noise, Signal}
 import com.atomist.tree.{AddressableTreeNode, ContainerTreeNode, TreeNode, UpdatableTreeNode}
 
@@ -89,7 +91,7 @@ class OverwritableTextTreeNode(name: String,
 
   def setParent(p: OverwritableTextTreeNodeParent, locationStepIntoMe: String, rootNode: OverwritableTextInFile): Unit = {
     if (state != Unready)
-      throw new IllegalStateException("wat you can only set the parent once")
+      throw new IllegalStateException(s"Can only set parent once: $this")
     _parent = p
     this.rootNode = rootNode
     locationStep = locationStepIntoMe
@@ -155,7 +157,13 @@ class OverwritableTextTreeNode(name: String,
   final def formatInfo: FormatInfo =
     rootNode.formatInfo(this)
 
-  override def toString =
+  def nodeAt(pos: InputPosition): Option[TreeNode] =
+    rootNode.nodeAt(pos)
+
+  def file: FileArtifactBackedMutableView =
+    rootNode.fileView
+
+  override def toString: String =
     if (state == Unready)
       s"unready ${super.toString}"
     else
@@ -228,8 +236,8 @@ object OverwritableTextTreeNode {
     else {
       val childrenBeforeThisWithTheSameName = visibleChildren.takeWhile(_ != forChild).filter(_.nodeName == thisChildsName)
       val thisChildsIndex = childrenBeforeThisWithTheSameName.size
-
-      s"$thisChildsName[$thisChildsIndex]"
+      // XPath indexes from 1
+      s"$thisChildsName[${thisChildsIndex + 1}]"
     }
   }
 }

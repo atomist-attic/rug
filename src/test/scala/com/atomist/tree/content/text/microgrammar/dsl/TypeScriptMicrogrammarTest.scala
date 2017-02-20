@@ -76,7 +76,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    edit(project: Project) {
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
       |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
-      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg1).addType(mg2)
+      |      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
@@ -85,8 +85,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |        if (fi == null)
       |         throw new Error("FormatInfo was null")
       |        if (fi.start().lineNumberFrom1() < 4)
-      |         throw new Error(`I don't like ${fi}`)
-      |
+      |         throw new Error(`I don't like format info value ${fi}`)
       |        n.update('Foo bar')
       |        //console.log(fi)
       |      })
@@ -186,7 +185,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   }
 
   // RJ: I think this fails because of the underlying bug in returning the wrong structure
-  it should "use editor requiring FormatInfo" in pendingUntilFixed {
+  it should "use editor requiring FormatInfo" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       RequiresFormatInfo))
   }

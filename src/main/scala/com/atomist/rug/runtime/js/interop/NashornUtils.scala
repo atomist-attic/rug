@@ -45,11 +45,12 @@ object NashornUtils {
   }
 
   /**
-    * Return the given property of the JavaScript object or null if not found
+    * Return the given property of the JavaScript object or default value if not found
+    * @param default default value if not found. Defaults to null.
     */
-  def stringProperty(som: ScriptObjectMirror, name: String): String = {
+  def stringProperty(som: ScriptObjectMirror, name: String, default: String = null): String = {
     som.get(name) match {
-      case null => null
+      case null => default
       case x => Objects.toString(x)
     }
   }

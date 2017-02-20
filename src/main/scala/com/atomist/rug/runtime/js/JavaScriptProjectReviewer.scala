@@ -4,6 +4,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult, Severity}
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -11,7 +12,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import scala.collection.JavaConverters._
 
 /**
-  * Find Reviewers in a Nashorn
+  * Find Reviewers in a Rug archive processed using Nashorn
   */
 class JavaScriptProjectReviewerFinder
   extends JavaScriptProjectOperationFinder[JavaScriptProjectReviewer] {
@@ -27,16 +28,13 @@ class JavaScriptProjectReviewerFinder
 
 /**
   * A project reviewer.
-  *
-  * @param jsc
-  * @param jsVar
   * @param rugAs backing artifact source for the Rug archive
   */
 class JavaScriptProjectReviewer(
-                                         jsc: JavaScriptContext,
-                                         jsVar: ScriptObjectMirror,
-                                         rugAs: ArtifactSource
-                                       )
+                                 jsc: JavaScriptContext,
+                                 jsVar: ScriptObjectMirror,
+                                 rugAs: ArtifactSource
+                               )
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectReviewer {
 
@@ -63,15 +61,16 @@ class JavaScriptProjectReviewer(
 
   private def convertJavaScriptResponseToReviewResult(response: ScriptObjectMirror): ReviewResult = {
 
-    val responseNote = response.get("note")
+    val responseNote = NashornUtils.stringProperty(response, "note", "")
     val reviewResult: ReviewResult = response.get("comments") match {
       case som: ScriptObjectMirror =>
         if (som.isArray) {
           val convertedComments:Iterable[ReviewComment] = som.asScala.values.map {
             case commentSom: ScriptObjectMirror =>
+              val severity = Severity(NashornUtils.stringProperty(commentSom, "severity", "" + Severity.MAJOR.id).toInt)
               ReviewComment(
-                commentSom.get("comment").toString,
-                Severity(commentSom.get("severity").toString.toInt),
+                NashornUtils.stringProperty(commentSom, "comment", ""),
+                severity,
                 commentSom.get("fileName") match {
                   case null => None
                   case fileName: String => Option(fileName)
@@ -86,9 +85,10 @@ class JavaScriptProjectReviewer(
                 }
               )
           }
-          ReviewResult(responseNote.toString, convertedComments.to)
-        } else {
-          ReviewResult(responseNote.toString)
+          ReviewResult(responseNote, convertedComments.to)
+        }
+        else {
+          ReviewResult(responseNote)
         }
     }
 

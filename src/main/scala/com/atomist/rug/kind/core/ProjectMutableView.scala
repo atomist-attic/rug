@@ -8,10 +8,13 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.source._
+import com.atomist.tree.{AddressableTreeNode, PathAwareTreeNode, TreeNode}
+import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -32,9 +35,9 @@ object ProjectMutableView {
   * Operations on a project. Backed by an immutable ArtifactSource,
   * using copy on write.
   *
-  * @param rugAs backing store of the editor
+  * @param rugAs                 backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig Atomist configuration used to determine where we look for files.
+  * @param atomistConfig         Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
@@ -173,8 +176,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter file filter
-    * @param regexp regexp
+    * @param filter      file filter
+    * @param regexp      regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -396,7 +399,7 @@ class ProjectMutableView(
     * map of string arguments.
     *
     * @param editorName name of editor to use
-    * @param params parameters to pass to the editor
+    * @param params     parameters to pass to the editor
     * @return
     */
   protected def editWith(editorName: String,
@@ -461,6 +464,37 @@ class ProjectMutableView(
   @ExportFunction(readOnly = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context = new ProjectContext(ctx)
+
+  @ExportFunction(readOnly = true,
+    description = "Return the path expression to this point in the given file, or null if it cannot be computed")
+  def pathTo(path: String, kind: String, lineFrom1: Int, colFrom1: Int): String = {
+    val nodeO = nodeAt(path, kind, lineFrom1, colFrom1)
+    nodeO.collect {
+      case n: AddressableTreeNode => n.address.dropWhile(_ != '/')
+    }.orNull
+  }
+
+  private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
+    import com.atomist.tree.pathexpression.PathExpressionParser._
+
+    val pexpr = s"//File()[@path='$path']/$kind()"
+    context.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.size == 1 =>
+        val theNode = nodes.head
+        //println(theNode.toString)
+        theNode match {
+          case ow: OverwritableTextTreeNode =>
+            val pos = LineInputPositionImpl(ow.file.content, lineFrom1, colFrom1)
+            ow.nodeAt(pos)
+        }
+      case Right(nodes) if nodes.size > 1 =>
+        throw new IllegalArgumentException(s"Found ${nodes.size} hits for [$pexpr], not 1")
+      case x =>
+        //println(s"Unexpected result [$x] for [$pexpr]")
+        None
+    }
+  }
+
 }
 
 class ProjectContext(ctx: UserModelContext) extends UserServices {

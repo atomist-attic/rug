@@ -1,8 +1,10 @@
 package com.atomist.rug
 
 import com.atomist.param.ParameterValues
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, SimpleJavaScriptProjectOperationFinder}
+import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, Rugs, SimpleJavaScriptProjectOperationFinder}
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
+import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
@@ -41,6 +43,14 @@ object TestUtils extends Matchers {
     * Compile the named TypeScript file in the package of the caller
     */
   def editorInSideFile(caller: Object, name: String): ProjectEditor = {
+    rugsInSideFile(caller, name).editors.head
+  }
+
+  def reviewerInSideFile(caller: Object, name: String): ProjectReviewer = {
+    rugsInSideFile(caller, name).reviewers.head
+  }
+
+  def rugsInSideFile(caller: Object, name: String): Rugs = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
     // println(s"Using resourcePath [$resourcePath]")
     val raw = ClassPathArtifactSource.toArtifactSource(resourcePath)
@@ -58,6 +68,6 @@ object TestUtils extends Matchers {
     })
     val as = TypeScriptBuilder.compileWithModel(withAtomistDir)
 
-    SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    SimpleJavaScriptProjectOperationFinder.find(as)
   }
 }

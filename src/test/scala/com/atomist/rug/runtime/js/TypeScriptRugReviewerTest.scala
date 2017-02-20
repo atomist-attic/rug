@@ -4,6 +4,7 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.review.{ReviewResult, Severity}
+import com.atomist.rug.TestUtils
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -123,7 +124,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   import TypeScriptRugReviewerTest._
 
   it should "run simple reviewer compiled from TypeScript without parameters" in {
-    val reviewResult = invokeAndVerifySimple(
+    val reviewResult = reviewSimple(
       StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts",
       SimpleReviewerWithoutParameters))
 
@@ -132,7 +133,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   }
 
   it should "run simple reviewer compiled from TypeScript with parameters" in {
-    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+    val reviewResult = reviewSimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",
       SimpleReviewerWithParameters))
 
@@ -141,7 +142,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   }
 
   it should "run simple reviewer compiled from TypeScript with parameters and populated single partial comment ReviewResult" in {
-    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+    val reviewResult = reviewSimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",
       SimpleReviewerWithParametersSinglePartialCommentReviewResult))
 
@@ -156,7 +157,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   }
 
   it should "run simple reviewer compiled from TypeScript with parameters and populated multiple partial comments in the ReviewResult" in {
-    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+    val reviewResult = reviewSimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",
       SimpleReviewerWithParametersMultiPartialCommentsReviewResult))
 
@@ -179,8 +180,8 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     assert(secondComment.column === None)
   }
 
-  it should "run simple reviewer compiled from TypeScript with parameters and populated complete comment ReviewResult" in {
-    val reviewResult = invokeAndVerifySimple(StringFileArtifact(
+  it should "run simple reviewer compiled from TypeScript with parameters and populate complete comment ReviewResult" in {
+    val reviewResult = reviewSimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",
       SimpleReviewerWithParametersSingleCompleteCommentReviewResult))
 
@@ -194,15 +195,30 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     assert(singleComment.column === Some(1))
   }
 
-  private  def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
+  it should "find long lines" in pendingUntilFixed {
+    val target = SimpleFileBasedArtifactSource(
+      StringFileArtifact("x", "No long lines"),
+      StringFileArtifact("y",
+        """
+          |May be an issue
+          |if we set an insanely low threshold for line length
+          |but that would be crazy
+        """.stripMargin)
+    )
+    val rev = TestUtils.reviewerInSideFile(this, "FindLongLines.ts")
+    val rr = rev.review(target, SimpleParameterValues(Map("maxLength" -> "10")))
+    rr.comments shouldBe(empty)
+  }
+
+  private  def reviewSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
-    assert(jsed.name === "Simple")
-    jsed.setContext(others)
+    val reviewer = SimpleJavaScriptProjectOperationFinder.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
+    assert(reviewer.name === "Simple")
+    reviewer.setContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    jsed.review(target, SimpleParameterValues( Map("content" -> ParameterContent)))
+    reviewer.review(target, SimpleParameterValues( Map("content" -> ParameterContent)))
   }
 }

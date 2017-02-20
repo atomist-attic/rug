@@ -4,6 +4,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult, Severity}
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -63,14 +64,14 @@ class JavaScriptProjectReviewer(
 
   private def convertJavaScriptResponseToReviewResult(response: ScriptObjectMirror): ReviewResult = {
 
-    val responseNote = response.get("note")
+    val responseNote = NashornUtils.stringProperty(response, "note", "")
     val reviewResult: ReviewResult = response.get("comments") match {
       case som: ScriptObjectMirror =>
         if (som.isArray) {
           val convertedComments:Iterable[ReviewComment] = som.asScala.values.map {
             case commentSom: ScriptObjectMirror =>
               ReviewComment(
-                commentSom.get("comment").toString,
+                NashornUtils.stringProperty(commentSom, "comment", ""),
                 Severity(commentSom.get("severity").toString.toInt),
                 commentSom.get("fileName") match {
                   case null => None
@@ -86,9 +87,9 @@ class JavaScriptProjectReviewer(
                 }
               )
           }
-          ReviewResult(responseNote.toString, convertedComments.to)
+          ReviewResult(responseNote, convertedComments.to)
         } else {
-          ReviewResult(responseNote.toString)
+          ReviewResult(responseNote)
         }
     }
 

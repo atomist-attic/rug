@@ -54,8 +54,8 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
 
   val simpleCommandHandlerWitPresentable =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleCommand, Message, Instruction, Response, CommandContext, Plan} from '@atomist/rug/operations/Handlers'
-       |import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
+       |import {HandleCommand, MappedParameters, Message, Instruction, Response, CommandContext, Plan} from '@atomist/rug/operations/Handlers'
+       |import {CommandHandler, Parameter, MappedParameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
        |
        |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
        |@Tags("kitty", "youtube", "slack")
@@ -64,6 +64,9 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
        |
        |  @Parameter({description: "his dudeness", pattern: "^.*$$"})
        |  name: string
+       |
+       |  @MappedParameter(MappedParameters.REPO_OWNER)
+       |  owner: string
        |
        |  handle(ctx: CommandContext) : Plan {
        |    let pxe = ctx.pathExpressionEngine()
@@ -158,7 +161,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
     handler.description should be (kittyDesc)
     handler.tags.size should be(3)
     handler.intent.size should be(2)
-    val plan = handler.handle(SimpleContext, SimpleParameterValues(SimpleParameterValue("name","el duderino")))
+    val plan = handler.handle(SimpleContext, SimpleParameterValues(SimpleParameterValue("owner","his dudeness"), SimpleParameterValue("name","el duderino")))
   }
 
   it should "throw exceptions if required parameters are not set" in {

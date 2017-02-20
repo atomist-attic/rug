@@ -39,6 +39,9 @@ class JavaScriptProjectReviewer(
     with ProjectReviewer {
 
   override def review(targetProject: ArtifactSource, poa: ParameterValues): ReviewResult = {
+    val validated = addDefaultParameterValues(poa)
+    validateParameters(validated)
+
     val (response, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs,
         targetProject,
@@ -50,7 +53,7 @@ class JavaScriptProjectReviewer(
         jsVar,
         "review",
         wrapProject(pmv),
-        addDefaultParameterValues(poa)) match {
+        validated) match {
         case m: ScriptObjectMirror =>
           m
       }

@@ -2,16 +2,26 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param._
 import com.atomist.rug.spi.Handlers.{Response, Status}
-import com.atomist.rug.spi.RugFunction
+import com.atomist.rug.spi.{RugFunction, Secret}
+
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /**
   * Returns the value of its only parameter
   */
 class ExampleRugFunction
   extends RugFunction
-  with ParameterizedSupport{
+  with SecretSupport{
   super.addParameter(new Parameter("thingy"))
 
+  private val _secrets = new ListBuffer[Secret]
+
+  def secrets: Seq[Secret] = _secrets
+
+  def addSecret(secret: Secret): Unit = {
+    _secrets += secret
+  }
   /**
     * Run the function, return the Response
     *

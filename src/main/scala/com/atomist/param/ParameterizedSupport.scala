@@ -14,7 +14,7 @@ trait ParameterizedSupport extends Parameterized {
   override final def parameters: Seq[Parameter] = params.filterNot(_ == null)
 
   protected def addParameter(tp: Parameter): Unit = {
-    if(!params.exists(p => tp.name == p.name)){
+    if (!params.exists(p => tp.name == p.name)) {
       params += tp
     }
   }
@@ -22,20 +22,22 @@ trait ParameterizedSupport extends Parameterized {
   protected def addParameters(tps: Seq[Parameter]): Unit = tps.foreach(p => addParameter(p))
 
   /**
-    * Fill out any default values not present in pvs but are required
+    * Fill out any default values not present in pvs but are required.
+    *
     * @param pvs parameters so far
     * @return with defaults
     */
-  def addDefaultParameterValues(pvs: ParameterValues) : ParameterValues = {
+  def addDefaultParameterValues(pvs: ParameterValues): ParameterValues = {
     val toDefault = parameters.filter(p => !pvs.parameterValueMap.contains(p.getName) && p.getDefaultValue != "")
     toDefault match {
       case parms: Seq[Parameter] if parms.nonEmpty => {
-        val newParams = parms.map(p => SimpleParameterValue(p.getName,p.getDefaultValue))
+        val newParams = parms.map(p => SimpleParameterValue(p.getName, p.getDefaultValue))
         new SimpleParameterValues(newParams ++ pvs.parameterValues)
       }
       case _ => pvs
     }
   }
+
   /**
     * Validate the given arguments, throwing an exception if they're invalid.
     *
@@ -46,8 +48,9 @@ trait ParameterizedSupport extends Parameterized {
   protected def validateParameters(poa: ParameterValues) {
     val missingParameters = findMissingParameters(poa)
     if (missingParameters.nonEmpty)
-      throw new MissingParametersException(s"Missing parameters: [${missingParameters.map(p => p.getName).mkString(",")}]" +
-        s": $poa")
+      throw new MissingParametersException(
+        s"Missing parameters: [${missingParameters.map(_.getName).mkString(",")}]: $poa"
+      )
 
     def validEmptyOptionalValue(v: Any) = v == null || "".equals(v)
 

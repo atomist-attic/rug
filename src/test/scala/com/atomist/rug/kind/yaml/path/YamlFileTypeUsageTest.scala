@@ -125,6 +125,32 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
+  it should "change > string with multi-line string" in pendingUntilFixed {
+    val oldComment =
+      """>
+        |    Late afternoon is best.
+        |    Backup contact is Nancy
+        |    Billsmer @ 338-4338.""".stripMargin
+    val newComment =
+      """|Early morning is best.
+         |    Backup contact is Bob
+         |    Billdad @ 338-4338.""".stripMargin
+    val rawNewComment =
+      s""">
+         |    $newComment""".stripMargin
+
+    modify("ChangeGt.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)),
+      Map("newComment" -> newComment)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content === YamlOrgStart.replace(oldComment, rawNewComment))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "add to sequence" in pendingUntilFixed {
     modify("AddToSequence.ts", singleAS) match {
       case sm: SuccessfulModification =>

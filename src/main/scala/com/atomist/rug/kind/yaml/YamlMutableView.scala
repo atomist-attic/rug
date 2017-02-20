@@ -6,7 +6,8 @@ import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMuta
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, TerminalView, Typed}
 import com.atomist.source.FileArtifact
 import com.atomist.util.Utils.StringImprovements
-import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.DumperOptions.ScalarStyle
+import org.yaml.snakeyaml.{DumperOptions, Yaml}
 
 /**
   * Keys use dot (.) notation.
@@ -61,7 +62,10 @@ private[yaml] class YamlModel(val yaml: String) {
 
   import scala.collection.JavaConverters._
 
-  val y = new Yaml()
+  private val options = new DumperOptions()
+  options.setDefaultScalarStyle(ScalarStyle.FOLDED)
+  options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+  val y = new Yaml(options)
 
   val map: scala.collection.mutable.Map[String, Object] = y.loadAll(new StringReader(yaml)).asScala.headOption match {
     case Some(map: java.util.Map[String @unchecked, Object @unchecked]) => map.asScala

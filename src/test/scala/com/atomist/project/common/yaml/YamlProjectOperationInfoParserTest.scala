@@ -184,7 +184,7 @@ class YamlProjectOperationInfoParserTest extends FlatSpec with Matchers {
     poi
   }
 
-  it should "parse YML with problematic pattern correctly escaped" in {
+  it should "parse YAML with problematic pattern correctly escaped" in {
     val pattern = // "tommy"
       """"[a-zA-Z_$][a-zA-Z\\d_$]*""""
     val yaml =

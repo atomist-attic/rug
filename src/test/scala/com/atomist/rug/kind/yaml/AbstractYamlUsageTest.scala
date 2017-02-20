@@ -25,7 +25,7 @@ trait AbstractYamlUsageTest extends FlatSpec with Matchers {
         assert(sm.result.cachedDeltas.size === mods)
         sm.result.cachedDeltas.foreach {
           case fud: FileUpdateDelta =>
-            // TODO how do we validate YML? SnakeYAML seems to let everything through
+            // TODO how do we validate YAML? SnakeYAML seems to let everything through
           case x => fail(s"Unexpected change: $x")
         }
         sm.result

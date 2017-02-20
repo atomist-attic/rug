@@ -12,7 +12,7 @@ import com.atomist.util.yaml.{MapToYamlStringSerializer, PropertiesToMapStructur
 
 /**
   * No parameters are required. All key-value pairs will be added to the
-  * application YML file.
+  * application YAML file.
   */
 object ApplicationYamlKeyAddingEditor extends ProjectEditorSupport {
 
@@ -39,13 +39,13 @@ object ApplicationYamlKeyAddingEditor extends ProjectEditorSupport {
   }
 
   /**
-    * We can apply to anything. If a YML file doesn't exist, we'll create one.
+    * We can apply to anything. If a YAML file doesn't exist, we'll create one.
     *
     * @param as The Artifact Source we're working on
     */
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
 
-  override def description: String = "Atomist Core Editor: Add key to application YML"
+  override def description: String = "Atomist Core Editor: Add key to application YAML"
 
   override def name: String = "ApplicationYamlKeyAddingEditor"
 }

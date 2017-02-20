@@ -34,7 +34,7 @@ object ApplicationPropertiesToApplicationYamlEditor extends ProjectEditor with L
   override def applicability(as: ArtifactSource): Applicability =
     Applicability(JavaAssertions.isSpring(as) && JavaAssertions.hasApplicationProperties(as), "Checked Spring and application.properties")
 
-  override def description: String = "Atomist Core Editor: Convert application.properties to application.yaml (application.properties->application.yaml)"
+  override def description: String = "Atomist Core Editor: Convert application.properties to application.yml (application.properties->application.yml)"
 
   override def name: String = "ApplicationProperties2Yaml"
 
@@ -45,7 +45,7 @@ object ApplicationPropertiesToApplicationYamlEditor extends ProjectEditor with L
   override def parameters: Seq[Parameter] = Seq()
 
   def toYamlString(cvs: Configuration): String = {
-    logger.debug(s"Parsing configuration $cvs to YML")
+    logger.debug(s"Parsing configuration $cvs to YAML")
 
     val yamlMap = new util.HashMap[String, Object]()
 

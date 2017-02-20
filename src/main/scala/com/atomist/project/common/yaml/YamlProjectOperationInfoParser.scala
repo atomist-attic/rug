@@ -14,7 +14,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Parse YML file to return ProjectOperationInfo.
+  * Parse YAML file to return ProjectOperationInfo.
   */
 object YamlProjectOperationInfoParser {
 
@@ -24,7 +24,7 @@ object YamlProjectOperationInfoParser {
   @throws[InvalidYamlDescriptorException]
   def parse(yaml: String): TemplateBasedProjectOperationInfo = {
     if (yaml == null || "".equals(yaml))
-      throw new InvalidYamlDescriptorException("YML content required in template metadata file")
+      throw new InvalidYamlDescriptorException("YAML content required in template metadata file")
 
     Try(mapper.readValue(yaml, classOf[BoundProjectOperationInfo])) match {
       case s: Success[BoundProjectOperationInfo] =>
@@ -33,7 +33,7 @@ object YamlProjectOperationInfoParser {
           throw new InvalidYamlDescriptorException(s"Bad regexp patterns: ${badPatterns.mkString(",")}")
         s.value
       case f: Failure[BoundProjectOperationInfo] =>
-        throw new InvalidYamlDescriptorException(s"Failed to parse YML [$yaml]: ${f.exception.getMessage}", f.exception)
+        throw new InvalidYamlDescriptorException(s"Failed to parse YAML [$yaml]: ${f.exception.getMessage}", f.exception)
     }
   }
 

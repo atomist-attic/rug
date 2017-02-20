@@ -9,7 +9,7 @@ class ApplicationYamlKeyAddingEditorTest extends FlatSpec with Matchers {
 
   import ApplicationPropertiesToApplicationYamlEditor.ApplicationYamlPath
 
-  "ApplicationYamlKeyAddingEditor" should "add empty application YML to project without one" in {
+  "ApplicationYamlKeyAddingEditor" should "add empty application YAML to project without one" in {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYamlPath) should not be defined
     val r = ApplicationYamlKeyAddingEditor.modify(target,
@@ -27,7 +27,7 @@ class ApplicationYamlKeyAddingEditorTest extends FlatSpec with Matchers {
   val townPropertyName = "town"
   val townPropertyValue = "Tunbridge Wells"
 
-  it should "add application YML to project without one and add a parameter" in {
+  it should "add application YAML to project without one and add a parameter" in {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYamlPath) should not be defined
     val r = ApplicationYamlKeyAddingEditor.modify(target,
@@ -46,7 +46,7 @@ class ApplicationYamlKeyAddingEditorTest extends FlatSpec with Matchers {
   val homeScopedPropertyName = "home"
   val scopeSeparator = "."
 
-  it should "add application YML to project without one and add a period-scoped parameter" in {
+  it should "add application YAML to project without one and add a period-scoped parameter" in {
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     target.findFile(ApplicationYamlPath) should not be defined
     val r = ApplicationYamlKeyAddingEditor.modify(target,

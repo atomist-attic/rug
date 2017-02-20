@@ -197,7 +197,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     updateOtherFileRefOnPackageMove(newFile)
   }
 
-  it should "update YML file reference on package move" in {
+  it should "update YAML file reference on package move" in {
     val newFile = StringFileArtifact("src/main/resources/thing.yml",
       """
         |thing: com.atomist.test1

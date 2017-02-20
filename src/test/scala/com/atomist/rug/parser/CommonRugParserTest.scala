@@ -760,6 +760,59 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     ri.parse(prog)
   }
 
+  // this was failing with a 32bits JVM (see #337)
+  it should "parse multiple C-style comment blocks in a row" in {
+    val prog =
+      """
+        |/*
+        | * Copyright © 2016 Atomist, Inc.
+        | *
+        | * Licensed under the Apache License, Version 2.0 (the "License");
+        | * you may not use this file except in compliance with the License.
+        | * You may obtain a copy of the License at
+        | *
+        | *      http://www.apache.org/licenses/LICENSE-2.0
+        | *
+        | * Unless required by applicable law or agreed to in writing, software
+        | * distributed under the License is distributed on an "AS IS" BASIS,
+        | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        | * See the License for the specific language governing permissions and
+        | * limitations under the License.
+        | */
+        |
+        | /*
+        |  * Copyright © 2016 Atomist, Inc.
+        |  *
+        |  * Licensed under the Apache License, Version 2.0 (the "License");
+        |  * you may not use this file except in compliance with the License.
+        |  * You may obtain a copy of the License at
+        |  *
+        |  *      http://www.apache.org/licenses/LICENSE-2.0
+        |  *
+        |  * Unless required by applicable law or agreed to in writing, software
+        |  * distributed under the License is distributed on an "AS IS" BASIS,
+        |  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        |  * See the License for the specific language governing permissions and
+        |  * limitations under the License.
+        |  */
+        |
+        | @description "adds the starting point for the Rug Koan Step 2"
+        | @tag "rug"
+        | editor Step2
+        |
+        | with Project begin
+        |   do merge "step2/rug.vm" ".atomist/editors/Step2.rug"
+        |   do merge "step2/rt.vm" ".atomist/tests/Step2.rt"
+        |   do merge "step2/readme.vm" "README.md"
+        | end
+      """.stripMargin
+    try {
+      ri.parse(prog).head
+    } catch {
+      case ovf: StackOverflowError => fail("should not have overflowed on multiple comments", ovf)
+    }
+  }
+
   private  def updateWith(prog: String): Unit = {
     val filename = "test.txt"
     val as = new SimpleFileBasedArtifactSource("name", Seq(StringFileArtifact(filename, "some content")))
@@ -768,4 +821,5 @@ class CommonRugParserTest extends FlatSpec with Matchers {
     val f = r.findFile(".gitignore").get
     f.content.contains(s"elm-stuff${System.lineSeparator()}target") should be(true)
   }
+
 }

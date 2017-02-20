@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 class DirectoryType(evaluator: Evaluator)
   extends Type(evaluator)
@@ -16,7 +16,7 @@ class DirectoryType(evaluator: Evaluator)
 
   override def runtimeClass: Class[_] = classOf[DirectoryMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject.allDirectories.map(d => new DirectoryMutableView(d, pmv)))
       case _ => None

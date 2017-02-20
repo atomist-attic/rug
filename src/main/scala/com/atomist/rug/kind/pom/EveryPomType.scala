@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.pom
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 /**
   * Maven POM type
@@ -22,7 +22,7 @@ class EveryPomType(
 
   override def runtimeClass = classOf[PomMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
     context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject.allFiles

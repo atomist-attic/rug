@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.scala
 
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.PositionedTreeNode
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
@@ -31,7 +32,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
     ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName", DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
-        assert(nodes.head.value === "bar")
+        assert(nodes.head.asInstanceOf[TreeNode].value === "bar")
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

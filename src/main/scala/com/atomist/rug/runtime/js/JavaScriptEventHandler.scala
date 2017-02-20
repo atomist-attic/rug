@@ -1,11 +1,12 @@
 package com.atomist.rug.runtime.js
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
-import com.atomist.rug.runtime.{SystemEvent, EventHandler}
+import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
@@ -56,7 +57,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
 
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
-    val root = new SimpleMutableContainerTreeNode("root", Seq(targetNode), null, null)
+    val root = new SimpleContainerGraphNode("root", targetNode)
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, DefaultTypeRegistry, None) match {
       case Right(Nil) => None
       case Right(matches) =>
@@ -76,6 +77,17 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
     }
   }
 
+}
+
+case class SimpleContainerGraphNode(nodeName: String, child: GraphNode) extends GraphNode {
+
+  override def relatedNodes: Seq[GraphNode] = Seq(child)
+
+  override def relatedNodeNames: Set[String] = Set(child.nodeName)
+
+  override def relatedNodeTypes: Set[String] = child.nodeTags
+
+  override def relatedNodesNamed(key: String): Seq[GraphNode] = relatedNodes.filter(n => n.nodeName == key)
 }
 
 /**

@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
@@ -20,7 +21,7 @@ trait NodeTest {
     * @param axis AxisSpecifier indicating the kind of navigation
     * @return Resulting nodes
     */
-  def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult
+  def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult
 
 }
 
@@ -31,7 +32,7 @@ trait NodeTest {
   */
 abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
 
-  final override def follow(tn: TreeNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult =
+  final override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult =
     sourceNodes(tn, axis, typeRegistry) match {
       case Right(nodes) =>
         ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes, ee, typeRegistry, None)))
@@ -42,16 +43,22 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     * Subclasses can override this to provide a more efficient implementation.
     * This one works but can be expensive.
     */
-  protected def sourceNodes(tn: TreeNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
+  protected def sourceNodes(tn: GraphNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Self => ExecutionResult(List(tn))
     case Child =>
-      val kids = tn.childNodes.filter(_.significance != TreeNode.Noise).toList
+      val kids = tn.relatedNodes.filter {
+        case tn: TreeNode => tn.significance != TreeNode.Noise
+        case _ => true
+      }.toList
       ExecutionResult(kids)
     case Descendant =>
-      val kids = Descendant.allDescendants(tn).filter(_.significance != TreeNode.Noise).toList
+      val kids = (Descendant.allDescendants(tn) filter {
+        case tn: TreeNode => tn.significance != TreeNode.Noise
+        case _ => true
+      }).toList
       ExecutionResult(kids)
     case NavigationAxis(propertyName) =>
-      val nodes = tn.childrenNamed(propertyName)
+      val nodes = tn.relatedNodesNamed(propertyName)
       ExecutionResult(nodes)
   }
 }

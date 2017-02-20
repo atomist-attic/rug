@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
@@ -18,7 +19,7 @@ case class LocationStep(axis: AxisSpecifier,
 
   import ExpressionEngine.NodePreparer
 
-  def follow(tn: TreeNode, ee: ExpressionEngine, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
+  def follow(tn: GraphNode, ee: ExpressionEngine, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
     test.follow(tn, axis, ee, typeRegistry) match {
       case Right(nodes) => Right(
         nodes

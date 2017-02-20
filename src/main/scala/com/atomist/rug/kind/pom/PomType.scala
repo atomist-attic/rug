@@ -1,10 +1,10 @@
 package com.atomist.rug.kind.pom
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 /**
   * Maven POM type
@@ -24,7 +24,7 @@ class PomType(
 
   override def runtimeClass = classOf[PomMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         pmv.currentBackingObject.findFile("pom.xml")
           .map(f => Seq(new PomMutableView(f, pmv))).orElse(Some(Seq()))

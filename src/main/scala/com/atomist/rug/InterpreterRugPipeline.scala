@@ -91,7 +91,7 @@ object InterpreterRugPipeline {
 
 class DefaultRugPipeline(
                           kindRegistry: TypeRegistry = DefaultTypeRegistry,
-                          evaluator: Evaluator = new DefaultEvaluator(new EmptyRugFunctionRegistry),
+                          evaluator: Evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry),
                           atomistConfig: AtomistConfig = DefaultAtomistConfig)
   extends InterpreterRugPipeline(
     new ParserCombinatorRugParser,

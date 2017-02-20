@@ -31,7 +31,7 @@ object RugCompilerTest extends LazyLogging {
 
 class RugCompilerTest extends FlatSpec with Matchers {
 
-  val fr = FixedRugFunctionRegistry()
+  val fr = FixedRugDslFunctionRegistry()
 
   val compiler: RugCompiler = new DefaultRugCompiler(
     new DefaultEvaluator(fr),
@@ -86,7 +86,7 @@ class RugCompilerTest extends FlatSpec with Matchers {
   }
 
   it should "insist on identifiers being declared" in {
-    FixedRugFunctionRegistry(
+    FixedRugDslFunctionRegistry(
       Map(
         "absquatulate" -> new LambdaPredicate[FileMutableView]("absquatulate", f => true)
       

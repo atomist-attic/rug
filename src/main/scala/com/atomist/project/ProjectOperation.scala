@@ -8,9 +8,5 @@ import com.atomist.rug.runtime.ParameterizedRug
   * on parameters specified by this type.
   */
 trait ProjectOperation extends ParameterizedRug {
-
-  /**
-    * Return info about this delta.
-    */
-  def describe: ParameterizedRug = new SimpleParameterizedRug(this)
+  
 }

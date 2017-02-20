@@ -5,7 +5,7 @@ class LambdaPredicate[V](
                           matcher: V => Boolean,
                           val description: Option[String] = None
                         )
-  extends RugPredicate[V] {
+  extends RugDslPredicate[V] {
 
   override def invoke(ic: FunctionInvocationContext[V]): Boolean = {
     val matched = matcher(ic.target)
@@ -13,7 +13,7 @@ class LambdaPredicate[V](
   }
 }
 
-object NoOpFunction extends RugFunction[Object, Object] {
+object NoOpDslFunction extends RugDslFunction[Object, Object] {
 
   override def name: String = "NoOp"
 

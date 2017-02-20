@@ -13,3 +13,12 @@ trait Rug {
 
   def tags: Seq[Tag]
 }
+
+/**
+  * Like a rug, but we know a bit more about it
+  */
+trait AddressableRug extends Rug {
+  def artifact: String
+  def group: String
+  def version: String
+}

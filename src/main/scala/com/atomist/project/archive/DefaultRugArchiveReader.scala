@@ -1,6 +1,6 @@
 package com.atomist.project.archive
 
-import com.atomist.rug.EmptyRugFunctionRegistry
+import com.atomist.rug.EmptyRugDslFunctionRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
@@ -15,7 +15,7 @@ import com.atomist.tree.TreeMaterializer
 class DefaultRugArchiveReader(teamId: String,
                               treeMaterializer: TreeMaterializer,
                               atomistConfig: AtomistConfig = DefaultAtomistConfig,
-                              evaluator: Evaluator = new DefaultEvaluator(new EmptyRugFunctionRegistry),
+                              evaluator: Evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry),
                               typeRegistry: TypeRegistry = DefaultTypeRegistry)
 
   extends RugArchiveReader[Rug]{

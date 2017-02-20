@@ -13,11 +13,11 @@ import com.atomist.tree.pathexpression.PathExpressionEngine
 import com.atomist.util.scalaparsing._
 import com.typesafe.scalalogging.LazyLogging
 
-object DefaultEvaluator extends DefaultEvaluator(new EmptyRugFunctionRegistry) {
+object DefaultEvaluator extends DefaultEvaluator(new EmptyRugDslFunctionRegistry) {
 }
 
 class DefaultEvaluator(
-                        val functionRegistry: RugFunctionRegistry
+                        val functionRegistry: RugDslFunctionRegistry
                       )
   extends Evaluator
     with LazyLogging {

@@ -100,7 +100,28 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-  it should "change | string" is pending
+  it should "change | string" in pendingUntilFixed {
+    val oldComment =
+      """|
+        #    Late afternoon is best.
+        #    Backup contact is Nancy
+        #    Billsmer @ 338-4338.""".stripMargin('#')
+    val newComment = "This is the new comment"
+    val rawNewComment =
+      s"""|
+         #    $newComment""".stripMargin('#')
+
+    modify("ChangePipe.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart2)),
+      Map("newComment" -> newComment)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content === YamlOrgStart2.replace(oldComment, rawNewComment))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
 
   it should "change > string" in {
     val oldComment =

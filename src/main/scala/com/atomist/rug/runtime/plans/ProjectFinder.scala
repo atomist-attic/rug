@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.plans
 
+import com.atomist.param.ParameterValues
+import com.atomist.project.ProjectOperation
 import com.atomist.source.ArtifactSource
 
 /**
@@ -8,5 +10,5 @@ import com.atomist.source.ArtifactSource
   * Editors/Reviewers can be run on the result
   */
 trait ProjectFinder {
-  def findArtifactSource(project_name: String) : Option[ArtifactSource]
+  def findArtifactSource(editor: ProjectOperation, arguments: ParameterValues, projectName: String) : Option[ArtifactSource]
 }

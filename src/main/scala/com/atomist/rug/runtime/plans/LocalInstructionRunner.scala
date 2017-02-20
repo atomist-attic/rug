@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.plans
 
-import com.atomist.param.SimpleParameterValues
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
@@ -32,11 +33,11 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
     }
   }
 
-  private def doWithProject(instruction: Instruction, action: (ArtifactSource) => Response) = {
+  private def doWithProject(instruction: Instruction, rug: ProjectOperation, args: ParameterValues, action: (ArtifactSource) => Response) = {
     doWithProjectName(
       instruction,
       (projectName: String) => {
-        projectFinder.findArtifactSource(projectName) match {
+        projectFinder.findArtifactSource(rug, args, projectName) match {
           case Some(project) => action(project)
           case _ => Response(Failure, None, None, Some(s"Project '$projectName' could not be found."))
         }
@@ -57,16 +58,16 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case Some(rug: ProjectGenerator) =>
             doWithProjectName(instruction, (projectName: String) => {
               val newProject = rug.generate(projectName, parameters)
-              val persistAttempt = projectPersister.persist(projectName, newProject)
+              val persistAttempt = projectPersister.persist(rug, parameters, projectName, newProject)
               Response(Success, None, None, Some(persistAttempt))
             })
           case Some(rug: ProjectEditor) =>
-            doWithProject(instruction, (project: ArtifactSource) => {
+            doWithProject(instruction, rug, parameters, (project: ArtifactSource) => {
               val modificationAttempt = rug.modify(project, parameters)
               Response(Success, None, None, Some(modificationAttempt))
             })
           case Some(rug: ProjectReviewer) =>
-            doWithProject(instruction, (project: ArtifactSource) => {
+            doWithProject(instruction, rug, parameters, (project: ArtifactSource) => {
               val reviewResult = rug.review(project, parameters)
               Response(Success, None, None, Some(reviewResult))
             })

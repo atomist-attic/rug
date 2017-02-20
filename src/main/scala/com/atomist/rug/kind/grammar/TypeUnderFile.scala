@@ -16,7 +16,7 @@ import scala.collection.JavaConverters._
   * Convenient superclass for types that parse file content and can
   * be resolved from files and projects
   */
-abstract class TypeUnderFile
+abstract class TypeUnderFile(textPreprocessor: TextPreprocessor = IdentityTextPreprocessor)
   extends Type(DefaultEvaluator)
     with ReflectivelyTypedType {
 
@@ -27,26 +27,6 @@ abstract class TypeUnderFile
     * @return whether we should try to parse the file with our parser
     */
   def isOfType(f: FileArtifact): Boolean
-
-  /*
-   * Sometimes subclasses will need to do some markup
-   * on the file before turning it into nodes.
-   *
-   * This method returns the version of file contents that
-   * the parsed nodes correspond to.
-   *
-   */
-  def preProcess(content: String): String = content
-// TODO: put these two methods on one object instead
-  /*
-   * In case you need to add markup before parsing,
-   * you probably need to remove it before writing
-   * back to the file.
-   *
-   * This goes from the parsed nodes' version of the
-   * contents to the file's real contents.
-   */
-  def postProcess(content: String): String = content
 
   override def runtimeClass: Class[_] = classOf[MutableContainerMutableView]
 
@@ -66,7 +46,7 @@ abstract class TypeUnderFile
   private def toView(f: FileArtifactBackedMutableView): Option[TreeNode] = {
     val inner = fileToRawNode(f.currentBackingObject) match {
       case Some(ptn: PositionedTreeNode) =>
-        Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name, ptn, f, preProcess, postProcess))
+        Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name, ptn, f, textPreprocessor))
       case None => None
       case x => throw new RuntimeException(s"What is $x")
     }

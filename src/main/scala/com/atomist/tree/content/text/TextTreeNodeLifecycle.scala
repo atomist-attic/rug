@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
+import com.atomist.rug.kind.grammar.{IdentityTextPreprocessor, TextPreprocessor}
 import com.atomist.tree.UpdatableTreeNode
 
 object TextTreeNodeLifecycle {
@@ -24,14 +25,13 @@ object TextTreeNodeLifecycle {
   def makeWholeFileNodeReady(typeName: String,
                              parsed: PositionedTreeNode,
                              fileArtifact: FileArtifactBackedMutableView,
-                             preProcess: String => String,
-                             postProcess: String => String): UpdatableTreeNode = {
-    val endPosition = preProcess(fileArtifact.content).length
+                             textPreprocessor: TextPreprocessor): UpdatableTreeNode = {
+    val endPosition = textPreprocessor.preProcess(fileArtifact.content).length
     val parsedWithWholeFileOffsets =
       ImmutablePositionedTreeNode(parsed).copy(
         startPosition = OffsetInputPosition(0),
         endPosition = OffsetInputPosition(endPosition))
-    makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact, preProcess, postProcess).head
+    makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact, textPreprocessor).head
   }
 
   /**
@@ -49,10 +49,9 @@ object TextTreeNodeLifecycle {
   def makeReady(typeName: String,
                 matches: Seq[PositionedTreeNode],
                 fileArtifact: FileArtifactBackedMutableView,
-                preProcess: String => String = identity,
-                postProcess: String => String = identity): Seq[UpdatableTreeNode] = {
-    val content = preProcess(fileArtifact.content)
-    val wrapperNodeContainingWholeFileContent = ImmutablePositionedTreeNode.pad(typeName: String, matches, content, postProcess)
+                textPreprocessor: TextPreprocessor = IdentityTextPreprocessor): Seq[UpdatableTreeNode] = {
+    val content = textPreprocessor.preProcess(fileArtifact.content)
+    val wrapperNodeContainingWholeFileContent = ImmutablePositionedTreeNode.pad(typeName: String, matches, content, textPreprocessor.postProcess)
     wrapperNodeContainingWholeFileContent.setParent(fileArtifact)
     wrapperNodeContainingWholeFileContent.childNodes.collect {
       case utn: UpdatableTreeNode => utn // should be all of them

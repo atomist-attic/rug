@@ -125,7 +125,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-  it should "change > string with multi-line string" in pendingUntilFixed {
+  it should "change > string with multi-line string" in {
     val oldComment =
       """>
         |    Late afternoon is best.

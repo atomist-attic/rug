@@ -12,7 +12,7 @@ class ChangeGt implements ProjectEditor {
     name: string = "ChangeGt"
     description = "Change > string"
 
-    @Parameter({description: "Change comment to this", pattern: "^.*$"})
+    @Parameter({description: "Change comment to this", pattern: "^[\\s\\S]*$"})
     newComment: string
 
     edit(project: Project) {

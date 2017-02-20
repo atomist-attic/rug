@@ -40,8 +40,8 @@ com.atomist.rug.kind.scala.ScalaFileType
 com.atomist.rug.kind.xml.XmlType
 com.atomist.rug.kind.xml.XmlFileType
 
-com.atomist.rug.kind.yml.YmlType
-com.atomist.rug.kind.yml.path.YmlFileType
+com.atomist.rug.kind.yaml.YamlType
+com.atomist.rug.kind.yaml.path.YamlFileType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider

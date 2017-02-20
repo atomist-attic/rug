@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 
 object RugOperationSupport {
 
-  val YmlFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
+  val YamlFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
 
   // May have been passed in via the infrastructure but couldn't be declared in Rug: Suppress
   // so it doesn't upset binding into JavaScript
@@ -73,7 +73,7 @@ trait RugOperationSupport extends LazyLogging {
   private def wellKnownIdentifiers: Map[String, Object] = {
     val d = LocalDate.now()
     Map(
-      // "date_ymd" -> YmlFormat.format(d)
+      // "date_ymd" -> YamlFormat.format(d)
     )
   }
 

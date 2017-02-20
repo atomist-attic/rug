@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class SecretsTest extends FlatSpec with Matchers with LazyLogging {
 
-  val inYml =
+  val inYaml =
     """
       |artifactory:
       |  artifactory_base: ${secret.templates.uri:https://sforzando.artifactoryonline.com/sforzando}
@@ -37,7 +37,7 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
 
   it should "regexp" in {
     val r = """\$\{secret\.([^\}]+)\}"""
-    val m = r.r.findAllMatchIn(inYml)
+    val m = r.r.findAllMatchIn(inYaml)
     for (x <- m) {
       logger.debug(x.group(1))
     }
@@ -64,7 +64,7 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
     val ed = rp.create(as,  None).head.asInstanceOf[ProjectReviewer]
 
     val target = new SimpleFileBasedArtifactSource("",
-      StringFileArtifact("application.yml", inYml))
+      StringFileArtifact("application.yml", inYaml))
     val rr = ed.review(target, SimpleParameterValues.Empty)
     assert(rr.comments.size === 3)
   }

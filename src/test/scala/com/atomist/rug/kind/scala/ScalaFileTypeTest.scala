@@ -96,8 +96,6 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "find path to specific exception catch" in {
     val proj = exceptionsProject
-    val scalas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)
-    val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
 
     val path = proj.pathTo(exceptionsProject.files.get(0).path, "ScalaFile", 9, 5)
     //println(s"Path=$path")

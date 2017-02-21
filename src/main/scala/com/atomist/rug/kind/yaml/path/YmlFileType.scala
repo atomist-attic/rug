@@ -166,7 +166,16 @@ class YmlFileType extends TypeUnderFile with LazyLogging {
   }
 }
 
+@deprecated("Use YamlFileType instead", "0.13.0")
+object YmlFileType {
 
+  val SequenceType = "Sequence"
 
+  val MappingType = "Mapping"
 
+  val KeyType = "Key"
 
+  val ScalarType = "Scalar"
+
+  val ScalarName = "value"
+}

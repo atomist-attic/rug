@@ -2,9 +2,9 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
+import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.js.interop.RugContext
 import com.atomist.rug.runtime.plans.MappedParameterSupport
-import com.atomist.rug.runtime.{CommandContext, CommandHandler, ParameterizedRug}
 import com.atomist.rug.spi.Handlers.Plan
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -13,12 +13,12 @@ import scala.collection.JavaConverters._
 /**
   * Finds JavaScriptCommandHandlers in Nashorn vars
   */
-class JavaScriptCommandHandlerFinder(ctx: JavaScriptHandlerContext)
-  extends BaseJavaScriptHandlerFinder[JavaScriptCommandHandler] (ctx) {
+class JavaScriptCommandHandlerFinder
+  extends BaseJavaScriptHandlerFinder[JavaScriptCommandHandler] {
 
   override def kind = "command-handler"
 
-  override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, ctx: JavaScriptHandlerContext): Option[JavaScriptCommandHandler] = {
+  override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(jsc, handler, name(handler), description(handler), parameters(handler), mappedParameters(handler), tags(handler), intent(handler)))
   }
 
@@ -89,7 +89,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
     * @param params
     * @return
     */
-  override def handle(ctx: CommandContext, params: ParameterValues): Option[Plan] = {
+  override def handle(ctx: RugContext, params: ParameterValues): Option[Plan] = {
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     invokeMemberFunction(jsc, handler, "handle", ctx, validated) match {

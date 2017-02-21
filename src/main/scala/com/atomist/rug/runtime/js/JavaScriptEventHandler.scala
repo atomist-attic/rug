@@ -2,29 +2,26 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
-import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsSafeCommittingProxy}
-import com.atomist.rug.runtime.js.interop.{JavaScriptHandlerContext, jsContextMatch, jsPathExpressionEngine, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{RugContext, jsContextMatch, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
-import com.atomist.source.ArtifactSource
-import com.atomist.tree.content.text.SimpleMutableContainerTreeNode
+import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Discover JavaScriptEventHandlers from a Nashorn instance
   */
-class JavaScriptEventHandlerFinder(ctx: JavaScriptHandlerContext)
-  extends BaseJavaScriptHandlerFinder[JavaScriptEventHandler](ctx) {
+class JavaScriptEventHandlerFinder
+  extends BaseJavaScriptHandlerFinder[JavaScriptEventHandler] {
 
   override def kind = "event-handler"
 
-  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror, ctx: JavaScriptHandlerContext): Option[JavaScriptEventHandler] = {
+  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror): Option[JavaScriptEventHandler] = {
     if(someVar.hasMember("__expression")){
       val expression: String = someVar.getMember("__expression").asInstanceOf[String]
-      Some(new JavaScriptEventHandler(jsc, someVar, ctx, expression, name(someVar), description(someVar), tags(someVar)))
+      Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar)))
     } else {
       Option.empty
     }
@@ -36,7 +33,6 @@ class JavaScriptEventHandlerFinder(ctx: JavaScriptHandlerContext)
   */
 class JavaScriptEventHandler(jsc: JavaScriptContext,
                               handler: ScriptObjectMirror,
-                              ctx: JavaScriptHandlerContext,
                               pathExpressionStr: String,
                               override val name: String,
                               override val description: String,
@@ -53,7 +49,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
     case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }
 
-  override def handle(e: SystemEvent): Option[Plan] = {
+  override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
 
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work

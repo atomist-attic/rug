@@ -13,7 +13,7 @@ import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.source._
-import com.atomist.tree.{AddressableTreeNode, PathAwareTreeNode, TreeNode}
+import com.atomist.tree.{AddressableTreeNode, PathAwareTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -44,7 +44,7 @@ class ProjectMutableView(
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
                           projectOperations: Seq[ProjectOperation] = Nil,
-                          ctx: UserModelContext = LocalAtomistContext)
+                          ctx: RugContext = LocalRugContext)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
     with ChangeLogging[ArtifactSource] {
 
@@ -465,7 +465,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
-  def context = new ProjectContext(ctx)
+  def context: ProjectContext = new ProjectContext(ctx)
 
   import com.atomist.tree.pathexpression.PathExpressionParser._
 
@@ -488,7 +488,7 @@ class ProjectMutableView(
   private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
 
     val pexpr = pathToRootContainer(path, kind)
-    context.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
+    ctx.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.size == 1 =>
         val theNode = nodes.head
         //println(theNode.toString)
@@ -504,12 +504,23 @@ class ProjectMutableView(
         None
     }
   }
-
 }
 
-class ProjectContext(ctx: UserModelContext) extends UserServices {
+/**
+  * For backwards compatability
+  * @param ctx
+  */
+class ProjectContext(ctx: RugContext) extends RugContext {
 
-  override def pathExpressionEngine: jsPathExpressionEngine = {
-    ctx.registry("PathExpressionEngine").asInstanceOf[jsPathExpressionEngine]
-  }
+  override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
+
+  /**
+    * Id of the team we're working on behalf of
+    */
+  override def teamId: String = ctx.teamId
+
+  /**
+    * Used to hydrate nodes before running a path expression
+    */
+  override def treeMaterializer: TreeMaterializer = ctx.treeMaterializer
 }

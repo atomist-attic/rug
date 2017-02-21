@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.ProjectOperation
-import com.atomist.project.edit.ProjectEditor
+import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime._
@@ -63,8 +63,11 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
             })
           case Some(rug: ProjectEditor) =>
             doWithProject(instruction, rug, parameters, (project: ArtifactSource) => {
-              val modificationAttempt = rug.modify(project, parameters)
-              Response(Success, None, None, Some(modificationAttempt))
+              rug.modify(project, parameters) match {
+                case success: SuccessfulModification => Response(Success, None, None, Some(success))
+                case success: NoModificationNeeded => Response(Success, None, None, Some(success))
+                case failure: FailedModificationAttempt => Response(Failure, None, None, Some(failure))
+              }
             })
           case Some(rug: ProjectReviewer) =>
             doWithProject(instruction, rug, parameters, (project: ArtifactSource) => {

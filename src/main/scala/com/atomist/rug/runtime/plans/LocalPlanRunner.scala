@@ -50,6 +50,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
         val msg = s"Failed to run instruction: ${respondable.instruction} - ${error.getMessage}"
         logger.error(msg)
         Seq(InstructionError(respondable.instruction, error))
+
       case ScalaSuccess(response) =>
         val msg = s"Ran instruction: ${respondable.instruction} and got response: $response"
         logger.info(msg)
@@ -90,5 +91,4 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     val planRunner = nestedPlanRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedPlanRunner))
     planRunner.run(plan, input.orNull)
   }
-
 }

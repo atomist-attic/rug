@@ -60,7 +60,9 @@ class ProjectMutableView(
 
   import ProjectMutableView._
 
-  override def toString: String = s"ProjectMutableView around ${currentBackingObject}"
+  override def toString: String =
+    s"ProjectMutableView[name='$name'] around $currentBackingObject\n" +
+      s"${ArtifactSourceUtils.prettyListFiles(currentBackingObject)}"
 
   /**
     * Content used only for templates.

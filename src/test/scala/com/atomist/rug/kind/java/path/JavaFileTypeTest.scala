@@ -69,6 +69,26 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     }
   }
 
+  it should "find and re-evaluate path to specific exception catch" in pendingUntilFixed {
+    val expectedValue = "ThePlaneHasFlownIntoTheMountain"
+    val proj = exceptionsProject
+    val expr = s"//JavaFile()//catchClause//catchType[@value='$expectedValue']"
+    expressionEngine.evaluate(proj, expr, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        assert(nodes.size === 1)
+        val tn = nodes.head.asInstanceOf[OverwritableTextTreeNode]
+        assert(tn.value === expectedValue)
+        val fi = tn.formatInfo
+        assert(fi.start.lineNumberFrom1 > 1)
+        assert(fi.start.columnNumberFrom1 > 1)
+        println(fi)
+        val foundInFile = Exceptions.content.substring(fi.start.offset, fi.end.offset)
+        assert(foundInFile === expectedValue)
+        // TODO file path in file and evaluate it again
+      case wtf => fail(s"Expression didn't match [$wtf]")
+    }
+  }
+
   it should "find and modify specific exception catch" in {
     val proj = exceptionsProject
     val javas: Option[Seq[TreeNode]] = typeBeingTested.findAllIn(proj)

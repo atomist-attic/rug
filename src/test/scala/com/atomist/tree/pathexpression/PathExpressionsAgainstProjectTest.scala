@@ -1,14 +1,13 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.RugCompilerTest
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.elm.ElmModuleMutableView
 import com.atomist.rug.kind.java.JavaClassOrInterfaceView
-import com.atomist.rug.kind.pom.{EveryPomType, PomMutableView, PomType}
-import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.rug.kind.pom.PomMutableView
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{Assertions, FlatSpec, Matchers}
 
 /**
@@ -20,9 +19,19 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-  it should "not find missing property in project" in {
+  it should "#323: error on attempt to find bogus type" in {
     val proj = ParsingTargets.NonSpringBootMavenProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
+    val expr = "/DoesntExist()"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Left(err) => assert(err.contains("DoesntExist"))
+      case wtf => fail(s"Should have returned an error, not $wtf")
+    }
+  }
+
+  it should "not find missing file in project" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
     val expr = "/foo"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get === Seq())
@@ -30,7 +39,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find directory contents in project" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.nonEmpty === true)
@@ -41,7 +50,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "drill into lines inside project" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/File()[@name='pom.xml']/Line()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.nonEmpty === true)
@@ -50,7 +59,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "drill into lines inside project under File" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/File()[@name='pom.xml']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -64,7 +73,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find properties file in project" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src//*[@name='application.properties']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -72,7 +81,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find properties file in directory" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/resources/*[@name='application.properties']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -82,7 +91,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = SimpleFileBasedArtifactSource(
       StringFileArtifact("Test.java", "public class Test {}")
     )
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr3 = "/JavaType()"
     val rtn3 = ee.evaluate(pmv, expr3, DefaultTypeRegistry)
     // We have left out test classes
@@ -97,7 +106,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = SimpleFileBasedArtifactSource(
       StringFileArtifact("Test.java", "public class Test {}")
     )
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr3 = "/SpringBootProject()"
     val rtn3 = ee.evaluate(pmv, expr3, DefaultTypeRegistry)
     // We have left out test classes
@@ -109,7 +118,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "jump into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     // We have left out test classes
@@ -122,7 +131,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find Java type under direct path" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/File()[@name='DemoApplication.java']/JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -134,7 +143,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "double descend into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src//JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 2)
@@ -147,7 +156,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
   it should "find everything under project" in {
     val pexp = "//*"
     val proj = RugCompilerTest.JavaAndText
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
     assert(rtn.right.get.size === 6)
   }
@@ -155,7 +164,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
   it should "find every file under project" in {
     val pexp = "//*/File()"
     val proj = RugCompilerTest.JavaAndText
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
   }
@@ -163,7 +172,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
   it should "find all files under project" in {
     val pexp = "//File()"
     val proj = RugCompilerTest.JavaAndText
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
     assert(rtn.right.get.size === 3)
     //rtn.right.get.map(_.)
@@ -171,7 +180,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "double descend into Java type with superfluous but valid File() type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src//File()/JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 2)
@@ -183,7 +192,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "double descend into Java type under directory" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java//File()/JavaType()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -195,7 +204,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "double descend into Java type and select class" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr2 = "/src//File()/JavaType()[@name='DemoApplication']"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
@@ -207,7 +216,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "jump into Java type and select class using 2 filters" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr2 = "/src/main/java/com/example/JavaType()[@name='DemoApplication' and @type='JavaType']"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
@@ -219,7 +228,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "jump into Java type and call boolean method" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
     val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract()]"
@@ -231,7 +240,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = SimpleFileBasedArtifactSource(
       StringFileArtifact("license.txt", "The blah blah license")
     )
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
     val expr = "/*[@name='license.txt' or @name='foo']"
@@ -253,7 +262,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "jump into Java type and test on name" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and .pkg()='com.example']"
@@ -261,19 +270,9 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
   }
 
-  // We know longer support this behavior, of refusing to do a type jump
-  //  it should "not jump when * is used" in {
-  //    val proj = ParsingTargets.NewStartSpringIoProject
-  //    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-  //    // Second filter is really a no op
-  //    val expr = "/src/main/java/com/example/*:java.class[type='java.class' and .pkg()='com.example']"
-  //    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-  //    rtn.right.get.size should be (0)
-  //  }
-
   it should "match existing types when * is used" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/File()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     rtn.right.get.size should be > 0
@@ -284,7 +283,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
       StringFileArtifact("src/thing", "content"),
       StringFileArtifact("src/ignore", "content")
     )
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/File()[@name='thing']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -292,7 +291,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "test not(predicate) that does veto" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.example')]"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.isEmpty)
@@ -300,7 +299,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "test not(predicate) that does not veto" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.wrong')]"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -308,7 +307,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "allow multiple predicates instead of 'and'" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[.pkg()='com.example']"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -334,7 +333,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
         |    ]
       """.stripMargin
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/Main.elm", elmWithMain))
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr2 = "/src//ElmModule()[.exposes('main')]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
@@ -347,7 +346,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
   it should "find files containing Java sources or types" in {
     val types = Set("JavaType", "JavaSource")
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
     for (nestedType <- types) {
@@ -361,7 +360,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "not find files containing Elm modules in Java project" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
     val expr2 = s"/src//File()[/ElmModule()]"
@@ -372,7 +371,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find all top-level file as descendant" in {
     val proj = ParsingTargets.NewStartSpringIoProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "//mvnw"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -385,7 +384,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find the pom.xml" in {
     val proj = ParsingTargets.MultiPomProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/Pom()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -398,7 +397,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find all the pom.xml descendants" in {
     val proj = ParsingTargets.MultiPomProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "//Pom()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 3)
@@ -411,7 +410,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find all the pom.xml files" in {
     val proj = ParsingTargets.MultiPomProject
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/EveryPom()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 3)
@@ -424,7 +423,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find elm module in src" in {
     val proj = ParsingTargets.ElmStartStaticPage
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "/src/*/ElmModule()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
@@ -437,13 +436,12 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   it should "find descendant elm module" in {
     val proj = ParsingTargets.ElmStartStaticPage
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
+    val pmv = new ProjectMutableView(proj)
     val expr = "//ElmModule()"
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: ElmModuleMutableView =>
-      
       case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
     }
   }

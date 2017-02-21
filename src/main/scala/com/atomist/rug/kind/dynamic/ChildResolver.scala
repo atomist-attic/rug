@@ -9,9 +9,8 @@ import com.atomist.tree.TreeNode
 trait ChildResolver {
 
   /**
-    * Find all in this context
-    *
-    * @param context
+    * Find all in this context. Return None if
+    * it's erroneous to look in this context.
     */
   def findAllIn(context: GraphNode): Option[Seq[TreeNode]]
 

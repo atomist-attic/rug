@@ -13,6 +13,14 @@ object HandlerUtil {
 
   import com.atomist.rug.spi.Handlers._
 
+  def drawPlan(plan: Plan): String = {
+    val tree: BabyTree = planToTree(plan)
+    TreeNodePrinter.draw[BabyTree](_.children, _.print)(tree)
+  }
+
+  def drawEventLogs(name: String, events: Seq[PlanLogEvent]) =
+    TreeNodePrinter.drawTree(awaitAndTreeLogEvents(name, events))
+
   private def instructionToString(i: Instruction) = {
     val op = i match {
       case Generate(detail) => "Generate"
@@ -35,9 +43,7 @@ object HandlerUtil {
     case r: Respond => BabyTree(instructionToString(r))
   }))
 
-  def planToTree(plan: Plan): BabyTree = {
-
-
+  private def planToTree(plan: Plan): BabyTree = {
 
     def respondableToTree(respondable: Respondable): BabyTree = {
       val i = instructionToString(respondable.instruction)
@@ -53,10 +59,6 @@ object HandlerUtil {
         plan.messages.sortBy(_.toString).map(messageToTree))
   }
 
-  def printPlan(plan: Plan): String = {
-    val tree: BabyTree = planToTree(plan)
-    TreeNodePrinter.draw[BabyTree](_.children, _.print)(tree)
-  }
 
   private def awaitAndTreeLogEvents(name: String, events: Seq[PlanLogEvent]): BabyTree = {
     def logEventToTree(one: PlanLogEvent): BabyTree = {
@@ -83,6 +85,4 @@ object HandlerUtil {
     BabyTree(name, children.sortBy(_.print))
   }
 
-  def drawEventLogs(name: String, events: Seq[PlanLogEvent]) =
-    TreeNodePrinter.drawTree(awaitAndTreeLogEvents(name, events))
 }

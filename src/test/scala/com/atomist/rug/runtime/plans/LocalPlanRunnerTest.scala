@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.plans
 
+import com.atomist.rug.spi.HandlerUtil
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
@@ -149,13 +150,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with DiagrammedAssertion
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
 
-  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => log.map {
-    case InstructionResponse(i, r) => (i, r)
-    case NestedPlanRun(p, f) => (p, f.value.get)
-    case InstructionError(i, e) => (i, e.getMessage)
-    case MessageDeliveryError(m, e) => (m, e.getMessage)
-    case CallbackError(c, e) => (c, e.getMessage)
-  }
+  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => HandlerUtil.drawEventLogs("events", log.toSeq)
 
   it ("should handle error during message delivery") {
     val plan = Plan(

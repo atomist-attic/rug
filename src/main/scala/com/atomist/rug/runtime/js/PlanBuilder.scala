@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.spi.Handlers.Instruction.Respond
+import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.Undefined
@@ -80,7 +80,7 @@ class PlanBuilder {
     Presentable(instruction,label)
   }
 
-  def constructRespondable(jsRespondable: ScriptObjectMirror): Respondable = {
+  def constructRespondable(jsRespondable: ScriptObjectMirror): Plannable = {
     val instruction: Instruction = jsRespondable.getMember("instruction") match {
       case u: Undefined =>
         throw new IllegalArgumentException(s"No instruction found in $jsRespondable")
@@ -89,7 +89,10 @@ class PlanBuilder {
     }
     val onSuccess: Option[Callback] = constructCallback(jsRespondable.getMember("onSuccess"))
     val onError: Option[Callback] = constructCallback(jsRespondable.getMember("onError"))
-    Respondable(instruction, onSuccess, onError)
+    instruction match {
+      case nr: NonrespondableInstruction => Nonrespondable(nr)
+      case r: RespondableInstruction => Respondable(r, onSuccess, onError)
+    }
   }
 
   def constructInstruction(jsInstruction: ScriptObjectMirror): Instruction = {

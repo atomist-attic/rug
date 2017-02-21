@@ -1,4 +1,4 @@
-import {HandleResponse, HandleEvent, Respondable, HandleCommand, Respond, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
+import {HandleResponse, HandleEvent, Respondable, HandleCommand, Respond, Instruction, Response, HandlerContext, Plan, Message, Execute} from '@atomist/rug/operations/Handlers'
 import {TreeNode, Match, PathExpression} from '@atomist/rug//tree/PathExpression'
 import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
@@ -124,7 +124,7 @@ class KittiesResponder implements HandleResponse<Object>{
 export let kittRes = new KittiesResponder();
 
 interface Issue extends TreeNode {
-  reopen: Respondable<"execute">
+  reopen: Respondable<Execute>
   title: string
   number: string
   state: string

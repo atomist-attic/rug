@@ -2,6 +2,10 @@ package com.atomist.rug.tree.utils
 
 object TreeNodePrinter {
 
+  case class BabyTree(print: String, children: Seq[BabyTree])
+
+  def drawTree(baby: BabyTree) = draw[BabyTree](_.children, _.print)(baby)
+
   /**
    * TreeNodePrinter utility.
    * It draws a cute tree like

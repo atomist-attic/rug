@@ -19,10 +19,20 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
-  it should "#323: error on attempt to find bogus type" in {
+  it should "#323: error on attempt to find bogus type child" in {
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/DoesntExist()"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Left(err) => assert(err.contains("DoesntExist"))
+      case wtf => fail(s"Should have returned an error, not $wtf")
+    }
+  }
+
+  it should "#323: error on attempt to find bogus type descendant" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
+    val expr = "//DoesntExist()"
     ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
       case Left(err) => assert(err.contains("DoesntExist"))
       case wtf => fail(s"Should have returned an error, not $wtf")

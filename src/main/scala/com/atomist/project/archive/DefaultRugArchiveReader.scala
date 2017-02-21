@@ -10,8 +10,7 @@ import com.atomist.source.ArtifactSource
 /**
   * Use to read _all_ rugs from an archive
   */
-class DefaultRugArchiveReader(teamId: String,
-                              atomistConfig: AtomistConfig = DefaultAtomistConfig,
+class DefaultRugArchiveReader(atomistConfig: AtomistConfig = DefaultAtomistConfig,
                               evaluator: Evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry),
                               typeRegistry: TypeRegistry = DefaultTypeRegistry)
 

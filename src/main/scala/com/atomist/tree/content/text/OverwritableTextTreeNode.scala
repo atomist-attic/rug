@@ -4,7 +4,7 @@ import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.spi.{ExportFunction, MutableView, TypeProvider, Typed}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode.{Noise, Signal}
-import com.atomist.tree.{AddressableTreeNode, ContainerTreeNode, TreeNode, UpdatableTreeNode}
+import com.atomist.tree._
 
 trait OverwritableTextTreeNodeChild {
 
@@ -34,8 +34,8 @@ class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableText
   *
   * does not need a MutableView over it
   *
-  * @param name This node is addressable by this in a path expression
-  * @param allKids children include Padding nodes and more OverwritableTextTreeNodes.
+  * @param name           This node is addressable by this in a path expression
+  * @param allKids        children include Padding nodes and more OverwritableTextTreeNodes.
   * @param additionalTags This node is addressable by each of these, as tag()
   */
 class OverwritableTextTreeNode(name: String,
@@ -44,6 +44,7 @@ class OverwritableTextTreeNode(name: String,
   extends UpdatableTreeNode
     with ContainerTreeNode // tag
     with AddressableTreeNode // we conform, but we implement this here
+    with ParentAwareTreeNode
     with OverwritableTextTreeNodeChild
     with OverwritableTextTreeNodeParent {
 

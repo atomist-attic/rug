@@ -2,8 +2,11 @@ package com.atomist.tree.content.text
 
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.source.StringFileArtifact
-import com.atomist.tree.{AddressableTreeNode, TreeNode}
+import com.atomist.tree.{AddressableTreeNode, PaddingTreeNode, ParentAwareTreeNode, TreeNode}
 import com.atomist.tree.TreeNode.Noise
+import com.atomist.tree.utils.TreeNodeUtils
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * Connects OverwritableTextTreeNodes to the file they reside in.
@@ -58,39 +61,58 @@ class OverwritableTextInFile(dynamicType: String,
 
   private case class NodeAndPath(node: TreeNode, path: Seq[TreeNode])
 
-  /**
-    * All descendants of this node with position info, with their paths
-    */
-  private def descendants: Seq[NodeAndPath] = {
+  private def terminalDescendants: Seq[NodeAndPath] = {
     def descs(f: OverwritableTextTreeNode, path: Seq[TreeNode]): Seq[NodeAndPath] = {
-      NodeAndPath(f, path) +: f.allKidsIncludingPadding.flatMap {
-        case d: OverwritableTextTreeNode => descs(d, path :+ d)
+      f.allKidsIncludingPadding.flatMap {
+        case d: OverwritableTextTreeNode if d.childCount == 0 =>
+          // Special case, it's hiding a padding node
+          Seq(NodeAndPath(d, path))
+        case d: OverwritableTextTreeNode =>
+          descs(d, path :+ d)
         case n => Seq(NodeAndPath(n, path))
       }
     }
 
-    NodeAndPath(this, Nil) +: allKids.flatMap {
-      case d: OverwritableTextTreeNode => descs(d, Seq(this))
+    allKids.flatMap {
+      case d: OverwritableTextTreeNode =>
+        descs(d, Seq(this))
       case n => Seq(NodeAndPath(n, Seq(this)))
     }
   }
+
 
   /**
     * Return the node at this position in the file, if known
     */
   private def nodeAndPathAt(pos: InputPosition): Option[NodeAndPath] = {
-    val terminalDescendants = descendants.filter(np => np.node.childNodes.isEmpty)
     val stringToLeft = new StringBuilder
-    val nodesBefore =
-      for {
-        n <- terminalDescendants
-        if stringToLeft.size < pos.offset
-      }
-        yield {
-          stringToLeft.append(n.node.value)
-          n
-        }
-    nodesBefore.lastOption
+
+    val leftFields = ListBuffer.empty[NodeAndPath]
+    var done = false
+
+    for {
+      n <- terminalDescendants
+      if !done
+    } {
+      if (stringToLeft.size < pos.offset)
+        stringToLeft.append(n.node.value)
+      else
+      // Take the next one in this case
+        done = true
+      leftFields.append(n)
+    }
+
+    //println(leftFields.map(_.node).map(n => s"${n.nodeName}:${n.significance}:${n.getClass.getSimpleName}:[${n.value.take(50)}]").mkString("\n"))
+
+    require(value.startsWith(stringToLeft), s"Bad prefix calculating nodeAndPathAt [$stringToLeft] in [$value]")
+    // Back up to the most general node with this value if we're too specific
+    leftFields.lastOption.map(np => {
+      // We know there is one. We want the first one in the path with the same value
+      val earliest = np.path.find(n => n.value == np.node.value)
+      earliest.map(found => {
+        NodeAndPath(found, np.path.takeWhile(n => n != found))
+      }).getOrElse(np)
+    })
   }
 
   /**
@@ -110,29 +132,29 @@ class OverwritableTextInFile(dynamicType: String,
     * Find the node at this position in the file
     */
   def rawNodeAt(pos: InputPosition): Option[TreeNode] = {
-    nodeAndPathAt(pos).map(np => {
-      np.node
-    })
+    nodeAndPathAt(pos).map(np => np.node)
   }
 
   /*
    * called by descendants to find their position in the file
    */
-  def formatInfo(child: TreeNode): FormatInfo = {
-    val descs = descendants.map(_.node)
-    if (!descs.contains(child))
-      throw new IllegalStateException(s"I can't find my child: $child")
-    else {
-      // Build string to the left
-      val leftFields = descs.takeWhile(f => f != child)
-      val stringToLeft = leftFields
-        .filter(_.childNodes.isEmpty)
-        .map(_.value).mkString("")
-      val leftPoint = FormatInfo.contextInfo(stringToLeft)
-      val rightPoint = FormatInfo.contextInfo(stringToLeft + child.value)
-      //println(s"Found $fi from left string [$stringToLeft] with start=$start")
-      FormatInfo(leftPoint, rightPoint)
-    }
+  def formatInfo(targetNode: TreeNode): FormatInfo = {
+
+    val terminals = terminalDescendants.map(_.node)
+
+    //    if (false && !descendants.contains(targetNode))
+    //      throw new IllegalStateException(s"I can't find target node descendant: $targetNode")
+
+    // Build string to the left
+    val leftFields = terminals.takeWhile(f => !(f == targetNode || TreeNodeOperations.isKnownAncestor(f, targetNode)))
+    println(leftFields.map(n => s"${n.nodeName}:${n.significance}:${n.getClass.getSimpleName}:[${n.value.take(50)}]").mkString("\n"))
+
+    val stringToLeft = leftFields
+      .map(_.value).mkString("")
+    val leftPoint = FormatInfo.contextInfo(stringToLeft)
+    val rightPoint = FormatInfo.contextInfo(stringToLeft + targetNode.value)
+    require(value.startsWith(stringToLeft), s"Bad prefix calculating formatInfo [$stringToLeft] in [$value]")
+    FormatInfo(leftPoint, rightPoint)
   }
 
   /* mine */

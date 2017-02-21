@@ -6,7 +6,7 @@ import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.{ConsoleMatchListener, OverwritableTextTreeNode, PositionedMutableContainerTreeNode}
+import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, PositionedMutableContainerTreeNode}
 import com.atomist.tree.pathexpression.PathExpressionParser
 import com.atomist.tree.utils.TreeNodeUtils
 
@@ -69,7 +69,24 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     }
   }
 
-  it should "find and re-evaluate path to specific exception catch" in pendingUntilFixed {
+  it should "find format info for specific exception catch" in nodeAndFormatInfoForPathExpression
+
+  it should "find path to format info, execute and verify" in {
+    val (proj, tn, fi) = nodeAndFormatInfoForPathExpression
+    // Get path and find it again
+    val path = proj.pathTo(Exceptions.path, "JavaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1)
+    assert(path.contains("JavaFile"))
+    //println(s"Running path " + path)
+    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.size == 1 =>
+        val found = nodes.head.asInstanceOf[TreeNode]
+        assert(found.value === tn.value)
+        assert(found.nodeName === tn.nodeName)
+      case wtf => fail(s"Unexpected $wtf")
+    }
+  }
+
+  private def nodeAndFormatInfoForPathExpression: (ProjectMutableView, OverwritableTextTreeNode, FormatInfo) = {
     val expectedValue = "ThePlaneHasFlownIntoTheMountain"
     val proj = exceptionsProject
     val expr = s"//JavaFile()//catchClause//catchType[@value='$expectedValue']"
@@ -81,11 +98,11 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
         val fi = tn.formatInfo
         assert(fi.start.lineNumberFrom1 > 1)
         assert(fi.start.columnNumberFrom1 > 1)
-        println(fi)
+        //println(fi)
         val foundInFile = Exceptions.content.substring(fi.start.offset, fi.end.offset)
         assert(foundInFile === expectedValue)
-        // TODO file path in file and evaluate it again
-      case wtf => fail(s"Expression didn't match [$wtf]")
+        (proj, tn, fi)
+      case wtf => fail(s"Unexpected: $wtf")
     }
   }
 

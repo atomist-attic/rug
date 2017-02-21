@@ -5,7 +5,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.content.text.{ConsoleMatchListener, TreeNodeOperations}
+import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, TreeNodeOperations}
 import com.atomist.tree.pathexpression.PathExpressionParser
 import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{MutableTreeNode, TreeNode, UpdatableTreeNode}
@@ -92,6 +92,41 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
     //updatedFile.dirty should be(true)
+  }
+
+  it should "find path to format info, execute and verify" in {
+    val (proj, tn, fi) = nodeAndFormatInfoForPathExpression
+    // Get path and find it again
+    val path = proj.pathTo(Exceptions.path, "ScalaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1)
+    assert(path.contains("ScalaFile"))
+    //println(s"Running path " + path)
+    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.size == 1 =>
+        val found = nodes.head.asInstanceOf[TreeNode]
+        assert(found.value === tn.value)
+        assert(found.nodeName === tn.nodeName)
+      case wtf => fail(s"Unexpected $wtf")
+    }
+  }
+
+  private def nodeAndFormatInfoForPathExpression: (ProjectMutableView, OverwritableTextTreeNode, FormatInfo) = {
+    val expectedValue = "ThePlaneHasFlownIntoTheMountain"
+    val proj = exceptionsProject
+    val expr = s"//ScalaFile()//case//typeName[@value='$expectedValue']"
+    expressionEngine.evaluate(proj, expr, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.nonEmpty =>
+        assert(nodes.size === 2)
+        val tn = nodes.head.asInstanceOf[OverwritableTextTreeNode]
+        assert(tn.value === expectedValue)
+        val fi = tn.formatInfo
+        assert(fi.start.lineNumberFrom1 > 1)
+        assert(fi.start.columnNumberFrom1 > 1)
+        //println(fi)
+        val foundInFile = Exceptions.content.substring(fi.start.offset, fi.end.offset)
+        assert(foundInFile === expectedValue)
+        (proj, tn, fi)
+      case wtf => fail(s"Unexpected: $wtf")
+    }
   }
 
   it should "find path to specific exception catch" in {

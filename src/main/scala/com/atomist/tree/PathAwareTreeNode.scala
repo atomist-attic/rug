@@ -8,16 +8,24 @@ trait AddressableTreeNode extends TreeNode {
   def address: String
 }
 
-/**
-  * Tree node aware of its parentage and path
-  */
-trait PathAwareTreeNode extends TreeNode with AddressableTreeNode {
+trait ParentAwareTreeNode extends TreeNode {
 
   /**
     * Nullable if at the top level, as we don't want to complicate
     * use from JavaScript by using Option.
     */
-  def parent: PathAwareTreeNode
+  def parent: TreeNode
+}
+
+/**
+  * Tree node aware of its parentage and path
+  */
+trait PathAwareTreeNode extends ParentAwareTreeNode with AddressableTreeNode {
+
+  /**
+    * Override to make type more specific. Null if we're top level.
+    */
+  override def parent: PathAwareTreeNode
 
   override def address: String = PathAwareTreeNode.address(this, s"[@name='$nodeName']")
 }

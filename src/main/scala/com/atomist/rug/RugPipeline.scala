@@ -46,7 +46,7 @@ trait RugPipeline {
     * @return
     */
   def defaultFilenameFor(prog: String): String = prog match {
-    case p if prog.contains("import {") =>
+    case _ if prog.contains("import {") =>
       atomistConfig.defaultTypeScriptFilepath
     case _ =>
       atomistConfig.defaultRugFilepath

@@ -1,11 +1,7 @@
 package com.atomist.rug.kind.pom
 
-import com.atomist.param.SimpleParameterValues
-import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -30,13 +26,29 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   it should "update an existing property" in {
     val prog =
-      """
-        |editor PomEdit
+      s"""
+        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+        |import {Project,Pom} from '@atomist/rug/model/Core'
+        |import {Editor} from '@atomist/rug/operations/Decorators'
         |
-        |with Pom p when path = "pom.xml"
-        |  do setGroupId "mygroup"
+        |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+        |
+        |@Editor("UpdatePropertyEditor", "Updates properties")
+        |class UpdateProperty {
+        |
+        | edit(project: Project) {
+        |
+        |   project.context().pathExpressionEngine().with<Pom>(project, `/Pom()`, p => {
+        |     console.log(`Pom is $${p}`)
+        |     if (p.path() == "pom.xml")
+        |       p.setGroupId("mygroup")
+        |   })
+        | }
+        |
+        |}
+        |
+        |export let pe = new UpdateProperty()
       """.stripMargin
-
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
       case success: SuccessfulModification =>
       case _ => ???
@@ -58,13 +70,4 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
     }
   }
 
-  // Return new content
-  private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
-    val newName = "Foo"
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues( Map(
-      "new_name" -> newName
-    )))
-  }
 }

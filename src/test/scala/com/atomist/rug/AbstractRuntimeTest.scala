@@ -25,7 +25,7 @@ abstract class AbstractRuntimeTest extends FlatSpec with Matchers {
          |
       """.stripMargin
 
-    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program))  + TypeScriptBuilder.userModel
+    def as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(pipeline.defaultFilenameFor(program), program)) + TypeScriptBuilder.userModel
 
     val r = doModification(as, JavaAndText, EmptyArtifactSource(""), SimpleParameterValues.Empty, pipeline)
     r.allFiles.size should be > (0)

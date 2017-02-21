@@ -1,14 +1,14 @@
 package com.atomist.rug
 
-import com.atomist.param.ParameterValues
-import com.atomist.project.ProjectOperation
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, Rugs, SimpleJavaScriptProjectOperationFinder}
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.review.ProjectReviewer
+import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.Matchers
 
 object TestUtils extends Matchers {
@@ -27,16 +27,40 @@ object TestUtils extends Matchers {
     }
   }
 
+  private def isTypeScript(program: ArtifactSource) =
+    program.allFiles.exists(
+      f => f.name.endsWith(".ts") && f.path.startsWith(".atomist/editors")
+    )
+
   def attemptModification(program: ArtifactSource,
                           as: ArtifactSource,
                           backingAs: ArtifactSource,
                           poa: ParameterValues,
                           pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
-
-    val eds = pipeline.create(backingAs + program, None)
-    eds.size should be >= 1
-    val pe = eds.head.asInstanceOf[ProjectEditor]
+    val pe: ProjectEditor =
+      if (isTypeScript(program)) {
+        val as = TypeScriptBuilder.compileWithModel(program)
+        SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+      }
+      else {
+        // Rug editor
+        val eds = pipeline.create(backingAs + program, None)
+        eds.size should be >= 1
+        eds.head.asInstanceOf[ProjectEditor]
+      }
     pe.modify(as, poa)
+  }
+
+  /**
+    * Update with the given program
+    * @param prog Rug or TypeScript program
+    * @param project project to update
+    * @param params parameters. Default is none
+    * @return result of the modification attempt
+    */
+  def updateWith(prog: String, project: ArtifactSource, params: Map[String,Object] = Map()): ModificationAttempt = {
+    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(params))
   }
 
   /**
@@ -63,11 +87,11 @@ object TestUtils extends Matchers {
     }
     val withAtomistDir = tsAs.edit(new FileEditor {
       override def canAffect(f: FileArtifact) = true
+
       // Put the editor in the .atomist directory so it's found
       override def edit(f: FileArtifact) = f.withPath(".atomist/editors/" + f.path)
     })
     val as = TypeScriptBuilder.compileWithModel(withAtomistDir)
-
     SimpleJavaScriptProjectOperationFinder.find(as)
   }
 }

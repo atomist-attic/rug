@@ -1,20 +1,19 @@
 package com.atomist.project.archive
 
 import com.atomist.rug.runtime.js._
-import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.runtime.{CommandHandler, EventHandler, ResponseHandler, Rug}
 import com.atomist.source.ArtifactSource
 
 /**
   * Find all JavaScript based rugs
   */
-class JavaScriptRugArchiveReader(ctx: JavaScriptHandlerContext)
+class JavaScriptRugArchiveReader
   extends RugArchiveReader[Rug] {
 
   private val finders: Seq[JavaScriptRugFinder[_ <: Rug]] = Seq(
-    new JavaScriptCommandHandlerFinder(ctx),
-    new JavaScriptResponseHandlerFinder(ctx),
-    new JavaScriptEventHandlerFinder(ctx))
+    new JavaScriptCommandHandlerFinder(),
+    new JavaScriptResponseHandlerFinder(),
+    new JavaScriptEventHandlerFinder())
 
   /**
     * Find JS based Rugs of all known kinds (project operations etc)

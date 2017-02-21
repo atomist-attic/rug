@@ -3,17 +3,14 @@ package com.atomist.project.archive
 import com.atomist.rug.EmptyRugDslFunctionRegistry
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
-import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
-import com.atomist.tree.TreeMaterializer
 
 /**
   * Use to read _all_ rugs from an archive
   */
 class DefaultRugArchiveReader(teamId: String,
-                              treeMaterializer: TreeMaterializer,
                               atomistConfig: AtomistConfig = DefaultAtomistConfig,
                               evaluator: Evaluator = new DefaultEvaluator(new EmptyRugDslFunctionRegistry),
                               typeRegistry: TypeRegistry = DefaultTypeRegistry)
@@ -21,7 +18,7 @@ class DefaultRugArchiveReader(teamId: String,
   extends RugArchiveReader[Rug]{
 
   private val readers: Seq[RugArchiveReader[_ <: Rug]] = Seq(
-    new JavaScriptRugArchiveReader(new JavaScriptHandlerContext(teamId, treeMaterializer)),
+    new JavaScriptRugArchiveReader(),
     new RugDslArchiveReader(atomistConfig,evaluator,typeRegistry))
 
   /**

@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime
 
+import com.atomist.rug.runtime.js.interop.RugContext
 import com.atomist.rug.spi.Handlers.Plan
 
 /**
@@ -14,8 +15,6 @@ case class SystemEvent(
                         teamId: String,
                         rootNodeName: String,
                         id: Long)
-
-// TODO do we need whether it's created or changed?
 
 /**
   * Event implemented by EventHandlers
@@ -36,5 +35,5 @@ trait EventHandler extends Rug {
     *
     * @param e SystemEvent we're processing
     */
-  def handle(e: SystemEvent): Option[Plan]
+  def handle(ctx: RugContext, e: SystemEvent): Option[Plan]
 }

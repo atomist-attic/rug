@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.InstructionResponse
-import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeMaterializer
@@ -17,7 +16,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
   val kittyDesc = "Prints out kitty urls"
   val simpleResponseHandler =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-      |import {Respond, Instruction, Response, CommandContext, Plan, Message} from '@atomist/rug/operations/Handlers'
+      |import {Respond, Instruction, Response, Plan, Message} from '@atomist/rug/operations/Handlers'
       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
       |import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
       |import {Project} from '@atomist/rug/model/Core'
@@ -44,7 +43,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
 
   it should "extract and run a response handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleResponseHandler))
-    val finder = new JavaScriptResponseHandlerFinder(new JavaScriptHandlerContext("XX", treeMaterializer))
+    val finder = new JavaScriptResponseHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head

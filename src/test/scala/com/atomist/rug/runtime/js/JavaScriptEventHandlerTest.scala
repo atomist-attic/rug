@@ -4,18 +4,17 @@ import com.atomist.graph.GraphNode
 import com.atomist.param.SimpleParameterValue
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.interop.JavaScriptHandlerContext
+import com.atomist.rug.runtime.js.interop.LocalRugContext
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.pathexpression.PathExpression
-import com.atomist.tree.{TerminalTreeNode, TreeMaterializer, TreeNode}
+import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
 
 object JavaScriptEventHandlerTest {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
-  val treeMaterializer: TreeMaterializer = TestTreeMaterializer
 
   val reOpenIssueHandlerName = "ClosedIssueReopener"
 
@@ -85,7 +84,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
 
   it should "extract and run an event handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
-    val finder = new JavaScriptEventHandlerFinder(new JavaScriptHandlerContext("XX", treeMaterializer))
+    val finder = new JavaScriptEventHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
@@ -95,7 +94,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     handler.description should be (reOpenIssueHandlerDesc)
     handler.pathExpression should not be null
 
-    val actualPlan = handler.handle(SysEvent)
+    val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
     val expectedPlan = Some(Plan(
       Seq(
         Message(MessageText("message1"),

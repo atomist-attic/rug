@@ -40,7 +40,7 @@ case class jsMatch(root: TreeNode, matches: _root_.java.util.List[jsSafeCommitti
   * @param ee underlying ExpressionEngine that does the actual work
   */
 class jsPathExpressionEngine(
-                              teamContext: TeamContext,
+                              rugContext: RugContext,
                               val ee: ExpressionEngine = new PathExpressionEngine,
                               typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
@@ -57,7 +57,7 @@ class jsPathExpressionEngine(
     val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(teamContext, this.ee, tr)
+    new jsPathExpressionEngine(rugContext, this.ee, tr)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
@@ -94,7 +94,7 @@ class jsPathExpressionEngine(
     evaluateParsed(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
 
   private def evaluateParsed(root: TreeNode, parsed: PathExpression) = {
-    val hydrated = teamContext.treeMaterializer.hydrate(teamContext.teamId, toUnderlyingTreeNode(root), parsed)
+    val hydrated = rugContext.treeMaterializer.hydrate(rugContext.teamId, toUnderlyingTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
         val m = jsMatch(root, wrap(nodes))

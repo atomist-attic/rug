@@ -41,7 +41,9 @@ com.atomist.rug.kind.xml.XmlType
 com.atomist.rug.kind.xml.XmlFileType
 
 com.atomist.rug.kind.yaml.YamlType
+com.atomist.rug.kind.yaml.YmlType
 com.atomist.rug.kind.yaml.path.YamlFileType
+com.atomist.rug.kind.yaml.path.YmlFileType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider

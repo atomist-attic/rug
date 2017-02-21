@@ -74,3 +74,6 @@ class InvalidRugTestScenarioName(msg: String)
 
 class InvalidHandlerResultException(msg: String)
   extends BadRugException(msg)
+
+class MissingSecretException(msg: String)
+  extends BadRugException(msg)

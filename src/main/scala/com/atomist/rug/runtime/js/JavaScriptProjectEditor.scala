@@ -39,6 +39,9 @@ class JavaScriptProjectEditor(
   override protected def modifyInternal(
                                          targetProject: ArtifactSource,
                                          poa: ParameterValues): ModificationAttempt = {
+    val validated = addDefaultParameterValues(poa)
+    validateParameters(validated)
+
     val (result, elapsedTime) = time {
       val pmv = new ProjectMutableView(rugAs,
         targetProject,
@@ -52,7 +55,7 @@ class JavaScriptProjectEditor(
           jsVar,
           "edit",
           wrapProject(pmv),
-          poa)
+          validated)
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")

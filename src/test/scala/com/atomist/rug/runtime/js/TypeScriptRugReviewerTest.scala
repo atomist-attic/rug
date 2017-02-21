@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
+import com.atomist.project.common.{IllformedParametersException, MissingParametersException}
 import com.atomist.project.review.{ReviewResult, Severity}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -44,7 +45,7 @@ object TypeScriptRugReviewerTest {
        |class SimpleReviewer implements ProjectReviewer {
          |    name: string = "Simple"
          |    description: string = "A nice little reviewer"
-         |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+         |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@any", maxLength: 100}]
          |    review(project: Project, {content} : {content: string}) {
          |      return new ReviewResult(content,
          |          <ReviewComment[]>[]
@@ -52,6 +53,26 @@ object TypeScriptRugReviewerTest {
          |    }
          |  }
          |export let reviewer = new SimpleReviewer()
+    """.stripMargin
+
+  val SimpleReviewerWithInvalidParameterPattern =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {ReviewResult, ReviewComment, Parameter} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleReviewer implements ProjectReviewer {
+       |    name: string = "Simple"
+       |    description: string = "A nice little reviewer"
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    review(project: Project, {content} : {content: string}) {
+       |      return new ReviewResult(content,
+       |          <ReviewComment[]>[]
+       |        );
+       |    }
+       |  }
+       |export let reviewer = new SimpleReviewer()
     """.stripMargin
 
   val SimpleReviewerWithParametersSinglePartialCommentReviewResult =
@@ -64,7 +85,7 @@ object TypeScriptRugReviewerTest {
        |class SimpleReviewer implements ProjectReviewer {
        |    name: string = "Simple"
        |    description: string = "A nice little reviewer"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@any", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
        |      return new ReviewResult(content,
        |          [new ReviewComment(content, Severity.Broken)]
@@ -84,7 +105,7 @@ object TypeScriptRugReviewerTest {
        |class SimpleReviewer implements ProjectReviewer {
        |    name: string = "Simple"
        |    description: string = "A nice little reviewer"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@any", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
        |      return new ReviewResult(content, [new ReviewComment(content, Severity.Broken),
        |                                        new ReviewComment("something else", Severity.Fine)]
@@ -104,7 +125,7 @@ object TypeScriptRugReviewerTest {
        |class SimpleReviewer implements ProjectReviewer {
        |    name: string = "Simple"
        |    description: string = "A nice little reviewer"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
+       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@any", maxLength: 100}]
        |    review(project: Project, {content} : {content: string}) {
        |      return new ReviewResult(content,
        |           [new ReviewComment(
@@ -132,6 +153,13 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     assert(reviewResult.comments.isEmpty === true)
   }
 
+  it should "fail if there is an invalid parameter" in {
+    assertThrows[IllformedParametersException]{
+      reviewSimple(
+        StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts",
+          SimpleReviewerWithInvalidParameterPattern))
+    }
+  }
   it should "run simple reviewer compiled from TypeScript with parameters" in {
     val reviewResult = reviewSimple(StringFileArtifact(
       s".atomist/reviewers/SimpleReviewer.ts",

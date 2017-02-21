@@ -22,7 +22,7 @@ class ChangePipe implements ProjectEditor {
       let findDependencies = `/*[@name='x.yml']/YamlFile()/comments`
 
       eng.with<yaml.YamlString>(project, findDependencies, yamlValue => {
-        // console.log(`Raw value is [${ymlValue.value()}]`)
+        // console.log(`Raw value is [${yamlValue.value()}]`)
         console.log(`Text value is [${yamlValue.text()}]`)
         if (yamlValue.value().charAt(0) != "|")
             throw new Error(`[${yamlValue.value()}] doesn't start with |`)
@@ -30,6 +30,7 @@ class ChangePipe implements ProjectEditor {
             throw new Error(`[${yamlValue.text()}] DOES start with |`)
 
           yamlValue.updateText(this.newComment)
+          // console.log(`Updated text value is [${yamlValue.text()}]`)
       })
   }
 }

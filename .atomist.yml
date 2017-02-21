@@ -69,3 +69,18 @@ editor:
   parameters:
     - "class_under_test": "com.atomist.tree.content.text.OverwriteableTextTreeNode"
 
+---
+kind: "operation"
+client: "rug-cli 0.23.1-SNAPSHOT"
+editor:
+  name: "jessitron.microlib-TreeNodePrinter.BringIn"
+  group: "jessitron"
+  artifact: "microlib-TreeNodePrinter"
+  version: "0.1.0"
+  origin:
+    repo: "n/a"
+    branch: "n/a"
+    sha: "n/a"
+  parameters:
+    - "package": "com.atomist.rug.tree.utils"
+

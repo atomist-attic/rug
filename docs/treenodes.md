@@ -169,6 +169,8 @@ for a microgrammar that looks for simple Scala methods:
 
 (graphic created in MonoDraw)
 
+Note that the OTTNs always calculate the value by summing the values of their children, and the actual text is stored only in Padding nodes. (The exception is: if you call update on a node, then it stores that and ignores its children.)
+
 ## Lifecycle
 
 This took some construction. Each TextTreeNode knows its parent and its root.

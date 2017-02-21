@@ -4,7 +4,7 @@ import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.atomist.rug._
 import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
-import com.atomist.rug.runtime.rugdsl.{FunctionInvocationContext, RugFunction}
+import com.atomist.rug.runtime.rugdsl.{FunctionInvocationContext, RugDslFunction}
 import org.springframework.util.ReflectionUtils
 
 /**
@@ -15,10 +15,10 @@ object ReflectiveFunctionExport {
   /**
     * Export functions.
     */
-  def exportedFunctions(c: Class[_]): Traversable[RugFunction[_, _]] =
+  def exportedFunctions(c: Class[_]): Traversable[RugDslFunction[_, _]] =
     ReflectionUtils.getAllDeclaredMethods(c)
       .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
-      .map(new ReflectiveRugFunction[FunctionTarget, Any](_))
+      .map(new ReflectiveRugDslFunction[FunctionTarget, Any](_))
 
   def allExportedOperations(c: Class[_]): Seq[TypeOperation] =
     if (c == null) Nil
@@ -55,13 +55,13 @@ object ReflectiveFunctionExport {
     )
   }
 
-  final def exportedRegistry(c: Class[_]): RugFunctionRegistry = {
-    new FixedRugFunctionRegistry(exportedFunctions(c))
+  final def exportedRegistry(c: Class[_]): RugDslFunctionRegistry = {
+    new FixedRugDslFunctionRegistry(exportedFunctions(c))
   }
 }
 
-private class ReflectiveRugFunction[T <: FunctionTarget, R](m: Method)
-  extends RugFunction[T, R] {
+private class ReflectiveRugDslFunction[T <: FunctionTarget, R](m: Method)
+  extends RugDslFunction[T, R] {
 
   override def name: String = m.getName
 

@@ -42,7 +42,7 @@ trait FunctionInvocationContext[T] {
 
 }
 
-trait RugFunction[T, R] {
+trait RugDslFunction[T, R] {
 
   // TODO package?
   def name: String
@@ -58,8 +58,8 @@ trait RugFunction[T, R] {
 
 }
 
-trait RugPredicate[T]
-  extends RugFunction[T, Boolean]
+trait RugDslPredicate[T]
+  extends RugDslFunction[T, Boolean]
 
 case class SimpleFunctionInvocationContext[T <: Object](
                                                          targetAlias: String,

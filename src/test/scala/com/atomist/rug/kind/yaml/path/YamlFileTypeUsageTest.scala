@@ -123,7 +123,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-  it should "change > string" in {
+  it should "change > string" in pendingUntilFixed {
     val oldComment =
       """>
         |    Late afternoon is best.
@@ -139,14 +139,16 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       Map("newComment" -> newComment)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        // println(theFile.content)
+        println(rawNewComment)
+        println("1 " + theFile.content)
+        println("2 " + YamlOrgStart.replace(oldComment, rawNewComment))
         assert(theFile.content === YamlOrgStart.replace(oldComment, rawNewComment))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
-  it should "change > string with multi-line string" in {
+  it should "change > string with multi-line string" in pendingUntilFixed {
     val oldComment =
       """>
         |    Late afternoon is best.

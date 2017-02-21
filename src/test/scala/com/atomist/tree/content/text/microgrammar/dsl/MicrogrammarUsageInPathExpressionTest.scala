@@ -1,5 +1,6 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
+import com.atomist.graph.GraphNode
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -45,7 +46,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
   }
 
   // Return the project and matched nodes
-  private  def useSimpleMicrogrammarAgainstSingleFile: (ProjectMutableView, Seq[TreeNode]) = {
+  private  def useSimpleMicrogrammarAgainstSingleFile: (ProjectMutableView, Seq[GraphNode]) = {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val findFile = "/File()[@name='pom.xml']"

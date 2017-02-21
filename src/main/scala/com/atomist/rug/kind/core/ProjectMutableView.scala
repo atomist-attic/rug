@@ -465,19 +465,27 @@ class ProjectMutableView(
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context = new ProjectContext(ctx)
 
+  import com.atomist.tree.pathexpression.PathExpressionParser._
+
   @ExportFunction(readOnly = true,
-    description = "Return the path expression to this point in the given file, or null if it cannot be computed")
+    description = "Return the path expression to this point in the given file")
   def pathTo(path: String, kind: String, lineFrom1: Int, colFrom1: Int): String = {
     val nodeO = nodeAt(path, kind, lineFrom1, colFrom1)
     nodeO.collect {
       case n: AddressableTreeNode => n.address.dropWhile(_ != '/')
-    }.orNull
+    }.getOrElse {
+      // Return the path to the file if it's valid, even if we can't resolve a structure within it
+      if (fileExists(path) && DefaultTypeRegistry.findByName(kind).isDefined)
+        pathToRootContainer(path, kind)
+      else null
+    }
   }
 
-  private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
-    import com.atomist.tree.pathexpression.PathExpressionParser._
+  private def pathToRootContainer(path: String, kind: String) = s"/File()[@path='$path']/$kind()"
 
-    val pexpr = s"//File()[@path='$path']/$kind()"
+  private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
+
+    val pexpr = pathToRootContainer(path, kind)
     context.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.size == 1 =>
         val theNode = nodes.head

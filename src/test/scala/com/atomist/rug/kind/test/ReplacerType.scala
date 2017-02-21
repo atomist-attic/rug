@@ -1,13 +1,14 @@
 package com.atomist.rug.kind.test
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
 import org.springframework.beans.factory.annotation.Autowired
 
 // Only used in tests
-class ReplacerType(ev: Evaluator) extends Type(ev) with ReflectivelyTypedType {
+class ReplacerType(ev: Evaluator)
+  extends Type(ev) with ReflectivelyTypedType {
 
   def this() = this(DefaultEvaluator)
 
@@ -18,12 +19,12 @@ class ReplacerType(ev: Evaluator) extends Type(ev) with ReflectivelyTypedType {
   @Autowired
   protected def viewClass: Class[StringReplacingMutableView] = classOf[StringReplacingMutableView]
 
-  protected def listViews(context: TreeNode): Seq[MutableView[_]] = context match {
+  protected def listViews(context: GraphNode): Seq[MutableView[_]] = context match {
     case pmv: ProjectMutableView =>
       pmv.currentBackingObject.allFiles.filter(f => f.path.contains(".java"))
         .map(f => new StringReplacingMutableView(f, pmv))
     case _ => Nil
   }
 
-  def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = Option(listViews(context))
+  def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = Option(listViews(context))
 }

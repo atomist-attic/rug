@@ -64,7 +64,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     expressionEngine.evaluate(javaFileNode, expr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
-        assert(nodes.head.value === "ThePlaneHasFlownIntoTheMountain")
+        assert(nodes.head.asInstanceOf[TreeNode].value === "ThePlaneHasFlownIntoTheMountain")
       case wtf => fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(javaFileNode))
     }
   }

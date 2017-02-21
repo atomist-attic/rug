@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
 /**
@@ -9,9 +9,9 @@ import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
   */
 object ExecutionResult {
 
-  type ExecutionResult = Either[String, List[TreeNode]]
+  type ExecutionResult = Either[String, List[GraphNode]]
 
-  def apply(nodes: Seq[TreeNode]): ExecutionResult =
+  def apply(nodes: Seq[GraphNode]): ExecutionResult =
     Right(nodes.distinct.toList)
 
   val empty: ExecutionResult = Right(Nil)
@@ -21,7 +21,7 @@ object ExecutionResult {
     case Left(err) => s"[$err]"
   }
 
-  def show(n: TreeNode): String = {
+  def show(n: GraphNode): String = {
     s"${n.nodeName}:${n.nodeTags}"
   }
 
@@ -29,7 +29,7 @@ object ExecutionResult {
 
 object ExpressionEngine {
 
-  type NodePreparer = TreeNode => TreeNode
+  type NodePreparer = GraphNode => GraphNode
 
 }
 
@@ -51,7 +51,7 @@ trait ExpressionEngine {
     *                     are called on them. This can be used to set state.
     * @return
     */
-  def evaluate(node: TreeNode,
+  def evaluate(node: GraphNode,
                parsed: PathExpression,
                typeRegistry: TypeRegistry,
                nodePreparer: Option[NodePreparer] = None

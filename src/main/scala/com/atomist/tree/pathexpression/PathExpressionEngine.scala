@@ -1,7 +1,8 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.TreeNode
+import com.atomist.graph.GraphNode
 import com.atomist.tree.pathexpression.ExecutionResult._
 
 /**
@@ -11,7 +12,7 @@ class PathExpressionEngine extends ExpressionEngine {
 
   import ExpressionEngine.NodePreparer
 
-  override def evaluate(node: TreeNode,
+  override def evaluate(node: GraphNode,
                         parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
@@ -20,11 +21,11 @@ class PathExpressionEngine extends ExpressionEngine {
     result
   }
 
-  private def evaluateAndReport(node: TreeNode,
+  private def evaluateAndReport(node: GraphNode,
                         parsed: PathExpression,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): (ExecutionResult, Seq[String]) = {
-    var report = Seq[String]()
+    val report = Seq[String]()
     def say(something: => String) = {} //report = report :+ something
 
     var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
@@ -39,7 +40,7 @@ class PathExpressionEngine extends ExpressionEngine {
           ExecutionResult(Nil)
         case Right(seq) =>
           say(s"checking ${seq.size} nodes for matches")
-          val kids: List[TreeNode] = seq
+          val kids: List[GraphNode] = seq
             .flatMap(kid =>
               locationStep.follow(kid, this, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)

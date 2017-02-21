@@ -1,9 +1,9 @@
 package com.atomist.rug.runtime.plans;
 
-import com.atomist.rug.spi.JavaHandlers.Instruction;
-import com.atomist.rug.spi.JavaHandlers.Response;
+import com.atomist.rug.spi.Handlers.Instruction;
+import com.atomist.rug.spi.Handlers.Response;
 
-public interface InstructionPlanner {
+public interface InstructionRunner {
 
     /**
      * Runs an instruction.

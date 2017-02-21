@@ -2,10 +2,10 @@ package com.atomist.rug.runtime.js.interop
 
 import java.util.Objects
 
-import com.atomist.rug.kind.core.FileType
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView}
 import com.atomist.rug.runtime.js.interop.NashornUtils._
-import com.atomist.rug.spi.{TypeProvider, Typed}
+import com.atomist.rug.spi.TypeProvider
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
@@ -21,7 +21,7 @@ class JavaScriptBackedTypeProvider(
 
   override def description: String = s"JavaScript-backed type [$name]"
 
-  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = {
     val r = jsTypeProvider.callMember("find", context)
     val nodes: Seq[TreeNode] = toScalaSeq(r).map(e =>
       new ScriptObjectBackedTreeNode(e.asInstanceOf[ScriptObjectMirror])

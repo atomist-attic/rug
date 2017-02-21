@@ -120,10 +120,9 @@ object ExercisePathExpression extends FlatSpec with Matchers {
   def exercisePathExpression(microgrammar: Microgrammar, pathExpressionString: String, input: String): List[TreeNode] = {
 
     val result = exercisePathExpressionInternal(microgrammar, pathExpressionString, input)
-
     result match {
       case Left(a) => fail(a)
-      case Right(b) => b
+      case Right(b) => b.map(_.asInstanceOf[TreeNode])
     }
   }
 

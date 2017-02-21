@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.grammar
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
@@ -7,7 +8,6 @@ import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text._
 import com.atomist.tree.content.text.grammar.MatchListener
-import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 import scala.collection.JavaConverters._
@@ -30,7 +30,7 @@ abstract class TypeUnderFile
 
   override def runtimeClass: Class[_] = classOf[MutableContainerMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv
           .files

@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
--   Added support for Command, Event and Response Handlers. All return Plans.
+-   Added support for Command, Event and Response Handlers. All return Plans
+-   Added support for RugFunctions - parameterized JVM functions for Handlers
 
 ### CHANGED
 
+-   **BREAKING** Removed CommandRegistry and related usages
+-   **BREAKING** Renamed old RugFunction to RugDslFunction
 -   New text node structure. See [docs/treenodes.md]().
 -   **BREAKING** Removed ProjectOperationArguments. Use ParameterizedRug instead
 -   **BREAKING** Refactored loading of Rugs from archives. Now returns `Rugs`

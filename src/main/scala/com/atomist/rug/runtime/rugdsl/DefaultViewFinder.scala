@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.ParameterValues
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -69,7 +70,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           // TODO cache this
           val pe = new PathExpressionEngine()
           // TODO pass in NodePreparer?
-          val evaluated: Either[String, List[TreeNode]] = pe.evaluate(context, pex, DefaultTypeRegistry, None)
+          val evaluated: Either[String, List[GraphNode]] = pe.evaluate(context, pex, DefaultTypeRegistry, None)
           evaluated match {
             case Right(nodes) =>
               //nodes.map(tn => new MutableContainerTreeNodeMutableView(tn.asInstanceOf[MutableContainerTreeNode], context))

@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.core
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ExportFunction, _}
-import com.atomist.tree.TreeNode
 
 /**
   * Type representing a line within a file
@@ -16,7 +16,7 @@ class LineType
   /** Describe the MutableView subclass to allow for reflective function export */
   override def runtimeClass: Class[LineMutableView] = classOf[LineMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[LineMutableView]] = {
+  override def findAllIn(context: GraphNode): Option[Seq[LineMutableView]] = {
     context match {
       case fa: FileMutableView =>
         Some(fa.originalBackingObject.content.lines

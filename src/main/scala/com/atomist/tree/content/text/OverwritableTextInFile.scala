@@ -100,9 +100,9 @@ class OverwritableTextInFile(dynamicType: String,
     nodeAndPathAt(pos) flatMap {
       case NodeAndPath(atb: AddressableTreeNode, _) => Some(atb)
       case NodeAndPath(_, path) =>
-        (path.reverse collect {
+        (path collect {
           case atb: AddressableTreeNode => atb
-        }).headOption
+        }).lastOption
     }
   }
 

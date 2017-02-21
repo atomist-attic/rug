@@ -24,7 +24,7 @@ import scala.util.parsing.input.{CharSequenceReader, OffsetPosition, Positional}
   */
 abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
-  val CComment = """/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/"""
+  val CComment = """/\*[\S\s]*?\*/"""
 
   val HashLineComment = """\#.*[\n|\r\n]"""
 

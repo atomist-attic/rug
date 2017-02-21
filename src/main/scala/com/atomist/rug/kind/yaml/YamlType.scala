@@ -1,9 +1,9 @@
 package com.atomist.rug.kind.yaml
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
 object YamlType {
 
@@ -24,7 +24,7 @@ class YamlType(
 
   override def runtimeClass = classOf[YamlMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.originalBackingObject.allFiles
           .filter(f => f.name.endsWith(yamlExtension))

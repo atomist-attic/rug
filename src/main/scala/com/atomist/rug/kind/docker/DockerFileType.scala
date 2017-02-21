@@ -1,5 +1,6 @@
 package com.atomist.rug.kind.docker
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
@@ -19,7 +20,7 @@ class DockerFileType(
 
   override def runtimeClass = classOf[DockerFileMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[TreeNode]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .allFiles

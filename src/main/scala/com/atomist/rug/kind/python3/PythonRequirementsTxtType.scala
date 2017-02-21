@@ -1,12 +1,12 @@
 package com.atomist.rug.kind.python3
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.FileArtifact
-import com.atomist.tree.TreeNode
 
 class RequirementsType(
                         evaluator: Evaluator
@@ -20,7 +20,7 @@ class RequirementsType(
 
   override def runtimeClass = classOf[MutableContainerMutableView]
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .files
@@ -66,7 +66,7 @@ class PythonRequirementsTxtType(
 
   override def description = "Python requirements text file"
 
-  override def findAllIn(context: TreeNode): Option[Seq[MutableView[_]]] = context match {
+  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>
         Some(pmv.currentBackingObject
           .findFile(RequirementsTextPath)

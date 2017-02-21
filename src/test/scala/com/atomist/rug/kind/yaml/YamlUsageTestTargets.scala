@@ -114,7 +114,8 @@ object YamlUsageTestTargets {
       |comments: >
       |    Late afternoon is best.
       |    Backup contact is Nancy
-      |    Billsmer @ 338-4338.""".stripMargin
+      |    Billsmer @ 338-4338.
+      |""".stripMargin
 
   val YamlOrgStart2 =
     """
@@ -145,6 +146,7 @@ object YamlUsageTestTargets {
       #comments: |
       #    Late afternoon is best.
       #    Backup contact is Nancy
-      #    Billsmer @ 338-4338.""".stripMargin('#')
+      #    Billsmer @ 338-4338.
+      #""".stripMargin('#')
 
 }

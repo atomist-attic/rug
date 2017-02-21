@@ -73,8 +73,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
          |end
       """.stripMargin
     val r = runProgAndCheck(prog,
-      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlUsageTestTargets.YamlOrgStart)),
-      1)
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlUsageTestTargets.YamlOrgStart)), 1)
     assert(r.findFile("x.yml").get.content == YamlUsageTestTargets.YamlOrgStart.replace("Chris", "Christine"))
   }
 
@@ -82,7 +81,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     modify("ChangeRaw.ts", singleAS) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(theFile.content)
+        // println(theFile.content)
         assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
@@ -93,23 +92,25 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     modify("ChangeQuoted.ts", singleAS) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(theFile.content)
+        // println(theFile.content)
         assert(theFile.content === xYaml.replace("Bohemian Rhapsody", "White Rabbit"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
-  it should "change | string" in pendingUntilFixed {
+  it should "change | string" in {
     val oldComment =
       """|
         #    Late afternoon is best.
         #    Backup contact is Nancy
-        #    Billsmer @ 338-4338.""".stripMargin('#')
+        #    Billsmer @ 338-4338.
+        #""".stripMargin('#')
     val newComment = "This is the new comment"
     val rawNewComment =
       s"""|
-         #    $newComment""".stripMargin('#')
+          #    $newComment
+          #""".stripMargin('#')
 
     modify("ChangePipe.ts",
       SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart2)),
@@ -123,44 +124,75 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-  it should "change > string" in pendingUntilFixed {
+  it should "change | string with multi-line string" in {
+    val oldComment =
+      """|
+        #    Late afternoon is best.
+        #    Backup contact is Nancy
+        #    Billsmer @ 338-4338.
+        #""".stripMargin('#')
+    val newComment =
+      """#Early morning is best.
+         #    Backup contact is Bob
+         #    Billdad @ 338-4338.
+         #""".stripMargin('#')
+    val rawNewComment =
+      s"""|
+          #    $newComment
+          #""".stripMargin('#')
+
+    modify("ChangePipe.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart2)),
+      Map("newComment" -> newComment)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content === YamlOrgStart2.replace(oldComment, rawNewComment))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  it should "change > string" in {
     val oldComment =
       """>
         |    Late afternoon is best.
         |    Backup contact is Nancy
-        |    Billsmer @ 338-4338.""".stripMargin
+        |    Billsmer @ 338-4338.
+        |""".stripMargin
     val newComment = "This is the new comment"
     val rawNewComment =
       s""">
-         |    $newComment""".stripMargin
+         |    $newComment
+         |""".stripMargin
 
     modify("ChangeGt.ts",
       SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)),
       Map("newComment" -> newComment)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(rawNewComment)
-        println("1 " + theFile.content)
-        println("2 " + YamlOrgStart.replace(oldComment, rawNewComment))
         assert(theFile.content === YamlOrgStart.replace(oldComment, rawNewComment))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 
-  it should "change > string with multi-line string" in pendingUntilFixed {
+  it should "change > string with multi-line string" in {
     val oldComment =
       """>
         |    Late afternoon is best.
         |    Backup contact is Nancy
-        |    Billsmer @ 338-4338.""".stripMargin
+        |    Billsmer @ 338-4338.
+        |""".stripMargin
     val newComment =
       """|Early morning is best.
          |    Backup contact is Bob
-         |    Billdad @ 338-4338.""".stripMargin
+         |    Billdad @ 338-4338.
+         |""".stripMargin
     val rawNewComment =
       s""">
-         |    $newComment""".stripMargin
+         |    $newComment
+         |""".stripMargin
 
     modify("ChangeGt.ts",
       SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)),
@@ -178,8 +210,8 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     modify("AddToSequence.ts", singleAS) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(theFile.content)
-        // assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
+        // println(theFile.content)
+        assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
         assert(theFile.content.contains("Not There"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")

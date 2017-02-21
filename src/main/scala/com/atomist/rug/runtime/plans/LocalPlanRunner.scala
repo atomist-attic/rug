@@ -31,7 +31,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
           Some(MessageDeliveryError(message, error))
         case ScalaSuccess(_) =>
           val msg = s"Delivered message: ${message.body}"
-          logger.info(msg)
+          logger.debug(msg)
           None
       }
     }
@@ -53,7 +53,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
       case ScalaSuccess(response) =>
         val msg = s"Ran instruction: ${respondable.instruction} and got response: $response"
-        logger.info(msg)
+        logger.debug(msg)
         val callbacks: Seq[Callback] = response match {
           case Response(Success, _, _, Some(plan: Plan)) =>
             Seq(Some(plan), respondable.onSuccess).flatten
@@ -68,7 +68,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
               Some(CallbackError(callback, error))
             case ScalaSuccess(nestedPlanExecutionOption) =>
               val msg = s"Ran $callback after ${respondable.instruction}"
-              logger.info(msg)
+              logger.debug(msg)
               nestedPlanExecutionOption
           }
         }

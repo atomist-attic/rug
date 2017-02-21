@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.interop.RugContext
 import com.atomist.rug.runtime.plans.MappedParameterSupport
 import com.atomist.rug.spi.Handlers.Plan
 import jdk.nashorn.api.scripting.ScriptObjectMirror

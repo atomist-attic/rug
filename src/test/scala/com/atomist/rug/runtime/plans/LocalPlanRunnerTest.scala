@@ -102,15 +102,15 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with DiagrammedAssertion
     verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), "plan input")
     verify(nestedPlanRunner).run(Plan(Seq(Message(MessageText("nested plan"), Nil, None)), Nil), "edit4")
 
-    verify(logger).info("Delivered message: MessageText(message1)")
-    verify(logger).info("Ran instruction: Edit(Detail(edit1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit1))")
-    verify(logger).info("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit2))")
-    verify(logger).info("Ran instruction: Edit(Detail(edit3,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit3))")
-    verify(logger).info("Ran instruction: Edit(Detail(edit4,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit4))")
-    verify(logger).info("Ran instruction: Respond(Detail(respond1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(respond1))")
-    verify(logger).info("Ran Message(MessageText(pass),List(),None) after Edit(Detail(edit2,None,List(),None))")
-    verify(logger).info("Ran Respond(Detail(respond1,None,List(),None)) after Edit(Detail(edit3,None,List(),None))")
-    verify(logger).info("Ran Plan(List(Message(MessageText(nested plan),List(),None)),List()) after Edit(Detail(edit4,None,List(),None))")
+    verify(logger).debug("Delivered message: MessageText(message1)")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit1))")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit2))")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit3,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit3))")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit4,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit4))")
+    verify(logger).debug("Ran instruction: Respond(Detail(respond1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(respond1))")
+    verify(logger).debug("Ran Message(MessageText(pass),List(),None) after Edit(Detail(edit2,None,List(),None))")
+    verify(logger).debug("Ran Respond(Detail(respond1,None,List(),None)) after Edit(Detail(edit3,None,List(),None))")
+    verify(logger).debug("Ran Plan(List(Message(MessageText(nested plan),List(),None)),List()) after Edit(Detail(edit4,None,List(),None))")
 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
@@ -133,7 +133,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with DiagrammedAssertion
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsFailureResponseBody)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 120.seconds)
     val expectedPlanLog = Set(
       InstructionResponse(Edit(Detail("edit2", None, Nil, None)), Response(Failure, None, Some(0), Some("edit2")))
     )
@@ -143,8 +143,8 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with DiagrammedAssertion
     inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), "plan input")
     inOrder.verify(messageDeliverer).deliver(Message(MessageText("fail"), Nil, None), "edit2")
 
-    verify(logger).info("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Failure,None,Some(0),Some(edit2))")
-    verify(logger).info("Ran Message(MessageText(fail),List(),None) after Edit(Detail(edit2,None,List(),None))")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Failure,None,Some(0),Some(edit2))")
+    verify(logger).debug("Ran Message(MessageText(fail),List(),None) after Edit(Detail(edit2,None,List(),None))")
 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
@@ -226,7 +226,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with DiagrammedAssertion
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
-    verify(logger).info("Ran instruction: Edit(Detail(edit,None,List(),None)) and got response: Response(Success,None,Some(0),None)")
+    verify(logger).debug("Ran instruction: Edit(Detail(edit,None,List(),None)) and got response: Response(Success,None,Some(0),None)")
     verify(logger).error("Failed to run Plan(List(Message(MessageText(fail),List(),None)),List()) after Edit(Detail(edit,None,List(),None)) - Uh oh!")
 
     verifyNoMoreInteractions(messageDeliverer, logger)

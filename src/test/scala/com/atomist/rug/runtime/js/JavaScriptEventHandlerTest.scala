@@ -1,16 +1,20 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
-import com.atomist.param.SimpleParameterValue
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptRugArchiveReader}
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.js.interop.LocalRugContext
+import com.atomist.rug.runtime.plans.{LocalInstructionRunner, LocalPlanRunner}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
+
+import scala.concurrent.duration._
+import scala.concurrent.Await
 
 object JavaScriptEventHandlerTest {
 
@@ -138,6 +142,22 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
       )
     ))
     assert(actualPlan == expectedPlan)
+  }
+  it should "return the right failure if a rug is not found" in {
+    val ts = ClassPathArtifactSource.toArtifactSource("com/atomist/project/archive/MyHandlers.ts")
+    val moved = ts.withPathAbove(".atomist/handlers")
+    val as = TypeScriptBuilder.compileWithModel(moved)
+    val reader = new JavaScriptRugArchiveReader()
+    val ops = reader.find(as, None, Nil)
+    val handler = ops.commandHandlers.find(p => p.name == "LicenseAdder").get
+    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("license","agpl")))
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil,null,null))
+    val response = Await.result(runner.run(plan.get, "blah"),120.seconds)
+    assert(response.log.size === 1)
+    response.log.foreach {
+      case error: InstructionError => assert(error.error.getMessage === "Cannot find RugFunction HTTP")
+      case _ =>
+    }
   }
 }
 

@@ -30,7 +30,7 @@ case class NodesWithTag(tag: String)
   private def findMeUnder(tn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
     tn.relatedNodes.filter(eligibleNode) match {
       case Nil =>
-        childResolver(typeRegistry).flatMap(cr => cr.findAllIn(tn)).getOrElse(Nil)
+        childResolver(typeRegistry).flatMap(_.findAllIn(tn)).getOrElse(Nil)
       case kids => kids
     }
 

@@ -8,8 +8,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.{OverwritableTextTreeNode, TextTreeNodeLifecycle}
-import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
+import com.atomist.tree.content.text.TextTreeNodeLifecycle
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -26,9 +25,9 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
   protected val expressionEngine: ExpressionEngine = new PathExpressionEngine
 
   /**
-    * Validate all files of the type we're interested in in the given result
+    * Validate all files of the type we're interested in in the given result.
     *
-    * @param r result artifactsource
+    * @param r result ArtifactSource
     */
   protected def validateResultContainsValidFiles(r: ArtifactSource): Unit = {
     val filesOfType = r.allFiles.filter(typeBeingTested.isOfType)
@@ -42,7 +41,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
   }
 
   /**
-    * Require successful evaluation of this expression against the given root node
+    * Require successful evaluation of this expression against the given root node.
     */
   protected def evaluatePathExpression(tn: GraphNode, pe: String): Seq[GraphNode] = {
     import com.atomist.tree.pathexpression.PathExpressionParser._

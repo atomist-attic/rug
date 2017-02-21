@@ -31,6 +31,9 @@ Valentine release
 
 ### Added
 
+-   Added YamlType and YamlFileType classes to replace YmlType and YmlFileType respectively. Deprecated
+    the latter classes.
+
 -   Support PathExpressions that start with a NodesWithTag
 
 -   Support for `contains` and `starts-with` path expression functions

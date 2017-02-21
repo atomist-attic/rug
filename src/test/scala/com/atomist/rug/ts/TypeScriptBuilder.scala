@@ -12,7 +12,7 @@ import com.atomist.source.filter.ArtifactFilter
 /**
   * Helps us compile TypeScript archives
   * in a node_modules directory that was copied there by a
-  * Maven goal called copy-ts, which takes it from src/main/typescript
+  * Maven goal called copy-ts, which takes it from src/main/typescript.
   */
 object TypeScriptBuilder {
 
@@ -23,8 +23,10 @@ object TypeScriptBuilder {
     val generator = new TypeScriptInterfaceGenerator
     val output = generator.generate("stuff", SimpleParameterValues(Map(generator.OutputPathParam -> "Core.ts")))
     val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/main/typescript")), new ArtifactFilter {
-      override def apply(s: String) = {!s.endsWith(".js")}
-    }) // THIS ONLY WORKS IN TESTS NOT IN PRODUCTION BY DESIGN
+      override def apply(s: String) =
+        !s.endsWith(".js")
+    })
+    // THIS ONLY WORKS IN TESTS NOT IN PRODUCTION BY DESIGN
     val compiled = compiler.compile(src.underPath("node_modules/@atomist").withPathAbove(".atomist") + output.withPathAbove(".atomist/rug/model"))
     compiled.underPath(".atomist").withPathAbove(".atomist/node_modules/@atomist")
   }

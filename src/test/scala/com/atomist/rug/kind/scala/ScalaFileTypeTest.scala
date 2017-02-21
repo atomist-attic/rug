@@ -83,7 +83,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         val mut = nodes.head.asInstanceOf[UpdatableTreeNode]
         mut.update(newException)
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)
@@ -126,7 +126,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
           case _ =>
         }
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceAll("ThePlaneHasFlownIntoTheMountain", newException)
@@ -155,7 +155,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
         //println(terminals)
         terminals(1).asInstanceOf[UpdatableTreeNode].update(newException)
       case wtf =>
-        fail(s"Expression didn't match [$wtf]. The tree was " + TreeNodeUtils.toShorterString(scalaFileNode))
+        fail(s"Expression didn't match [$wtf]. The tree was ${TreeNodeUtils.toShorterString(scalaFileNode)}")
     }
 
     val newContent = Exceptions.content.replaceFirst("ThePlaneHasFlownIntoTheMountain", newException)

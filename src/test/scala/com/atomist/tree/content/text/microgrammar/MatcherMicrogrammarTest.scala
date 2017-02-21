@@ -410,7 +410,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
     //ml.skipped.size should be > (0)
   }
 
-  it should "edit yml" in {
+  it should "edit yaml" in {
     val input =
       """
         |language: java
@@ -423,7 +423,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
         |  - secure: nnWB6oO1NDgLHLCpiDiuWHnfh3t66KkE0K6Z1rbYv/uGMAMP+8R/YkrRJFpRRB2YoOCTJ+nxefjeEJTqlXlz9+tNLO90ctxyabH6QMnCT+KC/S237GxjczXXP1eFI5r8PKuY1Hdf7G1YIFhH9RKS8lFJjDbV4IX70hFJynj6lQhu/eLhjh6CRFpWPCFHrZd1k3OVVQ4WHfumKpBxHp/0hAe+BFLO3HlIuZYbyChLWzvYpc0yPRTOd82i2jZ+JUotlQcZ5ttyvCj4QjCNjPvg6zjcpPo+qK7Oh9R5wvYHmDkOmjSPO83COz0uvFO1XBKuINLJM6Iwc7Aw8wptmDxTlxcKbf7wPB8r7KWq6uT2WdrG/euUtI76k137SZOx4BmgJARuUr6FXyOjzoba10531O3T9bzIgXbxcR50NU5UWpMLqjgYfNTezs9PtQLXZMBxMYeCsVt6VwxCYhDR8lPcq3+EjOS8iMxO3jnIqY2qawOMYE4iofY/wUv/uMWP5z+A5YE8fjjvrVV1kGCLK/1OBAfcnA2OktD3OrwNmz9kPulwn5f+YHyLQHCZHsbyovrGwOahN/qV1I+/zMAiRsevrI67JiOerAf6efQCvtPKmi8ZvM6YMksjbwZvQqiANi+dOMk5W7zr0GVmO2QiZ+5gFRB/Nr486jo+Xm0/ZZwzlj0=
         |
       """.stripMargin
-    val ymlKeys: Microgrammar = {
+    val yamlKeys: Microgrammar = {
       val key: Matcher = Regex("[A-Za-z_]+", Some("key"))
       val value = Regex("[A-Za-z0-9\\-]+", Some("value"))
       val pair = "-" ~? key ~? Alternate(":", "=") ~? value
@@ -431,7 +431,7 @@ class MatcherMicrogrammarTest extends FlatSpec with Matchers {
       new MatcherMicrogrammar(envList)
 
     }
-    val m = MatcherMicrogrammarTest.readyMatchesFromString(ymlKeys.findMatches(input), input)
+    val m = MatcherMicrogrammarTest.readyMatchesFromString(yamlKeys.findMatches(input), input)
     assert(m.size === 1)
     //    println(TreeNodeUtils.toShorterString(m.head))
     //    println(s"Has ${m.head.fieldValues.size} field values: ${m.head.fieldValues}")

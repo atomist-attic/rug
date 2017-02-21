@@ -30,7 +30,7 @@ class PathExpressionEngine extends ExpressionEngine {
 
     var nodesToApplyNextStepTo: ExecutionResult = ExecutionResult(List(node))
     for (locationStep <- parsed.locationSteps) {
-      say(s"Checking location step ${locationStep}")
+      say(s"Checking location step $locationStep")
       val nextNodes = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
          // say("why bother with a special case")

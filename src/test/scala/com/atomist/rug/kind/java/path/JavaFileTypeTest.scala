@@ -2,13 +2,12 @@ package com.atomist.rug.kind.java.path
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
-import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.{ParentAwareTreeNode, TreeNode}
-import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, PositionedMutableContainerTreeNode}
+import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.content.text.{FormatInfo, OverwritableTextTreeNode}
 import com.atomist.tree.pathexpression.PathExpressionParser
 import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.{ParentAwareTreeNode, TreeNode}
 
 class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
@@ -33,10 +32,6 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val parsedAgain = parseAndPad(StringFileArtifact(HelloWorldJava.path, parsedValue))
     assert(parsedAgain === parsedValue)
   }
-
-  it should "allow field to be added conveniently" is pending
-
-  it should "allow method to be added conveniently" is pending
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val javas = typeBeingTested.findAllIn(helloWorldProject)

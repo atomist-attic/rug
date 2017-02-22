@@ -72,4 +72,44 @@ object Python3ParserTest {
       |if __name__ == "__main__":
       |    app.run()
     """.stripMargin
+
+  val pythonClasses =
+    """
+      | class MyClass:
+      |   pass
+      |
+      | class MySubClass(MyClass):
+      |   pass
+      |
+      | class OtherDeprecatedClass(object):
+      |   pass
+    """.stripMargin
+
+  val pythonFunctions =
+    """
+      | def echo(value_without_a_type, *args, **kwargs):
+      |   pass
+      |
+      | def say_colour(no_type_defined, colour: str) -> str:
+      |   return "This is %s" % colour
+      |
+      | class AClass:
+      |   def __init__(self):
+      |     pass
+      |
+      |   def make_noise(self, sound: str):
+      |     print(sound)
+      |
+      | lambda x, y: x if y == 0 else 1
+    """.stripMargin
+
+  val importStmts =
+    """
+      | import os, os.path
+      | from itertools import *
+      | from functools import (cmp_to_key, \
+      |   lru_cache)
+      | from base64 import b64encode as encode
+    """.stripMargin
+
 }

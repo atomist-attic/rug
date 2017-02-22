@@ -59,73 +59,28 @@ class OverwritableTextInFile(dynamicType: String,
 
   override def childrenNamed(key: String): Seq[TreeNode] = visibleChildren.filter(_.nodeName == key)
 
-  private case class NodeAndPath(node: TreeNode, path: Seq[TreeNode])
-
-  private def terminalDescendants: Seq[NodeAndPath] = {
-    def descs(f: OverwritableTextTreeNode, path: Seq[TreeNode]): Seq[NodeAndPath] = {
-      f.allKidsIncludingPadding.flatMap {
-        case d: OverwritableTextTreeNode if d.childCount == 0 =>
-          // Special case, it's hiding a padding node
-          Seq(NodeAndPath(d, path))
-        case d: OverwritableTextTreeNode =>
-          descs(d, path :+ d)
-        case n => Seq(NodeAndPath(n, path))
-      }
-    }
-
-    allKids.flatMap {
-      case d: OverwritableTextTreeNode =>
-        descs(d, Seq(this))
-      case n => Seq(NodeAndPath(n, Seq(this)))
-    }
-  }
-
-
   /**
     * Return the node at this position in the file, if known
     */
-  private def nodeAndPathAt(pos: InputPosition): Option[NodeAndPath] = {
-    val stringToLeft = new StringBuilder
-
-    val leftFields = ListBuffer.empty[NodeAndPath]
-    var done = false
-
-    for {
-      n <- terminalDescendants
-      if !done
-    } {
-      if (stringToLeft.size < pos.offset)
-        stringToLeft.append(n.node.value)
-      else
-      // Take the next one in this case
-        done = true
-      leftFields.append(n)
-    }
-
-    //println(leftFields.map(_.node).map(n => s"${n.nodeName}:${n.significance}:${n.getClass.getSimpleName}:[${n.value.take(50)}]").mkString("\n"))
-
-    require(value.startsWith(stringToLeft), s"Bad prefix calculating nodeAndPathAt [$stringToLeft] in [$value]")
-    // Back up to the most general node with this value if we're too specific
-    leftFields.lastOption.map(np => {
-      // We know there is one. We want the first one in the path with the same value
-      val earliest = np.path.find(n => n.value == np.node.value)
-      earliest.map(found => {
-        NodeAndPath(found, np.path.takeWhile(n => n != found))
-      }).getOrElse(np)
-    })
-  }
-
-  /**
-    * Try to find an addressable node at this position in the file
-    */
   def nodeAt(pos: InputPosition): Option[AddressableTreeNode] = {
-    nodeAndPathAt(pos) flatMap {
-      case NodeAndPath(atb: AddressableTreeNode, _) => Some(atb)
-      case NodeAndPath(_, path) =>
-        (path collect {
-          case atb: AddressableTreeNode => atb
-        }).lastOption
+
+    def inner(mostUsefulSoFar: Option[AddressableTreeNode], remainingOffset: Int, children: Seq[TreeNode]): Option[AddressableTreeNode] = {
+      def sameValueAsContainingNodeAbove(tn: TreeNode) = mostUsefulSoFar.exists(_.value == tn.value)
+      val firstChild = children.head
+      val others = children.drop(1)
+      firstChild match {
+        case _ if firstChild.value.length <= remainingOffset => // this is not the child I'm looking for
+          inner(mostUsefulSoFar, remainingOffset - firstChild.value.length, others)
+        case lessInteresting : OverwritableTextTreeNode if sameValueAsContainingNodeAbove(lessInteresting) =>
+          inner(mostUsefulSoFar, remainingOffset, lessInteresting.allKidsIncludingPadding)
+        case moreInteresting : OverwritableTextTreeNode =>
+          inner(Some(moreInteresting), remainingOffset, moreInteresting.allKidsIncludingPadding)
+        case unaddressable =>
+          mostUsefulSoFar
+      }
     }
+
+    inner(None, pos.offset, allKids)
   }
 
   /*

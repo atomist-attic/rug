@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{RugContext, jsContextMatch, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}

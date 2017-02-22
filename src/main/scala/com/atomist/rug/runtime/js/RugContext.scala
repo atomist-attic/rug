@@ -1,5 +1,6 @@
-package com.atomist.rug.runtime.js.interop
+package com.atomist.rug.runtime.js
 
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
 

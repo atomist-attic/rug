@@ -46,10 +46,10 @@ class LicenseAdder implements HandleCommand{
 
   handle(command: HandlerContext) : Plan {
     let result = new Plan()
-    var match: Match<TreeNode,Project>; //command.pathExpressionEngine().evaluate<TreeNode,Project>("/Team()/Owns::Org()/Has::Repo()")
-    match.matches().forEach(project => {
-      result.add({instruction: {name: "blah", kind: "editor", project: project}})
-    })
+    result.add({instruction: {kind: "execute",
+                    name: "HTTP",
+                    parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}},
+                    onError: {text: "No kitties for you today!"}})
     return result;
   }
 }

@@ -4,8 +4,9 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
+import com.atomist.rug.BadPlanException
 import com.atomist.rug.runtime._
-import com.atomist.rug.runtime.js.interop.RugContext
+import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
@@ -27,7 +28,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
   private def doWithProjectName(instruction: Instruction, action: (String) => Response) = {
     instruction.detail.projectName match {
       case Some(projectName) => action(projectName)
-      case _ => Response(Failure, None, None, Some(s"Project name required for $instruction."))
+      case _ => throw new BadPlanException(s"Project name required for $instruction.")
     }
   }
 
@@ -37,7 +38,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
       case Execute(detail) =>
         rugFunctionRegistry.find(detail.name) match {
           case Some(fn) => fn.run(SimpleParameterValues(detail.parameters))
-          case _ => Response(Failure,None, None, Some(s"Cannot find RugFunction ${detail.name}"))
+          case _ => throw new BadPlanException(s"Cannot find RugFunction ${detail.name}")
         }
       case _ =>
         findMatch(rugs, instruction) match {
@@ -67,10 +68,11 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
               case response: InstructionResponse =>
                 val planOption = rug.handle(response, parameters)
                 Response(Success, None, None, planOption)
-              case _ =>
-                Response(Failure, None, None, Some("Callback input was not recognized."))
+              case c =>
+                throw new BadPlanException(s"Callback input was not recognized: $c")
             }
-          case rug => Response(Failure, None, None, Some(s"Cannot execute rug $rug."))
+          case Some(rug) => throw new BadPlanException(s"Unrecognized rug: $rug")
+          case None => throw new BadPlanException(s"Could not find rug with name: ${instruction.detail.name}")
         }
     }
   }

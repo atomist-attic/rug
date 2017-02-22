@@ -7,6 +7,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
+import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi._
 import com.atomist.tree.TreeNode

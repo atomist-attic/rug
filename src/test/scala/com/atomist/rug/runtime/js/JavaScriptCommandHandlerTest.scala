@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
-import com.atomist.rug.runtime.js.interop.{LocalRugContext, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeMaterializer

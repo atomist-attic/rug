@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime
 
-import com.atomist.rug.runtime.js.interop.RugContext
+import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Plan
 
 /**

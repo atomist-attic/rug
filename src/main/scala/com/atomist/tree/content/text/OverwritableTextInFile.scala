@@ -138,21 +138,13 @@ class OverwritableTextInFile(dynamicType: String,
   /*
    * called by descendants to find their position in the file
    */
-  def formatInfo(targetNode: TreeNode): FormatInfo = {
+  def formatInfoFromHere(stringsToLeft: String, childAsking : OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+    def valueBefore(child: OverwritableTextTreeNodeChild) = allKids.takeWhile(_ != childAsking).map(_.value).mkString
 
-    val terminals = terminalDescendants.map(_.node)
 
-    //    if (false && !descendants.contains(targetNode))
-    //      throw new IllegalStateException(s"I can't find target node descendant: $targetNode")
-
-    // Build string to the left
-    val leftFields = terminals.takeWhile(f => !(f == targetNode || TreeNodeOperations.isKnownAncestor(f, targetNode)))
-    println(leftFields.map(n => s"${n.nodeName}:${n.significance}:${n.getClass.getSimpleName}:[${n.value.take(50)}]").mkString("\n"))
-
-    val stringToLeft = leftFields
-      .map(_.value).mkString("")
+    val stringToLeft = valueBefore(childAsking) + stringsToLeft
     val leftPoint = FormatInfo.contextInfo(stringToLeft)
-    val rightPoint = FormatInfo.contextInfo(stringToLeft + targetNode.value)
+    val rightPoint = FormatInfo.contextInfo(stringToLeft + valueOfInterest)
     require(value.startsWith(stringToLeft), s"Bad prefix calculating formatInfo [$stringToLeft] in [$value]")
     FormatInfo(leftPoint, rightPoint)
   }

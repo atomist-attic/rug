@@ -112,10 +112,15 @@ class OverwritableTextInFile(dynamicType: String,
   }
 
   private def determineLocationStep(visibleChildren: Seq[TreeNode], forChild: TreeNode): String = {
-    val thisChildsName = forChild.nodeName
-    val childrenBeforeThisWithTheSameName = visibleChildren.takeWhile(_ != forChild).filter(_.nodeName == thisChildsName)
-    val thisChildsIndex = childrenBeforeThisWithTheSameName.size
-    // XPath indexes from 1
-    s"$dynamicType()[${thisChildsIndex + 1}]"
+    if(allKids.size == 1) {
+      // there's only one thing here. We parsed the whole file.
+      s"$dynamicType()"
+    } else {
+      // there are multiple matches here. Index
+      val childrenBeforeThis = visibleChildren.takeWhile(_ != forChild)
+      val thisChildsIndex = childrenBeforeThis.size
+      // XPath indexes from 1
+      s"$dynamicType()[${thisChildsIndex + 1}]"
+    }
   }
 }

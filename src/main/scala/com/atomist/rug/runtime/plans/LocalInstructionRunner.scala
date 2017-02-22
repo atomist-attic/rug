@@ -21,6 +21,7 @@ import com.atomist.rug.spi.RugFunctionRegistry
 class LocalInstructionRunner(rugs: Seq[AddressableRug],
                              projectManagement: ProjectManagement,
                              rugContext: RugContext,
+                             secretResolver: SecretResolver,
                              rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry)
   extends InstructionRunner
   with PlanSupport{
@@ -37,8 +38,9 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
     instruction match {
       case Execute(detail) =>
         rugFunctionRegistry.find(detail.name) match {
-          case Some(fn) => fn.run(SimpleParameterValues(detail.parameters))
-          case _ => throw new BadPlanException(s"Cannot find RugFunction ${detail.name}")
+          case Some(fn) => fn.run(SimpleParameterValues(
+            detail.parameters ++ secretResolver.resolveSecrets(fn.secrets)))
+          case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
         }
       case _ =>
         findMatch(rugs, instruction) match {

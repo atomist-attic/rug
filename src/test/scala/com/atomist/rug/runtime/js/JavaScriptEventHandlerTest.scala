@@ -151,11 +151,11 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val ops = reader.find(as, None, Nil)
     val handler = ops.commandHandlers.find(p => p.name == "LicenseAdder").get
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("license","agpl")))
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil,null,null))
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil,null,null,null))
     val response = Await.result(runner.run(plan.get, "blah"),120.seconds)
     assert(response.log.size === 1)
     response.log.foreach {
-      case error: InstructionError => assert(error.error.getMessage === "Cannot find RugFunction HTTP")
+      case error: InstructionError => assert(error.error.getMessage === "Cannot find Rug Function HTTP")
       case _ =>
     }
   }

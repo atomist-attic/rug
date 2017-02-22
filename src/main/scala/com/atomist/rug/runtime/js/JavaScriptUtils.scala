@@ -5,6 +5,7 @@ import javax.script.{ScriptContext, SimpleBindings}
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
+import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -83,6 +84,7 @@ trait JavaScriptUtils {
         }
     }
   }
+
 
   /**
     * Fetch a member by name

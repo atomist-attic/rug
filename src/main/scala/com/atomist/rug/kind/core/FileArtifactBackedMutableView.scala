@@ -16,8 +16,7 @@ import com.atomist.tree.content.text.OverwritableTextTreeNodeParent
 abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact,
                                              override val parent: ProjectMutableView)
  extends ViewSupport[FileArtifact](originalBackingObject: FileArtifact, parent)
-    with FileMetrics
-    with OverwritableTextTreeNodeParent {
+    with FileMetrics {
 
   override def nodeName: String = currentBackingObject.name
 

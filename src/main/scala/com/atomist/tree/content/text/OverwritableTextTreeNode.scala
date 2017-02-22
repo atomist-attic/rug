@@ -4,7 +4,7 @@ import com.atomist.rug.kind.core.FileArtifactBackedMutableView
 import com.atomist.rug.spi.{ExportFunction, MutableView, TypeProvider, Typed}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode.{Noise, Signal}
-import com.atomist.tree.{AddressableTreeNode, ContainerTreeNode, TreeNode, UpdatableTreeNode}
+import com.atomist.tree._
 
 trait OverwritableTextTreeNodeChild {
 
@@ -22,6 +22,8 @@ trait OverwritableTextTreeNodeParent extends TreeNode {
 
   def address: String
 
+  def formatInfoFromHere(stringToLeft: String, childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo
+
 }
 
 class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableTextTreeNode]) {
@@ -34,8 +36,8 @@ class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableText
   *
   * does not need a MutableView over it
   *
-  * @param name This node is addressable by this in a path expression
-  * @param allKids children include Padding nodes and more OverwritableTextTreeNodes.
+  * @param name           This node is addressable by this in a path expression
+  * @param allKids        children include Padding nodes and more OverwritableTextTreeNodes.
   * @param additionalTags This node is addressable by each of these, as tag()
   */
 class OverwritableTextTreeNode(name: String,
@@ -44,6 +46,7 @@ class OverwritableTextTreeNode(name: String,
   extends UpdatableTreeNode
     with ContainerTreeNode // tag
     with AddressableTreeNode // we conform, but we implement this here
+    with ParentAwareTreeNode
     with OverwritableTextTreeNodeChild
     with OverwritableTextTreeNodeParent {
 
@@ -83,7 +86,7 @@ class OverwritableTextTreeNode(name: String,
    */
 
   private var state: LifecyclePhase = Unready
-  private var _value: String = allKids.map(_.value).mkString("")
+  private var _value: String = allKids.map(_.value).mkString
 
   private[text] val allKidsIncludingPadding = allKids
 
@@ -155,7 +158,12 @@ class OverwritableTextTreeNode(name: String,
 
   @ExportFunction(readOnly = true, description = "Return the format info for the start of this structure in the file or null if not available")
   final def formatInfo: FormatInfo =
-    rootNode.formatInfo(this)
+    _parent.formatInfoFromHere("", this, value)
+
+  def formatInfoFromHere(stringSoFar: String, childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+    def valueBefore(child: OverwritableTextTreeNodeChild) = allKidsIncludingPadding.takeWhile(_ != childAsking).map(_.value).mkString
+    _parent.formatInfoFromHere(valueBefore(childAsking) + stringSoFar, this, valueOfInterest)
+  }
 
   def nodeAt(pos: InputPosition): Option[TreeNode] =
     rootNode.nodeAt(pos)

@@ -1,6 +1,5 @@
 package com.atomist.rug.runtime.plans
 
-import com.atomist.rug.spi.HandlerUtil
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
@@ -150,7 +149,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
 
-  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => HandlerUtil.drawEventLogs("events", log.toSeq)
+  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => PlanUtils.drawEventLogs("events", log.toSeq)
 
   it ("should handle error during message delivery") {
     val plan = Plan(

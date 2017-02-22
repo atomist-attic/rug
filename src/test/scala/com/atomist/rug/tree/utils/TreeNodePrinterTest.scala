@@ -1,5 +1,6 @@
 package com.atomist.rug.tree.utils
 
+import com.atomist.tree.utils.TreeNodePrinter
 import org.scalatest.{FlatSpec, Matchers}
 
 class TreeNodePrinterTest extends FlatSpec with Matchers {

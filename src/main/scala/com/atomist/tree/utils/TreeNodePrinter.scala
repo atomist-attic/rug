@@ -1,4 +1,4 @@
-package com.atomist.rug.tree.utils
+package com.atomist.tree.utils
 
 object TreeNodePrinter {
 

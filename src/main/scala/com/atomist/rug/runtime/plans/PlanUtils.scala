@@ -1,15 +1,17 @@
-package com.atomist.rug.spi
+package com.atomist.rug.runtime.plans
 
-import Handlers._
-import Instruction._
-import com.atomist.rug.tree.utils.TreeNodePrinter
-import com.atomist.rug.tree.utils.TreeNodePrinter.BabyTree
+import com.atomist.rug.spi.Handlers.Instruction._
+import com.atomist.tree.utils.TreeNodePrinter
+import com.atomist.tree.utils.TreeNodePrinter.BabyTree
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-object HandlerUtil {
+/**
+  * Print out Plans etc
+  */
+object PlanUtils {
 
   import com.atomist.rug.spi.Handlers._
 

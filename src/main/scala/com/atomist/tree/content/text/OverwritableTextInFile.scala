@@ -128,13 +128,6 @@ class OverwritableTextInFile(dynamicType: String,
     }
   }
 
-  /**
-    * Find the node at this position in the file
-    */
-  def rawNodeAt(pos: InputPosition): Option[TreeNode] = {
-    nodeAndPathAt(pos).map(np => np.node)
-  }
-
   /*
    * called by descendants to find their position in the file
    */

@@ -6,8 +6,6 @@ import com.atomist.source.ArtifactSource
 
 /**
   * Passed to evaluations of function invocations.
-
-  * @tparam T
   */
 trait FunctionInvocationContext[T] {
 

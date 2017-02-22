@@ -189,8 +189,6 @@ case class ParsedJavaScriptFunction(js: JavaScriptBlock) extends Predicate {
   }
 }
 
-case class SuccessBlock(message: String)
-
 trait ComparisonPredicate extends Predicate {
 
   def a: ToEvaluate

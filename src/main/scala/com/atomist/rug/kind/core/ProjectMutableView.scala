@@ -61,6 +61,9 @@ class ProjectMutableView(
 
   import ProjectMutableView._
 
+  @ExportFunction(readOnly = true, description = "Node content")
+  override def value: String = s"project:[$name]"
+
   override def toString: String =
     s"ProjectMutableView[name='$name'] around $currentBackingObject\n" +
       s"${ArtifactSourceUtils.prettyListFiles(currentBackingObject)}"

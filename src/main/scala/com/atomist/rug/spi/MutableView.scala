@@ -25,11 +25,12 @@ trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
 
   def addressableBackingObject: Any = originalBackingObject
 
-  override def value: String = toString
-
   def dirty: Boolean
 
   def currentBackingObject: T
+
+  @ExportFunction(readOnly = true, description = "Node content")
+  override def value: String = currentBackingObject.toString
 
   override def parent: MutableView[_]
 

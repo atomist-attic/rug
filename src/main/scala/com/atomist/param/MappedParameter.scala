@@ -5,7 +5,7 @@ package com.atomist.param
   *
   * See MappedParameters in Handlers.ts for examples.
   *
-  * @param handlerFieldName - name on the CommandHandler instance
-  * @param mappedName -
+  * @param localKey - name on the CommandHandler instance
+  * @param foreignKey - name known by some external source - say bot
   */
-case class MappedParameter (handlerFieldName: String, mappedName: String)
+case class MappedParameter (localKey: String, foreignKey: String)

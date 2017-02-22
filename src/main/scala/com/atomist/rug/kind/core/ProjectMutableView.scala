@@ -486,7 +486,6 @@ class ProjectMutableView(
   private def pathToRootContainer(path: String, kind: String) = s"/File()[@path='$path']/$kind()"
 
   private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
-
     val pexpr = pathToRootContainer(path, kind)
     ctx.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
       case Right(nodes) if nodes.size == 1 =>

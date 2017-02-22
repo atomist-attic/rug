@@ -44,6 +44,11 @@ trait TreeNode extends GraphNode {
     childNodeNames.toSeq.flatMap(name => childrenNamed(name))
 
   /**
+    * Convenient method to return whether this is a leaf node
+    */
+  def isLeaf: Boolean = childNodes.isEmpty
+
+  /**
     * Convenience method for Java callers and JavaScript
     */
   @ExportFunction(readOnly = true, description = "Children")
@@ -51,6 +56,8 @@ trait TreeNode extends GraphNode {
     import scala.collection.JavaConverters._
     childNodes.asJava
   }
+
+  def childCount: Int = childNodes.size
 
   /**
     * Is this tree node here to help other nodes

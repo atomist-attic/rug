@@ -50,6 +50,33 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
        |
     """.stripMargin)
 
+  val simpleCommandHandlerWithMappedParams =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    s"""
+       |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {CommandHandler, Parameter, MappedParameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
+       |
+       |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
+       |@Tags("kitty", "youtube", "slack")
+       |@Intent("show me kitties","cats please")
+       |class KittieFetcher implements HandleCommand{
+       |
+       |  @MappedParameter("atomist/repo")
+       |  name: string
+       |
+       |  handle(ctx: HandlerContext) : Plan {
+       |
+       |    if(this.name != "el duderino") {
+       |      throw new Error("This will not stand");
+       |    }
+       |    let result = new Plan()
+       |    return result;
+       |  }
+       |}
+       |
+       |export let command = new KittieFetcher();
+       |
+    """.stripMargin)
+
   val simpleCommandHandlerWitPresentable =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
        |import {HandleCommand, MappedParameters, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
@@ -170,5 +197,13 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers{
     assertThrows[MissingParametersException]{
       handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues.Empty)
     }
+  }
+
+  it should "set mapped properties correctly if present" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithMappedParams))
+    val finder = new JavaScriptCommandHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val handler = handlers.head
+    handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("name", "el duderino")))
   }
 }

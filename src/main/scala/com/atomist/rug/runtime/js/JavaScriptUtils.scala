@@ -53,7 +53,7 @@ trait JavaScriptUtils {
     jsc.engine.eval("Object.create(rug);", bindings).asInstanceOf[ScriptObjectMirror]
   }
   /**
-    * Make sure we only set fields if they've been decorated with @parameter
+    * Make sure we only set fields if they've been decorated with @Parameter or @MappedParameter
     */
   protected def setParameters(clone: ScriptObjectMirror, params: Map[String, AnyRef]): Unit = {
     val decoratedParamNames: Set[String] = clone.get("__parameters") match {
@@ -64,9 +64,21 @@ trait JavaScriptUtils {
         }.toSet[String]
       case _ => Set()
     }
+
+    val mappedParams: Set[String] = clone.get("__mappedParameters") match {
+      case ps: ScriptObjectMirror if !ps.isEmpty =>
+        ps.asScala.collect {
+          case (_, details: ScriptObjectMirror) =>
+            details.get("localKey").asInstanceOf[String]
+        }.toSet[String]
+      case _ => Set()
+    }
     params.foreach {
       case (k: String, v: AnyRef) =>
         if(decoratedParamNames.contains(k)){
+          clone.put(k,v)
+        }
+        if(mappedParams.contains(k)){
           clone.put(k,v)
         }
     }

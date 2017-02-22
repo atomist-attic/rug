@@ -22,8 +22,8 @@ trait MappedParameterSupport
     val mapped = poa.parameterValueMap
 
     mappedParameters.foreach { s =>
-      if(!mapped.contains(s.handlerFieldName)){
-        throw new MissingSecretException(s"${name} invocation is missing mapped parameter '${s.mappedName}' on field '${s.handlerFieldName}'")
+      if(!mapped.contains(s.localKey)){
+        throw new MissingSecretException(s"${name} invocation is missing mapped parameter '${s.foreignKey}' on field '${s.localKey}'")
       }
     }
   }

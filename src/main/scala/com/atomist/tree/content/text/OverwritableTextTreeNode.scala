@@ -158,7 +158,7 @@ class OverwritableTextTreeNode(name: String,
 
   @ExportFunction(readOnly = true, description = "Return the format info for the start of this structure in the file or null if not available")
   final def formatInfo: FormatInfo =
-    _parent.formatInfoFromHere("", this, value)
+    requireNotInvalidated(_parent.formatInfoFromHere("", this, value))
 
   def formatInfoFromHere(stringSoFar: String, childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
     def valueBefore(child: OverwritableTextTreeNodeChild) = allKidsIncludingPadding.takeWhile(_ != childAsking).map(_.value).mkString

@@ -5,6 +5,7 @@ import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.plans.MappedParameterSupport
 import com.atomist.rug.spi.Handlers.Plan
+import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -18,7 +19,7 @@ class JavaScriptCommandHandlerFinder
   override def kind = "command-handler"
 
   override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptCommandHandler] = {
-    Some(new JavaScriptCommandHandler(jsc, handler, name(handler), description(handler), parameters(handler), mappedParameters(handler), tags(handler), intent(handler)))
+    Some(new JavaScriptCommandHandler(jsc, handler, name(handler), description(handler), parameters(handler), mappedParameters(handler), tags(handler), secrets(handler), intent(handler)))
   }
 
   /**
@@ -56,6 +57,20 @@ class JavaScriptCommandHandlerFinder
       case _ => Seq()
     }
   }
+  /**
+    * Fetch any secrets decorated on the handler
+    * @param someVar
+    * @return
+    */
+  protected def secrets(someVar: ScriptObjectMirror) : Seq[Secret] = {
+    someVar.getMember("__secrets") match {
+      case som: ScriptObjectMirror =>
+        som.values().asScala.collect {
+          case s: String => Secret(s,s)
+        }.toSeq
+      case _ => Nil
+    }
+  }
 }
 
 /**
@@ -75,6 +90,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                parameters: Seq[Parameter],
                                override val mappedParameters: Seq[MappedParameter],
                                override val tags: Seq[Tag],
+                               override val secrets: Seq[Secret],
                                override val intent: Seq[String] = Seq())
   extends CommandHandler
   with MappedParameterSupport

@@ -22,6 +22,8 @@ class ExampleRugFunction
   def addSecret(secret: Secret): Unit = {
     _secrets += secret
   }
+
+  def clearSecrets = _secrets.clear()
   /**
     * Run the function, return the Response
     *

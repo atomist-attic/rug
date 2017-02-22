@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added support for resolving secrets during Plan execution
 -   Added support for MappedParameters to pull config from other systems
 -   Added support for Secrets in RugCommands
 -   Added support for Command, Event and Response Handlers. All return Plans

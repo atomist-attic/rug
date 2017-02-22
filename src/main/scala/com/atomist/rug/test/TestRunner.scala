@@ -87,7 +87,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     val eventLog = new TestEventLog
     try {
       // TODO should publish events rather than sysout
-      // executionLog.log(s"Executing scenario ${test.name}...")
+      executionLog.log(s"Executing scenario ${test.name}...")
       val input: ArtifactSource = test.input(testResources)
       if (test.debug) {
         eventLog.recordInput(input)
@@ -155,7 +155,7 @@ class TestRunner(executionLog: ExecutionLog = ConsoleExecutionLog) {
     val eventLog = new TestEventLog
     try {
       // TODO should publish events rather than sysout
-      // executionLog.log(s"Executing scenario ${test.name}...")
+      executionLog.log(s"Executing scenario ${test.name}...")
 
       val poa: ParameterValues = test.args
       eventLog.recordParameters(poa)

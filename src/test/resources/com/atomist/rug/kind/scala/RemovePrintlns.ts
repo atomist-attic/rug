@@ -32,7 +32,7 @@ class RemovePrintlns implements ProjectEditor {
             [/termName[@value='println'] or contains(termSelect, 'System.out.println')]`   
 
       eng.with<scala.TermApply>(project, printlnStatement, termApply => {
-        //console.log(`The term apply is ${termApply}`)
+        // console.log(`The term apply is ${termApply}`)
         termApply.delete()
       })
   }

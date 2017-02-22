@@ -18,7 +18,7 @@ class AddToSequence implements ProjectEditor {
 
       eng.with<TextTreeNode>(project, findDependencies, yamlValue => {
         //console.log(`Raw value is [${yamlValue.value()}]`)
-        console.log(`Sequence value is [${yamlValue.value()}]`)
+        // console.log(`Sequence value is [${yamlValue.value()}]`)
         // if (yamlValue.value().charAt(0) != ">")
         //     throw new Error(`[${yamlValue.value()}] doesn't start with >`)
         // if (yamlValue.text().charAt(0) == ">")

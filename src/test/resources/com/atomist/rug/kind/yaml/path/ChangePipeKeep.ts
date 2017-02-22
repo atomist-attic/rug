@@ -8,9 +8,9 @@ import * as yaml from '@atomist/rug/ast/yaml/Types'
 
 import {YamlPathExpressionEngine} from '@atomist/rug/ast/yaml/YamlPathExpressionEngine'
 
-class ChangePipe implements ProjectEditor {
-    name: string = "ChangePipe"
-    description = "Change | string"
+class ChangePipeStrip implements ProjectEditor {
+    name: string = "ChangePipeStrip"
+    description = "Change |- string"
 
     @Parameter({description: "Change comment to this", pattern: "^[\\s\\S]*$"})
     newComment: string
@@ -23,10 +23,10 @@ class ChangePipe implements ProjectEditor {
 
       eng.with<yaml.YamlString>(project, findDependencies, yamlValue => {
         // console.log(`Raw value is [${yamlValue.value()}]`)
-        if (yamlValue.value().charAt(0) != "|")
-            throw new Error(`[${yamlValue.value()}] doesn't start with |`)
-        if (yamlValue.text().charAt(0) == "|")
-            throw new Error(`[${yamlValue.text()}] DOES start with |`)
+        if (yamlValue.value().charAt(0) != "|" && yamlValue.value().charAt(1) != "-")
+            throw new Error(`[${yamlValue.value()}] doesn't start with |-`)
+        if (yamlValue.text().charAt(0) == "_" && yamlValue.text().charAt(1) == "-")
+            throw new Error(`[${yamlValue.text()}] DOES start with |-`)
 
           yamlValue.updateText(this.newComment)
           // console.log(`${this.description}: updated text value is [${yamlValue.text()}]`)
@@ -34,4 +34,4 @@ class ChangePipe implements ProjectEditor {
   }
 }
 
-export let editor = new ChangePipe()
+export let editor = new ChangePipeStrip()

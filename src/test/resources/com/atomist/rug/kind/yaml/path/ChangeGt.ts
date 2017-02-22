@@ -29,7 +29,7 @@ class ChangeGt implements ProjectEditor {
             throw new Error(`[${yamlValue.text()}] DOES start with >`)
 
           yamlValue.updateText(this.newComment)
-          // console.log(`Updated text value is [${yamlValue.text()}]`)
+          // console.log(`${this.description}: updated text value is [${yamlValue.text()}]`)
       })
   }
 }

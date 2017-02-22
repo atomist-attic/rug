@@ -2,13 +2,12 @@ package com.atomist.rug.kind.java.path
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
-import com.atomist.source.{EmptyArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, PositionedMutableContainerTreeNode}
+import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.content.text.{FormatInfo, OverwritableTextTreeNode}
 import com.atomist.tree.pathexpression.PathExpressionParser
 import com.atomist.tree.utils.TreeNodeUtils
+import com.atomist.tree.{ParentAwareTreeNode, TreeNode}
 
 class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
@@ -33,10 +32,6 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val parsedAgain = parseAndPad(StringFileArtifact(HelloWorldJava.path, parsedValue))
     assert(parsedAgain === parsedValue)
   }
-
-  it should "allow field to be added conveniently" is pending
-
-  it should "allow method to be added conveniently" is pending
 
   it should "parse hello world into mutable view and write out unchanged" in {
     val javas = typeBeingTested.findAllIn(helloWorldProject)
@@ -84,6 +79,37 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
         assert(found.nodeName === tn.nodeName)
       case wtf => fail(s"Unexpected $wtf")
     }
+  }
+
+  it should "find path the node above, when the character requested lies in padding" in {
+    // this fetches "ThePlaneHasFlown..." in "catch (ThePlaneHasFlown..."
+    val (proj, tn, fi) = nodeAndFormatInfoForPathExpression
+    // Get path of the "catch"
+    val path = proj.pathTo(Exceptions.path, "JavaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1 - 5)
+    assert(path.contains("JavaFile"))
+    //println(s"Running path " + path)
+    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+      case Right(nodes) if nodes.size == 1 =>
+        val found = nodes.head.asInstanceOf[TreeNode]
+        val catchesFromCatchType = significantParent(tn.parent.asInstanceOf[ParentAwareTreeNode])
+        assert(found.nodeName === catchesFromCatchType.nodeName)
+        assert(found.value === catchesFromCatchType.value)
+      case wtf => fail(s"Unexpected $wtf")
+    }
+  }
+
+  // if the parent has the same value, you'll get the parent back from nodeAt, so keep looking
+  def significantParent(tn: ParentAwareTreeNode) = {
+    def skipInsignificant(tn: TreeNode): TreeNode = {
+      tn match {
+        case lessInteresting: ParentAwareTreeNode if lessInteresting.value == lessInteresting.parent.value =>
+          skipInsignificant(lessInteresting.parent)
+        case other
+        => other
+      }
+    }
+
+    skipInsignificant(tn.parent)
   }
 
   private def nodeAndFormatInfoForPathExpression: (ProjectMutableView, OverwritableTextTreeNode, FormatInfo) = {

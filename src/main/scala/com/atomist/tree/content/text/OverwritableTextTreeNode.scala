@@ -22,6 +22,8 @@ trait OverwritableTextTreeNodeParent extends TreeNode {
 
   def address: String
 
+  def formatInfoFromHere(stringsToLeft: Seq[String], childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo
+
 }
 
 class OverwritableTextTypeProvider extends TypeProvider(classOf[OverwritableTextTreeNode]) {
@@ -84,7 +86,7 @@ class OverwritableTextTreeNode(name: String,
    */
 
   private var state: LifecyclePhase = Unready
-  private var _value: String = allKids.map(_.value).mkString("")
+  private var _value: String = allKids.map(_.value).mkString
 
   private[text] val allKidsIncludingPadding = allKids
 
@@ -156,7 +158,12 @@ class OverwritableTextTreeNode(name: String,
 
   @ExportFunction(readOnly = true, description = "Return the format info for the start of this structure in the file or null if not available")
   final def formatInfo: FormatInfo =
-    rootNode.formatInfo(this)
+    requireNotInvalidated(_parent.formatInfoFromHere(Seq(), this, value))
+
+  def formatInfoFromHere(stringsSoFar: Seq[String], childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+    def valueBefore(child: OverwritableTextTreeNodeChild) = allKidsIncludingPadding.takeWhile(_ != childAsking).map(_.value).mkString
+    _parent.formatInfoFromHere(valueBefore(childAsking) +: stringsSoFar, this, valueOfInterest)
+  }
 
   def nodeAt(pos: InputPosition): Option[TreeNode] =
     rootNode.nodeAt(pos)

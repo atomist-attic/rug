@@ -86,11 +86,11 @@ class OverwritableTextInFile(dynamicType: String,
   /*
    * called by descendants to find their position in the file
    */
-  def formatInfoFromHere(stringsToLeft: String, childAsking : OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+  def formatInfoFromHere(stringsToLeft: Seq[String], childAsking : OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
     def valueBefore(child: OverwritableTextTreeNodeChild) = allKids.takeWhile(_ != childAsking).map(_.value).mkString
 
 
-    val stringToLeft = valueBefore(childAsking) + stringsToLeft
+    val stringToLeft = (valueBefore(childAsking) +: stringsToLeft).mkString
     val leftPoint = FormatInfo.contextInfo(stringToLeft)
     val rightPoint = FormatInfo.contextInfo(stringToLeft + valueOfInterest)
     require(value.startsWith(stringToLeft), s"Bad prefix calculating formatInfo [$stringToLeft] in [$value]")

@@ -24,7 +24,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
     case DirectoryTypeName =>
       currentBackingObject.allDirectories.view.map(d => new DirectoryMutableView(d, parent))
     case maybeContainedArtifactName =>
-      val arts = currentBackingObject.artifacts.filter(_.name.equals(maybeContainedArtifactName))
+      val arts = currentBackingObject.artifacts.filter(_.name == maybeContainedArtifactName)
       arts.map {
         case d : DirectoryArtifact => new DirectoryMutableView(d, parent)
         case f : FileArtifact => new FileMutableView(f, parent)

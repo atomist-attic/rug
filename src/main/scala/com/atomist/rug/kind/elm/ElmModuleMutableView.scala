@@ -26,6 +26,9 @@ class ElmModuleMutableView(
     em.currentSource.toSystem
   }
 
+  @ExportFunction(readOnly = true, description = "Node content")
+  override def value: String = currentBackingObject.path
+
   override def nodeTags: Set[String] = Set(Typed.typeClassToTypeName(classOf[ElmModuleType]))
 
   override def nodeName: String = name

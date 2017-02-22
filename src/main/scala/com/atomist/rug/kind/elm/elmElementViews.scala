@@ -21,6 +21,9 @@ class ElmFunctionMutableView(
 
   override val childNodeNames: Set[String] = Set(CaseAlias, RecordValueAlias)
 
+  @ExportFunction(readOnly = true, description = "Node content")
+  override def value: String = ef.body.value
+
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = fieldName match {
     case CaseAlias =>
       ef.body match {

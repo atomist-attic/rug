@@ -22,6 +22,9 @@ class FileMutableView(
     }
   }
 
+  @ExportFunction(readOnly = true, description = "Node content")
+  override def value: String = currentBackingObject.path
+
   @ExportFunction(readOnly = true, description = "Name of the file, excluding path")
   def name: String = filename
 

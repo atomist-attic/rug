@@ -1,10 +1,12 @@
 package com.atomist.rug.spi
 
 import com.atomist.util.lang.JavaHelpers
+import org.apache.commons.lang3.StringUtils
 
 object Typed {
 
-  private[spi] def trimSuffix(suffix: String, orig: String): String = orig stripSuffix suffix
+  private[spi] def trimSuffix(suffix: String, orig: String): String =
+    StringUtils.defaultIfEmpty(orig.stripSuffix(suffix), orig)
 
   private val TypeSuffix = "Type"
   private val TreeNodeSuffix = "TreeNode"

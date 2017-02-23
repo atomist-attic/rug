@@ -152,6 +152,37 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
+  it should "change > string again with multi-line string" in {
+    val oldComment =
+      """>
+        |    Late afternoon is best.
+        |    Backup contact is Nancy
+        |
+        |
+        |    Billsmer @ 338-4338.
+        |""".stripMargin
+    val newComment =
+      """|Early morning is best.
+         |    Backup contact is Bob
+         |    Billdad @ 338-4338.
+         |""".stripMargin
+    val rawNewComment =
+      s""">
+         |    $newComment
+         |""".stripMargin
+
+    modify("ChangeGt.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlFolded)),
+      Map("newComment" -> newComment)) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        println(theFile.content)
+        assert(theFile.content === YamlFolded.replace(oldComment, rawNewComment))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "change >- string with multi-line string" in {
     val oldComment =
       """>-
@@ -186,7 +217,11 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       """>+
         |    Late afternoon is best.
         |    Backup contact is Nancy
+        |
         |    Billsmer @ 338-4338.
+        |
+        |
+        |
         |""".stripMargin
     val newComment =
       """|Early morning is best.
@@ -209,12 +244,17 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
+
   it should "change | string" in {
     val oldComment =
       """|
         #    Late afternoon is best.
         #    Backup contact is Nancy
+        #
+        #
         #    Billsmer @ 338-4338.
+        #
+        #
         #""".stripMargin('#')
     val newComment = "This is the new comment"
     val rawNewComment =
@@ -239,7 +279,11 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       """|
         #    Late afternoon is best.
         #    Backup contact is Nancy
+        #
+        #
         #    Billsmer @ 338-4338.
+        #
+        #
         #""".stripMargin('#')
     val newComment =
       """#Early morning is best.
@@ -268,7 +312,12 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       """|-
         #    Late afternoon is best.
         #    Backup contact is Nancy
+        #
+        #
         #    Billsmer @ 338-4338.
+        #
+        #
+        #
         #""".stripMargin('#')
     val newComment =
       """#Early morning is best.
@@ -297,7 +346,12 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       """|+
         #    Late afternoon is best.
         #    Backup contact is Nancy
+        #
+        #
         #    Billsmer @ 338-4338.
+        #
+        #
+        #
         #""".stripMargin('#')
     val newComment =
       """#Early morning is best.
@@ -321,19 +375,27 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-  it should "add to sequence" in pendingUntilFixed {
-    modify("AddToSequence.ts", singleAS) match {
-      case sm: SuccessfulModification =>
-        val theFile = sm.result.findFile("x.yml").get
-        // println(theFile.content)
-        assert(theFile.content === xYaml.replace("queen", "Jefferson Airplane"))
-        assert(theFile.content.contains("Not There"))
-        validateResultContainsValidFiles(sm.result)
-      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    it should "add to sequence" in {
+      modify("AddToSequence.ts", singleAS) match {
+        case sm: SuccessfulModification =>
+          val theFile = sm.result.findFile("x.yml").get
+          // println(theFile.content)
+          assert(theFile.content.contains("Killer Queen"))
+          validateResultContainsValidFiles(sm.result)
+        case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+      }
     }
-  }
 
-  it should "remove from sequence" is pending
+    it should "remove from sequence" in {
+      modify("RemoveFromSequence.ts", singleAS) match {
+        case sm: SuccessfulModification =>
+          val theFile = sm.result.findFile("x.yml").get
+          // println(theFile.content)
+          assert(!theFile.content.contains("Sweet Lady"))
+          validateResultContainsValidFiles(sm.result)
+        case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+      }
+    }
 
-  it should "change multiple documents in one file" is pending
+    it should "change multiple documents in one file" is pending
 }

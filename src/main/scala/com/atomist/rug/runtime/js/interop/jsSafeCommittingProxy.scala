@@ -24,10 +24,7 @@ class jsSafeCommittingProxy(
 
   override def toString: String = s"SafeCommittingProxy around $node"
 
-  private val nodeTypes: Set[Typed] =
-    node.nodeTags.flatMap(t => typeRegistry.findByName(t))
-
-  private val typ: Typed = UnionType(nodeTypes)
+  private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
   private var additionalMembers: Map[String, Object] = Map()
 
@@ -221,23 +218,4 @@ object jsSafeCommittingProxy {
     new jsSafeCommittingProxy(n)
 }
 
-/**
-  * Return a type that exposes all the operations on the given set of types.
-  *
-  * @param types set of types to expose
-  */
-private case class UnionType(types: Set[Typed]) extends Typed {
 
-  override val name = s"Union(${types.map(_.name)})"
-
-  private val typesToUnion = Set(TypeOperation.TreeNodeType) ++ types
-
-  override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
-
-  // TODO what about duplicate names?
-  override val allOperations: Seq[TypeOperation] =
-    typesToUnion.flatMap(_.allOperations).toSeq
-
-  override val operations: Seq[TypeOperation] =
-    typesToUnion.flatMap(_.operations).toSeq
-}

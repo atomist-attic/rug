@@ -64,6 +64,7 @@ case class NodesWithTag(tag: String)
           val allDescendants = Descendant.selfAndAllDescendants(tn)
           val found: Seq[GraphNode] = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
           ExecutionResult(NodeTest.dedupe(found))
+        case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")
       }
     }
     catch {

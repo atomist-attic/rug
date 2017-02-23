@@ -40,6 +40,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     case NavigationAxis(propertyName) =>
       val nodes = tn.relatedNodesNamed(propertyName)
       ExecutionResult(nodes)
+    case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")
   }
 }
 

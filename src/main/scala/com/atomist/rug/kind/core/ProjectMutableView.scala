@@ -359,7 +359,7 @@ class ProjectMutableView(
             path: String,
             @ExportFunctionParameterDescription(name = "parameters",
               description = "Parameters")
-            parametersToTemplate: Any) = {
+            parametersToTemplate: Any): Unit = {
     val mc = MergeContext(mapToUse(parametersToTemplate))
     val newFile = mergeTool.mergeToFile(mc, template).withPath(path)
     updateTo(currentBackingObject + newFile)
@@ -381,7 +381,7 @@ class ProjectMutableView(
                      outputPath: String,
                      @ExportFunctionParameterDescription(name = "ic",
                        description = "Parameters to the template")
-                     parametersToTemplate: Any) = {
+                     parametersToTemplate: Any): Unit = {
     val mc = MergeContext(mapToUse(parametersToTemplate))
     val directoryToMerge = templateContent / templatesPath
     val outputContent = mergeTool.processTemplateFiles(mc, directoryToMerge).withPathAbove(outputPath)

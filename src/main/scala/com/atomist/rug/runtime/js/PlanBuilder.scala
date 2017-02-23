@@ -22,25 +22,25 @@ object ConstructPlan {
 class PlanBuilder {
 
   def constructPlan(jsPlan: ScriptObjectMirror): Plan = {
-    val jsMessages = jsPlan.getMember("messages") match {
-      case o: ScriptObjectMirror => o.values().toArray.toList
-      case _ => Nil
-    }
-    val messages: Seq[Message] = jsMessages.map { message =>
-      val m = message.asInstanceOf[ScriptObjectMirror]
-      constructMessage(m)
-    }
-    val instructions = jsPlan.getMember("instructions") match {
-      case u: Undefined => Nil
-      case jsInstructions: ScriptObjectMirror =>
-        jsInstructions.values().toArray.toList.map { respondable =>
-          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
-        }
-    }
-    //we are allowed to return Messages directly from handlers!
-    if(messages.isEmpty && instructions.isEmpty){
+    if (jsPlan.hasMember("body")) {
+      // we are allowed to return a Message directly from handlers
       Plan(Seq(constructMessage(jsPlan)),Nil)
-    }else{
+    } else {
+      val jsMessages = jsPlan.getMember("messages") match {
+        case o: ScriptObjectMirror => o.values().toArray.toList
+        case _ => Nil
+      }
+      val messages: Seq[Message] = jsMessages.map { message =>
+        val m = message.asInstanceOf[ScriptObjectMirror]
+        constructMessage(m)
+      }
+      val instructions = jsPlan.getMember("instructions") match {
+        case u: Undefined => Nil
+        case jsInstructions: ScriptObjectMirror =>
+          jsInstructions.values().toArray.toList.map { respondable =>
+            constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
+          }
+      }
       Plan(messages, instructions)
     }
   }

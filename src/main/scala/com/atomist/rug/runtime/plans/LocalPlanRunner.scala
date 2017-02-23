@@ -72,7 +72,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
               nestedPlanExecutionOption
           }
         }
-        callbackResultOption :+ InstructionResponse(respondable.instruction, response)
+        callbackResultOption :+ InstructionResult(respondable.instruction, response)
     }
   }
 

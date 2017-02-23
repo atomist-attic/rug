@@ -1,10 +1,12 @@
 package com.atomist.rug.runtime.plans
 
+import java.io.Serializable
+
 import com.atomist.param._
+import com.atomist.rug.runtime.InstructionResponse
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.spi.{RugFunction, Secret}
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -32,7 +34,13 @@ class ExampleRugFunction
     */
   override def run(parameters: ParameterValues): Response = {
     validateParameters(parameters)
-    Response(Status.Success,None, None, Some(parameters.parameterValues.head.getValue))
+    Response(Status.Success,None, None, Some(new InstructionResponse() {
+      override def status: String = ???
+
+      override def code: Int = ???
+
+      override def body: Serializable = parameters.parameterValues.head.getValue.toString
+    }))
   }
 
   /**

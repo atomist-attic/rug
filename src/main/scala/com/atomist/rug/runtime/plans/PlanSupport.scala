@@ -21,8 +21,15 @@ trait PlanSupport {
       case (i: Respond, r: ResponseHandler) => true
       case _ => false
     }
-    typeMatches && instruction.detail.name == rug.name &&
-      instruction.detail.coordinates.exists(coords => rug.group == coords.group && rug.artifact == coords.artifact)
+
+    val coordsMatch = instruction.detail.coordinates match {
+      case Some(c) => rug.group == c.group && rug.artifact == c.artifact
+      case _ => true
+    }
+
+    val nameMatches = instruction.detail.name == rug.name
+
+    typeMatches &&  coordsMatch && nameMatches
   }
 
   def findMatch(rugs: Seq[AddressableRug], instruction: Instruction): Option[AddressableRug] = {

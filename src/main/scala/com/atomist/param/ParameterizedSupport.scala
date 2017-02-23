@@ -1,13 +1,15 @@
 package com.atomist.param
 
 import com.atomist.project.common.{IllformedParametersException, InvalidParametersException, MissingParametersException}
+import com.atomist.rug.runtime.ParameterizedRug
 
 import scala.collection.mutable.ListBuffer
 
 /**
   * Support trait for implementations of Parameterized.
   */
-trait ParameterizedSupport extends Parameterized {
+trait ParameterizedSupport
+  extends ParameterizedRug {
 
   private val params = new ListBuffer[Parameter]
 

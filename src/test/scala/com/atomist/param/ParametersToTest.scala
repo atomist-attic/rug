@@ -16,6 +16,12 @@ object ParametersToTest {
     addParameter(StringParam)
     addParameter(AgeParam)
     addParameter(ParamStartingWithX)
+
+    override def name: String = ???
+
+    override def description: String = ???
+
+    override def tags: Seq[Tag] = ???
   }
 
   val AllowedValuesParam = Parameter("allowed_value")

@@ -1,11 +1,12 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{ParameterValue, SimpleParameterValue, SimpleParameterValues}
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.param._
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptRugArchiveReader}
 import com.atomist.project.common.MissingParametersException
+import com.atomist.rug.runtime.{AddressableRug, ResponseHandler}
 import com.atomist.rug.runtime.plans._
-import com.atomist.rug.spi.Handlers.{InstructionResponse, Status}
-import com.atomist.rug.spi.Secret
+import com.atomist.rug.spi.Handlers.{InstructionError, InstructionResult, Plan, Status}
+import com.atomist.rug.spi.{Handlers, Secret}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -143,7 +144,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       |
     """.stripMargin)
 
-  val simpleCommandHandlerExecuteInstruction =
+  val simpleCommandHandlerExecuteInstructionCallingRespondable =
     StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
       """
         |import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
@@ -154,27 +155,19 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         |@Intent("show me kitties","cats please")
         |class KittieFetcher implements HandleCommand{
         |
-        |  @Parameter({description: "his dudeness", pattern: "^.*$"})
-        |  name: string
-        |
         |  handle(ctx: HandlerContext) : Plan {
         |
         |    let result = new Plan()
-        |    result.add({instruction: {kind: "execute", name: "ExampleRugFunction", parameters: {thingy: "woot"}}});
+        |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}},
+        |                onSuccess: {name: "SimpleResponseHandler", kind: "respond"} });
         |    return result;
         |  }
         |}
         |
         |@ResponseHandler("SimpleResponseHandler", "Checks response is equal to passed in parameter")
         |class Responder implements HandleResponse<String> {
-        |  @Parameter({description: "Thing to check", pattern: "^.*$"})
-        |  thingy: string
-        |
-        |  handle(response: Response<String>) : Plan {
-        |    if(response.body != this.thingy) {
-        |       throw new Error(`Was expecting value of response body to be ${this.thingy}, was ${response.body}`)
-        |     }
-        |     return new Plan();
+        |  handle(response: Response<string>) : Plan {
+        |    return new Plan();
         |  }
         |}
         |
@@ -185,9 +178,22 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     """.stripMargin)
 
   it should "be able to schedule an Execution and handle its response" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstruction))
-    val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstructionCallingRespondable))
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val com = rugs.commandHandlers.head
+    val responseHandler = rugs.responseHandlers.head
+
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Seq(new TestResponseHandler(responseHandler)), null, null, new SecretResolver() {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil}))
+
+    val results = Await.result(runner.run(plan, ""), 10.seconds)
+    PlanUtils.drawEventLogs("testplan",results.log)
+    results.log.foreach {
+      case i: InstructionResult =>
+      case e :InstructionError => e.error.printStackTrace()
+      case i => println("Ga:" + i)
+    }
   }
 
   it should "extract and run a command handler" in {
@@ -266,11 +272,36 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     }))
     Await.result(runner.run(handlers.head.handle(null, SimpleParameterValues.Empty).get, ""), 10.seconds).log.foreach {
       case i:
-        InstructionResponse =>
+        InstructionResult =>
         assert(i.response.status === Status.Success)
       case i => ???
     }
   }
 }
 
+class TestResponseHandler(r: ResponseHandler) extends AddressableRug with ResponseHandler {
+
+  override def artifact: String = ???
+
+  override def group: String = ???
+
+  override def version: String = ???
+
+  override def handle(response: com.atomist.rug.runtime.InstructionResponse, params: ParameterValues): Option[Plan] = {
+    None
+  }
+
+  override def name: String = r.name
+
+  override def description: String =r.description
+
+  override def tags: Seq[Tag] = r.tags
+
+  /**
+    * Custom keys for this template. Must be satisfied in ParameterValues passed in.
+    *
+    * @return a list of parameters
+    */
+  override def parameters: Seq[Parameter] = ???
+}
 

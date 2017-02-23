@@ -70,7 +70,7 @@ object PlanUtils {
         case InstructionError(i, x) => BabyTree(nullSafeMessage(x), Seq(BabyTree(instructionToString(i))))
         case MessageDeliveryError(m, x) => BabyTree(nullSafeMessage(x), Seq(messageToTree(m)))
         case CallbackError(c, x) => BabyTree(nullSafeMessage(x), Seq(callbackToTree("failed callback", c)))
-        case InstructionResponse(instruction, response) =>
+        case InstructionResult(instruction, response) =>
           BabyTree(s"Received $response back from ${instructionToString(instruction)}")
         case NestedPlanRun(plan, planResult) =>
           Await.ready(planResult, 10.seconds)

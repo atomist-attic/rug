@@ -80,11 +80,11 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
     val expectedPlanLog = Set(
-      InstructionResponse(Edit(Detail("edit1", None, Nil, None)), Response(Success, None, Some(0), Some("edit1"))),
-      InstructionResponse(Edit(Detail("edit2", None, Nil, None)), Response(Success, None, Some(0), Some("edit2"))),
-      InstructionResponse(Edit(Detail("edit3", None, Nil, None)), Response(Success, None, Some(0), Some("edit3"))),
-      InstructionResponse(Edit(Detail("edit4", None, Nil, None)), Response(Success, None, Some(0), Some("edit4"))),
-      InstructionResponse(Respond(Detail("respond1", None, Nil, None)),Response(Success,None,Some(0),Some("respond1"))),
+      InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success, None, Some(0), Some("edit1"))),
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, None, Some(0), Some("edit2"))),
+      InstructionResult(Edit(Detail("edit3", None, Nil, None)), Response(Success, None, Some(0), Some("edit3"))),
+      InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, None, Some(0), Some("edit4"))),
+      InstructionResult(Respond(Detail("respond1", None, Nil, None)),Response(Success,None,Some(0),Some("respond1"))),
       NestedPlanRun(Plan(List(Message(MessageText("nested plan"), Nil, None)), Nil),
         Future(PlanResult(List(MessageDeliveryError(Message(MessageText("nested plan"), Nil, None), null)))))
       )
@@ -135,7 +135,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 120.seconds)
     val expectedPlanLog = Set(
-      InstructionResponse(Edit(Detail("edit2", None, Nil, None)), Response(Failure, None, Some(0), Some("edit2")))
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, None, Some(0), Some("edit2")))
     )
     assert(actualPlanResult.log.toSet == expectedPlanLog)
 
@@ -215,7 +215,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
     val expectedPlanLog = Set(
-      InstructionResponse(Edit(Detail("edit", None, Nil, None)), Response(Success, None, Some(0), None)),
+      InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, Some(0), None)),
       CallbackError(Plan(List(Message(MessageText("fail"), Nil, None)), Nil), new IllegalArgumentException("Uh oh!"))
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))

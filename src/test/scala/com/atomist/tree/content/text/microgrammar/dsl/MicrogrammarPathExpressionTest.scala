@@ -117,7 +117,7 @@ class OptionalFieldMicrogrammarTest extends FlatSpec with Matchers {
 object ExercisePathExpression extends FlatSpec with Matchers {
   // not a test but it needs fail()
 
-  def exercisePathExpression(microgrammar: Microgrammar, pathExpressionString: String, input: String): List[TreeNode] = {
+  def exercisePathExpression(microgrammar: Microgrammar, pathExpressionString: String, input: String): Seq[TreeNode] = {
 
     val result = exercisePathExpressionInternal(microgrammar, pathExpressionString, input)
     result match {

@@ -70,8 +70,7 @@ class DefaultViewFinder(typeRegistry: TypeRegistry)
           // TODO cache this
           val pe = new PathExpressionEngine()
           // TODO pass in NodePreparer?
-          val evaluated: Either[String, List[GraphNode]] = pe.evaluate(context, pex, DefaultTypeRegistry, None)
-          evaluated match {
+          pe.evaluate(context, pex, DefaultTypeRegistry, None) match {
             case Right(nodes) =>
               //nodes.map(tn => new MutableContainerTreeNodeMutableView(tn.asInstanceOf[MutableContainerTreeNode], context))
               Some(nodes map {

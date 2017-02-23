@@ -40,7 +40,7 @@ class PathExpressionEngine extends ExpressionEngine {
           ExecutionResult(Nil)
         case Right(seq) =>
           say(s"checking ${seq.size} nodes for matches")
-          val kids: List[GraphNode] = seq
+          val kids: Seq[GraphNode] = seq
             .flatMap(kid =>
               locationStep.follow(kid, this, typeRegistry, nodePreparer.getOrElse(n => n))
                 .right.toOption)

@@ -2,9 +2,8 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.content.text._
+import com.atomist.tree.AddressableTreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 
@@ -26,46 +25,32 @@ trait NodeTest {
 }
 
 /**
-  * Convenience superclass that uses a predicate to handle sourced nodes
-  *
-  * @param predicate predicate used to filter nodes
+  * Convenience methods for NodeTest results
   */
-abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
-
-  final override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult =
-    sourceNodes(tn, axis, typeRegistry) match {
-      case Right(nodes) =>
-        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes, ee, typeRegistry, None)))
-      case failure => failure
-    }
+object NodeTest {
 
   /**
-    * Subclasses can override this to provide a more efficient implementation.
-    * This one works but can be expensive.
+    * Deduplicate a sequence of results
+    * We may have duplicates in the found collection because, for example,
+    * we might find the Java() node SomeClass.java under the directory "/src"
+    * and under "/src/main" and under the actual file.
+    * So check that our returned types have distinct backing objects
     */
-  protected def sourceNodes(tn: GraphNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
-    case Self => ExecutionResult(List(tn))
-    case Child =>
-      val kids = tn.relatedNodes.filter {
-        case tn: TreeNode => tn.significance != TreeNode.Noise
-        case _ => true
-      }.toList
-      ExecutionResult(kids)
-    case Descendant =>
-      val kids = (Descendant.allDescendants(tn) filter {
-        case tn: TreeNode => tn.significance != TreeNode.Noise
-        case _ => true
-      }).toList
-      ExecutionResult(kids)
-    case NavigationAxis(propertyName) =>
-      val nodes = tn.relatedNodesNamed(propertyName)
-      ExecutionResult(nodes)
+  def dedupe(results: Seq[GraphNode]): Seq[GraphNode] = {
+    var nodeAddressesSeen: Set[String] = Set()
+    var toReturn = List.empty[GraphNode]
+    results.distinct.foreach {
+      case mv: AddressableTreeNode =>
+        if (!nodeAddressesSeen.contains(mv.address)) {
+          nodeAddressesSeen = nodeAddressesSeen + mv.address
+          toReturn = toReturn :+ mv
+        }
+      case n =>
+        // There's no concept of an address here, so we have to take on trust that
+        // we didn't find this thing > once
+        toReturn = toReturn :+ n
+    }
+    toReturn
   }
 }
 
-/**
-  * Return all nodes on the given axis
-  */
-object All extends PredicatedNodeTest("All", TruePredicate) {
-  override def toString = "*"
-}

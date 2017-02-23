@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.yaml.path
 
-import com.atomist.project.edit.SuccessfulModification
+import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.{AbstractYamlUsageTest, YamlUsageTestTargets}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -375,27 +375,35 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-    it should "add to sequence" in {
-      modify("AddToSequence.ts", singleAS) match {
-        case sm: SuccessfulModification =>
-          val theFile = sm.result.findFile("x.yml").get
-          // println(theFile.content)
-          assert(theFile.content.contains("Killer Queen"))
-          validateResultContainsValidFiles(sm.result)
-        case wtf => fail(s"Expected SuccessfulModification, not $wtf")
-      }
+  it should "add to sequence" in {
+    modify("AddToSequence.ts", singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content.contains("Killer Queen"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
+  }
 
-    it should "remove from sequence" in {
-      modify("RemoveFromSequence.ts", singleAS) match {
-        case sm: SuccessfulModification =>
-          val theFile = sm.result.findFile("x.yml").get
-          // println(theFile.content)
-          assert(!theFile.content.contains("Sweet Lady"))
-          validateResultContainsValidFiles(sm.result)
-        case wtf => fail(s"Expected SuccessfulModification, not $wtf")
-      }
+  it should "remove from sequence" in {
+    modify("RemoveFromSequence.ts", singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(!theFile.content.contains("Sweet Lady"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
+  }
 
-    it should "change multiple documents in one file" is pending
+  it should "fail to remove non-existent element from sequence" in {
+    modify("RemoveFromSequence2.ts", singleAS) match {
+      case sm: SuccessfulModification => fail(s"Expected NoModificationNeeded, not $sm")
+      case nom: NoModificationNeeded =>
+      case _ => fail(s"Expected NoModificationNeeded")
+    }
+  }
+
+  it should "change multiple documents in one file" is pending
 }

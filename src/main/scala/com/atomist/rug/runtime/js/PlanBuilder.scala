@@ -37,7 +37,12 @@ class PlanBuilder {
           constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
         }
     }
-    Plan(messages, instructions)
+    //we are allowed to return Messages directly from handlers!
+    if(messages.isEmpty && instructions.isEmpty){
+      Plan(Seq(constructMessage(jsPlan)),Nil)
+    }else{
+      Plan(messages, instructions)
+    }
   }
 
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {

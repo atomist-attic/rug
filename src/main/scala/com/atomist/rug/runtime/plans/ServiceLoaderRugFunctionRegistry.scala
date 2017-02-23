@@ -14,7 +14,13 @@ class ServiceLoaderRugFunctionRegistry
   extends RugFunctionRegistry with LazyLogging {
 
   private lazy val functions: Map[String, RugFunction] = {
-    ServiceLoader.load(classOf[RugFunction]).asScala.map(r => (r.name, r)).toMap
+    try{
+      ServiceLoader.load(classOf[RugFunction]).asScala.map(r => (r.name, r)).toMap
+    }catch {
+      case x: Throwable =>
+        x.printStackTrace()
+        Map()
+    }
   }
 
   override def find(name: String): Option[RugFunction] = {

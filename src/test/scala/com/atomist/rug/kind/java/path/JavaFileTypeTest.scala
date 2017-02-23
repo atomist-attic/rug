@@ -189,9 +189,11 @@ object JavaFileTypeTest {
       |}
     """.stripMargin)
 
+  val ExceptionsSources = SimpleFileBasedArtifactSource(Exceptions)
+
   def helloWorldProject =
     new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(HelloWorldJava))
 
   def exceptionsProject =
-    new ProjectMutableView(EmptyArtifactSource(), SimpleFileBasedArtifactSource(Exceptions))
+    new ProjectMutableView(EmptyArtifactSource(), ExceptionsSources)
 }

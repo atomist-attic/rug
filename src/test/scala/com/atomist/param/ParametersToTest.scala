@@ -13,15 +13,7 @@ object ParametersToTest {
   val ParamStartingWithX = Parameter("mystery", "x.*")
 
   val ParameterizedToTest = new ParameterizedSupport {
-    addParameter(StringParam)
-    addParameter(AgeParam)
-    addParameter(ParamStartingWithX)
-
-    override def name: String = ???
-
-    override def description: String = ???
-
-    override def tags: Seq[Tag] = ???
+    override def parameters = Seq(StringParam, AgeParam, ParamStartingWithX)
   }
 
   val AllowedValuesParam = Parameter("allowed_value")

@@ -15,7 +15,8 @@ import scala.collection.mutable.ListBuffer
 class ExampleRugFunction
   extends RugFunction
   with SecretSupport{
-  super.addParameter(new Parameter("thingy"))
+
+  override def parameters = Seq(new Parameter("thingy"))
 
   private val _secrets = new ListBuffer[Secret]
 

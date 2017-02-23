@@ -27,14 +27,12 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
                                  handler: ScriptObjectMirror,
                                  override val name: String,
                                  override val description: String,
-                                 parameters: Seq[Parameter],
+                                 override val parameters: Seq[Parameter],
                                  override val tags: Seq[Tag])
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport
     with JavaScriptUtils {
-
-  addParameters(parameters)
 
   override def handle(response: InstructionResponse, params: ParameterValues): Option[Plan] = {
     //TODO this handle method is almost identical to the command handler - extract it

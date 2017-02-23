@@ -1,8 +1,8 @@
 package com.atomist.rug.runtime
 
-import com.atomist.param.Parameterized
+import com.atomist.param.ParameterizedSupport
 
 trait ParameterizedRug
   extends Rug
-   with Parameterized{
+   with ParameterizedSupport{
 }

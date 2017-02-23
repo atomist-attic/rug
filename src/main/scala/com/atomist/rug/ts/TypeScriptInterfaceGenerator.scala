@@ -110,10 +110,11 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     def apply(name: String, paramType: String, description: Option[String]) = new MethodParam(name, paramType, description)
   }
 
-  addParameter(Parameter(OutputPathParam, ".*")
+  override def parameters: Seq[Parameter] = Seq(Parameter(OutputPathParam, ".*")
     .setRequired(false)
     .setDisplayName("Path for created doc")
     .setDefaultValue(DefaultFilename))
+
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {

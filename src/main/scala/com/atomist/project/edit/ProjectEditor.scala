@@ -1,15 +1,15 @@
 package com.atomist.project.edit
 
 import com.atomist.param.ParameterValues
+import com.atomist.project.ProjectOperation
 import com.atomist.project.common.MissingParametersException
-import com.atomist.project.ProjectDelta
 import com.atomist.source.ArtifactSource
 
 /**
   * Interface implemented by classes that know how to modify an existing project.
   * Extend ProjectEditorSupport rather than implementing this interface directly.
   */
-trait ProjectEditor extends ProjectDelta {
+trait ProjectEditor extends ProjectOperation {
 
   /**
     * Attempt to create a new ArtifactSource based on applying this editor to the given one.

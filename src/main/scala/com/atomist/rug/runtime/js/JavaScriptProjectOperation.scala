@@ -41,7 +41,8 @@ abstract class JavaScriptProjectOperation(
 
   tags(jsVar, Seq("__tags", "tags")).foreach(t => addTag(t))
 
-  parameters(jsVar, Seq("__parameters", "parameters")).foreach(p => addParameter(p))
+  override def parameters: Seq[Parameter] = parameters(jsVar, Seq("__parameters", "parameters"))
+
 
   private var _context: Seq[ProjectOperation] = Nil
 

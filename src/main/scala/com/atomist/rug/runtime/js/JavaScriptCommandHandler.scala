@@ -87,7 +87,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                handler: ScriptObjectMirror,
                                override val name: String,
                                override val description: String,
-                               parameters: Seq[Parameter],
+                               override val parameters: Seq[Parameter],
                                override val mappedParameters: Seq[MappedParameter],
                                override val tags: Seq[Tag],
                                override val secrets: Seq[Secret],
@@ -95,8 +95,6 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
   extends CommandHandler
   with MappedParameterSupport
   with JavaScriptUtils {
-
-  addParameters(parameters)
 
   /**
     * We expect all mapped parameters to also be passed in with the normal params

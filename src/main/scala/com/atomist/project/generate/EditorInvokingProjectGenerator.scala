@@ -18,9 +18,8 @@ class EditorInvokingProjectGenerator(val name: String,
     with ProjectOperationSupport
     with LazyLogging {
 
-  for (p <- editor.parameters) {
-    addParameter(p)
-  }
+
+  override def parameters: Seq[Parameter] = editor.parameters
 
   for (t <- editor.tags) {
     addTag(t)

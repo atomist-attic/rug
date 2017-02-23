@@ -1,27 +1,16 @@
 package com.atomist.param
 
 import com.atomist.project.common.{IllformedParametersException, InvalidParametersException, MissingParametersException}
-import com.atomist.rug.runtime.ParameterizedRug
-
-import scala.collection.mutable.ListBuffer
 
 /**
   * Support trait for implementations of Parameterized.
   */
 trait ParameterizedSupport
-  extends ParameterizedRug {
+  extends Parameterized {
 
-  private val params = new ListBuffer[Parameter]
 
-  override final def parameters: Seq[Parameter] = params.filterNot(_ == null)
+   override def parameters: Seq[Parameter] = Nil
 
-  protected def addParameter(tp: Parameter): Unit = {
-    if (!params.exists(p => tp.name == p.name)) {
-      params += tp
-    }
-  }
-
-  protected def addParameters(tps: Seq[Parameter]): Unit = tps.foreach(p => addParameter(p))
 
   /**
     * Fill out any default values not present in pvs but are required.

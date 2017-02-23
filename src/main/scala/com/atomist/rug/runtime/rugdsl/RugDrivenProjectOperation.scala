@@ -37,15 +37,24 @@ abstract class RugDrivenProjectOperation(
 
   private var context: Seq[ProjectOperation] = Nil
 
-  program.parameters.foreach(
-    addParameter
-  )
+  private val params = new ListBuffer[Parameter] ++ program.parameters
+
+  override def parameters: Seq[Parameter] = {
+    //remove duplicates and maintain ordering
+    params.foldLeft[Seq[Parameter]](Nil) { (acc, par) =>
+      if(acc.exists(p => p.name == par.name)){
+        acc
+      }else{
+        acc :+ par
+      }
+    }
+  }
 
   program.tags.foreach(t =>
     addTag(Tag(t, t))
   )
 
-  protected override def operations = context
+  protected override def operations: Seq[ProjectOperation] = context
 
   override def imports: Seq[Import] = program.imports
 
@@ -71,7 +80,7 @@ abstract class RugDrivenProjectOperation(
     }
 
     for (newParam <- paramsToAdd)
-      addParameter(newParam)
+      params += newParam
     for {
       roo <- program.runs
       arg <- roo.args
@@ -114,9 +123,9 @@ abstract class RugDrivenProjectOperation(
     */
   protected def onSetContext(): Unit
 
-  override val name = namespaced(program.name, namespace)
+  override val name: String = namespaced(program.name, namespace)
 
-  override def description = program.description
+  override def description: String = program.description
 
   override def toString =
     s"${getClass.getName} name=${program.name},description=${program.description}, wrapping \n$program"

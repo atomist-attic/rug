@@ -24,7 +24,8 @@ class ProjectEditorTest extends FlatSpec with Matchers {
   val args = SimpleParameterValues.Empty
 
   val ed: ProjectEditor = new ProjectEditorSupport {
-    addParameter(Parameter("class", ParameterValidationPatterns.JavaClass))
+
+    override def parameters = Seq(Parameter("class", ParameterValidationPatterns.JavaClass))
 
     override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
       SuccessfulModification(as)

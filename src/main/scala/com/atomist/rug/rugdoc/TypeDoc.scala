@@ -37,7 +37,7 @@ class TypeDoc(
 
   import TypeDoc._
 
-  addParameter(Parameter(OutputPathParam, ".*").
+  override def parameters: Seq[Parameter] = Seq(Parameter(OutputPathParam, ".*").
     setRequired(false).
     setDisplayName("Path for created doc").
     setDefaultValue(DefaultDocName))

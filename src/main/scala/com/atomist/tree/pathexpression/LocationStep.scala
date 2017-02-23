@@ -50,7 +50,8 @@ case class LocationStep(axis: AxisSpecifier,
   * Result of parsing a path expression.
   */
 case class PathExpression(locationSteps: Seq[LocationStep]) {
-  override def toString = locationSteps.mkString("/")
+
+  override def toString: String = locationSteps.mkString("/")
 
   def dropLastStep: PathExpression = copy(locationSteps = locationSteps.dropRight(1))
 }

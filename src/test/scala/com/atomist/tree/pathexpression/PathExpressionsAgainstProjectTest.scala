@@ -8,6 +8,7 @@ import com.atomist.rug.kind.elm.ElmModuleMutableView
 import com.atomist.rug.kind.java.JavaClassOrInterfaceView
 import com.atomist.rug.kind.pom.PomMutableView
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.TreeNode
 import org.scalatest.{Assertions, FlatSpec, Matchers}
 
 /**
@@ -38,6 +39,59 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
       case wtf => fail(s"Should have returned an error, not $wtf")
     }
   }
+
+  it should "#360: handle valid string path attribute on file" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
+    val expr = "/File()/@path"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Right(nodes) =>
+        assert(nodes.size === proj.files.size)
+      case wtf => fail(s"Should have returned files, not $wtf")
+    }
+  }
+
+  it should "#360: handle valid int path attribute on file" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
+    val expr = "/File()/@lineCount"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Right(nodes) =>
+        assert(nodes.size === proj.files.size)
+        nodes.foreach(n =>
+          assert(n.asInstanceOf[TreeNode].value.toInt > 0)
+        )
+      case wtf => fail(s"Should have returned files, not $wtf")
+    }
+  }
+
+  it should "#360: handle valid boolean path attribute on file" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
+    val expr = "/File()/@isWellFormed"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Right(nodes) =>
+        assert(nodes.size === proj.files.size)
+        nodes.foreach(n =>
+          assert(n.asInstanceOf[TreeNode].value.toBoolean)
+        )
+      case wtf => fail(s"Should have returned files, not $wtf")
+    }
+  }
+
+  it should "#360: handle forbidden string path attribute on file" in {
+    val proj = ParsingTargets.NonSpringBootMavenProject
+    val pmv = new ProjectMutableView(proj)
+    val expr = "/File()/@toString"
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Left(errMessage) =>
+        assert(errMessage.contains("toString"))
+      case wtf => fail(s"Should have failed, not returned $wtf")
+    }
+  }
+
+  // Code exists to support this scenario, but it's hard to think of a type that it could be tested on
+  //it should "#360: handle graph node attribute on node"
 
   it should "not find missing file in project" in {
     val proj = ParsingTargets.NonSpringBootMavenProject
@@ -108,7 +162,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn3.right.get.size === 1)
     rtn3.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -135,7 +189,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -147,7 +201,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -159,7 +213,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -196,7 +250,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -208,7 +262,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -220,7 +274,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -232,7 +286,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceView =>
-    
+
     }
   }
 
@@ -387,7 +441,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: FileArtifactBackedMutableView =>
-      
+
       case x => fail(s"failed to get FileArtifactBackedMutableView: ${x.getClass}")
     }
   }
@@ -400,7 +454,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: PomMutableView =>
-      
+
       case x => fail(s"failed to get PomMutableView: ${x.getClass}")
     }
   }
@@ -413,7 +467,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 3)
     rtn.right.get.foreach {
       case _: PomMutableView =>
-      
+
       case x => fail(s"failed to get PomMutableView: ${x.getClass}")
     }
   }
@@ -426,7 +480,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 3)
     rtn.right.get.foreach {
       case _: PomMutableView =>
-      
+
       case x => fail(s"failed to get PomMutableView: ${x.getClass}")
     }
   }
@@ -439,7 +493,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: ElmModuleMutableView =>
-      
+
       case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
     }
   }

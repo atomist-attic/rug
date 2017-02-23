@@ -3,7 +3,6 @@ package com.atomist.tree.pathexpression
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.AddressableTreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
@@ -63,26 +62,9 @@ case class NodesWithTag(tag: String)
           ExecutionResult(findMeUnder(tn, typeRegistry))
         case Descendant =>
           val allDescendants = Descendant.selfAndAllDescendants(tn)
-          val found = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
-
-          // We may have duplicates in the found collection because, for example,
-          // we might find the Java() node SomeClass.java under the directory "/src"
-          // and under "/src/main" and under the actual file.
-          // So check that our returned types have distinct backing objects
-          var nodeAddressesSeen: Set[String] = Set()
-          var toReturn = List.empty[GraphNode]
-          found.foreach {
-            case mv: AddressableTreeNode =>
-              if (!nodeAddressesSeen.contains(mv.address)) {
-                nodeAddressesSeen = nodeAddressesSeen + mv.address
-                toReturn = toReturn :+ mv
-              }
-            case n =>
-              // There's no concept of an address here, so we have to take on trust that
-              // we didn't find this thing > once
-              toReturn = toReturn :+ n
-          }
-          ExecutionResult(toReturn)
+          val found: Seq[GraphNode] = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+          ExecutionResult(NodeTest.dedupe(found))
+        case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")
       }
     }
     catch {

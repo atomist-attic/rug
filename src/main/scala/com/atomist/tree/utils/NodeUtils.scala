@@ -27,4 +27,13 @@ object NodeUtils {
     )
       .map(m => m.invoke(n, args: _*).asInstanceOf[T])
   }
+
+  def hasNoArgMethod[T](n: GraphNode, methodName: String)
+                              (implicit tag: ClassTag[T]): Boolean = {
+    ReflectionUtils.getAllDeclaredMethods(n.getClass).exists(
+      m => m.getName == methodName && m.getParameterCount == 0 && {
+      //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
+      tag.runtimeClass.isAssignableFrom(m.getReturnType)
+    })
+  }
 }

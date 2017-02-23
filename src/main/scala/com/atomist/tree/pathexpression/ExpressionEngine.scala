@@ -9,10 +9,10 @@ import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
   */
 object ExecutionResult {
 
-  type ExecutionResult = Either[String, List[GraphNode]]
+  type ExecutionResult = Either[String, Seq[GraphNode]]
 
   def apply(nodes: Seq[GraphNode]): ExecutionResult =
-    Right(nodes.distinct.toList)
+    Right(nodes.distinct)
 
   val empty: ExecutionResult = Right(Nil)
 

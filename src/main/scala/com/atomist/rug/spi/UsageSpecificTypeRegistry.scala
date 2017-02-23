@@ -4,9 +4,6 @@ package com.atomist.rug.spi
   * Decorating TypeRegistry
   * Try to resolve from the new types first, then fallback to the shared delegate.
   * One of these is instantiated per usage.
-  *
-  * @param delegate
-  * @param newTypes
   */
 class UsageSpecificTypeRegistry(delegate: TypeRegistry,
                                 newTypes: Seq[Typed]) extends TypeRegistry {

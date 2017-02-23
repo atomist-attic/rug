@@ -47,13 +47,16 @@ object PlanUtils {
 
   private def planToTree(plan: Plan): BabyTree = {
 
-    def respondableToTree(respondable: Respondable): BabyTree = {
-      val i = instructionToString(respondable.instruction)
-
-      val onSuccessChild = respondable.onSuccess.map(callbackToTree("onSuccess", _))
-      val onFailureChild = respondable.onFailure.map(callbackToTree("onFailure", _))
-
-      BabyTree(i, onSuccessChild.toSeq ++ onFailureChild)
+    def respondableToTree(plannable: Plannable): BabyTree = {
+      val i = instructionToString(plannable.instruction)
+      plannable match {
+        case r: Respondable =>
+          val onSuccessChild = r.onSuccess.map(callbackToTree("onSuccess", _))
+          val onFailureChild = r.onFailure.map(callbackToTree("onFailure", _))
+          BabyTree(i, onSuccessChild.toSeq ++ onFailureChild)
+        case nr: Nonrespondable =>
+          BabyTree(i, Nil)
+      }
     }
 
     BabyTree("Plan",

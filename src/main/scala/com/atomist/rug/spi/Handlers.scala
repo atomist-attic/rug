@@ -1,7 +1,7 @@
 package com.atomist.rug.spi
 
 import com.atomist.param.ParameterValue
-import com.atomist.rug.spi.Handlers.Instruction.Detail
+import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
 
 import scala.concurrent.Future
 
@@ -10,7 +10,7 @@ import scala.concurrent.Future
   */
 object Handlers {
 
-  case class Plan(messages: Seq[Message], instructions: Seq[Respondable]) extends Callback
+  case class Plan(messages: Seq[Message], instructions: Seq[Plannable]) extends Callback
 
   case class Message(body: MessageBody,
                      instructions: Seq[Presentable],
@@ -18,9 +18,15 @@ object Handlers {
 
   sealed trait Callback
 
-  case class Respondable(instruction: Instruction,
+  sealed trait Plannable {
+    def instruction: Instruction
+  }
+
+  case class Respondable(instruction: RespondableInstruction,
                          onSuccess: Option[Callback],
-                         onFailure: Option[Callback])
+                         onFailure: Option[Callback]) extends Plannable
+
+  case class Nonrespondable(instruction: NonrespondableInstruction) extends Plannable
 
   case class Presentable(instruction: Instruction, label: Option[String])
 
@@ -50,17 +56,20 @@ object Handlers {
       }
     }
 
-    case class Generate(detail: Detail) extends Instruction
+    sealed trait RespondableInstruction extends Instruction
+    sealed trait NonrespondableInstruction extends Instruction
 
-    case class Edit(detail: Detail) extends Instruction
+    case class Generate(detail: Detail) extends RespondableInstruction
 
-    case class Review(detail: Detail) extends Instruction
+    case class Edit(detail: Detail) extends RespondableInstruction
 
-    case class Execute(detail: Detail) extends Instruction
+    case class Review(detail: Detail) extends RespondableInstruction
 
-    case class Command(detail: Detail) extends Instruction
+    case class Execute(detail: Detail) extends RespondableInstruction
 
-    case class Respond(detail: Detail) extends Instruction with Callback
+    case class Command(detail: Detail) extends NonrespondableInstruction
+
+    case class Respond(detail: Detail) extends NonrespondableInstruction with Callback
 
   }
 

@@ -20,7 +20,7 @@ class MustacheMergeTool(templateContent: ArtifactSource)
 
   import MustacheMergeTool._
 
-  private val mf = new DefaultMustacheFactory(new LocalizedMustacheResolver)
+  private val mf = new DefaultMustacheFactory(new ArtifactSourceBackedMustacheResolver(templateContent.underPath(".atomist/templates")))
 
   override def isTemplate(path: String): Boolean =
     SupportedExtensions.exists(extension => path.endsWith(extension))

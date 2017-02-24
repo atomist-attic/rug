@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added support for replacing tokens with secrets in RugFunction parameters
 -   Added support for resolving secrets during Plan execution
 -   Added support for MappedParameters to pull config from other systems
 -   Added support for Secrets in RugCommands

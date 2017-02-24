@@ -78,6 +78,9 @@ class InvalidHandlerResultException(msg: String)
 class MissingSecretException(msg: String)
   extends BadRugException(msg)
 
+class InvalidSecretException(msg: String)
+  extends BadRugException(msg)
+
 class RugNotFoundException(msg: String)
   extends BadRugException(msg)
 

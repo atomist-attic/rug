@@ -12,7 +12,8 @@ import scala.collection.JavaConverters._
 
 class ServiceLoaderCommandRegistry extends CommandRegistry with LazyLogging {
 
-  private lazy val commands: Seq[Command[TreeNode]] = {
+  // Given the class loader hierachy we need to load the commands each time
+  private def commands: Seq[Command[TreeNode]] = {
     ServiceLoader.load(classOf[Command[_]]).asScala.map {
       case c: Command[TreeNode @unchecked] =>
         logger.info(s"Registered command '${c.name}'")

@@ -19,7 +19,8 @@ class ServiceLoaderTypeRegistry
   extends TypeRegistry
     with LazyLogging {
 
-  private lazy val typesMap: Map[String, Typed] = {
+  // Given the class loader hierachy we need to load the commands each time
+  private def typesMap: Map[String, Typed] = {
     ServiceLoader.load(classOf[Typed]).asScala.map {
       case t: Typed =>
         logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")

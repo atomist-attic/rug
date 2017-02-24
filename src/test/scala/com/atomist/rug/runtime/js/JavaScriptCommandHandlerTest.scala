@@ -3,7 +3,8 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptRugArchiveReader}
 import com.atomist.project.common.MissingParametersException
-import com.atomist.rug.runtime.{AddressableRug, ResponseHandler}
+import com.atomist.rug.MissingSecretException
+import com.atomist.rug.runtime.{AddressableRug, CommandHandler, ResponseHandler}
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers.{InstructionError, InstructionResult, Plan, Status}
 import com.atomist.rug.spi.{Handlers, Secret}
@@ -184,7 +185,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val responseHandler = rugs.responseHandlers.head
 
     val plan = com.handle(null,SimpleParameterValues.Empty).get
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Seq(new TestResponseHandler(responseHandler)), null, null, new SecretResolver() {
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Seq(new TestResponseHandler(responseHandler)), null, null, new TestSecretResolver(null) {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil}))
 
     val results = Await.result(runner.run(plan, ""), 10.seconds)
@@ -256,7 +257,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     fn.clearSecrets
     fn.addSecret(Secret("very", "/secret/thingy"))
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil, null, null, new SecretResolver() {
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil, null, null, new TestSecretResolver(handlers.head) {
       /**
         * Resolve a bunch of secrets at once
         *
@@ -304,4 +305,6 @@ class TestResponseHandler(r: ResponseHandler) extends AddressableRug with Respon
     */
   override def parameters: Seq[Parameter] = ???
 }
+
+
 

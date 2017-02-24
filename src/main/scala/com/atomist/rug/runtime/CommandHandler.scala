@@ -12,7 +12,7 @@ trait CommandHandler
   extends SecretAwareRug
     with MappedParameterizedRug {
 
-  val intent: Seq[String]
+  def intent: Seq[String]
 
   def handle(ctx: RugContext, params: ParameterValues): Option[Plan]
 }

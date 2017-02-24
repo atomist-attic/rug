@@ -59,6 +59,11 @@
             <version>1.0.6</version>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.sourcemap</groupId>
+            <artifactId>sourcemap</artifactId>
+            <version>1.7.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.julianthome</groupId>
             <artifactId>inmemantlr-api</artifactId>
             <version>1.3.2</version>
@@ -334,6 +339,12 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>atlassian</id>
+            <name>Atlassian</name>
+            <url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>
+
         </repository>
     </repositories>
     <distributionManagement>

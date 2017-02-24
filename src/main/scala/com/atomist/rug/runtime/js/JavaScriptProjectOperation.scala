@@ -61,14 +61,15 @@ abstract class JavaScriptProjectOperation(
   /**
     * Convenience method that will try `__name` first for decorated things
     */
-  protected def getMember(name: String, someVar: ScriptObjectMirror = jsVar) : AnyRef = {
+  protected def getMember(name: String, someVar: ScriptObjectMirror = jsVar): AnyRef = {
     val decorated = s"__$name"
-    if(someVar.hasMember(decorated)){
+    if (someVar.hasMember(decorated)) {
       someVar.getMember(decorated)
-    }else{
+    } else {
       someVar.getMember(name)
     }
   }
+
   /**
     * Invoke the given member of the JavaScript class with these arguments, processing them as appropriate
     *
@@ -77,49 +78,50 @@ abstract class JavaScriptProjectOperation(
     *               appropriate JavaScript types if necessary
     * @return result of the invocation
     */
-  protected def invokeMemberWithParameters(member: String, args: Object*): Any = {
+  protected def invokeMemberWithParameters(member: String, args: Object*): Any =
+    jsc.withEnhancedExceptions {
+      val clone = cloneVar(jsVar)
 
-    val clone = cloneVar(jsVar)
+      // Translate parameters if necessary
+      val processedArgs = args.collect {
+        case poa: ParameterValues =>
+          val params = poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
+          setParamsIfDecorated(clone, params)
+          params
+        case x => x
+      }
 
-    // Translate parameters if necessary
-    val processedArgs = args.collect {
-      case poa: ParameterValues =>
-        val params = poa.parameterValues.map(p => p.getName -> p.getValue).toMap.asJava
-        setParamsIfDecorated(clone,params)
-        params
-      case x => x
+      val som = clone.asInstanceOf[ScriptObjectMirror]
+      try {
+        som.callMember(member, processedArgs: _*)
+      } catch {
+        case NonFatal(e) =>
+          if (!som.hasMember(member)) {
+            throw new RugRuntimeException(null, s"Could not invoke member $member on $jsVar, because it doesn't have it", e)
+          }
+          e.getCause match {
+            case pxe: PathExpressionException =>
+              throw pxe
+            case _ =>
+              throw e
+          }
+      }
     }
-
-    val som = clone.asInstanceOf[ScriptObjectMirror]
-    try {
-      som.callMember(member, processedArgs: _*)
-    } catch {
-      case NonFatal(e) =>
-        if (!som.hasMember(member)) {
-          throw new RugRuntimeException(null, s"Could not invoke member $member on $jsVar, because it doesn't have it", e)
-        }
-        e.getCause match {
-          case pxe: PathExpressionException =>
-            throw pxe
-          case _ =>
-            throw e
-        }
-    }
-  }
 
   /**
     * Separate for test
     */
-  private[js] def cloneVar (jsVar: ScriptObjectMirror) : ScriptObjectMirror = {
+  private[js] def cloneVar(jsVar: ScriptObjectMirror): ScriptObjectMirror = {
     val bindings = new SimpleBindings()
-    bindings.put("rug",jsVar)
+    bindings.put("rug", jsVar)
 
     //TODO - why do we need this?
-    jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach{
-      case (k: String, v: AnyRef) => bindings.put(k,v)
+    jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach {
+      case (k: String, v: AnyRef) => bindings.put(k, v)
     }
     jsc.engine.eval("Object.create(rug);", bindings).asInstanceOf[ScriptObjectMirror]
   }
+
   /**
     * Make sure we only set fields if they've been decorated with @parameter
     */
@@ -134,15 +136,15 @@ abstract class JavaScriptProjectOperation(
     }
     params.asScala.foreach {
       case (k: String, v: AnyRef) =>
-        if(decoratedParamNames.contains(k)){
-          clone.put(k,v)
+        if (decoratedParamNames.contains(k)) {
+          clone.put(k, v)
         }
     }
   }
 
   protected def readTagsFromMetadata(someVar: ScriptObjectMirror): Seq[Tag] = {
     Try {
-      getMember("tags",someVar) match {
+      getMember("tags", someVar) match {
         case som: ScriptObjectMirror =>
           val stringValues = som.values().asScala collect {
             case s: String => s
@@ -155,10 +157,11 @@ abstract class JavaScriptProjectOperation(
 
   /**
     * Either read the parameters field or look for annotated parameters
+    *
     * @return
     */
   protected def readParametersFromMetadata: Seq[Parameter] = {
-      getMember("parameters") match {
+    getMember("parameters") match {
       case ps: ScriptObjectMirror if !ps.isEmpty =>
         ps.asScala.collect {
           case (_, details: ScriptObjectMirror) => parameterVarToParameter(jsVar, details)
@@ -167,7 +170,7 @@ abstract class JavaScriptProjectOperation(
     }
   }
 
-  protected def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror) : Parameter = {
+  protected def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror): Parameter = {
 
     val pName = details.get("name").asInstanceOf[String]
     val pPattern = details.get("pattern").asInstanceOf[String]
@@ -185,11 +188,11 @@ abstract class JavaScriptProjectOperation(
 
     parameter.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
     val disp = details.get("displayable")
-    parameter.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
+    parameter.setDisplayable(if (disp != null) disp.asInstanceOf[Boolean] else true)
 
-    if(details.hasMember("required")){
+    if (details.hasMember("required")) {
       parameter.setRequired(details.get("required").asInstanceOf[Boolean])
-    }else{
+    } else {
       parameter.setRequired(true)
     }
 
@@ -217,11 +220,12 @@ abstract class JavaScriptProjectOperation(
         parameter.setDefaultValue(x)
       case _ =>
     }
-    if(details.get("decorated").asInstanceOf[Boolean] && rug.hasMember(pName)){
+    if (details.get("decorated").asInstanceOf[Boolean] && rug.hasMember(pName)) {
       parameter.setDefaultValue(rug.getMember(pName).toString)
     }
     parameter
   }
+
   /**
     * Convenient class allowing subclasses to wrap projects in a safe, updating proxy
     *

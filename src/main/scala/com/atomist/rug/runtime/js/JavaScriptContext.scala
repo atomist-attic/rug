@@ -6,9 +6,11 @@ import javax.script._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.source.ArtifactSource
+import com.atomist.tree.content.text.{LineInputPosition, LineInputPositionImpl}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.ECMAException
 
 import scala.collection.JavaConverters._
 
@@ -45,7 +47,8 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   try {
     Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
-  } catch {
+  }
+  catch {
     case e: Exception =>
       throw new RuntimeException("Unable to set up ArtifactSource based module loader", e)
   }
@@ -58,13 +61,32 @@ class JavaScriptContext(val rugAs: ArtifactSource,
   for (f <- filtered.allFiles) {
     val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
     try {
-      engine.eval(s"exports.$varName = require('./${f.path.dropRight(3)}');") //because otherwise the loader doesn't know about the paths and can't resolve relative modules
-    } catch {
+      // Because otherwise the loader doesn't know about the paths and can't resolve relative modules
+      val toEval = s"exports.$varName = require('./${f.path.dropRight(3)}');"
+      // TODO is it safe to keep calling this?
+      engine.put(ScriptEngine.FILENAME, f.path)
+      engine.eval(toEval)
+    }
+    catch {
       case x: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", x)
       case x: RuntimeException => x.getCause match {
         case c: ScriptException => throw new RugJavaScriptException(s"Error during eval of: ${f.path}", c)
         case c => throw x
       }
+    }
+  }
+
+  /**
+    * Translate to more informative exceptions, allowing for possible JS to TS translation
+    */
+  @throws[JavaScriptRuntimeException]
+  def withEnhancedExceptions[T](result: => T): T = {
+    try {
+      result
+    }
+    catch {
+      case ecmaEx: ECMAException =>
+        throw ExceptionEnhancer.enhanceIfPossible(rugAs, ecmaEx)
     }
   }
 
@@ -111,7 +133,9 @@ class JavaScriptContext(val rugAs: ArtifactSource,
       new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
     }
   }
+
 }
+
 /**
   * Information about a JavaScript var exposed in the project scripts
   *

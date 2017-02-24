@@ -5,6 +5,7 @@ import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree._
+import com.atomist.tree.utils.NodeUtils
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
@@ -35,10 +36,7 @@ class jsSafeCommittingProxy(
 
   override def nodeName: String = node.nodeName
 
-  override def value: String = node match {
-    case tn: TreeNode => tn.value
-    case _ => ""
-  }
+  override def value: String = NodeUtils.value(node)
 
   override def childNodeNames: Set[String] = node.relatedNodeNames
 
@@ -94,7 +92,7 @@ class jsSafeCommittingProxy(
 
   private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
-      case navigation if navigation == "parent" || node.relatedNodeNames.contains(navigation) =>
+      case navigation if node.relatedNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
         throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
@@ -127,7 +125,6 @@ class jsSafeCommittingProxy(
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
           node match {
-            // case c: { def commit(): Unit } =>
             case c: MutableView[_] if !op.readOnly => c.commit()
             case _ =>
           }
@@ -164,15 +161,7 @@ class jsSafeCommittingProxy(
 
       val r: GraphNode = node match {
         case ctn: ContainerTreeNode =>
-          val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = name match {
-            case "parent" =>
-              // Not all nodes have a parent
-              ctn match {
-                case hap: ({def parent(): TreeNode})@unchecked => Seq(hap.parent())
-                case _ => Seq(null)
-              }
-            case _ => ctn.childrenNamed(name)
-          }
+          val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = ctn.childrenNamed(name)
           nodesAccessedThroughThisFunctionCall.toList match {
             case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
             case null :: Nil => null

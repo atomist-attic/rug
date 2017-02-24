@@ -40,9 +40,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
         rugFunctionRegistry.find(detail.name) match {
           case Some(fn) =>
             val replaced = secretResolver.replaceSecretTokens(detail.parameters)
-
             val resolved = SimpleParameterValues(replaced ++ secretResolver.resolveSecrets(fn.secrets))
-
             fn.run(resolved)
           case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
         }

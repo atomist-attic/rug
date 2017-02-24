@@ -54,7 +54,7 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
        |               },
        |               onSuccess: {kind: "respond", name: "Kitties"},
-       |               onError: {text: "No kitties for you today!"}
+       |               onError: {body: "No kitties for you today!"}
        |             });
        |
        |    const anEmptyPlan = new Plan()
@@ -73,7 +73,7 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {message: "planception"}
        |               },
        |               onSuccess: aPlansPlan,
-       |               onError: {text: "Error!"}
+       |               onError: {body: "Error!"}
        |             });
        |    return plan;
        |  }

@@ -47,7 +47,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
       |               },
       |               onSuccess: {kind: "respond", name: "Kitties"},
-      |               onError: {text: "No kitties for you today!"}})
+      |               onError: {body: "No kitties for you today!"}})
       |    return result;
       |  }
       |}
@@ -177,6 +177,31 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         |export let command = new KittieFetcher();
         |
     """.stripMargin)
+
+  val simpleCommandHandlerReturningMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    """
+      |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
+      |import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
+      |
+      |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
+      |class KittieFetcher implements HandleCommand{
+      |
+      |  handle(ctx: HandlerContext) : Message {
+      |    return new Message("Up and at 'em!");
+      |  }
+      |}
+      |
+      |export let command = new KittieFetcher();
+      |
+    """.stripMargin)
+
+  it should "allow us to return a message directly from a handler" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningMessage))
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    assert(plan.messages.size === 1)
+  }
 
   it should "be able to schedule an Execution and handle its response" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstructionCallingRespondable))

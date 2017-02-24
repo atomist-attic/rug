@@ -35,6 +35,7 @@ class JavaScriptCommandHandlerFinder
           case s: String => s
         }
         stringValues.toSeq
+      case _ => Nil
     }
   }
 

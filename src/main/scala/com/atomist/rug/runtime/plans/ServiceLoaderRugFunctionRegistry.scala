@@ -25,7 +25,7 @@ class ServiceLoaderRugFunctionRegistry
       case Some(tm) => tm
       case _ =>
         val functionssMap: Map[String, RugFunction] = ServiceLoader.load(classOf[RugFunction]).asScala.map {
-          case t: Typed =>
+          case t: RugFunction =>
             logger.info(s"Registered rug function '${t.name}, with class ${t.getClass},description=${t.description}")
             t.name -> t
           case wtf =>

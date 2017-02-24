@@ -94,7 +94,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
   }
 
   private def runNestedPlan(plan: Plan, input: Option[AnyRef] = None) = {
-    val planRunner = nestedPlanRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedPlanRunner))
+    val planRunner = nestedPlanRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedPlanRunner, loggerOption))
     planRunner.run(plan, input.orNull)
   }
 }

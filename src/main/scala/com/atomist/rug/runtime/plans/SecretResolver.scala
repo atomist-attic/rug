@@ -2,15 +2,16 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.{InvalidSecretException, MissingSecretException}
-import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.{CommandHandler, Rug}
 import com.atomist.rug.spi.Secret
 
 /**
   * Used by PlanRunner implementations to resolve secrets declared by CommandHandlers
   * and required by RugFunctions
   *
+  * @param rug - the com mand handler with declared secrets!
   */
-abstract class SecretResolver (handler: CommandHandler) {
+abstract class SecretResolver (rug: Option[Rug]) {
 
   //basically things like `path/to/secret/with?param=this&other=that`
   private val commonSecretRegExpStr = "([\\w]+(/[\\w]+)+)+((\\?[\\w]+\\=[\\w]+)+(\\&[\\w]+\\=[\\w]+)*)*"
@@ -27,22 +28,26 @@ abstract class SecretResolver (handler: CommandHandler) {
     * @return
     */
   def replaceSecretTokens(parameters: Seq[ParameterValue]): Seq[ParameterValue] = {
-    parameters.map { param =>
-      param.getValue match {
-        case s: String =>
-          val replaced = handler.secrets.foldLeft[String](s) {(cur, secret) =>
-            if(secretPathRegExp.findFirstIn(secret.path).isEmpty){
-              throw new InvalidSecretException(s"Secret path: ${secret.path} is invalid on Command Handler: ${handler.name}")
-            }
-            cur.replace(s"#{${secret.path}}", resolveSecret(secret).getValue.toString)
+    rug match {
+      case Some(handler: CommandHandler) =>
+        parameters.map { param =>
+          param.getValue match {
+            case s: String =>
+              val replaced = handler.secrets.foldLeft[String](s) {(cur, secret) =>
+                if(secretPathRegExp.findFirstIn(secret.path).isEmpty){
+                  throw new InvalidSecretException(s"Secret path: ${secret.path} is invalid on Command Handler: ${handler.name}")
+                }
+                cur.replace(s"#{${secret.path}}", resolveSecret(secret).getValue.toString)
+              }
+              val unresolved = secretTokenPathRegExp.findAllMatchIn(replaced).toSeq
+              if(unresolved.nonEmpty){
+                throw new MissingSecretException(s"Found unresolved secrets in parameter: ${param.getName}: ${unresolved.mkString(",")}")
+              }
+              SimpleParameterValue(param.getName,replaced)
+            case _ => param
           }
-          val unresolved = secretTokenPathRegExp.findAllMatchIn(replaced).toSeq
-          if(unresolved.nonEmpty){
-            throw new MissingSecretException(s"Found unresolved secrets in parameter: ${param.getName}: ${unresolved.mkString(",")}")
-          }
-          SimpleParameterValue(param.getName,replaced)
-        case _ => param
-      }
+        }
+      case _ => parameters
     }
   }
 

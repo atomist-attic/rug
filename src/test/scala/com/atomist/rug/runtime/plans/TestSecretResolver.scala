@@ -5,11 +5,8 @@ import com.atomist.rug.MissingSecretException
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.spi.Secret
 
-/**
-  * Created by kipz on 24/02/2017.
-  */
 class TestSecretResolver(handler: CommandHandler)
-  extends SecretResolver(handler) {
+  extends SecretResolver(Some(handler)) {
   /**
     * Resolve a single secret
     *

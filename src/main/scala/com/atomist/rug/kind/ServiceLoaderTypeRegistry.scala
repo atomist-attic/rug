@@ -1,12 +1,7 @@
 package com.atomist.rug.kind
 
-import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
-import com.typesafe.scalalogging.LazyLogging
-import _root_.java.util.ServiceLoader
-
-import _root_.scala.collection.mutable.WeakHashMap
-import _root_.scala.collection.JavaConverters._
+import com.atomist.util.ServiceLoaderBackedExtensionProvider
 
 /**
   * Use JDK ServiceLocator to load Type classes. Each
@@ -15,35 +10,13 @@ import _root_.scala.collection.JavaConverters._
   *
   * @see [[Type]]
   */
-class ServiceLoaderTypeRegistry
-  extends TypeRegistry
-    with LazyLogging {
+class ServiceLoaderTypeRegistry(keyProvider: (Typed) => String = (r) => r.name)
+  extends ServiceLoaderBackedExtensionProvider[Typed] (keyProvider)
+    with TypeRegistry {
 
-  // Sharing Rug in a hierarchy of CLassLoaders requires the ServiceLoader to be triggered
-  // for each ClassLoader; using WeakHashMap so ClassLoader references can be garbage collected
-  private val typesMapByClassLoader = WeakHashMap[ClassLoader, Map[String, Typed]]()
+  override def findByName(kind: String): Option[Typed] = providerMap.get(kind)
 
-  private def typesMap: Map[String, Typed] = {
-    typesMapByClassLoader.get(Thread.currentThread().getContextClassLoader) match {
-      case Some(tm) => tm
-      case _ =>
-        val typesMap: Map[String, Typed] = ServiceLoader.load(classOf[Typed]).asScala.map {
-          case t: Typed =>
-            logger.info(s"Registered type extension '${t.name}, with class ${t.getClass},description=${t.description}")
-            val st = t
-            logger.debug(s"Found operations: ${st.allOperations.map(_.name).mkString(",")}")
-            t.name -> t
-          case wtf =>
-            throw new RugRuntimeException("ExtensionType", s"Type class ${wtf.getClass} must implement Typed interface", null)
-        }.toMap
-        typesMapByClassLoader += Thread.currentThread().getContextClassLoader -> typesMap
-        typesMap
-    }
-  }
+  override def typeNames: Traversable[String] = providerMap.keys
 
-  override def findByName(kind: String): Option[Typed] = typesMap.get(kind)
-
-  override def typeNames: Traversable[String] = typesMap.keys
-
-  override def types: Seq[Typed] = typesMap.values.toSeq
+  override def types: Seq[Typed] = providerMap.values.toSeq
 }

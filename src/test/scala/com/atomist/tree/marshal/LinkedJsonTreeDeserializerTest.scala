@@ -164,4 +164,13 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
     assert(chatChannel.childrenNamed("name").size === 1)
     assert(chatChannel.childrenNamed("id").head.value === "channel-id")
   }
+
+  it should "handle an empty result set" in {
+    val node = LinkedJsonTreeDeserializer.fromJson("[]")
+    assert(node.children.isEmpty)
+    assert(node.nodeTags.isEmpty)
+    assert(node.childNodeTypes.isEmpty)
+    assert(node.value === "")
+    assert(node.nodeName === "empty")
+  }
 }

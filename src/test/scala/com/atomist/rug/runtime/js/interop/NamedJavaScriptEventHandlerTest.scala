@@ -11,6 +11,7 @@ import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.service.{Action, ActionRegistry, Callback, ConsoleMessageBuilder, Rug}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.marshal.EmptyLinkableContainerTreeNode
 import com.atomist.tree.{TerminalTreeNode, TreeNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.util.Visitor
@@ -21,6 +22,7 @@ import scala.collection.JavaConverters._
 object NamedJavaScriptEventHandlerTest {
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
   val treeMaterializer: TreeMaterializer = TestTreeMaterializer
+  val nullReturningTreeMaterializer: TreeMaterializer = EmptyReturningTreeMaterializer
 
   val issuesStuff = StringFileArtifact(atomistConfig.handlersRoot + "/Issues.ts",
   """import {Executor, PathExpression} from '@atomist/rug/operations/Handlers'
@@ -142,6 +144,16 @@ class NamedJavaScriptEventHandlerTest extends FlatSpec with Matchers{
     assert(handler.rootNodeName === "Pipeline")
     handler.handle(SysEvent,null)
   }
+
+  it should "handle empty results and the path expression should not match" in {
+    val har = new HandlerArchiveReader(nullReturningTreeMaterializer, atomistConfig)
+    val handlers = har.handlers("XX", TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(pipelineHandler, issuesStuff)), None, Nil,
+      new ConsoleMessageBuilder("XX", SimpleActionRegistry))
+    assert(handlers.size === 1)
+    val handler = handlers.head
+    assert(handler.rootNodeName === "Pipeline")
+    handler.handle(SysEvent,null)
+  }
 }
 
 object SimpleActionRegistry extends ActionRegistry {
@@ -182,4 +194,11 @@ object TestTreeMaterializer extends TreeMaterializer {
 
 
   override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = rawRootNode
+}
+
+object EmptyReturningTreeMaterializer extends TreeMaterializer {
+
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): TreeNode = new EmptyLinkableContainerTreeNode
+
+  override def hydrate(teamId: String, rawRootNode: TreeNode, pe: PathExpression): TreeNode = ???
 }

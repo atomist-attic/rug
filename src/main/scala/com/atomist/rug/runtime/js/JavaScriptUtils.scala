@@ -25,19 +25,20 @@ trait JavaScriptUtils {
     * @return result of the invocation
     */
   protected def invokeMemberFunction(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, member: String, args: Object*): Any = {
+    jsc.withEnhancedExceptions {
+      val clone = cloneVar(jsc, jsVar)
 
-    val clone = cloneVar(jsc, jsVar)
-
-    // Translate parameters if necessary
-    val processedArgs = args.collect {
-      case args: ParameterValues =>
-        val params = args.parameterValues.map(p => p.getName -> p.getValue).toMap
-        setParameters(clone,params)
-        params.asJava
-      case x => x
+      // Translate parameters if necessary
+      val processedArgs = args.collect {
+        case args: ParameterValues =>
+          val params = args.parameterValues.map(p => p.getName -> p.getValue).toMap
+          setParameters(clone, params)
+          params.asJava
+        case x => x
+      }
+      //TODO wrap parameters in safe committing proxy
+      clone.asInstanceOf[ScriptObjectMirror].callMember(member, processedArgs: _*)
     }
-    //TODO wrap parameters in safe committing proxy
-    clone.asInstanceOf[ScriptObjectMirror].callMember(member,processedArgs: _* )
   }
 
   /**

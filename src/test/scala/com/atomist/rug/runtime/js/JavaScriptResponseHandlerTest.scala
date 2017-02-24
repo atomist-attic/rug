@@ -50,15 +50,8 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
     handler.name should be(kitties)
     handler.description should be (kittyDesc)
     handler.tags.size should be (2)
+    val response = InstructionResponse("It worked! :p", 204, "woot")
     val plan = handler.handle(response, SimpleParameterValues(SimpleParameterValue("name","his dudeness")))
     //TODO validate the plan
   }
-}
-object response extends InstructionResponse {
-
-  override def status: String = "It worked! :p"
-
-  override def code: Int = 204
-
-  override def body: Serializable = "woot".asInstanceOf[Serializable]
 }

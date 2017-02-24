@@ -3,10 +3,6 @@ package com.atomist.rug.runtime
 import java.io.Serializable
 
 /**
-  * The response from Rugs, Executions etc
+  * The response from Rug Functions
   */
-trait InstructionResponse {
-  def status: String
-  def code: Int
-  def body: Serializable
-}
+case class InstructionResponse (status: String, code: Int, body: Serializable)

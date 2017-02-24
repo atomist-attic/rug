@@ -1,7 +1,5 @@
 package com.atomist.rug.runtime.plans
 
-import java.io.Serializable
-
 import com.atomist.param._
 import com.atomist.rug.runtime.InstructionResponse
 import com.atomist.rug.spi.Handlers.{Response, Status}
@@ -35,13 +33,7 @@ class ExampleRugFunction
     */
   override def run(parameters: ParameterValues): Response = {
     validateParameters(parameters)
-    Response(Status.Success,None, None, Some(new InstructionResponse() {
-      override def status: String = ???
-
-      override def code: Int = ???
-
-      override def body: Serializable = parameters.parameterValues.head.getValue.toString
-    }))
+    Response(Status.Success,None, None, Some(InstructionResponse("It worked! :p", 204, parameters.parameterValues.head.getValue.toString)))
   }
 
   /**

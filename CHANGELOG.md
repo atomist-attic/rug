@@ -18,7 +18,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Added support for Command, Event and Response Handlers. All return Plans
 -   Added support for RugFunctions - parameterized JVM functions for Handlers
 
-### CHANGED
+### Fixed
+
+-   Fixed bug in LinkedJsonTreeDeserializer where it threw NPE on empty result set from neo4j-ingester
+    e.g. where the PE didn't match. Now returns EmptyLinkableContainerTreeNode.
+
+### Changed
 
 -   **BREAKING** Only require context when running handlers
 -   **BREAKING** Removed CommandRegistry and related usages

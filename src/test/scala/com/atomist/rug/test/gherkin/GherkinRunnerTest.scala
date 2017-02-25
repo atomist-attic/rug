@@ -1,0 +1,28 @@
+package com.atomist.rug.test.gherkin
+
+import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.source.SimpleFileBasedArtifactSource
+import org.scalatest.{FlatSpec, Matchers}
+
+/**
+  * Created by rod on 2/25/17.
+  */
+class GherkinRunnerTest extends FlatSpec with Matchers {
+
+  import GherkinReaderTest._
+
+  it should "fail without JS" in {
+    val as = SimpleFileBasedArtifactSource(TwoScenarioFile)
+    val grt = new GherkinRunner(new JavaScriptContext(as))
+    //assert(grt.execute().passed === false)
+  }
+
+  it should "pass with passing JS" in {
+    val as = SimpleFileBasedArtifactSource(SimpleFile, PassingSimpleTsFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    assert(grt.execute().passed === false)
+  }
+
+}

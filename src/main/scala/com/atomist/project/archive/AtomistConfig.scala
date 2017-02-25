@@ -90,6 +90,11 @@ trait AtomistConfig {
     f.name.endsWith(jsExtension) && isAtomistSource(f)
   }
 
+  def isJsTest(f:FileArtifact): Boolean = {
+    // TODO fix hard coding
+    f.name.endsWith(jsExtension) && f.path.startsWith(s"$atomistRoot/test")
+  }
+
   def isAtomistSource(f: FileArtifact): Boolean = {
       f.path.startsWith(editorsRoot) ||
       f.path.startsWith(reviewersRoot) ||

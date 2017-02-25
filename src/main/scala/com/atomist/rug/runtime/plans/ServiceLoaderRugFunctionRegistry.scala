@@ -1,29 +1,16 @@
 package com.atomist.rug.runtime.plans
 
-import java.util.ServiceLoader
-
 import com.atomist.rug.spi.{RugFunction, RugFunctionRegistry}
-import com.typesafe.scalalogging.LazyLogging
-
-import scala.collection.JavaConverters._
+import com.atomist.util.ServiceLoaderBackedExtensionProvider
 
 /**
   * Use ServiceLoader to load RugFunction in to a registry
   */
-class ServiceLoaderRugFunctionRegistry
-  extends RugFunctionRegistry with LazyLogging {
-
-  private lazy val functions: Map[String, RugFunction] = {
-    try{
-      ServiceLoader.load(classOf[RugFunction]).asScala.map(r => (r.name, r)).toMap
-    }catch {
-      case x: Throwable =>
-        x.printStackTrace()
-        Map()
-    }
-  }
+class ServiceLoaderRugFunctionRegistry(keyProvider: (RugFunction) => String = (r) => r.name)
+  extends ServiceLoaderBackedExtensionProvider[RugFunction] (keyProvider)
+    with RugFunctionRegistry {
 
   override def find(name: String): Option[RugFunction] = {
-    functions.get(name)
+    providerMap.get(name)
   }
 }

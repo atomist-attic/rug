@@ -10,9 +10,7 @@ class SimpleHandler implements HandleEvent<Issue,Issue>{
   handle(match: Match<Issue,Issue>): Plan {
     let issue = match.root()
     let reopen = issue.reopen
-    reopen.onSuccess = {name: ""}
-  //  reopen.onSuccess = {text: `Issue ${issue.number} has been reopened successfully`}
-  //  reopen.onError = {name: "sendFailureMessage", parameters: {issue: issue, who: "jess"}}
+    reopen.onSuccess = {body: ""}
     return new Plan().add(reopen)
   }
 }
@@ -49,7 +47,7 @@ class LicenseAdder implements HandleCommand{
     result.add({instruction: {kind: "execute",
                     name: "HTTP",
                     parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}},
-                    onError: {text: "No kitties for you today!"}})
+                    onError: {body: "No kitties for you today!"}})
     return result;
   }
 }
@@ -89,9 +87,9 @@ class IssueLister implements HandleCommand{
               }`
                  }
              }).join(",") + "]}"
-             return {text: attachments}
+             return {body: attachments}
          }else{
-            return {text: "You are not crushin' it right now!"}
+            return {body: "You are not crushin' it right now!"}
          }
   }
 }
@@ -108,7 +106,7 @@ class KittieFetcher implements HandleCommand{
                 name: "HTTP",
                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}},
                 onSuccess: {kind: "respond", name: "Kitties"},
-                onError: {text: "No kitties for you today!"}})
+                onError: {body: "No kitties for you today!"}})
     return result;
   }
 }

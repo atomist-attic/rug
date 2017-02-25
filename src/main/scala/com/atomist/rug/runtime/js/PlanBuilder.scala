@@ -53,13 +53,13 @@ class PlanBuilder {
           constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
         }
     }
-    val messageBody = (jsMessage.getMember("body"), jsMessage.getMember("text")) match {
-      case (json: ScriptObjectMirror, _) =>
+    val messageBody = jsMessage.getMember("body") match {
+      case json: ScriptObjectMirror =>
         JsonBody(json.entrySet().toString)
-      case (_, text: String) =>
+      case text: String =>
         MessageText(text)
       case _ =>
-        throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")} or text: ${jsMessage.getMember("text")}")
+        throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")}")
     }
 
     val channelId = jsMessage.getMember("channelId") match {

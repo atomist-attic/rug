@@ -1,13 +1,13 @@
 package com.atomist.rug.runtime.plans
 
-import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond}
+import com.atomist.rug.spi.Handlers.Instruction.Respond
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers._
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
 
 /**
   * Runs Plans in this JVM - i.e. no work distribution.
@@ -22,7 +22,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
   private val logger: Logger = loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)
 
-  override def run(plan: Plan, callbackInput: AnyRef): Future[PlanResult] = {
+  override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
     val messageLog: Seq[MessageDeliveryError] = plan.messages.flatMap { message =>
       Try(messageDeliverer.deliver(message, callbackInput)) match {
         case ScalaFailure(error) =>
@@ -44,7 +44,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))
   }
 
-  private def handleInstruction(plannable: Plannable, callbackInput: AnyRef): Seq[PlanLogEvent] = {
+  private def handleInstruction(plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
     Try { instructionRunner.run(plannable.instruction, callbackInput) } match {
       case ScalaFailure(error) =>
         val msg = s"Failed to run instruction: ${plannable.instruction} - ${error.getMessage}"
@@ -67,7 +67,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
         }
         val callbackResults: Option[Seq[PlanLogEvent]] = callbackOption.map { callback =>
-          Try(handleCallback(callback, response.body)) match {
+          Try(handleCallback(callback, Some(response))) match {
             case ScalaFailure(error) =>
               val msg = s"Failed to run $callback after ${plannable.instruction} - ${error.getMessage}"
               logger.error(msg)
@@ -82,19 +82,19 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     }
   }
 
-  private def handleCallback(callback: Callback, instructionResult: Option[AnyRef]): Seq[PlanLogEvent] = callback match {
+  private def handleCallback(callback: Callback, instructionResult: Option[Response]): Seq[PlanLogEvent] = callback match {
     case m: Message =>
-      messageDeliverer.deliver(m, instructionResult.orNull)
+      messageDeliverer.deliver(m, instructionResult)
       Nil
     case r: Respond =>
-      handleInstruction(Nonrespondable(r), instructionResult.orNull)
+      handleInstruction(Nonrespondable(r), instructionResult)
     case p: Plan =>
       val planResult = runNestedPlan(p, instructionResult)
       Seq(NestedPlanRun(p, planResult))
   }
 
-  private def runNestedPlan(plan: Plan, input: Option[AnyRef] = None) = {
+  private def runNestedPlan(plan: Plan, input: Option[Response] = None) = {
     val planRunner = nestedPlanRunner.getOrElse(new LocalPlanRunner(messageDeliverer, instructionRunner, nestedPlanRunner, loggerOption))
-    planRunner.run(plan, input.orNull)
+    planRunner.run(plan, input)
   }
 }

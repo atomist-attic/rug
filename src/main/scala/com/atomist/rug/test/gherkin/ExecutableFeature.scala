@@ -14,6 +14,8 @@ private[gherkin] case class ExecutableFeature(
                                                definitions: Definitions)
   extends LazyLogging {
 
+  // TODO world concept
+
   def execute(): FeatureResult = {
     FeatureResult(definition.feature,
       definition.feature.getChildren.asScala
@@ -36,7 +38,9 @@ private[gherkin] case class ExecutableFeature(
             Some(runThen(project, step))
         }
       })
-    ScenarioResult(scenario, assertionResults, "")
+    val sr = ScenarioResult(scenario, assertionResults, "")
+    //println(sr)
+    sr
   }
 
   private def runThen(project: ProjectMutableView, step: Step): AssertionResult = {
@@ -44,18 +48,20 @@ private[gherkin] case class ExecutableFeature(
     logger.debug(s"Then for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
+        // TODO #187. We might be interested in a reviewer, in which case we should be able to get at a review context.
+        // Could look for review in the text?
         val r = som.callMember("apply", new jsSafeCommittingProxy(project))
         r match {
+          case b: java.lang.Boolean =>
+            AssertionResult(step.getText, Result(b, som.toString))
           case rsom: ScriptObjectMirror =>
             val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
             //println(s"Raw result=$r, unwrapped = $result")
-            if (result)
-              AssertionResult(step.getText, Passed)
-            else
-              AssertionResult(step.getText, Failed(NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
+              AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
           case wtf => throw new IllegalArgumentException(s"Unexpected: $wtf")
         }
       case None =>
+        println(s"No Then for [${step.getText}]=$somo")
         AssertionResult(step.getText, NotYetImplemented)
     }
   }

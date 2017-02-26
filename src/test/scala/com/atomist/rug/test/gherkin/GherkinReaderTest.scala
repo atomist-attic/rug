@@ -65,7 +65,21 @@ object GherkinReaderTest {
       |Then("happiness ever after", p => Result.Success)
     """.stripMargin
 
+  val FailingSimpleTs =
+    """
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |Given("a file", p => {})
+      |When("it is parsed", p => {})
+      |Then("happiness ever after", p => false)
+    """.stripMargin
+
   val PassingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", PassingSimpleTs)
+
+  val FailingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", FailingSimpleTs)
+
 
   val TwoScenarios =
     """

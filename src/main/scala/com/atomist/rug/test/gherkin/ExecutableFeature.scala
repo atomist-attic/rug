@@ -50,7 +50,7 @@ private[gherkin] case class ExecutableFeature(
       case Some(som) =>
         // TODO #187. We might be interested in a reviewer, in which case we should be able to get at a review context.
         // Could look for review in the text?
-        val r = som.callMember("apply", new jsSafeCommittingProxy(project))
+        val r = som.call("apply", new jsSafeCommittingProxy(project))
         r match {
           case b: java.lang.Boolean =>
             AssertionResult(step.getText, Result(b, som.toString))
@@ -71,7 +71,7 @@ private[gherkin] case class ExecutableFeature(
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.callMember("apply", new jsSafeCommittingProxy(project))
+        som.call("apply", new jsSafeCommittingProxy(project))
       case None =>
         println(s"Warning: When [${step.getText}] not yet implemented")
     }
@@ -82,7 +82,7 @@ private[gherkin] case class ExecutableFeature(
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.callMember("apply", new jsSafeCommittingProxy(project))
+        som.call("apply", new jsSafeCommittingProxy(project))
       case None =>
         println(s"Warning: Given [${step.getText}] not yet implemented")
     }

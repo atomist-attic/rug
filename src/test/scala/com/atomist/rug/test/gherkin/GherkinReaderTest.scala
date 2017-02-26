@@ -54,26 +54,33 @@ object GherkinReaderTest {
       |
     """.stripMargin
 
-  val PassingSimpleTs =
-    """
-      |import {Project} from "@atomist/rug/model/Core"
-      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
-      |
-      |Given("a file", p => {})
-      |When("it is parsed", p => {})
-      |Then("happiness ever after", p => Result.Success)
-    """.stripMargin
-
   val FailingSimpleTs =
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |Given("a file", p => {})
+      |Given("a file", p => {
+      | p.addFile("Gough", "Maintain the rage")
+      |})
+      |When("it is parsed", p => {
+      | p.addFile("Malcolm", "Life wasn't meant to be easy")
+      | p.deleteFile("Gough")
+      |})
+      |Then("happiness ever after", p => p.fileExists("Gough"))
+    """.stripMargin
+
+  val PassingSimpleTs =
+    """
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |Given("a file", p => {
+      | p.addFile("Gough", "Maintain the rage")
+      |})
       |When("it is parsed", p => {})
-      |Then("happiness ever after", p => false)
+      |Then("happiness ever after", p => p.fileExists("Gough"))
     """.stripMargin
 
   val PassingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", PassingSimpleTs)

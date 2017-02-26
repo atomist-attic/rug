@@ -21,7 +21,9 @@ class GherkinRunner(jsc: JavaScriptContext) {
   private val executableFeatures = features.map(f => ExecutableFeature(f, definitions))
 
   def execute(): TestResult = {
-    TestResult(executableFeatures.map(ef => ef.execute()))
+    TestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
+      ef.execute()
+    }))
   }
 
 }

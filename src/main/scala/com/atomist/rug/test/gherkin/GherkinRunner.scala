@@ -18,7 +18,7 @@ class GherkinRunner(jsc: JavaScriptContext) {
 
   val features: Seq[FeatureDefinition] = GherkinReader.findFeatures(jsc.rugAs)
 
-  private val executableFeatures = features.map(f => ExecutableFeature(f, definitions))
+  private val executableFeatures = features.map(f => new ProjectManipulationFeature(f, definitions))
 
   def execute(): TestResult = {
     TestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {

@@ -49,7 +49,7 @@ object GherkinReaderTest {
       |Scenario: I want to parse a file
       | Given an empty project
       | Given a file
-      | When it is parsed
+      | When it is edited
       | Then happiness ever after
       |
     """.stripMargin
@@ -63,7 +63,7 @@ object GherkinReaderTest {
       |Given("a file", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is parsed", p => {
+      |When("it is edited", p => {
       | p.addFile("Malcolm", "Life wasn't meant to be easy")
       | p.deleteFile("Gough")
       |})
@@ -79,14 +79,41 @@ object GherkinReaderTest {
       |Given("a file", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is parsed", p => {})
-      |Then("happiness ever after", p => p.fileExists("Gough"))
+      |When("it is edited", p => {})
+      |Then("happiness ever after", p => {
+      |   console.log("Verifying in simple.ts")
+      |   return p.fileExists("Gough")
+      |})
     """.stripMargin
+
+  val EditorSimpleTs =
+    """
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |//import {AlpEditor} from "../editors/AlpEditor"
+      |
+      |Given("a file", p => {
+      | p.addFile("Gough", "Maintain the rage")
+      |})
+      |When("it is edited", p => {
+      |  console.log("Editing")
+      |  //let e = new AlpEditor()
+      |  //e.edit(p)
+      |})
+      |Then("happiness ever after", p => {
+      |   console.log("Verifying in editor.ts")
+      |   return p.fileExists("Paul")
+      |})
+    """.stripMargin
+
 
   val PassingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", PassingSimpleTs)
 
   val FailingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", FailingSimpleTs)
 
+  val EditorSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorSimpleTs)
 
   val TwoScenarios =
     """
@@ -97,12 +124,12 @@ object GherkinReaderTest {
       |
       |Scenario: I want to parse a file
       | Given a file
-      | When it is parsed
+      | When it is edited
       | Then happiness ever after
       |
       |Scenario: I want to go home early
       | Given a file
-      | When it is parsed
+      | When it is edited
       | Then everything's done
     """.stripMargin
 

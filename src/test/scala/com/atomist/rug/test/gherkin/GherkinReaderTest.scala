@@ -20,10 +20,7 @@ class GherkinReaderTest extends FlatSpec with Matchers {
       case feature :: Nil =>
         assert(feature.feature.getChildren.size === 1)
         val scenario = feature.feature.getChildren.get(0)
-        assert(scenario.getSteps.size() === 3)
-//        scenario.getSteps.asScala.foreach(s => {
-//          println(s"${s.getKeyword}=${s.getText}")
-//        })
+        assert(scenario.getSteps.size() === 4)
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -50,6 +47,7 @@ object GherkinReaderTest {
       | Gherkin is a good option
       |
       |Scenario: I want to parse a file
+      | Given an empty project
       | Given a file
       | When it is parsed
       | Then happiness ever after
@@ -60,12 +58,11 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {_definitions,Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |let x = _definitions
-      |x.Given("a file", p => {})
-      |x.When("it is parsed", p => {})
-      |x.Then("happiness ever after", p => Result.Success)
+      |Given("a file", p => {})
+      |When("it is parsed", p => {})
+      |Then("happiness ever after", p => Result.Success)
     """.stripMargin
 
   val PassingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", PassingSimpleTs)

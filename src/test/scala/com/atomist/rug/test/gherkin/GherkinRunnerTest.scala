@@ -12,14 +12,14 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   it should "fail without JS" in {
     val as = SimpleFileBasedArtifactSource(TwoScenarioFile)
     val grt = new GherkinRunner(new JavaScriptContext(as))
-    assert(grt.execute.result === NotYetImplemented)
+    assert(grt.execute().result === NotYetImplemented)
   }
 
   it should "pass with passing JS" in {
     val as = SimpleFileBasedArtifactSource(SimpleFile, PassingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
-    assert(grt.execute.result === Passed)
+    assert(grt.execute().result === Passed)
   }
 
 }

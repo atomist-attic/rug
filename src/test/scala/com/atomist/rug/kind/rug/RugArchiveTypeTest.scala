@@ -1,7 +1,10 @@
 package com.atomist.rug.kind.rug
 
+import java.nio.file.{Files, Paths}
+
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+import scala.collection.JavaConverters._
 
 class RugArchiveTypeTest extends FlatSpec
   with Matchers
@@ -51,7 +54,12 @@ class RugArchiveTypeTest extends FlatSpec
     val tsEditorFile = result.findFile(".atomist/editors/BananaToCarrot.ts")
     assert(tsEditorFile.isDefined === true)
     val tsEditor = tsEditorFile.get.content
-    //println("it turned into: " + tsEditor)
+    println("it turned into: " + tsEditor)
+    Files.write(Paths.get("actual.ts"), tsEditor.getBytes())
+
+    val desired = Files.readAllLines(Paths.get("carrot.ts")).asScala.mkString("\n")
+
+    tsEditor should be(desired)
 
     val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject)
 

@@ -69,11 +69,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   private def specificImports(rugs: Seq[RugProgram]): String = {
     val set = importSet(rugs)
-    val ordered = set.toList.sorted
-    val importLines = ordered
-      .map(imp => s"import {${JavaHelpers.toJavaClassName(imp)}} from '@atomist/rug/model/Core'")
-    val specImports = importLines.mkString("\n")
-    specImports
+    val ordered = set.toList.sorted.map(JavaHelpers.toJavaClassName(_))
+    s"import {${ordered.mkString(", ")}} from '@atomist/rug/model/Core'\n"
   }
 
   // Set of all imports in these rugs
@@ -81,7 +78,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val v = new SaveAllDescendantsVisitor()
     rugs.foreach(rug => rug.accept(v, 0))
     (v.descendants collect {
-      case w: With if !"Project".equals(w.kind) => w.kind
+      case w: With => w.kind
     }).toSet
   }
 
@@ -344,12 +341,9 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   val standardImports =
     """
       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Project} from '@atomist/rug/model/Core'
       |import {Parameter} from '@atomist/rug/operations/RugOperation'
-      |
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |
-    """.stripMargin
+      |""".stripMargin
 
 }
 

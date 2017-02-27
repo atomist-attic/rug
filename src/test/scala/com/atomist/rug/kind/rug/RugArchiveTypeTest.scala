@@ -28,7 +28,8 @@ class RugArchiveTypeTest extends FlatSpec
     """.stripMargin
 
   val StartingRug =
-    """editor BananaToCarrot
+    """@description "Paint it orange and make it crunchy"
+      |editor BananaToCarrot
       |
       |with Project p
       |  with File f

@@ -16,8 +16,8 @@ class TypeScriptGenerationHelper(indent: String = "    ")
   def toJsDoc(block: String): String = {
     s"""
        |/**
-       |   ${indented(block, 1)}
-       |*/""".stripMargin
+       |${indented(block, 1)}
+       | */""".stripMargin
   }
 
   def javaTypeToTypeScriptType(jt: String): String = {

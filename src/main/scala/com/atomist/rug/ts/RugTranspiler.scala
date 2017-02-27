@@ -70,7 +70,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   private def specificImports(rugs: Seq[RugProgram]): String = {
     val set = importSet(rugs)
     val ordered = set.toList.sorted.map(JavaHelpers.toJavaClassName(_))
-    s"import {${ordered.mkString(", ")}} from '@atomist/rug/model/Core'\n"
+    s"import { ${ordered.mkString(", ")} } from '@atomist/rug/model/Core'\n"
   }
 
   // Set of all imports in these rugs
@@ -97,7 +97,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   // Emit an entire program
   private def tsProg(rug: RugProgram): String = {
     val ts = new StringBuilder()
-    ts ++= helper.toJsDoc(rug.description)
+    ts ++= helper.toJsDoc(s"${rug.name}\n${rug.description}")
 
     rug match {
       case ed: RugEditor =>
@@ -105,10 +105,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         ts ++= paramsInterface(rug.parameters)
     }
 
-    ts ++= s"\nclass ${rug.name} "
+    ts ++= s"""@Editor("${rug.name}", "${rug.description}")\n"""
+    ts ++= s"class ${rug.name} implements EditProject {\n\n"
     rug match {
       case ed: RugEditor =>
-        ts ++= editorHeader(ed)
         ts ++= helper.indented(editorBody(ed), 1)
         ts ++= "}"
         ts ++= config.separator
@@ -120,17 +120,9 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     ts.toString()
   }
 
-  private def editorHeader(ed: RugEditor): String = {
-    s"implements ProjectEditor {\n\n"
-  }
 
   private def editorBody(ed: RugEditor): String = {
     val ts = new StringBuilder()
-
-    ts ++= s"""name: string = "${ed.name}""""
-    ts ++= config.separator
-    ts ++= s"""description: string = "${ed.description}""""
-    ts ++= config.separator
 
     if(ed.tags.nonEmpty){
       ts ++= s"""tags: string[] = ${ed.tags.toArray};"""
@@ -340,9 +332,10 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   val standardImports =
     """
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-      |import {Parameter} from '@atomist/rug/operations/RugOperation'
-      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+      |import { EditProject } from '@atomist/rug/operations/ProjectEditor'
+      |import { Parameter } from '@atomist/rug/operations/RugOperation'
+      |import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
+      |import { Editor, Tags } from '@atomist/rug/operations/Decorators'
       |""".stripMargin
 
 }

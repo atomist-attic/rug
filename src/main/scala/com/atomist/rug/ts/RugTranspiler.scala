@@ -9,7 +9,7 @@ import com.atomist.rug.{RugEditor, RugProgram}
 import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import com.atomist.util.SaveAllDescendantsVisitor
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
-import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
+import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, PathExpressionValue, ToEvaluate}
 
 /**
   * Turns Rug into Typescript.
@@ -220,6 +220,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       case s: String => s""""$s""""
       case x => x.toString
     }
+    case pev: PathExpressionValue =>
+      s"new PathExpression(`${pev.pathExpression.toString}`)"
     case js: JavaScriptBlock => handleJs(js.content)
     case rf: ParsedRegisteredFunctionPredicate =>
       emit(rf, outerAlias)

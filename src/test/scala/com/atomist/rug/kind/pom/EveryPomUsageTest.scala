@@ -1,38 +1,29 @@
 package com.atomist.rug.kind.pom
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class EveryPomUsageTest extends FlatSpec with Matchers {
 
   import com.atomist.rug.TestUtils._
 
-  private  def runProgAndCheck(as: ArtifactSource, mods: Int): ArtifactSource = {
-    val prog =
-      """
-        |editor EveryPomEdit
-        |with Project p
-        |  with EveryPom o
-        |    do setGroupId "mygroup"
-      """.stripMargin
+  private def runProgAndCheck(as: ArtifactSource, mods: Int): ArtifactSource = {
 
-    val progArtifact: ArtifactSource = new SimpleFileBasedArtifactSource(DefaultRugArchive,
-      StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)
-    )
+    val ed = editorInSideFile(this, "EveryPomEdit.ts")
 
-    val result = doModification(progArtifact, as, EmptyArtifactSource(""),
-      SimpleParameterValues( Map.empty[String,Object]))
+    ed.modify(as, SimpleParameterValues.Empty) match {
+      case sm: SuccessfulModification =>
+        assert(sm.result.cachedDeltas.size === mods)
 
-    assert(result.cachedDeltas.size === mods)
-
-    result
+        sm.result
+      case x => fail(s"Unexpected: $x")
+    }
   }
 
-  private  val pomFileArtifact = JavaTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
+  private val pomFileArtifact = JavaTypeUsageTest.NewSpringBootProject.findFile("pom.xml").get
 
   it should "edit a single pom" in {
     val singlePom: ArtifactSource = new SimpleFileBasedArtifactSource("simple", pomFileArtifact)

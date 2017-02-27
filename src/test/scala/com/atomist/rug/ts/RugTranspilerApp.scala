@@ -7,12 +7,10 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |@description "I add Foobar annotations"
-      |editor ClassAnnotated
-      |
-      |with SpringBootProject p
-      |do
-      |  annotateBootApplication "com.someone" "Foobar"
+      |editor EveryPomEdit
+      |with Project p
+      |  with EveryPom o
+      |    do setGroupId "mygroup"
     """.stripMargin
 
   println(transpiler.transpile(rug))

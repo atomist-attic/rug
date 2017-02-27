@@ -299,7 +299,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   // Wrap in an if statement
   private def wrapInCondition(prog: RugProgram, predicate: Predicate, block: String, alias: String, indentDepth: Int): String = {
     predicate match {
-      case TruePredicate => helper.indented(block, indentDepth)
+      case TruePredicate => block
       case FalsePredicate => ""
       case pjsf: ParsedJavaScriptFunction => s"if (${handleJs(pjsf.js.content)}) {\n${helper.indented(block, indentDepth)}\n}"
       case prfp: ParsedRegisteredFunctionPredicate => s"if (${emit(prfp, alias)}) {\n${helper.indented(block, indentDepth)}\n}"

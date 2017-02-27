@@ -35,9 +35,9 @@ class BananaToCarrot implements EditProject {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
 
         let p = project
-            eng.with<File>(p, '//File()', f => {
-                    f.replace("banana", "carrots")
-            })
+        eng.with<File>(p, '//File()', f => {
+            f.replace("banana", "carrots")
+        })
 
     }
 

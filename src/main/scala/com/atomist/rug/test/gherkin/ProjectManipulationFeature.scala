@@ -13,7 +13,7 @@ private[gherkin] class ProjectManipulationFeature(
 
   override protected def createFixture = new ProjectMutableView(EmptyArtifactSource())
 
-  override protected def createWorld(fixture: ProjectMutableView): AnyRef = {
+  override protected def createWorld(fixture: ProjectMutableView): World = {
     new ProjectWorld
   }
 }

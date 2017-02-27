@@ -29,7 +29,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     * Create a world for overall context, based on the fixture.
     * This creates a default world.
     */
-  protected def createWorld(target: T): Object = new World
+  protected def createWorld(target: T): World = new World
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
     val fixture = createFixture

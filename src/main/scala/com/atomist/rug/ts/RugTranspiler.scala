@@ -140,7 +140,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       ts ++= config.separator
     }
 
-    ts ++= s"${config.editMethodName}(${config.projectVarName}: Project) {${config.separator}"
+    ts ++= s"edit(${config.projectVarName}: Project) {${config.separator}"
 
     ts ++= helper.indented(s"""let eng: PathExpressionEngine = project.context().pathExpressionEngine();${config.separator}""", 1)
 
@@ -148,12 +148,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     // Add aliases needed in this case
     val v = new SaveAllDescendantsVisitor
     ed.accept(v, 0)
-    if ((ed.computations.nonEmpty || v.descendants.exists(_.isInstanceOf[JavaScriptBlock])) && ed.parameters.nonEmpty) {
-      for (p <- ed.parameters) {
-        ts ++= helper.indented(s"let ${p.name} = parameters.${p.name}\n", 1)
-      }
-      ts ++= config.separator
-    }
     for (l <- ed.computations) {
       ts ++= helper.indented(letCode(ed, l), 1)
       ts ++= config.separator
@@ -311,8 +305,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 case class RugTranspilerConfig(
                                 indent: String = "    ",
                                 separator: String = "\n\n",
-                                projectVarName: String = "project",
-                                editMethodName: String = "edit"
+                                projectVarName: String = "project"
                               )
   extends TypeScriptGenerationConfig
 

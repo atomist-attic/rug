@@ -31,9 +31,7 @@ class BananaToCarrot implements EditProject {
     
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         
-        
-    
-            let p = project
+        let p = project
                 if (true) {
                         eng.with<File>(p, '//File()', f => {
                             if (true) {

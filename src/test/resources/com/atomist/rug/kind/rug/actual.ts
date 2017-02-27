@@ -26,13 +26,13 @@ class BananaToCarrot implements EditProject {
         maxLength: 100
     })
     peel: string;
-    
+
     edit(project: Project) {
-    
+
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+
         
-        
-    
+
             let p = project
                 if (true) {
                         eng.with<File>(p, '//File()', f => {
@@ -41,7 +41,7 @@ class BananaToCarrot implements EditProject {
                             }
                         })
                 }
-    
+
     }
 
 }

@@ -14,9 +14,11 @@ class CodeGenerationHelper(indent: String = "    ") {
     * @param n number of indents
     * @return a String
     */
-  def indented(block: String, n: Int): String = {
+  def indented(block: String, n: Int = 1): String = {
     val padding = Array.fill[String](n)(indent).mkString("")
-    padding + block.replace("\n", s"\n$padding")
+    // Add padding after every newline
+    // but we don't want it in blank lines
+    padding + block.replace("\n", s"\n$padding").replace(s"\n$padding\n", "\n\n")
   }
 
   /**

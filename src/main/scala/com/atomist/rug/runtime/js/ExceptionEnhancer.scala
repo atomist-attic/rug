@@ -63,9 +63,10 @@ object ExceptionEnhancer {
 
   private def findSourceMappedSourceInformation(rugAs: ArtifactSource, jsri: RuntimeErrorInfo): Option[RuntimeErrorInfo] = {
     val sourceMapName = jsri.filePath + ".map"
-    rugAs.findFile(sourceMapName).map(map => {
+    rugAs.findFile(sourceMapName).flatMap(map => {
       val sourceMap = new SourceMapImpl(map.content)
       val mapping = sourceMap.getMapping(jsri.pos.lineFrom1, jsri.pos.colFrom1)
+      Option(mapping).map(mapping => {
       val sourcePath = jsri.filePath.substring(0, jsri.filePath.lastIndexOf("/"))
       val sourceFile = rugAs.findFile(s"$sourcePath/${mapping.getSourceFileName}").getOrElse(
         throw new IllegalArgumentException(s"Can't find source file [${mapping.getSourceFileName}]")
@@ -73,7 +74,7 @@ object ExceptionEnhancer {
       val lip = LineInputPositionImpl(sourceFile.content,
         mapping.getSourceLine + 1,
         mapping.getSourceLine)
-      RuntimeErrorInfo(jsri.message, sourceFile.path, lip, jsri.detail)
+      RuntimeErrorInfo(jsri.message, sourceFile.path, lip, jsri.detail)})
     })
   }
 

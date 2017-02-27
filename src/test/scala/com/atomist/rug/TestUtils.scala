@@ -70,16 +70,24 @@ object TestUtils extends Matchers {
   def reviewerInSideFile(caller: Object, name: String): ProjectReviewer =
     rugsInSideFile(caller, name).reviewers.head
 
-  def rugsInSideFile(caller: Object, names: String*): Rugs = {
+  /**
+    * Return all resources in this package as an ArtifactSource
+    */
+  def resourcesInPackage(caller: Object): ArtifactSource = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
-    // println(s"Using resourcePath [$resourcePath]")
+    //println(s"Using resourcePath [$resourcePath] for $caller")
     val raw = ClassPathArtifactSource.toArtifactSource(resourcePath)
     if (raw.empty) {
       fail(s"Can't load resources at class path resource [$resourcePath]")
     }
+    raw
+  }
+
+  def rugsInSideFile(caller: Object, names: String*): Rugs = {
+    val raw = resourcesInPackage(caller)
     val tsAs = raw.filter(_ => true, f => names.contains(f.name))
     if (tsAs.empty) {
-      fail(s"Can't load resources named [$names] at class path resource [$resourcePath]")
+      fail(s"Can't load resources named [$names] at class path resource in package [${caller.getClass.getPackage.getName}]")
     }
     val withAtomistDir = tsAs.edit(new FileEditor {
       override def canAffect(f: FileArtifact) = true

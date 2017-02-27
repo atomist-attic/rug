@@ -80,6 +80,12 @@
             <version>2.5.1</version>
         </dependency>
         <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>gherkin</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.scalameta</groupId>
             <artifactId>scalameta_${scala.binary.version}</artifactId>
             <version>1.4.0</version>

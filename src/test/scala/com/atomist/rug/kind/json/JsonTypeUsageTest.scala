@@ -75,8 +75,6 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   import JsonTypeUsageTest._
   import com.atomist.rug.TestUtils._
 
-  private val ccPipeline = new CompilerChainPipeline(Seq(new RugTranspiler()))
-
   it should "update node value, going via file and path expression" in {
     val prog =
       """
@@ -109,13 +107,27 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   it should "add dependency using Rug" in {
     val prog =
       """
-        |editor Rename
+        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+        |import {Status, Result} from "@atomist/rug/operations/RugOperation"
+        |import {Project,Pair} from '@atomist/rug/model/Core'
+        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
         |
-        |let dependencies = $(/*[@name='package.json']/Json()/dependencies)
+        |class Rename implements ProjectEditor {
+        |    name: string = "Rename"
+        |    description: string = "Rename"
         |
-        |with dependencies
-        | do addKeyValue "foo" "bar"
+        |    edit(project: Project) {
+        |
+        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        |      eng.with<Pair>(project, `/*[@name='package.json']/Json()/dependencies`, p =>
+        |       p.addKeyValue("foo", "bar")
+        |     )
+        |    }
+        |}
+        |
+        |export let finder = new Rename();
       """.stripMargin
+
     val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
     )
     // edited should equal(packageJson.replace("foobar", "absquatulate"))

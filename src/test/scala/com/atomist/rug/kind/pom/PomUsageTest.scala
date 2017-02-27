@@ -9,21 +9,6 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import com.atomist.rug.TestUtils._
 
-  it should "update group id with no change with native Rug function" in {
-    val prog =
-      """
-        |editor PomEdit
-        |
-        |with Pom x when path = "pom.xml"
-        |  do groupId
-      """.stripMargin
-
-    updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case nmn: NoModificationNeeded =>
-      case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
-    }
-  }
-
   it should "update an existing property" in {
     val prog =
       s"""
@@ -50,7 +35,7 @@ class PomUsageTest extends FlatSpec with Matchers with LazyLogging {
         |export let pe = new UpdateProperty()
       """.stripMargin
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case success: SuccessfulModification =>
+      case _: SuccessfulModification =>
       case _ => ???
     }
   }

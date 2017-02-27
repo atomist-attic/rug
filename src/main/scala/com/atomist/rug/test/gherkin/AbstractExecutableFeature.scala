@@ -27,8 +27,9 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
 
   /**
     * Create a world for overall context, based on the fixture.
+    * This creates a default world.
     */
-  protected def createWorld(target: T): Object = null
+  protected def createWorld(target: T): World = new World
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
     val fixture = createFixture
@@ -95,4 +96,24 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
         logger.info(s"Given [${step.getText}] not yet implemented")
     }
   }
+}
+
+
+/**
+  * Standard world that lets us add bindings
+  */
+class World {
+
+  private var bindings: Map[String,Object] = Map()
+
+  def put(key: String, value: Object): Unit = {
+    bindings = bindings + (key -> value)
+  }
+
+  def get(key: String): Object =
+    bindings.get(key).orNull
+
+  def clear(key: String): Unit =
+    bindings = bindings - key
+
 }

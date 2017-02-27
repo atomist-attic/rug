@@ -77,4 +77,17 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     println(new TestReport(run).testSummary)
   }
 
+  it should "test a reviewer" in {
+    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+      SimpleFileBasedArtifactSource(
+        CorruptionFeatureFile,
+        StringFileArtifact(".atomist/test/CorruptionSteps.ts", CorruptionTest)
+      )
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val run = grt.execute()
+    assert(run.result === Passed)
+    println(new TestReport(run).testSummary)
+  }
+
 }

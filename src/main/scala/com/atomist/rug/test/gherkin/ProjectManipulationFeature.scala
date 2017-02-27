@@ -1,8 +1,6 @@
 package com.atomist.rug.test.gherkin
 
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.ReviewContext
-import com.atomist.rug.spi.Handlers.Instruction.Review
 import com.atomist.source.EmptyArtifactSource
 
 /**
@@ -15,13 +13,12 @@ private[gherkin] class ProjectManipulationFeature(
 
   override protected def createFixture = new ProjectMutableView(EmptyArtifactSource())
 
-  override protected def createWorld(fixture: ProjectMutableView): AnyRef = {
+  override protected def createWorld(fixture: ProjectMutableView): World = {
     new ProjectWorld
   }
 }
 
 
-class ProjectWorld {
+class ProjectWorld extends World {
 
-  val reviewContext = new ReviewContext
 }

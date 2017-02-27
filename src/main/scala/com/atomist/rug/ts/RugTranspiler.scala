@@ -202,15 +202,16 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def withBlockCode(prog: RugProgram, wb: With, outerAlias: String): String = {
+    val alias = if (wb.alias.equals(wb.kind)) JavaHelpers.lowerize(wb.kind)(0).toString  else wb.alias
     val doSteps =
       (for (d <- wb.doSteps)
         yield {
-          doStepCode(prog, d, wb.alias)
+          doStepCode(prog, d, alias)
         }).mkString("\n")
 
     val pathExpr = s"'//${wb.kind}()'"
-    val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${wb.alias} => {"
-    val blockBody = wrapInCondition(prog, wb.predicate, doSteps, wb.alias, 1)
+    val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${alias} => {"
+    val blockBody = wrapInCondition(prog, wb.predicate, doSteps, alias, 1)
 
     val referencingAccessibleThing = Set("Project").contains(wb.kind)
       //!wb.kind.equals(outerAlias)
@@ -219,7 +220,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     }
     else {
       // Special case where inner and outer block are the same type, like "with Project" under a project
-      (if (wb.alias.equals(wb.kind)) "" else s"let ${wb.alias} = ${JavaHelpers.lowerize(wb.kind)}\n") +
+      (if (alias.equals(wb.kind)) "" else s"let ${alias} = ${JavaHelpers.lowerize(wb.kind)}\n") +
       blockBody
     }
   }

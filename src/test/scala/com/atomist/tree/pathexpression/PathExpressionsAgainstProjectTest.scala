@@ -4,7 +4,6 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.RugCompilerTest
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.elm.ElmModuleMutableView
 import com.atomist.rug.kind.java.JavaClassOrInterfaceView
 import com.atomist.rug.kind.pom.PomMutableView
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -12,7 +11,7 @@ import com.atomist.tree.TreeNode
 import org.scalatest.{Assertions, FlatSpec, Matchers}
 
 /**
-  * Tests for navigating project
+  * Tests for navigating projects using path expressions
   */
 class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Assertions {
 
@@ -377,36 +376,6 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn.right.get.size === 1)
   }
 
-  it should "select Elm class using method" in {
-    val elmWithMain =
-      """
-        |module Main exposing (main)
-        |
-        |import Html
-        |import Html.Attributes
-        |
-        |main : Html.Html
-        |main =
-        |  Html.div
-        |    [ Html.Attributes.class "wrapper" ]
-        |    [ Html.h1
-        |      [ Html.Attributes.class "headline" ]
-        |      [ Html.text "Hello World" ]
-        |    , Html.p []
-        |      [ Html.text "HTML, with qualified imports." ]
-        |    ]
-      """.stripMargin
-    val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/Main.elm", elmWithMain))
-    val pmv = new ProjectMutableView(proj)
-    val expr2 = "/src//ElmModule()[.exposes('main')]"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
-    assert(rtn2.right.get.size === 1)
-    rtn2.right.get.head match {
-      case em: ElmModuleMutableView =>
-        assert(em.name === "Main")
-    }
-  }
-
   it should "find files containing Java sources or types" in {
     val types = Set("JavaType", "JavaSource")
     val proj = ParsingTargets.NewStartSpringIoProject
@@ -485,28 +454,4 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     }
   }
 
-  it should "find elm module in src" in {
-    val proj = ParsingTargets.ElmStartStaticPage
-    val pmv = new ProjectMutableView(proj)
-    val expr = "/src/*/ElmModule()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    assert(rtn.right.get.size === 1)
-    rtn.right.get.foreach {
-      case _: ElmModuleMutableView =>
-
-      case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
-    }
-  }
-
-  it should "find descendant elm module" in {
-    val proj = ParsingTargets.ElmStartStaticPage
-    val pmv = new ProjectMutableView(proj)
-    val expr = "//ElmModule()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
-    assert(rtn.right.get.size === 1)
-    rtn.right.get.foreach {
-      case _: ElmModuleMutableView =>
-      case x => fail(s"failed to get ElmModuleMutableView: ${x.getClass}")
-    }
-  }
 }

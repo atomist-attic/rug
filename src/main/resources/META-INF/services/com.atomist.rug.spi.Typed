@@ -8,8 +8,6 @@ com.atomist.rug.kind.core.ProjectType
 
 com.atomist.rug.kind.docker.DockerFileType
 
-com.atomist.rug.kind.elm.ElmModuleType
-
 com.atomist.rug.kind.java.JavaTypeType
 com.atomist.rug.kind.java.JavaSourceType
 com.atomist.rug.kind.java.JavaProjectType

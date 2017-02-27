@@ -40,6 +40,10 @@ class RugArchiveTypeTest extends FlatSpec
       |@maxLength 100
       |param peel: @any
       |
+      |@optional
+      |@default "golden"
+      |param hue: "^.*$"
+      |
       |with Project p
       |  with File f
       |     do replace "banana" "carrots"

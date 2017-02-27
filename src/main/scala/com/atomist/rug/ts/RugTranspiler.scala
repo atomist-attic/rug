@@ -11,6 +11,8 @@ import com.atomist.util.SaveAllDescendantsVisitor
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
 import com.atomist.util.scalaparsing.{JavaScriptBlock, Literal, ToEvaluate}
 
+import scala.collection.mutable
+
 /**
   * Turns Rug into Typescript.
   */
@@ -128,15 +130,36 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         */
       val specialPatternName = DefaultIdentifierResolver.knownIds.map{case (k, v) => (v, s"Pattern.${k}")}.get(param.getPattern)
       ts ++=
-        s"""@Parameter({
-           |    displayName: "${param.getDisplayName}",
-           |    description: "${param.description}",
-           |    pattern: ${specialPatternName.getOrElse(s""""${param.getPattern}"""")},
-           |    validInput: "${param.getValidInputDescription}",
-           |    minLength: ${param.getMinLength},
-           |    maxLength: ${param.getMaxLength}
-           |})\n""".stripMargin
-      ts ++= s"${param.name}: string;"
+        "@Parameter({\n"
+
+      val parameterDescriptors = mutable.ArrayBuffer[String]()
+      if (param.getDisplayName != null) {
+        parameterDescriptors += s"""displayName: "${param.getDisplayName}""""
+      }
+      if (param.description != "") {
+        parameterDescriptors += s"""description: "${param.description}""""
+      }
+      if (param.getPattern != null) {
+        parameterDescriptors += s"""pattern: ${specialPatternName.getOrElse(s""""${param.getPattern}"""")}"""
+      }
+      if (param.getValidInputDescription != "String value") {
+        parameterDescriptors += s"""validInput: "${param.getValidInputDescription}""""
+      }
+      if (param.getMinLength != -1) {
+        parameterDescriptors += s"""minLength: ${param.getMinLength}"""
+      }
+      if (param.getMaxLength != -1) {
+        parameterDescriptors += s"""maxLength: ${param.getMaxLength}"""
+      }
+      ts ++= helper.indented(parameterDescriptors.mkString(",\n"))
+      ts ++= "\n})\n"
+
+      if (param.getDefaultValue != "") {
+        ts ++= s"""${param.name}: string = "${param.getDefaultValue}";"""
+      } else {
+        ts ++= s"${param.name}: string;"
+      }
+
       ts ++= config.separator
     }
 

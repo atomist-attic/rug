@@ -25,6 +25,11 @@ class BananaToCarrot implements EditProject {
     })
     peel: string;
 
+    @Parameter({
+        pattern: "^.*$"
+    })
+    hue: string = "golden";
+
     edit(project: Project) {
 
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();

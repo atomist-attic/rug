@@ -14,8 +14,8 @@ import org.yaml.snakeyaml.Yaml
   * @param originalBackingObject original FileArtifact
   * @param parent the parent project
   */
-// TODO largely incomplete
-class YamlMutableView(
+@deprecated("Use YamlMutableView instead", "0.13.0")
+class YmlMutableView(
                       originalBackingObject: FileArtifact,
                       parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent)
@@ -51,13 +51,14 @@ class YamlMutableView(
 
   // Model is updated
   private def update(key: String, oldValue: String, newValue: String): Unit = {
-    // Because the yaml library seems to like \n's
+    //because the yaml library seems to like \n's
     val updatedYaml = content.toUnix.replace(oldValue, newValue)
     this.model = new YamlModel(updatedYaml)
   }
 }
 
-private[yaml] class YamlModel(val yaml: String) {
+@deprecated("Use YamlModel instead", "0.13.0")
+private[yaml] class YmlModel(val yaml: String) {
 
   import scala.collection.JavaConverters._
 
@@ -74,3 +75,5 @@ private[yaml] class YamlModel(val yaml: String) {
 
   def dump(key: String): Option[String] = valueOf(key).map(y.dump(_))
 }
+
+

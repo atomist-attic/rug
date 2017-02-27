@@ -14,14 +14,14 @@ import scala.collection.JavaConverters._
 
 /**
   * Convenient superclass for types that parse file content and can
-  * be resolved from files and projects
+  * be resolved from files and projects.
   */
 abstract class TypeUnderFile
   extends Type(DefaultEvaluator)
     with ReflectivelyTypedType {
 
   /**
-    * Is this file of interest to this type? Typically will involve an extension check
+    * Is this file of interest to this type? Typically will involve an extension check.
     *
     * @param f file to test
     * @return whether we should try to parse the file with our parser
@@ -69,7 +69,7 @@ abstract class TypeUnderFile
     * Return a parsed node. Useful to validate content, for example in tests.
     *
     * @param f file with content to parse
-    * @return
+    * @return a PositionedTreeNode
     */
   def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode]
 }

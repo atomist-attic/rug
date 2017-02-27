@@ -6,9 +6,7 @@ import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
-class DockerFileType(
-                  evaluator: Evaluator
-                )
+class DockerFileType(evaluator: Evaluator)
   extends Type(evaluator)
     with ReflectivelyTypedType {
 

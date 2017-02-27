@@ -39,7 +39,8 @@ object SimpleMutableContainerTreeNode {
   /**
     * Create a top level  node for the entire input, with the given child nodes
     * that represent content parsed from the input. Creating padding nodes for
-    * parts of the input that the fieldValues passed in don't explain
+    * parts of the input that the fieldValues passed in don't explain.
+    *
     * @param name name for the new node
     * @param fieldValues fieldValues parsed from input
     * @param input input string
@@ -52,7 +53,8 @@ object SimpleMutableContainerTreeNode {
   }
 
   /**
-    * Wrap the given node in a higher level container node with the given name
+    * Wrap the given node in a higher level container node with the given name.
+    *
     * @param name name for the new top level node
     * @param kids nodes to wrap
     * @return wrapper node containing the single child
@@ -64,7 +66,8 @@ object SimpleMutableContainerTreeNode {
   }
 
   /**
-    * Wrap the given node in a higher level container node with the given name
+    * Wrap the given node in a higher level container node with the given name.
+    *
     * @param name name for the new top level node
     * @param tn node to wrap
     * @return wrapper node containing the single child
@@ -86,7 +89,7 @@ object SimpleMutableContainerTreeNode {
 
   /**
     * Convert this tree to a mutable tree. Ignore non PositionedTreeNode descendants.
-    * Returns nodes that will need padding
+    * Returns nodes that will need padding.
     */
   private def makeMutable(ptn: PositionedTreeNode): SimpleMutableContainerTreeNode = {
     val kids = ptn.childNodes collect {

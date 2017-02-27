@@ -329,23 +329,22 @@ object YamlUsageTestTargets {
       #""".stripMargin('#')
 
   val YamlNestedSeq =
-    """
-      |brand: Naim Audio
+    """brand: Naim Audio
       |components:
-      | - SuperUniti
-      | - CD5i
-      | - Hicap
-      | - Stageline
-      | - Ovator S400
-      | - cables:
-      |    - Snaic 5
-      |    - Snaic 4pin to 5pin
-      |    - A5 speaker cable
-      | - Nait 3R
+      |- SuperUniti
+      |- CD5i
+      |- Hicap
+      |- Stageline
+      |- Ovator S400
+      |- cables:
+      |  - Snaic 5
+      |  - Snaic 4pin to 5pin
+      |  - A5 speaker cable
+      |- Nait 3R
       |future upgrades:
-      | - NAC82
-      | - NAP250.2
-      | - NDX
-      | - CDX
-    """.stripMargin
+      |- NAC82
+      |- NAP250.2
+      |- NDX
+      |- CDX
+      |""".stripMargin
 }

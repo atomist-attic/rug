@@ -6,9 +6,7 @@ import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
 @deprecated("Use YamlType instead", "0.13.0")
-class YmlType(
-               evaluator: Evaluator
-             )
+class YmlType(evaluator: Evaluator)
   extends Type(evaluator)
     with ReflectivelyTypedType {
 
@@ -18,7 +16,7 @@ class YmlType(
 
   override def description = "YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable."
 
-  override def runtimeClass = classOf[YamlMutableView]
+  override def runtimeClass = classOf[YmlMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>

@@ -1,11 +1,8 @@
 package com.atomist.tree.content.text.grammar.antlr
 
-import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
+import com.atomist.tree.content.text.PositionedTreeNode
 import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
-import com.atomist.tree.utils.TreeNodeUtils
-import org.antlr.v4.runtime.NoViableAltException
-import org.antlr.v4.runtime.InputMismatchException
+import org.antlr.v4.runtime.{InputMismatchException, NoViableAltException}
 import org.snt.inmemantlr.GenericParser
 
 /**
@@ -22,7 +19,6 @@ class AntlrGrammar(
     with Parser {
 
   override protected def setup: ParserSetup = {
-   //val parser = GenericParser.independentInstance(this, grammar)
     val parser = new GenericParser(this, false, grammars:_*)
     ParserSetup(grammars, parser, production)
   }
@@ -34,8 +30,7 @@ class AntlrGrammar(
       val parser = config.parser
       parser.setListener(l)
       parser.parse(input, production)
-    }
-    catch {
+    } catch {
       case nva: NoViableAltException =>
         logger.info(s"Unable to parse file: $nva on [$input]", nva)
       case ime: InputMismatchException =>

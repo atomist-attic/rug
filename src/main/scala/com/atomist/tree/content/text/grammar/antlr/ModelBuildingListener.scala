@@ -221,7 +221,7 @@ trait AstNodeCreationStrategy {
 
 /**
   * Default implementation of AstNodeNamingStrategy that takes node names from
-  * underlying Antlr grammar
+  * underlying Antlr grammar.
   */
 object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
 

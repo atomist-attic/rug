@@ -7,11 +7,8 @@ import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.TestUtils.attemptModification
 import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
-import org.yaml.snakeyaml.Yaml
 
 trait AbstractYamlUsageTest extends FlatSpec with Matchers {
-
-  private val parser = new Yaml()
 
   protected def runProgAndCheck(prog: String, as: ArtifactSource, mods: Int): ArtifactSource = {
     val progArtifact: ArtifactSource = new SimpleFileBasedArtifactSource(DefaultRugArchive,
@@ -25,7 +22,7 @@ trait AbstractYamlUsageTest extends FlatSpec with Matchers {
         assert(sm.result.cachedDeltas.size === mods)
         sm.result.cachedDeltas.foreach {
           case fud: FileUpdateDelta =>
-            // TODO how do we validate YAML? SnakeYAML seems to let everything through
+          // TODO how do we validate YAML? SnakeYAML seems to let everything through
           case x => fail(s"Unexpected change: $x")
         }
         sm.result

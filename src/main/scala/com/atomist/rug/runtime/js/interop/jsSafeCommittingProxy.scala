@@ -13,7 +13,7 @@ import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
   * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
   * that (a) checks whether an invoked method is exposed on the relevant Type
   * object and vetoes invocation otherwise and (b) calls the commit() method of the node if found on all invocations of a
-  * method that isn't read-only
+  * method that isn't read-only.
   *
   * @param node node we are fronting
   */
@@ -85,8 +85,7 @@ class jsSafeCommittingProxy(
       op => name.equals(op.name))
     if (possibleOps.isEmpty) {
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
-    }
-    else
+    } else
       new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
   }
 
@@ -96,8 +95,7 @@ class jsSafeCommittingProxy(
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
         throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
-    }
-    else node match {
+    } else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
@@ -148,8 +146,7 @@ class jsSafeCommittingProxy(
   }
 
   /**
-    * Nashorn proxy for a method invocation that use navigation methods on
-    * TreeNode
+    * Nashorn proxy for a method invocation that use navigation methods on TreeNode.
     */
   private class FunctionProxyToNodeNavigationMethods(name: String, node: GraphNode)
     extends AbstractJSObject {
@@ -197,11 +194,8 @@ object jsSafeCommittingProxy {
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[GraphNode]): java.util.List[jsSafeCommittingProxy] = {
-    new JavaScriptArray(
-      nodes.map(wrapOne)
-        .asJava)
-  }
+  def wrap(nodes: Seq[GraphNode]): java.util.List[jsSafeCommittingProxy] =
+    new JavaScriptArray(nodes.map(wrapOne).asJava)
 
   def wrapOne(n: GraphNode): jsSafeCommittingProxy =
     new jsSafeCommittingProxy(n)

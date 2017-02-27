@@ -154,8 +154,7 @@ class jsPathExpressionEngine(
     def inner(report: Seq[String], lastEmptySteps: Option[PathExpression], steps: PathExpression): Seq[String] = {
       if (steps.locationSteps.isEmpty) {
         report // nowhere else to go
-      }
-      else evaluateParsed(root, steps).matches match {
+      } else evaluateParsed(root, steps).matches match {
         case empty if empty.isEmpty => // nothing found, keep looking
           inner(report, Some(steps), steps.dropLastStep)
         case nonEmpty => // something was found
@@ -235,5 +234,4 @@ object jsPathExpressionEngine {
     case expr: String =>
       PathExpressionParser.parsePathExpression(expr)
   }
-
 }

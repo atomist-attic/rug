@@ -10,9 +10,7 @@ object YamlType {
   val yamlExtension = ".yml"
 }
 
-class YamlType(
-               evaluator: Evaluator
-             )
+class YamlType(evaluator: Evaluator)
   extends Type(evaluator)
     with ReflectivelyTypedType {
 
@@ -25,17 +23,17 @@ class YamlType(
   override def runtimeClass = classOf[YamlMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
-      case pmv: ProjectMutableView =>
-        Some(pmv.originalBackingObject.allFiles
-          .filter(f => f.name.endsWith(yamlExtension))
-          .map(f => new YamlMutableView(f, pmv)))
-      case dmv: DirectoryMutableView =>
-        Some(dmv.originalBackingObject.allFiles
-          .filter(f => f.name.endsWith(yamlExtension))
-          .map(f => new YamlMutableView(f, dmv.parent)))
-      case fmv: FileMutableView =>
-        Some(Seq(fmv.originalBackingObject)
-          .filter(f => f.name.endsWith(yamlExtension))
-          .map(f => new YamlMutableView(f, fmv.parent)))
-    }
+    case pmv: ProjectMutableView =>
+      Some(pmv.originalBackingObject.allFiles
+        .filter(_.name.endsWith(yamlExtension))
+        .map(new YamlMutableView(_, pmv)))
+    case dmv: DirectoryMutableView =>
+      Some(dmv.originalBackingObject.allFiles
+        .filter(_.name.endsWith(yamlExtension))
+        .map(new YamlMutableView(_, dmv.parent)))
+    case fmv: FileMutableView =>
+      Some(Seq(fmv.originalBackingObject)
+        .filter(_.name.endsWith(yamlExtension))
+        .map(new YamlMutableView(_, fmv.parent)))
+  }
 }

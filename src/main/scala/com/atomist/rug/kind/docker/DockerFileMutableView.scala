@@ -7,7 +7,8 @@ import com.atomist.source.FileArtifact
 import scala.collection.JavaConverters._
 
 /**
-  * Rug type for a Docker file
+  * Rug type for a Docker file.
+  *
   * @param originalBackingObject original FileArtifact
   * @param pmv owning project
   */

@@ -128,14 +128,14 @@ class XmlMutableView(
 
     val nodeToAdd: Node = prepareContentForInsertion(nodeContent, xmlDocument)
 
-    this.contains(xPathOfNodeToReplace) match {
-      case true =>
-        val xpathExpression = XPathFactory.newInstance().newXPath()
-        val nodeToReplace: Node = xpathExpression.compile(xPathOfNodeToReplace)
-          .evaluate(xmlDocument, XPathConstants.NODE).asInstanceOf[Node]
-        nodeToReplace.getParentNode.replaceChild(nodeToAdd, nodeToReplace)
-        this.xml = documentToString(xmlDocument)
-      case false => addChildNode(xpathOfParent, newNode, nodeContent)
+    if (this.contains(xPathOfNodeToReplace)) {
+      val xpathExpression = XPathFactory.newInstance().newXPath()
+      val nodeToReplace: Node = xpathExpression.compile(xPathOfNodeToReplace)
+        .evaluate(xmlDocument, XPathConstants.NODE).asInstanceOf[Node]
+      nodeToReplace.getParentNode.replaceChild(nodeToAdd, nodeToReplace)
+      this.xml = documentToString(xmlDocument)
+    } else {
+      addChildNode(xpathOfParent, newNode, nodeContent)
     }
   }
 

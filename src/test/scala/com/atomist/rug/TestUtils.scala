@@ -28,9 +28,7 @@ object TestUtils extends Matchers {
   }
 
   private def isTypeScript(program: ArtifactSource) =
-    program.allFiles.exists(
-      f => f.name.endsWith(".ts") && f.path.startsWith(".atomist/editors")
-    )
+    program.allFiles.exists(f => f.name.endsWith(".ts") && f.path.startsWith(".atomist/editors"))
 
   def attemptModification(program: ArtifactSource,
                           as: ArtifactSource,
@@ -41,8 +39,7 @@ object TestUtils extends Matchers {
       if (isTypeScript(program)) {
         val as = TypeScriptBuilder.compileWithModel(program)
         SimpleJavaScriptProjectOperationFinder.find(as).editors.head
-      }
-      else {
+      } else {
         // Rug editor
         val eds = pipeline.create(backingAs + program, None)
         eds.size should be >= 1
@@ -52,7 +49,8 @@ object TestUtils extends Matchers {
   }
 
   /**
-    * Update with the given program
+    * Update with the given program.
+    *
     * @param prog Rug or TypeScript program
     * @param project project to update
     * @param params parameters. Default is none
@@ -66,13 +64,11 @@ object TestUtils extends Matchers {
   /**
     * Compile the named TypeScript file in the package of the caller
     */
-  def editorInSideFile(caller: Object, name: String): ProjectEditor = {
+  def editorInSideFile(caller: Object, name: String): ProjectEditor =
     rugsInSideFile(caller, name).editors.head
-  }
 
-  def reviewerInSideFile(caller: Object, name: String): ProjectReviewer = {
+  def reviewerInSideFile(caller: Object, name: String): ProjectReviewer =
     rugsInSideFile(caller, name).reviewers.head
-  }
 
   def rugsInSideFile(caller: Object, names: String*): Rugs = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")

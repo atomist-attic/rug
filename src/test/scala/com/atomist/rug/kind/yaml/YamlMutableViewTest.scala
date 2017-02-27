@@ -6,7 +6,7 @@ import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-object Fixtures {
+object YamlMutableViewTest {
 
   val yaml =
     """
@@ -52,7 +52,7 @@ object Fixtures {
 
 class YamlMutableViewTest extends FlatSpec with Matchers {
 
-  import Fixtures._
+  import YamlMutableViewTest._
 
   val y = StringFileArtifact("info.yml", yaml)
 

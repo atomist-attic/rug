@@ -106,6 +106,9 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     }
 
     ts ++= s"""@Editor("${rug.name}", "${rug.description}")\n"""
+    if (rug.tags.nonEmpty) {
+      ts ++= s"""@Tags("""
+    }
     ts ++= s"class ${rug.name} implements EditProject {\n\n"
     rug match {
       case ed: RugEditor =>
@@ -123,11 +126,6 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   private def editorBody(ed: RugEditor): String = {
     val ts = new StringBuilder()
-
-    if(ed.tags.nonEmpty){
-      ts ++= s"""tags: string[] = ${ed.tags.toArray};"""
-      ts ++= config.separator
-    }
 
     if(ed.parameters.nonEmpty){
       ts ++= s"""parameters: Parameter[] = ${toTSParameters(ed.parameters)};"""

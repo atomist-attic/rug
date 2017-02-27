@@ -56,9 +56,10 @@ class RugArchiveTypeTest extends FlatSpec
     assert(tsEditorFile.isDefined === true)
     val tsEditor = tsEditorFile.get.content
     println("it turned into: " + tsEditor)
-    Files.write(Paths.get("actual.ts"), tsEditor.getBytes())
+    /* writing it out makes it easier for debugging; can open it in VSCode */
+    Files.write(Paths.get("src/test/resources/com/atomist/rug/kind/rug/actual.ts"), tsEditor.getBytes())
 
-    val desired = Files.readAllLines(Paths.get("carrot.ts")).asScala.mkString("\n")
+    val desired = Files.readAllLines(Paths.get("src/test/resources/com/atomist/rug/kind/rug/BananaToCarrot.ts")).asScala.mkString("\n")
 
     tsEditor should be(desired)
 

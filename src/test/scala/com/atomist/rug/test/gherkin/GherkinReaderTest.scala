@@ -154,4 +154,43 @@ object GherkinReaderTest {
 
   val TwoScenarioFeatureFile = StringFileArtifact(".atomist/test/Two.feature", TwoScenarios)
 
+  val CorruptionFeature =
+    """
+      |Feature: Look for corrupt politicians
+      | This is a test
+      | to see whether
+      | we can test project reviewers
+      |
+      |Scenario: Look for convicted criminals
+      | Given a number of files
+      | When run corruption reviewer
+      | Then we have comments
+    """.stripMargin
+
+  val CorruptionFeatureFile = StringFileArtifact(".atomist/test/Corruption.feature", CorruptionFeature)
+
+  val CorruptionTest =
+    """
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |import {FindCorruption} from "../editors/FindCorruption"
+      |
+      |Given("a number of files", p => {
+      | p.addFile("NSW", "Wran")
+      | p.addFile("Victoria", "Cain")
+      | p.addFile("WA", "Brian Burke and WA Inc")
+      |})
+      |When("run corruption reviewer", (p, world) => {
+      |  let r = new FindCorruption()
+      |  let rr = r.review(p)
+      |   world.put("review", rr)
+      |})
+      |Then("we have comments", (p, world) => {
+      |   let rr = world.get("review")
+      |   return rr.comments.length == 1
+      |})
+    """.stripMargin
+
 }

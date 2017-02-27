@@ -14,6 +14,7 @@ import { File, Project } from '@atomist/rug/model/Core'
  */
 
 @Editor("BananaToCarrot", "Paint it orange and make it crunchy")
+@Tags("vegetable", "fruit")
 class BananaToCarrot implements EditProject {
 
     

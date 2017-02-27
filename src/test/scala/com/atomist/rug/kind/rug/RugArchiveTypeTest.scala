@@ -29,6 +29,8 @@ class RugArchiveTypeTest extends FlatSpec
 
   val StartingRug =
     """@description "Paint it orange and make it crunchy"
+      |@tag "vegetable"
+      |@tag "fruit"
       |editor BananaToCarrot
       |
       |with Project p

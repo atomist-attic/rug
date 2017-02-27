@@ -107,7 +107,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
     ts ++= s"""@Editor("${rug.name}", "${rug.description}")\n"""
     if (rug.tags.nonEmpty) {
-      ts ++= s"""@Tags("""
+      val quoted = rug.tags.map("\"" + _ + "\"")
+      ts ++= s"""@Tags(${quoted.mkString(", ")})\n"""
     }
     ts ++= s"class ${rug.name} implements EditProject {\n\n"
     rug match {

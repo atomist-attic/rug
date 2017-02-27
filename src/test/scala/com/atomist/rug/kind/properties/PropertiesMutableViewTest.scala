@@ -11,17 +11,13 @@ class PropertiesMutableViewTest extends FlatSpec with Matchers {
 
   "PropertiesMutableView" should "get an existing valid property" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
     propertiesView.getValue("server.port") should be ("8080")
-
     propertiesView.dirty equals false
   }
 
   it should "fail to get a property that doesn't exist" in {
     val propertiesView = new PropertiesMutableView(propertiesFile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
-
     propertiesView.getValue("server.portlet") should be ("")
-
     propertiesView.dirty equals false
   }
 

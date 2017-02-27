@@ -107,38 +107,3 @@ class CompilerChainRuntimeTest extends AbstractRuntimeTest {
   }
 }
 
-/**
-  * Tests that still use the old interpreter: We are gradually migrating them.
-  * So this class shows some of the remaining gaps in Rug transpiler support.
-  */
-class InterpreterRuntimeTest extends AbstractRuntimeTest {
-
-  import RugCompilerTest._
-
-  override val pipeline: InterpreterRugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)
-
-  it should "allow let with same name as parameter in call other operation" in {
-    val goBowling =
-      """
-        |@description "I can get you a toe!"
-        |editor Caspar
-        |
-        |let num = 2
-        |
-        |Other num = num
-        |
-        |@description "This is a second editor"
-        |editor Other
-        |
-        |param num: ^\d+$
-        |
-        |with Project p
-        |do
-        |  replace "Dog" num
-      """.stripMargin
-    val originalFile = JavaAndText.findFile("src/main/java/Dog.java").get
-    val expected = originalFile.content.replace("Dog", "2")
-    simpleAppenderProgramExpectingParameters(goBowling, Some(expected))
-  }
-
-}

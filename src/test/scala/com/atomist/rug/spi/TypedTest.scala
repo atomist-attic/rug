@@ -26,7 +26,7 @@ class TypedTest extends FlatSpec with Matchers {
   }
 
   it should "lower case the first character of a non-searchable type" in {
-    typeToTypeName(classOf[ProjectMutableView], false) should be("project")
-    typeToTypeName(classOf[MutableContainerTreeNode], false) should be("mutableContainer")
+    typeToTypeName(classOf[ProjectMutableView], searchable = false) should be("project")
+    typeToTypeName(classOf[MutableContainerTreeNode], searchable = false) should be("mutableContainer")
   }
 }

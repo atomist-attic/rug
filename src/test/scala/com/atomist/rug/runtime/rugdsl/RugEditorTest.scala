@@ -106,21 +106,3 @@ class RugEditorTest extends FlatSpec with Matchers {
     }
   }
 }
-
-class RugExecutorIsNoLongerSupportedTest extends FlatSpec with Matchers {
-
-  it should "Give a great error message if someone has an old executor in Rug DSL" in {
-    val rug =
-      """executor FriendlyBanana
-        |blah blah whatever
-      """.stripMargin
-    val tsf = StringFileArtifact(".atomist/editors/FriendlyBanana.rug", rug)
-    val as = SimpleFileBasedArtifactSource(tsf)
-    try {
-      new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
-      fail("that should fail")
-    } catch {
-      case bre: BadRugException => assert(bre.getMessage === "The Rug DSL no longer supports executors. Try writing it in TypeScript!")
-    }
-  }
-}

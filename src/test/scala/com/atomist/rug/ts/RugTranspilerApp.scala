@@ -7,12 +7,12 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |editor Rename
+      |@description "I add Foobar annotations"
+      |editor ClassAnnotated
       |
-      |let dependencies = $(/*[@name='package.json']/Json()/dependencies)
-      |
-      |with dependencies
-      | do addKeyValue "foo" "bar"
+      |with SpringBootProject p
+      |do
+      |  annotateBootApplication "com.someone" "Foobar"
     """.stripMargin
 
   println(transpiler.transpile(rug))

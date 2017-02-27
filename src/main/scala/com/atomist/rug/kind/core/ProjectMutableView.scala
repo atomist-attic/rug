@@ -499,6 +499,7 @@ class ProjectMutableView(
           case ow: OverwritableTextTreeNode =>
             val pos = LineInputPositionImpl(ow.file.content, lineFrom1, colFrom1)
             ow.nodeAt(pos)
+          case _ => None
         }
       case Right(nodes) if nodes.size > 1 =>
         throw new IllegalArgumentException(s"Found ${nodes.size} hits for [$pexpr], not 1")

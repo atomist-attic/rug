@@ -20,6 +20,16 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
 
   val ee: ExpressionEngine = new PathExpressionEngine
 
+  it should "find an editor in .atomist" in {
+    val proj = SimpleFileBasedArtifactSource(StringFileArtifact(".atomist/editors/TypeScriptEditor.ts", "lala la a pretend this is typescript"))
+    val pmv = new ProjectMutableView(proj)
+    val expr = """/Dir()[@name=".atomist"]/editors/File()[@name="TypeScriptEditor.ts"]"""
+    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+      case Right(ok) => assert(ok.nonEmpty)
+      case Left(boo) => fail(boo)
+    }
+  }
+
   it should "#323: error on attempt to find bogus type child" in {
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)

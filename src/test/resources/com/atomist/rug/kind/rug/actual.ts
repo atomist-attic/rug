@@ -3,9 +3,9 @@
 // To take ownership of this file, simply delete the .rug file
     
 import { EditProject } from '@atomist/rug/operations/ProjectEditor'
-import { Parameter } from '@atomist/rug/operations/RugOperation'
 import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
-import { Editor, Tags } from '@atomist/rug/operations/Decorators'
+import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
+import { Pattern } from '@atomist/rug/operations/RugOperation'
 import { File, Project } from '@atomist/rug/model/Core'
 
 /**
@@ -17,7 +17,15 @@ import { File, Project } from '@atomist/rug/model/Core'
 @Tags("vegetable", "fruit")
 class BananaToCarrot implements EditProject {
 
-    
+    @Parameter({
+        displayName: "Banana Peel",
+        description: "peel of the banana",
+        pattern: Pattern.any,
+        validInput: "slippery but protective",
+        minLength: 1,
+        maxLength: 100
+    })
+    peel: string;
     
     edit(project: Project) {
     

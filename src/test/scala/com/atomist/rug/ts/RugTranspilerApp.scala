@@ -7,10 +7,10 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |editor EveryPomEdit
-      |with Project p
-      |  with EveryPom o
-      |    do setGroupId "mygroup"
+      |editor PropertiesEdit
+      |
+      |with Properties p when path = "src/main/resources/application.properties"
+      |do setProperty "server.port" "8181"
     """.stripMargin
 
   println(transpiler.transpile(rug))

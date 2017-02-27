@@ -19,7 +19,7 @@ class ChangeGtKeep implements ProjectEditor {
         let findDependencies = `/*[@name='x.yml']/YamlFile()/comments`
 
         eng.with<yaml.YamlString>(project, findDependencies, yamlValue => {
-            console.log(`Text value is [${yamlValue.text()}]`)
+            // console.log(`Text value is [${yamlValue.text()}]`)
             if (yamlValue.value().charAt(0) != ">" && yamlValue.value().charAt(1) != "+")
                 throw new Error(`[${yamlValue.value()}] doesn't start with >-`)
             if (yamlValue.text().charAt(0) == ">" && yamlValue.text().charAt(1) == "+")

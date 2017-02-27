@@ -33,6 +33,13 @@ class RugArchiveTypeTest extends FlatSpec
       |@tag "fruit"
       |editor BananaToCarrot
       |
+      |@displayName "Banana Peel"
+      |@description "peel of the banana"
+      |@validInput "slippery but protective"
+      |@minLength 1
+      |@maxLength 100
+      |param peel: @any
+      |
       |with Project p
       |  with File f
       |     do replace "banana" "carrots"
@@ -49,7 +56,7 @@ class RugArchiveTypeTest extends FlatSpec
       )))
 
   it should "convert a rug to TS" in {
-    val resultOfRugEditor = executeRug(StartingRug, InputProject)
+    val resultOfRugEditor = executeRug(StartingRug, InputProject, Map("peel" -> "flecked with brown"))
 
     val result: ArtifactSource = executeRug(ConvertRugToTsEditor,
       StartingProject, Map("rug_name" -> "BananaToCarrot"))
@@ -65,7 +72,7 @@ class RugArchiveTypeTest extends FlatSpec
 
     tsEditor should be(desired)
 
-    val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject)
+    val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject, Map("peel" -> "flecked with brown"))
 
     singleFileArtifactSourcesAreEquivalent(resultOfTsEditor, resultOfRugEditor) should be(true)
 

@@ -297,15 +297,16 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   // Wrap in an if statement
   private def wrapInCondition(prog: RugProgram, predicate: Predicate, block: String, alias: String, indentDepth: Int): String = {
-    val argContent = predicate match {
-      case TruePredicate => "true"
-      case FalsePredicate => "false"
-      case pjsf: ParsedJavaScriptFunction => handleJs(pjsf.js.content)
-      case prfp: ParsedRegisteredFunctionPredicate => emit(prfp, alias)
-      case comp: ComparisonPredicate =>
-        extractValue(prog, comp.a, alias) + "() == " + extractValue(prog, comp.b, alias)
+    predicate match {
+      case TruePredicate => helper.indented(block, indentDepth)
+      case FalsePredicate => ""
+      case pjsf: ParsedJavaScriptFunction => s"if (${handleJs(pjsf.js.content)}) {\n${helper.indented(block, indentDepth)}\n}"
+      case prfp: ParsedRegisteredFunctionPredicate => s"if (${emit(prfp, alias)}) {\n${helper.indented(block, indentDepth)}\n}"
+      case comp: ComparisonPredicate => {
+        val content = extractValue(prog, comp.a, alias) + "() == " + extractValue(prog, comp.b, alias)
+        s"if ($content) {\n${helper.indented(block, indentDepth)}\n}"
+      }
     }
-    s"if ($argContent) {\n${helper.indented(block)}\n}"
   }
 
   val licenseHeader =

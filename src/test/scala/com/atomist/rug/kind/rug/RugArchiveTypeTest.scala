@@ -45,7 +45,7 @@ class RugArchiveTypeTest extends FlatSpec
       |param hue: "^.*$"
       |
       |with Project p
-      |  with File f
+      |  with File
       |     do replace "banana" "carrots"
     """.stripMargin
 

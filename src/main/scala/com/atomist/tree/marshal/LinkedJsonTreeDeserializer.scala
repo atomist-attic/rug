@@ -91,8 +91,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
       }
     }
 
-    // Return the root node
-    nodes.head
+    return if (nodes.nonEmpty) nodes.head else new EmptyLinkableContainerTreeNode
   }
 
   private def requiredStringEntry(m: Map[String,Any], key: String): String =
@@ -101,6 +100,22 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
       case Some(s: String) => s
       case Some(x) => x.toString
     }
+}
+
+class EmptyLinkableContainerTreeNode() extends ContainerTreeNode {
+
+  override def nodeName: String = "empty"
+
+  // Using null over Option as this is part of the interface to JavaScript
+  override def value: String = null
+
+  override def nodeTags: Set[String] = Set.empty
+
+  override def childNodeNames: Set[String] = Set.empty
+
+  override def childNodeTypes: Set[String] = Set.empty
+
+  override def childrenNamed(key: String): Seq[TreeNode] = Nil
 }
 
 private class LinkableContainerTreeNode(

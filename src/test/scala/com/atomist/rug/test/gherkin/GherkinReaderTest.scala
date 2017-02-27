@@ -68,7 +68,7 @@ object GherkinReaderTest {
     """.stripMargin
 
   val PassingSimpleTs =
-    """
+    s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
@@ -76,7 +76,9 @@ object GherkinReaderTest {
       |Given("a file", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is edited", p => {})
+      |When("it is edited", (p, world) => {
+      | console.log(`The world is $${world}`)
+      |})
       |Then("happiness ever after", p => p.fileExists("Gough"))
     """.stripMargin
 

@@ -23,23 +23,27 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     )
   }
 
-  protected def createTarget: T
+  protected def createFixture: T
 
-  // TODO world concept
+  /**
+    * Create a world for overall context, based on the fixture.
+    */
+  protected def createWorld(target: T): Object = null
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
-    val project = createTarget
+    val fixture = createFixture
+    val world = createWorld(fixture)
     val assertionResults: Seq[AssertionResult] =
       scenario.getSteps.asScala.flatMap(step => {
         step.getKeyword match {
           case "Given " =>
-            runGiven(project, step)
+            runGiven(fixture, world, step)
             None
           case "When " =>
-            runWhen(project, step)
+            runWhen(fixture, world, step)
             None
           case "Then " =>
-            Some(runThen(project, step))
+            Some(runThen(fixture, world, step))
         }
       })
     val sr = ScenarioResult(scenario, assertionResults, "")
@@ -47,14 +51,14 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     sr
   }
 
-  private def runThen(target: T, step: Step): AssertionResult = {
+  private def runThen(target: T, world: Object, step: Step): AssertionResult = {
     val somo = definitions.thenFor(step.getText)
     logger.debug(s"Then for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
         // TODO #187. We might be interested in a reviewer, in which case we should be able to get at a review context.
         // Could look for review in the text?
-        val r = som.call("apply", new jsSafeCommittingProxy(target))
+        val r = som.call("apply", new jsSafeCommittingProxy(target), world)
         r match {
           case b: java.lang.Boolean =>
             AssertionResult(step.getText, Result(b, som.toString))
@@ -70,23 +74,23 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     }
   }
 
-  private def runWhen(target: T, step: Step) = {
+  private def runWhen(target: T, world: Object, step: Step) = {
     val somo = definitions.whenFor(step.getText)
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.call("apply", new jsSafeCommittingProxy(target))
+        som.call("apply", new jsSafeCommittingProxy(target), world)
       case None =>
         logger.info(s"When [${step.getText}] not yet implemented")
     }
   }
 
-  private def runGiven(target: T, step: Step) = {
+  private def runGiven(target: T, world: Object, step: Step) = {
     val somo = definitions.givenFor(step.getText)
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.call("apply", new jsSafeCommittingProxy(target))
+        som.call("apply", new jsSafeCommittingProxy(target), world)
       case None =>
         logger.info(s"Given [${step.getText}] not yet implemented")
     }

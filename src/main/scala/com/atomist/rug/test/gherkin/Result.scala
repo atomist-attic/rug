@@ -5,7 +5,10 @@ import gherkin.ast.{Feature, ScenarioDefinition}
 /**
   * Result of one or more tests
   */
-sealed trait Result
+sealed trait Result {
+
+  def message: String
+}
 
 object Result {
 
@@ -15,11 +18,17 @@ object Result {
   }
 }
 
-case object Passed extends Result
+case object Passed extends Result {
 
-case class Failed(why: String) extends Result
+  override def message = "Passed"
+}
 
-case object NotYetImplemented extends Result
+case class Failed(message: String) extends Result
+
+case object NotYetImplemented extends Result {
+
+  override def message = "Not yet implemented"
+}
 
 /**
   * Consistent interface for every layer of tests
@@ -54,9 +63,19 @@ case class AssertionResult(assertion: String, result: Result) extends TestRun {
   override def testCount: Int = 1
 }
 
-case class ScenarioResult(scenario: ScenarioDefinition, results: Seq[AssertionResult], data: String) extends MultiTestRun(results)
+case class ScenarioResult(scenario: ScenarioDefinition, results: Seq[AssertionResult], data: String)
+  extends MultiTestRun(results) {
 
-case class FeatureResult(f: Feature, scenarioResults: Seq[ScenarioResult]) extends MultiTestRun(scenarioResults)
+  override def toString: String =
+    s"Scenario [${scenario.getName}]: Results = {${results.mkString(",")}"
+}
+
+case class FeatureResult(feature: Feature, scenarioResults: Seq[ScenarioResult])
+  extends MultiTestRun(scenarioResults) {
+
+  override def toString: String =
+    s"Feature [${feature.getName}]: Results = {${scenarioResults.mkString(",")}"
+}
 
 /**
   * Result of running tests for all features in an archive

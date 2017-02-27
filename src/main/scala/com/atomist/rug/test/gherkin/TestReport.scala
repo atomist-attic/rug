@@ -18,15 +18,17 @@ class TestReport(archiveTestResult: ArchiveTestResult) {
 
   def testSummary: String = s"Test report: " +
     s"${passedTests.size} of ${archiveTestResult.testCount} tests passed\n" +
-    "\t" + failures.mkString("\n\t") +
-    "\t" + notYetImplemented.mkString("\n\t") +
+    "\t" + failures.map(f => f.feature.getName + s": FAILED (${f.result.message})").mkString("\n\t") +
+    "\t" + notYetImplemented.map(f => f.feature.getName + ": Not yet implemented").mkString("\n\t") +
     (archiveTestResult.result match {
       case Passed =>
         "\nTest SUCCESS\n"
-      case Failed(x) =>
+      case Failed(_) =>
         "\nTest FAILURE\n"
       case NotYetImplemented =>
         "\nTest NOT YET IMPLEMENTED\n"
     })
+
+  override def toString: String = testSummary
 
 }

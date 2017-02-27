@@ -29,9 +29,10 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(SimpleFeatureFile, FailingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
-    grt.execute().result match {
+    val run = grt.execute()
+    println(new TestReport(run))
+    run.result match {
       case f: Failed =>
-        println(f)
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

@@ -79,7 +79,7 @@ object TestUtils extends Matchers {
     */
   def resourcesInPackage(caller: Object): ArtifactSource = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
-    // println(s"Using resourcePath [$resourcePath]")
+    //println(s"Using resourcePath [$resourcePath] for $caller")
     val raw = ClassPathArtifactSource.toArtifactSource(resourcePath)
     if (raw.empty) {
       fail(s"Can't load resources at class path resource [$resourcePath]")
@@ -88,7 +88,7 @@ object TestUtils extends Matchers {
   }
 
   def rugsInSideFile(caller: Object, names: String*): Rugs = {
-    val raw = resourcesInPackage(this)
+    val raw = resourcesInPackage(caller)
     val tsAs = raw.filter(_ => true, f => names.contains(f.name))
     if (tsAs.empty) {
       fail(s"Can't load resources named [$names] at class path resource in package [${caller.getClass.getPackage.getName}]")

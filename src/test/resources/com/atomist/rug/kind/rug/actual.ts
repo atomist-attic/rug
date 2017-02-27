@@ -41,6 +41,12 @@ class BananaToCarrot implements EditProject {
                     f.replace("banana", "carrots")
                 }
             })
+            p.merge("readme.vm", "README.md", (() => { 
+
+            let allParams = , {peel: peel, hue: hue}
+
+            return allParams
+                    })())
         }
 
     }

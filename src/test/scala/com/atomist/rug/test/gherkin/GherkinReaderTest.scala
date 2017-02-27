@@ -38,17 +38,16 @@ object GherkinReaderTest {
 
   val Simple =
     """
-      |Feature: Do anything at all
+      |Feature: Australian political history
       | This is a test
-      | to see if
-      | Gherkin is a good option
+      | to demonstrate that the Gherkin DSL
+      | is a good fit for Rug BDD testing
       |
-      |Scenario: I want to parse a file
+      |Scenario: Australian politics, 1972-1991
       | Given an empty project
-      | Given a file
-      | When it is edited
-      | Then happiness ever after
-      |
+      | Given a visionary leader
+      | When politics takes its course
+      | Then the rage is maintained
     """.stripMargin
 
   val FailingSimpleTs =
@@ -57,14 +56,14 @@ object GherkinReaderTest {
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |Given("a file", p => {
+      |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is edited", p => {
+      |When("politics takes its course", p => {
       | p.addFile("Malcolm", "Life wasn't meant to be easy")
       | p.deleteFile("Gough")
       |})
-      |Then("happiness ever after", p => p.fileExists("Gough"))
+      |Then("the rage is maintained", p => p.fileExists("Gough"))
     """.stripMargin
 
   val PassingSimpleTs =
@@ -73,13 +72,13 @@ object GherkinReaderTest {
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |Given("a file", p => {
+      |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is edited", (p, world) => {
-      | console.log(`The world is $${world}`)
+      |When("politics takes its course", (p, world) => {
+      | //console.log(`The world is $${world}`)
       |})
-      |Then("happiness ever after", p => p.fileExists("Gough"))
+      |Then("the rage is maintained", p => p.fileExists("Gough"))
     """.stripMargin
 
   val EditorWithoutParametersTs =
@@ -90,14 +89,14 @@ object GherkinReaderTest {
       |
       |import {AlpEditor} from "../editors/AlpEditor"
       |
-      |Given("a file", p => {
+      |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is edited", p => {
+      |When("politics takes its course", p => {
       |  let e = new AlpEditor()
       |  e.edit(p)
       |})
-      |Then("happiness ever after", p => {
+      |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
       |})
     """.stripMargin
@@ -110,16 +109,16 @@ object GherkinReaderTest {
       |
       |import {AlpEditor} from "../editors/AlpEditor"
       |
-      |Given("a file", p => {
+      |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("it is edited", p => {
+      |When("politics takes its course", p => {
       |  let e = new AlpEditor()
       |  // Simply inject property
       |  e.heir = "Paul"
       |  e.edit(p)
       |})
-      |Then("happiness ever after", p => {
+      |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
       |})
     """.stripMargin
@@ -142,12 +141,12 @@ object GherkinReaderTest {
       |
       |Scenario: I want to parse a file
       | Given a file
-      | When it is edited
-      | Then happiness ever after
+      | When politics takes its course
+      | Then the rage is maintained
       |
       |Scenario: I want to go home early
       | Given a file
-      | When it is edited
+      | When politics takes its course
       | Then everything's done
     """.stripMargin
 

@@ -4,7 +4,12 @@ import com.atomist.rug.runtime.js.JavaScriptContext
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
-class GherkinRunner(jsc: JavaScriptContext) {
+/**
+  * Combine Gherkin DSL BDD definitions with JavaScript backing code
+  * and provide the ability to execute the tests
+  * @param jsc JavaScript backed by a Rug archive
+  */
+class GherkinRunner(jsc: JavaScriptContext) extends LazyLogging {
 
   import GherkinRunner._
 
@@ -16,15 +21,25 @@ class GherkinRunner(jsc: JavaScriptContext) {
     .allFiles
     .foreach(jsc.evaluate)
 
+  /**
+    * Features found in this archive
+    */
   val features: Seq[FeatureDefinition] = GherkinReader.findFeatures(jsc.rugAs)
 
   private val executableFeatures = features.map(f => new ProjectManipulationFeature(f, definitions))
 
-  def execute(): TestResult = {
-    TestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
+  /**
+    * Execute all the tests in this archive
+    */
+  def execute(): ArchiveTestResult = {
+    logger.info(s"Execute on $this")
+    ArchiveTestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
       ef.execute()
     }))
   }
+
+  override def toString: String =
+    s"${getClass.getSimpleName}: Features [${features}] found in $jsc"
 
 }
 
@@ -58,7 +73,6 @@ private[gherkin] class Definitions extends LazyLogging {
   def givenFor(s: String): Option[ScriptObjectMirror] = stepRegistry.get("given_" + s)
 
   def thenFor(s: String): Option[ScriptObjectMirror] = stepRegistry.get("then_" + s)
-
 
 }
 

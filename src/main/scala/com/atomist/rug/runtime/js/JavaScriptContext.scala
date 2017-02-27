@@ -5,7 +5,7 @@ import javax.script._
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
-import com.atomist.source.{ArtifactSource, FileArtifact}
+import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory, ScriptObjectMirror}
@@ -144,6 +144,12 @@ class JavaScriptContext(val rugAs: ArtifactSource,
       new ArtifactSourceBasedFolder(artifacts, this, getPath + s + "/")
     }
   }
+
+  override def toString: String =
+    s"${getClass.getSimpleName} backed by ArtifactSource with ${rugAs.totalFileCount} artifacts\n" +
+    s"User JS files=${ArtifactSourceUtils.prettyListFiles(atomistContent.filter(_ => true, f =>
+      atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))}\n" +
+    s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
 
 }
 

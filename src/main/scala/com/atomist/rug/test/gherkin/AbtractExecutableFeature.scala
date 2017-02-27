@@ -65,7 +65,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
           case wtf => throw new IllegalArgumentException(s"Unexpected: $wtf")
         }
       case None =>
-        println(s"No Then for [${step.getText}]=$somo")
+        //println(s"No Then for [${step.getText}]=$somo")
         AssertionResult(step.getText, NotYetImplemented)
     }
   }
@@ -77,7 +77,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
       case Some(som) =>
         som.call("apply", new jsSafeCommittingProxy(target))
       case None =>
-        println(s"Warning: When [${step.getText}] not yet implemented")
+        logger.info(s"When [${step.getText}] not yet implemented")
     }
   }
 
@@ -88,7 +88,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
       case Some(som) =>
         som.call("apply", new jsSafeCommittingProxy(target))
       case None =>
-        println(s"Warning: Given [${step.getText}] not yet implemented")
+        logger.info(s"Given [${step.getText}] not yet implemented")
     }
   }
 }

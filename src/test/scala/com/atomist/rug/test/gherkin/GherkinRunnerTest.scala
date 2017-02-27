@@ -1,8 +1,9 @@
 package com.atomist.rug.test.gherkin
 
+import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerTest extends FlatSpec with Matchers {
@@ -10,20 +11,22 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   import GherkinReaderTest._
 
   it should "fail without JS" in {
-    val as = SimpleFileBasedArtifactSource(TwoScenarioFile)
+    val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
     val grt = new GherkinRunner(new JavaScriptContext(as))
-    assert(grt.execute().result === NotYetImplemented)
+    val run = grt.execute()
+    assert(run.result === NotYetImplemented)
+    println(new TestReport(run).testSummary)
   }
 
   it should "pass with passing JS" in {
-    val as = SimpleFileBasedArtifactSource(SimpleFile, PassingSimpleTsFile)
+    val as = SimpleFileBasedArtifactSource(SimpleFeatureFile, PassingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
     assert(grt.execute().result === Passed)
   }
 
   it should "fail with failing JS" in {
-    val as = SimpleFileBasedArtifactSource(SimpleFile, FailingSimpleTsFile)
+    val as = SimpleFileBasedArtifactSource(SimpleFeatureFile, FailingSimpleTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
     grt.execute().result match {
@@ -33,7 +36,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     }
   }
 
-  /* PASSING BUT NOT ACTUALLY RUNNING
   it should "run an editor without parameters" in {
     val alpEditor =
       """
@@ -44,8 +46,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         |    name: string = "AlpEditor"
         |    description: string = "ALP history"
         |
-        |    newImport = "import org.scalatest.DiagrammedAssertions._"
-        |
         |    edit(project: Project) {
         |     project.addFile("Paul", "Can a souffle rise twice?")
         |    }
@@ -53,11 +53,27 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         |
         |let xx_editor = new AlpEditor()
       """.stripMargin
-    val as = SimpleFileBasedArtifactSource(StringFileArtifact(".atomist/editors/AlpEditor.ts", alpEditor), EditorSimpleTsFile)
+    val as = SimpleFileBasedArtifactSource(
+      StringFileArtifact(".atomist/editors/AlpEditor.ts", alpEditor),
+      SimpleFeatureFile,
+      EditorWithoutParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
-    assert(grt.execute().result === Passed)
+    val run = grt.execute()
+    assert(run.result === Passed)
+    println(new TestReport(run).testSummary)
   }
-  */
+
+  it should "run an editor with parameters" in {
+    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+      SimpleFileBasedArtifactSource(
+        SimpleFeatureFile,
+        EditorWithParametersTsFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val run = grt.execute()
+    assert(run.result === Passed)
+    println(new TestReport(run).testSummary)
+  }
 
 }

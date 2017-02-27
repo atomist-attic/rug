@@ -3,9 +3,6 @@ package com.atomist.rug.test.gherkin
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Created by rod on 2/25/17.
-  */
 class GherkinReaderTest extends FlatSpec with Matchers {
 
   import GherkinReaderTest._
@@ -15,7 +12,7 @@ class GherkinReaderTest extends FlatSpec with Matchers {
   }
 
   it should "parse a simple file" in {
-    val as = SimpleFileBasedArtifactSource(SimpleFile)
+    val as = SimpleFileBasedArtifactSource(SimpleFeatureFile)
     GherkinReader.findFeatures(as).toList match {
       case feature :: Nil =>
         assert(feature.feature.getChildren.size === 1)
@@ -26,7 +23,7 @@ class GherkinReaderTest extends FlatSpec with Matchers {
   }
 
   it should "parse file with 2 scenarios" in {
-    val as = SimpleFileBasedArtifactSource(TwoScenarioFile)
+    val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
     GherkinReader.findFeatures(as).toList match {
       case feature :: Nil =>
         assert(feature.feature.getChildren.size === 2)
@@ -80,30 +77,47 @@ object GherkinReaderTest {
       | p.addFile("Gough", "Maintain the rage")
       |})
       |When("it is edited", p => {})
-      |Then("happiness ever after", p => {
-      |   console.log("Verifying in simple.ts")
-      |   return p.fileExists("Gough")
-      |})
+      |Then("happiness ever after", p => p.fileExists("Gough"))
     """.stripMargin
 
-  val EditorSimpleTs =
+  val EditorWithoutParametersTs =
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |//import {AlpEditor} from "../editors/AlpEditor"
+      |import {AlpEditor} from "../editors/AlpEditor"
       |
       |Given("a file", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
       |When("it is edited", p => {
-      |  console.log("Editing")
-      |  //let e = new AlpEditor()
-      |  //e.edit(p)
+      |  let e = new AlpEditor()
+      |  e.edit(p)
       |})
       |Then("happiness ever after", p => {
-      |   console.log("Verifying in editor.ts")
+      |   return p.fileExists("Paul")
+      |})
+    """.stripMargin
+
+  val EditorWithParametersTs =
+    """
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |import {AlpEditor} from "../editors/AlpEditor"
+      |
+      |Given("a file", p => {
+      | p.addFile("Gough", "Maintain the rage")
+      |})
+      |When("it is edited", p => {
+      |  let e = new AlpEditor()
+      |  // Simply inject property
+      |  e.heir = "Paul"
+      |  e.edit(p)
+      |})
+      |Then("happiness ever after", p => {
       |   return p.fileExists("Paul")
       |})
     """.stripMargin
@@ -113,7 +127,9 @@ object GherkinReaderTest {
 
   val FailingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", FailingSimpleTs)
 
-  val EditorSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorSimpleTs)
+  val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorWithoutParametersTs)
+
+  val EditorWithParametersTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorWithParametersTs)
 
   val TwoScenarios =
     """
@@ -133,8 +149,8 @@ object GherkinReaderTest {
       | Then everything's done
     """.stripMargin
 
-  val SimpleFile = StringFileArtifact(".atomist/test/Simple.feature", Simple)
+  val SimpleFeatureFile = StringFileArtifact(".atomist/test/Simple.feature", Simple)
 
-  val TwoScenarioFile = StringFileArtifact(".atomist/test/Two.feature", TwoScenarios)
+  val TwoScenarioFeatureFile = StringFileArtifact(".atomist/test/Two.feature", TwoScenarios)
 
 }

@@ -15,9 +15,9 @@ class AddToNestedSequence implements ProjectEditor {
         let findNested = `/*[@name='x.yml']/YamlFile()/components`
 
         eng.with<yaml.Sequence>(project, findNested, yamlValue => {
-            console.log(`${this.description}: text value is \n[${yamlValue.value()}]`)
-          //  yamlValue.addElement('Audio Principe Signature power cable')
-          //  console.log(`${this.description}: updated text value is \n[${yamlValue.value()}]`)
+            // console.log(`${this.description}: text value is \n[${yamlValue.value()}]`)
+            //  yamlValue.addElement('Audio Principe Signature power cable')
+            //  console.log(`${this.description}: updated text value is \n[${yamlValue.value()}]`)
         })
     }
 

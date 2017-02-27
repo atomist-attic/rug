@@ -4,7 +4,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.YamlUsageTestTargets.{YamlOrgStart, xYaml}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
+import com.atomist.tree.utils.NodeUtils
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class YamlFileTypeTest extends AbstractTypeUnderFileTest {

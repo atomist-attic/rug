@@ -3,17 +3,13 @@ package com.atomist.rug.kind.rug
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
-import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
-import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
-import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
-import com.atomist.rug.{CompilerChainPipeline, RugPipeline}
+import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.runtime.js.JavaScriptProjectEditor
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.Matchers
 
 trait TypeScriptEditorTestHelper extends Matchers {
-
-  val typeScriptPipeline: RugPipeline =
-    new CompilerChainPipeline(Seq(new RugTranspiler(), TypeScriptBuilder.compiler))
 
   def executeTypescript(editorName: String, program: String,
                         target: ArtifactSource,

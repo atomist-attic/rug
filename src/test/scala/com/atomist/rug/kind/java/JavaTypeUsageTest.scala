@@ -84,104 +84,12 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaTypeUsageTest._
 
-  private  val tsPipeline = new CompilerChainPipeline(Seq(TypeScriptBuilder.compiler))
-
-  it should "find boot package using let and rug" in {
-    val program =
-      """
-        |editor PackageFinder
-        |
-        |let spb = $(/SpringBootProject())
-        |
-        |with spb p do eval {
-        | //print("appPackage=" + p.applicationClassPackage())
-        |}
-      """.stripMargin
-
-    attemptToModify(program, "editors/PackageFinder.rug", NewSpringBootProject, Map()) match {
-      case _: NoModificationNeeded => // Ok
-       // Ok
-      case _ => ???
-    }
-  }
-
-  it should "find boot package using let and typescript" in {
-    val program =
-      """
-        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-        |import {Project,SpringBootProject} from '@atomist/rug/model/Core'
-        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
-        |
-        |class PackageFinder implements ProjectEditor {
-        |    name: string = "package.finder"
-        |    description: string = "Find a spring boot package"
-        |    edit(project: Project) {
-        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,SpringBootProject>("/SpringBootProject()")
-        |      let p = eng.scalar(project, pe)
-        |    }
-        |}
-        |
-        |export let finder = new PackageFinder()
-      """.stripMargin
-
-    attemptToModify(program, "editors/PackageFinder.ts", NewSpringBootProject, Map(), runtime = tsPipeline) match {
+  it should "find boot package" in {
+    TestUtils.editorInSideFile(this, "PackageFinder.ts").modify(NewSpringBootProject) match {
       case nmn: NoModificationNeeded => // Ok
        // Ok
       case _ => ???
     }
-  }
-
-  it should "annotate class using JavaScript" in {
-    val program =
-      """
-        |@description "I add FooBar annotation"
-        |editor ClassAnnotated
-        |
-        |# with java.project p when { p.fileCount() > 1 }
-        |with JavaSource j when typeCount = 1
-        |with JavaType c when true
-        |do
-        |  eval {
-        |   // print(c);
-        |   return c.addAnnotation("com.foo", "FooBar")
-        | };
-      """.stripMargin
-
-    annotateClass(program)
-  }
-
-  it should "annotate class using path in predicate" in pendingUntilFixed {
-    val program =
-      """
-        |@description "I add FooBar annotation"
-        |editor ClassAnnotated
-        |
-        |# with java.project p when { p.fileCount() > 1 }
-        |with JavaSource j when path.startsWith "src/main/java"
-        |with JavaType c when true
-        |do
-        |  eval {
-        |   // print(c);
-        |   return c.addAnnotation("com.foo", "FooBar")
-        | };
-      """.stripMargin
-    annotateClass(program)
-  }
-
-  it should "annotate class using default predicates" in {
-    val program =
-      """
-        |@description "I add FooBar annotation"
-        |editor ClassAnnotated
-        |
-        |with JavaSource
-        | with JavaType
-        |   do
-        |      addAnnotation "com.foo" "FooBar"
-      """.stripMargin
-
-    annotateClass(program)
   }
 
   it should "annotate class using function" in {
@@ -194,21 +102,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
         |with JavaType c
         |do
         |  addAnnotation "com.foo" "FooBar"
-      """.stripMargin
-
-    annotateClass(program)
-  }
-
-  it should "annotate class using function with JavaScript argument" in {
-    val program =
-      """
-        |@description "I add FooBar annotation"
-        |editor ClassAnnotated
-        |
-        |with JavaSource j when { j.lineCount() < 1000 }
-        |with JavaType c when { c.lineCount() < 100 }
-        |do
-        |  addAnnotation { "com.foo" } "FooBar"
       """.stripMargin
 
     annotateClass(program)

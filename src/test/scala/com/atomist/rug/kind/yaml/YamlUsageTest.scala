@@ -1,6 +1,9 @@
 package com.atomist.rug.kind.yaml
 
-class YamlUsageTest extends AbstractYamlUsageTest {
+// TODO commented out because of the Rug DSL
+// and because this type may be end of lifed
+// If the type survives, restore and convert
+abstract class YamlUsageTest extends AbstractYamlUsageTest {
 
   import YamlUsageTestTargets._
 

@@ -5,12 +5,11 @@ import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
 import com.atomist.rug.DefaultRugPipeline
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.rug.test.RugTestRunnerTestSupport
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers with RugTestRunnerTestSupport{
+class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
   import com.atomist.rug.TestUtils._
 
   // NOTES:

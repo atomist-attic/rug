@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Removed Rug DSL-based BDD support. Use new Gherkin-based support.
 -   **BREAKING** Only require context when running handlers
 -   **BREAKING** Removed CommandRegistry and related usages
 -   **BREAKING** Renamed old RugFunction to RugDslFunction

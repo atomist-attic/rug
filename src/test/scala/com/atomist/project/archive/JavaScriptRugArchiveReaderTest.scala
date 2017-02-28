@@ -116,6 +116,12 @@ class JavaScriptRugArchiveReaderTest extends FlatSpec with Matchers {
       ), Seq(otherEditor))
   }
 
+  it should "invoke editors in a different archive referenced by simple name as fallback" in {
+    invokeAndVerifySimple(
+      Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor)
+      ), Seq(otherEditor))
+  }
+
   private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], others: Seq[AddressableRug] = Nil): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf:_*))
     val reader = new JavaScriptRugArchiveReader()

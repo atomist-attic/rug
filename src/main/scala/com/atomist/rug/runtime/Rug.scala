@@ -1,13 +1,15 @@
 package com.atomist.rug.runtime
 
 import com.atomist.param.Tag
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 
 /**
   * For things common to _all_ Rugs
   */
-trait Rug {
+trait Rug
+  extends LazyLogging{
 
   def name: String
 
@@ -19,7 +21,7 @@ trait Rug {
   private def fqRex = "^(.*?):(.*?):(.*?)$".r
 
   def findRug(simpleOrFq: String) : Option[Rug] = {
-    simpleOrFq match {
+    val rug = simpleOrFq match {
       case simple: String if !simple.contains(":") =>
         archiveContext.find(p => p.name == simple) match {
           case Some(rug) => Some(rug)
@@ -37,6 +39,17 @@ trait Rug {
             p.name == m.group(3))
         case _ => None
       }
+    }
+    //finally, allow externalContext rugs to be loaded by name
+    if(rug.isEmpty){
+        externalContext.find(p => p.name == simpleOrFq) match {
+          case Some(o) =>
+            logger.warn(s"Rug '$name' referenced a Rug outside the current project using just '$simpleOrFq'. \n\tPlease use group:artifact:name notation, such as '${o.group}:${o.artifact}:${o.name}'")
+            Some(o)
+          case _ => None
+        }
+    }else{
+      rug
     }
   }
 

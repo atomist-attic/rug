@@ -50,20 +50,20 @@ class RugArchiveTypeTest extends FlatSpec
       |@default "golden"
       |param hue: "^.*$"
       |
+      |let readmeTpl = "readme.vm"
+      |let readmeDst = "readme.txt"
+      |
       |with Project p begin
       |  with File
       |     do replace "banana" "carrots"
       |  do copyEditorBackingFileOrFail "source_file" "to/path"
       |
-      |  with Directory d when { d.name().contains("path") }
+      |  with File f when { f.nameContains("path") }
       |   begin
-      |     with Directory
-      |       with File
-      |         begin
-      |           do append peel
-      |           do append "boom"
-      |         end
+      |     do append peel
+      |     do append "boom"
       |   end
+      |  do merge readmeTpl readmeDst
       |end
     """.stripMargin
 
@@ -74,6 +74,7 @@ class RugArchiveTypeTest extends FlatSpec
   val StartingProject =
     new SimpleFileBasedArtifactSource("my-rug-archive",
       Seq(StringFileArtifact(".atomist/editors/BananaToCarrot.rug", StartingRug),
+        StringFileArtifact(".atomist/templates/readme.vm", "Hello"),
         StringFileArtifact("source_file", "some stuff is in here")))
 
   val InputProject =

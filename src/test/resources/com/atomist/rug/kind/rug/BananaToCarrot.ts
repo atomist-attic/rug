@@ -4,7 +4,7 @@ import { EditProject } from '@atomist/rug/operations/ProjectEditor'
 import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
 import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
-import { Directory, File, Project } from '@atomist/rug/model/Core'
+import { File, Project } from '@atomist/rug/model/Core'
 
 /**
     BananaToCarrot
@@ -31,24 +31,21 @@ class BananaToCarrot implements EditProject {
 
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let readmeTpl = "readme.vm"
+        let readmeDst = "readme.txt"
         let p = project
 
         eng.with<File>(p, '//File()', f => {
             f.replace("banana", "carrots")
         })
-
         p.copyEditorBackingFileOrFail("source_file", "to/path")
-
-        eng.with<Directory>(p, '//Directory()', d => {
-            if ( d.name().contains("path") ) {
-                eng.with<Directory>(d, '//Directory()', d => {
-                    eng.with<File>(d, '//File()', f => {
-                        f.append(this.peel)
-                        f.append("boom")
-                    })
-                })
+        eng.with<File>(p, '//File()', f => {
+            if ( f.nameContains("path") ) {
+                f.append(this.peel)
+                f.append("boom")
             }
         })
+        p.merge(readmeTpl, readmeDst, {peel: this.peel, hue: this.hue})
     }
 }
 export let editor_bananaToCarrot = new BananaToCarrot();

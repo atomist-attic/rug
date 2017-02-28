@@ -282,19 +282,8 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def parametersToJsonObject(prog: RugProgram, outerAlias: String): String = {
-    val computations = prog.computations
-      .map(comp => extractValue(prog, comp.te, outerAlias))
-      .mkString("\n")
     val params = prog.parameters
-    val kvs = if(params.nonEmpty) ", {"+ params.map(p => s"""${p.getName}: ${p.getName}""").mkString(", ") + "}" else "{}"
-
-    val js =
-      s"""
-         |let allParams = $kvs
-         |$computations
-         |return allParams
-       """.stripMargin
-    arrowFunctionify(js)
+    if(params.nonEmpty) "{"+ params.map(p => s"""${p.getName}: this.${p.getName}""").mkString(", ") + "}" else "{}"
   }
 
   // Wrap in an if statement

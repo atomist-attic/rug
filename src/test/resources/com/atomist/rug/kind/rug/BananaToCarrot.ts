@@ -38,6 +38,7 @@ class BananaToCarrot implements EditProject {
         eng.with<File>(p, '//File()', f => {
             f.replace("banana", "carrots")
         })
+        p.copyEditorBackingFileOrFail("source_file", "to/path")
 
     }
 

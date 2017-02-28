@@ -183,7 +183,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def letCode(prog: RugProgram, l: Computation): String = {
-    s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)}"
+    s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)};"
   }
 
   private def actionCode(prog: RugProgram, a: Action, outerAlias: String): String = a match {

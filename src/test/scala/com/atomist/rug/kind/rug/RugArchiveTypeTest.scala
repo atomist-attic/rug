@@ -2,13 +2,19 @@ package com.atomist.rug.kind.rug
 
 import java.nio.file.{Files, Paths}
 
+import com.atomist.param.SimpleParameterValues
+import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
+import com.atomist.rug.DefaultRugPipeline
+import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.parser.ParserCombinatorRugParser
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
+
 import scala.collection.JavaConverters._
 
 class RugArchiveTypeTest extends FlatSpec
   with Matchers
-  with RugEditorTestHelper
   with TypeScriptEditorTestHelper {
 
   // the editor I want to work.
@@ -44,15 +50,21 @@ class RugArchiveTypeTest extends FlatSpec
       |@default "golden"
       |param hue: "^.*$"
       |
-      |with Project p
+      |with Project p begin
       |  with File
       |     do replace "banana" "carrots"
+      |  do copyEditorBackingFileOrFail "source_file" "to/path"
+      |end
     """.stripMargin
+
+  val RugArchiveUnderTest =
+    new SimpleFileBasedArtifactSource("my-rug-archive",
+      Seq(StringFileArtifact(".atomist/editors/ConvertRugToTypescript.rug", ConvertRugToTsEditor)))
 
   val StartingProject =
     new SimpleFileBasedArtifactSource("my-rug-archive",
-      Seq(StringFileArtifact(".atomist/editors/BananaToCarrot.rug", StartingRug
-    )))
+      Seq(StringFileArtifact(".atomist/editors/BananaToCarrot.rug", StartingRug),
+        StringFileArtifact("source_file", "some stuff is in here")))
 
   val InputProject =
     new SimpleFileBasedArtifactSource("my-rug-archive",
@@ -60,9 +72,9 @@ class RugArchiveTypeTest extends FlatSpec
       )))
 
   it should "convert a rug to TS" in {
-    val resultOfRugEditor = executeRug(StartingRug, InputProject, Map("peel" -> "flecked with brown"))
+    val resultOfRugEditor = executeRug(StartingProject, InputProject, Map("peel" -> "flecked with brown"))
 
-    val result: ArtifactSource = executeRug(ConvertRugToTsEditor,
+    val result: ArtifactSource = executeRug(RugArchiveUnderTest,
       StartingProject, Map("rug_name" -> "BananaToCarrot"))
 
     val tsEditorFile = result.findFile(".atomist/editors/BananaToCarrot.ts")
@@ -76,25 +88,54 @@ class RugArchiveTypeTest extends FlatSpec
 
     tsEditor should be(desired)
 
-    val resultOfTsEditor = executeTypescript("BananaToCarrot", tsEditor, InputProject, Map("peel" -> "flecked with brown"))
+    val compiledTsArchive = TypeScriptBuilder.compileWithModel(result)
+    val resultOfTsEditor = executeTypescript(compiledTsArchive, InputProject, Map("peel" -> "flecked with brown"))
 
-    singleFileArtifactSourcesAreEquivalent(resultOfTsEditor, resultOfRugEditor) should be(true)
+    artifactSourcesAreEquivalent(resultOfTsEditor, resultOfRugEditor) should be(true)
 
   }
 
-  def singleFileArtifactSourcesAreEquivalent(as1: ArtifactSource, as2: ArtifactSource): Boolean = {
-    assert(as1.allFiles.size === 1)
-    assert(as2.allFiles.size === 1)
+  def artifactSourcesAreEquivalent(as1: ArtifactSource, as2: ArtifactSource): Boolean = {
+    assert(as1.allFiles.size === as2.allFiles.size)
 
-    val as1Name = as1.allFiles.head.path
-    val as2Name = as2.allFiles.head.path
-    as1Name should be(as2Name)
+    val files1 = as1.allFiles.sortBy(_.path)
+    val files2 = as2.allFiles.sortBy(_.path)
 
-    val as1Contents = as1.allFiles.head.content
-    val as2Contents = as2.allFiles.head.content
-    as1Contents should be(as2Contents)
+    files1.zip(files2).foreach {
+      case (file1, file2) =>
+
+        val as1Name = file1.path
+        val as2Name = file2.path
+        as1Name should be(as2Name)
+
+        val as1Contents = file1.content
+        val as2Contents = file2.content
+        as1Contents should be(as2Contents)
+    }
 
     true
   }
+
+
+  def executeRug(rugArchive: ArtifactSource, startingProject: ArtifactSource,
+                 params: Map[String, String] = Map()): ArtifactSource = {
+    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
+
+    val eds = runtime.create(rugArchive, None)
+    assert(eds.size === 1)
+    val pe = eds.head.asInstanceOf[ProjectEditor]
+
+    val r = pe.modify(startingProject, SimpleParameterValues(params))
+    r match {
+      case sm: SuccessfulModification =>
+        sm.result
+      case um =>
+        fail("This modification was not successful: " + um)
+    }
+  }
+
+  private def parseRugForEditorName(program: String) =
+    new ParserCombinatorRugParser().parse(program).head.name
+
 
 }

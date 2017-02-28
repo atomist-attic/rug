@@ -15,29 +15,27 @@ trait TypeScriptEditorTestHelper extends Matchers {
   val typeScriptPipeline: RugPipeline =
     new CompilerChainPipeline(Seq(new RugTranspiler(), TypeScriptBuilder.compiler))
 
-  def executeTypescript(editorName: String, program: String,
+  def rugArchiveFromEditor(editorName: String, program: String) = {
+    val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
+    TypeScriptBuilder.compileWithModel(as)
+  }
+
+  def executeTypescript(rugArchive: ArtifactSource,
                         target: ArtifactSource,
                         params: Map[String, String] = Map(),
                         others: Seq[ProjectOperation] = Nil): ArtifactSource = {
 
-    val cas = {
-      val as = SimpleFileBasedArtifactSource(new StringFileArtifact(name = editorName + ".ts", path = ".atomist/editors/" + editorName + ".ts", content = program))
-      TypeScriptBuilder.compileWithModel(as)
-    }
-
-    val eds = SimpleJavaScriptProjectOperationFinder.find(cas).editors
+    val eds = SimpleJavaScriptProjectOperationFinder.find(rugArchive).editors
 
     if (eds.isEmpty) {
-      print(program)
       throw new Exception("No editor was parsed")
     }
 
     val jsed = eds.head.asInstanceOf[JavaScriptProjectEditor]
-    assert(jsed.name === editorName)
     jsed.setContext(others)
 
     val pe = eds.head
-    pe.modify(target, SimpleParameterValues( params)) match {
+    pe.modify(target, SimpleParameterValues(params)) match {
       case sm: SuccessfulModification =>
         sm.result
       case um =>

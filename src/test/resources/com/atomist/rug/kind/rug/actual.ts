@@ -10,7 +10,6 @@ import { File, Project } from '@atomist/rug/model/Core'
     BananaToCarrot
     Paint it orange and make it crunchy
  */
-
 @Editor("BananaToCarrot", "Paint it orange and make it crunchy")
 @Tags("vegetable", "fruit")
 class BananaToCarrot implements EditProject {
@@ -23,24 +22,20 @@ class BananaToCarrot implements EditProject {
         minLength: 1,
         maxLength: 100
     })
-    peel: string;
+    peel: string
 
     @Parameter({
         pattern: "^.*$"
     })
-    hue: string = "golden";
+    hue: string = "golden"
 
     edit(project: Project) {
-
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-
+        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         let p = project
         eng.with<File>(p, '//File()', f => {
             f.replace("banana", "carrots")
         })
         p.copyEditorBackingFileOrFail("source_file", "to/path")
-
     }
-
 }
 export let editor_bananaToCarrot = new BananaToCarrot();

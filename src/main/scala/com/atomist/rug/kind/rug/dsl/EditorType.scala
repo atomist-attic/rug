@@ -2,11 +2,9 @@ package com.atomist.rug.kind.rug.dsl
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{DirectoryMutableView, FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
-class EditorType(evaluator: Evaluator) extends Type(evaluator) with ReflectivelyTypedType {
+class EditorType extends Type with ReflectivelyTypedType {
   /** Describe the MutableView subclass to allow for reflective function export */
 
   override def runtimeClass = classOf[EditorMutableView]

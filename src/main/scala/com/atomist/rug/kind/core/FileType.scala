@@ -2,18 +2,13 @@ package com.atomist.rug.kind.core
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
-class FileType(
-                evaluator: Evaluator
-              )
-  extends Type(evaluator)
+class FileType
+  extends Type
     with ReflectivelyTypedType
     with ChildResolver {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Type for a file within a project."
 

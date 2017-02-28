@@ -2,11 +2,10 @@ package com.atomist.rug.kind.rug.archive
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 
 class RugArchiveProjectType
-  extends Type(DefaultEvaluator)
+  extends Type
   with ReflectivelyTypedType {
 
   def runtimeClass = classOf[RugArchiveProjectMutableView]

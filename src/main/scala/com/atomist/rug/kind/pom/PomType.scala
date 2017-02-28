@@ -3,14 +3,13 @@ package com.atomist.rug.kind.pom
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
 /**
   * Maven POM type
   */
 class PomType
-  extends Type(DefaultEvaluator)
+  extends Type
     with ReflectivelyTypedType
     with ChildResolver {
 

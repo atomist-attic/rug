@@ -1,14 +1,13 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ExportFunction, _}
 
 /**
   * Type representing a line within a file
   */
 class LineType
-  extends Type(DefaultEvaluator)
+  extends Type
     with ReflectivelyTypedType {
 
   override def description = "Represents a line within a text file"

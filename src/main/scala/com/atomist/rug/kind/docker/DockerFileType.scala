@@ -2,15 +2,12 @@ package com.atomist.rug.kind.docker
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
-class DockerFileType(evaluator: Evaluator)
-  extends Type(evaluator)
+class DockerFileType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   import DockerFileType._
 

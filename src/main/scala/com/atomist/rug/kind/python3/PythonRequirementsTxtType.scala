@@ -4,17 +4,12 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.FileArtifact
 
-class RequirementsType(
-                        evaluator: Evaluator
-                      )
-  extends Type(evaluator)
+class RequirementsType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Python requirements file"
 
@@ -54,15 +49,9 @@ import com.atomist.rug.kind.python3.PythonRequirementsTxtType._
 
 /**
   * Type for Python requirements.txt
-  *
-  * @param evaluator used to evaluate expressions
   */
-class PythonRequirementsTxtType(
-                           evaluator: Evaluator
-                         )
-  extends RequirementsType(evaluator) {
-
-  def this() = this(DefaultEvaluator)
+class PythonRequirementsTxtType
+  extends RequirementsType {
 
   override def description = "Python requirements text file"
 

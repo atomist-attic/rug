@@ -2,17 +2,11 @@ package com.atomist.rug.kind.xml
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
-import com.atomist.tree.TreeNode
 
-class XmlType(
-               evaluator: Evaluator
-             )
-  extends Type(evaluator)
+class XmlType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "XML"
 

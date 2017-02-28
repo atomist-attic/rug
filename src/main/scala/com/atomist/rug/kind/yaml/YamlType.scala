@@ -2,7 +2,6 @@ package com.atomist.rug.kind.yaml
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
 object YamlType {
@@ -10,13 +9,11 @@ object YamlType {
   val yamlExtension = ".yml"
 }
 
-class YamlType(evaluator: Evaluator)
-  extends Type(evaluator)
+class YamlType
+  extends Type
     with ReflectivelyTypedType {
 
   import YamlType._
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "YAML file.  If the file contains multiple YAML documents, only the first is parsed and addressable."
 

@@ -2,16 +2,11 @@ package com.atomist.rug.kind.properties
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{DirectoryMutableView, FileMutableView, ProjectMutableView}
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
-class PropertiesType(
-                      evaluator: Evaluator
-                    )
-  extends Type(evaluator)
+class PropertiesType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Java properties file"
 

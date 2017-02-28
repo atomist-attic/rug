@@ -2,21 +2,14 @@ package com.atomist.rug.kind.pom
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
 /**
   * Maven POM type
-  *
-  * @param evaluator used to evaluate expressions
   */
-class EveryPomType(
-               evaluator: Evaluator
-             )
-  extends Type(evaluator)
+class EveryPomType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "POM XML file"
 

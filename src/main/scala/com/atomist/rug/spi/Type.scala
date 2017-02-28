@@ -8,10 +8,8 @@ import com.atomist.rug.runtime.rugdsl.Evaluator
   * as a Java class or Elm module.
   * When kinds are nested, the context should be the mutable view of
   * the outer kind.
-  *
-  * @param evaluator used to evaluate expressions
   */
-abstract class Type(evaluator: Evaluator)
+abstract class Type
   extends ChildResolver
     with Typed {
 

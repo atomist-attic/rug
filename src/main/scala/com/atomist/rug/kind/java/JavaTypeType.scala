@@ -4,7 +4,6 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.JavaTypeType._
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
@@ -13,14 +12,10 @@ import scala.collection.JavaConverters._
 
 /**
   * Type resolution for a Java type (class or interface)
-  *
-  * @param evaluator used to evaluate expressions
   */
-class JavaTypeType(evaluator: Evaluator)
-  extends Type(evaluator)
+class JavaTypeType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Java class"
 

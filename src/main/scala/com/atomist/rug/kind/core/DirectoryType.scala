@@ -2,15 +2,12 @@ package com.atomist.rug.kind.core
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 
-class DirectoryType(evaluator: Evaluator)
-  extends Type(evaluator)
+class DirectoryType
+  extends Type
   with ReflectivelyTypedType
   with ChildResolver {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Type for a directory within a project."
 

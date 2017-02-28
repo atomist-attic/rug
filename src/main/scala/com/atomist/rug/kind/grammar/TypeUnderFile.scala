@@ -3,7 +3,6 @@ package com.atomist.rug.kind.grammar
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.dynamic.MutableContainerMutableView
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text._
@@ -17,7 +16,7 @@ import scala.collection.JavaConverters._
   * be resolved from files and projects.
   */
 abstract class TypeUnderFile
-  extends Type(DefaultEvaluator)
+  extends Type
     with ReflectivelyTypedType {
 
   /**

@@ -2,14 +2,10 @@ package com.atomist.rug.kind.test
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
 
-class ReplacerCljType(ev: Evaluator)
-  extends Type(ev) with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
+class ReplacerCljType
+  extends Type with ReflectivelyTypedType {
 
   def description = "Test type for replacing the content of clojure files"
 

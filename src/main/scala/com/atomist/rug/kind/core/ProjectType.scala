@@ -1,17 +1,13 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
-class ProjectType(
-                   evaluator: Evaluator
-                 )
-  extends Type(evaluator)
+class ProjectType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description: String = "Type for a project. Supports global operations. " +
     "Consider using file and other lower types by preference as project" +

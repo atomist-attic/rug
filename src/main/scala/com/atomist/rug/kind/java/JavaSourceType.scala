@@ -8,15 +8,11 @@ import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Represents a Java source file.
-  *
-  * @param evaluator evaluator
   */
-class JavaSourceType(evaluator: Evaluator)
-  extends Type(evaluator)
+class JavaSourceType
+  extends Type
     with ReflectivelyTypedType
     with LazyLogging {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Java source file"
 

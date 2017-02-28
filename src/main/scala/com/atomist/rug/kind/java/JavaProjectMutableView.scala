@@ -16,13 +16,9 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
 import scala.collection.JavaConverters._
 
-class JavaProjectType(
-                       evaluator: Evaluator
-                                  )
-  extends Type(evaluator)
+class JavaProjectType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Java project"
 

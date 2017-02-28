@@ -4,7 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.rug.kind.java.support.JavaAssertions
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
+import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi._
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
@@ -13,13 +13,9 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-class SpringBootProjectType(
-                             evaluator: Evaluator
-                           )
-  extends Type(evaluator)
+class SpringBootProjectType
+  extends Type
     with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
 
   override def description = "Spring Boot project"
 

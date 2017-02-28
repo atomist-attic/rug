@@ -2,15 +2,12 @@ package com.atomist.rug.kind.test
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import org.springframework.beans.factory.annotation.Autowired
 
 // Only used in tests
-class ReplacerType(ev: Evaluator)
-  extends Type(ev) with ReflectivelyTypedType {
-
-  def this() = this(DefaultEvaluator)
+class ReplacerType
+  extends Type with ReflectivelyTypedType {
 
   def runtimeClass = viewClass
 

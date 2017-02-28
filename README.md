@@ -114,13 +114,8 @@ artifacts.
 
 [semver]: http://semver.org
 
-The Rug type documentation is created as part of running the tests.
-To generate the documentation without running all the tests, you can
-run the following command:
+The Rug type documentation is created as part of running a Maven build 
+with the `npm-release` profile.
 
-```
-$ mvn test -DwildcardSuites=com.atomist.rug.rugdoc.TypeDocTest
-```
-
-The documentation for all of the Rug types will be in a single file
-named `target/RugTypes.md`.
+The documentation for all of the Rug types will be in a directory
+named `target/.atomist/node_modules/@atomist/rug/typedoc`.

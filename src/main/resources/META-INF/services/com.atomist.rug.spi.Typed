@@ -29,8 +29,6 @@ com.atomist.rug.kind.python3.PythonFileType
 com.atomist.rug.kind.python3.RequirementsType
 com.atomist.rug.kind.python3.PythonRequirementsTxtType
 
-com.atomist.rug.kind.rug.dsl.RugFileType
-
 com.atomist.rug.kind.properties.PropertiesType
 
 com.atomist.rug.kind.scala.ScalaFileType

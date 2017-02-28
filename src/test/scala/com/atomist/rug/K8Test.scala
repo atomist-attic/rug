@@ -111,26 +111,6 @@ class K8Test extends FlatSpec with Matchers {
 
   import TestUtils._
 
-  it should "update K8 spec without JavaScript" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |param service: ^[\w.\-_]+$
-        |param new_sha: ^[a-f0-9]{7}$
-        |
-        |let regexp = ":[a-f0-9]{7}"
-        |
-        |with File f
-        | when { f.name().indexOf("80-" + service + "-deployment") >= 0 };
-        |do
-        |  regexpReplace regexp { ":" + new_sha };
-      """.stripMargin
-    updateWith(prog)
-  }
-
-
   it should "update K8 spec with JavaScript regexp replace" in {
     val prog =
       """

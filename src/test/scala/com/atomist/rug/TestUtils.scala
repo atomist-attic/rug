@@ -9,7 +9,7 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.{AddressableRug, Rug, RugSupport}
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -43,11 +43,10 @@ object TestUtils extends Matchers {
       if (isTypeScript(program)) {
         val as = TypeScriptBuilder.compileWithModel(program)
         SimpleJavaScriptProjectOperationFinder.find(as).editors.head
-      } else {
+      }
+      else {
         // Rug editor
-        val eds = pipeline.create(backingAs + program)
-        eds.size should be >= 1
-        eds.head.asInstanceOf[ProjectEditor]
+        fail("Rug DSL is no longer supported")
       }
     pe.modify(as, poa)
   }
@@ -55,12 +54,12 @@ object TestUtils extends Matchers {
   /**
     * Update with the given program.
     *
-    * @param prog Rug or TypeScript program
+    * @param prog    Rug or TypeScript program
     * @param project project to update
-    * @param params parameters. Default is none
+    * @param params  parameters. Default is none
     * @return result of the modification attempt
     */
-  def updateWith(prog: String, project: ArtifactSource, params: Map[String,Object] = Map()): ModificationAttempt = {
+  def updateWith(prog: String, project: ArtifactSource, params: Map[String, Object] = Map()): ModificationAttempt = {
     val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
     attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(params))
   }
@@ -104,10 +103,13 @@ object TestUtils extends Matchers {
   }
 
   /**
-    * Make a rug addressable.
+    * Make a rug addressable
+    *
+    * @param rug
+    * @return
     */
-  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3") : AddressableRug = {
-    new AddressableRug with ProjectEditor with RugSupport {
+  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3"): AddressableRug = {
+    new AddressableRug with ProjectEditor {
 
       override def artifact = _artifact
 
@@ -118,9 +120,11 @@ object TestUtils extends Matchers {
       override def description = rug.description
 
       override def name = rug.name
+
       override def tags = rug.tags
 
-      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as,poa)
+      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as, poa)
+
       override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
     }
   }
@@ -131,7 +135,7 @@ object TestUtils extends Matchers {
   * Also namespace/otherops not used. Really only for test/fun.
   */
 object SimpleJavaScriptProjectOperationFinder {
-  def find(as: ArtifactSource) : Rugs = {
+  def find(as: ArtifactSource): Rugs = {
     new JavaScriptProjectOperationFinder(new JavaScriptContext(as)).find(Nil)
   }
 }

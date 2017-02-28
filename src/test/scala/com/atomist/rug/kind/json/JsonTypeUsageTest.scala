@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.json
 
 import com.atomist.param.SimpleParameterValues
+import com.atomist.project.edit.SuccessfulModification
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug._
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -76,93 +77,26 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
   import com.atomist.rug.TestUtils._
 
   it should "update node value, going via file and path expression" in {
-    val prog =
-      """
-        |editor Rename
-        |
-        |let subdomainNode = $(/*[@name='package.json']/Json()/subdomain)
-        |
-        |with subdomainNode
-        | do setValue "absquatulate"
-      """.stripMargin
-    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog)))
+    val edited = updateWith("Rename.ts")
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
   it should "update node value, going via file and with" in {
-    val prog =
-      """
-        |editor Rename
-        |
-        |with File when path = "package.json"
-        | with Json
-        |   with subdomain
-        |     do setValue "absquatulate"
-      """.stripMargin
-    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    )
+    val edited = updateWith("Rename3.ts")
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
   it should "add dependency using Rug" in {
-    val prog =
-      """
-        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-        |import {Status, Result} from "@atomist/rug/operations/RugOperation"
-        |import {Project,Pair} from '@atomist/rug/model/Core'
-        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
-        |
-        |class Rename implements ProjectEditor {
-        |    name: string = "Rename"
-        |    description: string = "Rename"
-        |
-        |    edit(project: Project) {
-        |
-        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      eng.with<Pair>(project, `/*[@name='package.json']/Json()/dependencies`, p =>
-        |       p.addKeyValue("foo", "bar")
-        |     )
-        |    }
-        |}
-        |
-        |export let finder = new Rename();
-      """.stripMargin
-
-    val edited = updateWith(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    )
+    val edited = updateWith("Rename2.ts")
     // edited should equal(packageJson.replace("foobar", "absquatulate"))
   }
 
   it should "add dependency using TypeScript" in {
-    val program =
-      """
-        |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-        |import {Status, Result} from "@atomist/rug/operations/RugOperation"
-        |import {Project,Pair} from '@atomist/rug/model/Core'
-        |import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
-        |
-        |class PackageFinder implements ProjectEditor {
-        |    name: string = "node.deps"
-        |    description: string = "Finds package.json dependencies"
-        |    edit(project: Project) {
-        |
-        |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-        |      let pe = new PathExpression<Project,Pair>(`/*[@name='package.json']/Json()/dependencies`)
-        |      let p = eng.scalar(project, pe)
-        |      //if (p == null)
-        |      p.addKeyValue("foo", "bar")
-        |    }
-        |}
-        |
-        |export let finder = new PackageFinder();
-      """.stripMargin
-    val pas = TypeScriptBuilder.compileWithModel(new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(program), program)))
-    val edited = updateWith(pas, new DefaultRugPipeline())
+    val edited = updateWith("PackageFinder.ts")
   }
 
   // Return new content
-  private def updateWith(prog: ArtifactSource,
-                         pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): String = {
+  private def updateWith(tsFile: String): String = {
     val filepath = "package.json"
     val as = new SimpleFileBasedArtifactSource("as",
       Seq(
@@ -171,13 +105,17 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
     )
     val newName = "Foo"
 
-    val r = doModification(prog, as, EmptyArtifactSource(InterpreterRugPipeline.DefaultRugArchive),
-      SimpleParameterValues( Map(
-      "new_name" -> newName
-    )), pipeline = pipeline)
+    val ed = TestUtils.editorInSideFile(this, tsFile)
 
-    val f = r.findFile(filepath).get
-    f.content.contains(s"$newName") should be(true)
-    f.content
+    ed.modify(as,
+      SimpleParameterValues(Map(
+        "new_name" -> newName
+      ))) match {
+      case sm: SuccessfulModification =>
+        val f = sm.result.findFile(filepath).get
+        f.content.contains(s"$newName") should be(true)
+        f.content
+      case x => fail
+    }
   }
 }

@@ -54,6 +54,16 @@ class RugArchiveTypeTest extends FlatSpec
       |  with File
       |     do replace "banana" "carrots"
       |  do copyEditorBackingFileOrFail "source_file" "to/path"
+      |
+      |  with Directory d when { d.name().contains("path") }
+      |   begin
+      |     with Directory
+      |       with File
+      |         begin
+      |           do append peel
+      |           do append "boom"
+      |         end
+      |   end
       |end
     """.stripMargin
 

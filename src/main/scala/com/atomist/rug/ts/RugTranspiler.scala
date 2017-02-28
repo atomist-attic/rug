@@ -104,7 +104,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
         ts ++= "}"
         ts ++= config.separator
     }
-    ts ++= "}\n"
+    ts ++= s"}${config.separator}"
 
     // Check that editors have distinct names
     ts ++= s"""export let editor_${JavaHelpers.lowerize(rug.name)} = new ${rug.name}();"""
@@ -184,7 +184,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
   }
 
   private def letCode(prog: RugProgram, l: Computation): String = {
-    s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)};"
+    s"let ${l.name} = ${extractValue(prog, l.te, config.projectVarName)}"
   }
 
   private def actionCode(prog: RugProgram, a: Action, outerAlias: String): String = a match {
@@ -195,6 +195,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     case sba: ScriptBlockAction =>
       sba.scriptBlock.content
     case _ => ???
+
   }
 
   private def rooCode(roo: RunOtherOperation, params: Seq[Parameter]): String = {
@@ -208,7 +209,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       (for (d <- wb.doSteps)
         yield {
           doStepCode(prog, d, alias)
-        }).mkString("\n")
+        }).mkString(s"${config.separator}")
 
     val pathExpr = s"'//${wb.kind}()'"
     val descent = s"eng.with<${wb.kind}>($outerAlias, $pathExpr, ${alias} => {"
@@ -217,12 +218,11 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
     val referencingAccessibleThing = Set("Project").contains(wb.kind)
       //!wb.kind.equals(outerAlias)
     if (!referencingAccessibleThing) {
-      descent + "\n" + helper.indented(blockBody) + "\n})"
+      descent + s"${config.separator}" + helper.indented(blockBody) + s"${config.separator}})"
     }
     else {
       // Special case where inner and outer block are the same type, like "with Project" under a project
-      (if (alias.equals(wb.kind)) "" else s"let ${alias} = ${JavaHelpers.lowerize(wb.kind)}\n") +
-      blockBody
+      (if (alias.equals(wb.kind)) "" else s"let ${alias} = ${JavaHelpers.lowerize(wb.kind)}${config.separator}") + config.separator + blockBody
     }
   }
 
@@ -237,7 +237,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
       emit(rf, outerAlias)
     case idf: IdentifierFunctionArg =>
       if (prog.parameters.exists(_.name.equals(idf.name)))
-        "parameters." + idf.name
+        "this." + idf.name
         //idf.name
       else
         idf.name

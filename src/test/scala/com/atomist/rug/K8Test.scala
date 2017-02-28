@@ -130,44 +130,6 @@ class K8Test extends FlatSpec with Matchers {
     updateWith(prog)
   }
 
-  it should "update K8 spec with native Rug predicate" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |param service: ^[\w.\-_]+$
-        |param new_sha: ^[a-f0-9]{7}$
-        |
-        |let regexp = ":[a-f0-9]{7}"
-        |
-        |with File f
-        | when nameContains { ("80-" + service + "-deployment") }
-        |do
-        |  regexpReplace regexp { ":" + new_sha };
-      """.stripMargin
-    updateWith(prog)
-  }
-
-  // 80-project-operation-deployment.json
-  it should "update K8 spec with Rug predicate checking JavaScript" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |param service: ^[\w.\-_]+$
-        |param new_sha: ^[a-f0-9]{7}$
-        |
-        |let regexp = ":[a-f0-9]{7}"
-        |
-        |with File f
-        | when name = { ("80-" + service + "-deployment.json") }
-        |do
-        |  regexpReplace regexp { ":" + new_sha };
-      """.stripMargin
-    updateWith(prog)
-  }
 
   it should "update K8 spec with JavaScript regexp replace" in {
     val prog =
@@ -202,29 +164,6 @@ class K8Test extends FlatSpec with Matchers {
         |with Project p
         |do
         |  regexpReplace { return service + ":[a-f0-9]{7}" } { service + ":" + new_sha };
-      """.stripMargin
-    updateWith(prog)
-  }
-
-  it should "update K8 spec with JavaScript JSON" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |param service: ^[\w.\-_]+$
-        |param new_sha: ^[a-f0-9]{7}$
-        |
-        |with File f
-        | when { f.name().indexOf("80-" + service + "-deployment") >= 0 }
-        |do
-        |  setContent {
-        |    var json = JSON.parse(f.content());
-        |    var container = json.spec.template.spec.containers[0]
-        |    var re = /:[a-f0-9]{7}/gi;
-        |    container.image = container.image.replace(re, ":" + new_sha);
-        |    return JSON.stringify(json, null, 4);
-        |  }
       """.stripMargin
     updateWith(prog)
   }

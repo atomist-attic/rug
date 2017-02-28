@@ -1,6 +1,6 @@
 package com.atomist.project.edit
 
-import com.atomist.param.ParameterValues
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.ProjectOperation
 import com.atomist.project.common.MissingParametersException
 import com.atomist.source.ArtifactSource
@@ -25,7 +25,7 @@ trait ProjectEditor extends ProjectOperation {
     * @throws MissingParametersException if any parameters are missing
     */
   @throws[MissingParametersException]
-  def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt
+  def modify(as: ArtifactSource, poa: ParameterValues = SimpleParameterValues.Empty): ModificationAttempt
 
   /**
     * Is this editor potentially applicable to the given ArtifactSource?

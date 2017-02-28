@@ -51,27 +51,4 @@ class PythonFileTypeUsageTest extends AbstractTypeUnderFileTest {
       |    return "Hello World!"
     """.stripMargin
 
-  /*
-  it should "add Flask route to Python file" in {
-    val prog =
-      """
-        |editor AddFlaskRoute
-        |
-        |param new_route: ^[\s\S]*$
-        |
-        |with PythonFile when filename = "hello.py"
-        | do append new_route
-      """.stripMargin
-    val r = modifyPythonAndReparseSuccessfully(prog, Flask1, Map(
-      "new_route" -> newRoute
-    ))
-    val f = r.findFile("hello.py").get
-    f.content.contains(newRoute) should be(true)
-
-    val reparsed = pythonParser.parse(f.content)
-    // TODO assert 2 methods
-    // reparsed.f
-  }
-
-*/
 }

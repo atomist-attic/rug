@@ -4,17 +4,6 @@ class YamlUsageTest extends AbstractYamlUsageTest {
 
   import YamlUsageTestTargets._
 
-  it should "get group value with no change with native Rug function" in {
-    val prog =
-      """
-        |editor YamlEdit
-        |
-        |with Yaml x when path = "x.yml"
-        |  do valueOf "group"
-      """.stripMargin
-    allAS.foreach(asChanges => runProgAndCheck(prog, asChanges._1, 0))
-  }
-
   it should "change group value with native Rug function" in {
     val prog =
       """

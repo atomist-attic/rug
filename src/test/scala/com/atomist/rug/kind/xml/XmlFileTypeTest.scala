@@ -74,8 +74,6 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
       //println(n.value)
-      
-      //println(n.value)
       case x => fail(s"Was empty: $x")
     }
   }
@@ -86,7 +84,6 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val expr = "/*[@name='pom.xml']/XmlFile()/project/dependencies/dependency/scope//TEXT"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
     //println(TreeNodeUtils.toShortString(rtn.right.get.head))
-
     assert(rtn.right.get.size === 1)
     assert(rtn.right.get.head.asInstanceOf[TreeNode].value === "test")
   }

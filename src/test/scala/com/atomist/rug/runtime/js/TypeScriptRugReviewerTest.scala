@@ -2,11 +2,10 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
-import com.atomist.project.common.{IllformedParametersException, MissingParametersException}
+import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.review.{ReviewResult, Severity}
-import com.atomist.rug.TestUtils
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{SimpleJavaScriptProjectOperationFinder, TestUtils}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -264,7 +263,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
 
     val reviewer = SimpleJavaScriptProjectOperationFinder.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
     assert(reviewer.name === "Simple")
-    reviewer.setContext(others)
+    reviewer.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

@@ -2,8 +2,8 @@ package com.atomist.project.generate
 
 import com.atomist.param._
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.edit.{FailedModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.source.{ArtifactSource, ArtifactSourceCreationException, EmptyArtifactSource}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -12,18 +12,15 @@ import com.typesafe.scalalogging.LazyLogging
   */
 class EditorInvokingProjectGenerator(val name: String,
                                      val editor: ProjectEditor,
-                                     val startProject: ArtifactSource)
+                                     val startProject: ArtifactSource,
+                                     override val externalContext: Seq[AddressableRug])
   extends ProjectGenerator
     with ParameterizedSupport
-    with ProjectOperationSupport
     with LazyLogging {
-
 
   override def parameters: Seq[Parameter] = editor.parameters
 
-  for (t <- editor.tags) {
-    addTag(t)
-  }
+  override def tags: Seq[Tag] = editor.tags
 
   override def description: String = editor.description
 

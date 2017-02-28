@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{Parameter, ParameterValues, ParameterizedSupport, Tag}
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
+import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler, _}
 import com.atomist.rug.spi.Handlers.{Plan, Response}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -18,8 +18,8 @@ class JavaScriptResponseHandlerFinder
     */
   override val kind: String = "response-handler"
 
-  override protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptResponseHandler] = {
-    Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler)))
+  override protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptResponseHandler] = {
+    Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler), externalContext))
   }
 }
 
@@ -28,7 +28,8 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
                                  override val name: String,
                                  override val description: String,
                                  override val parameters: Seq[Parameter],
-                                 override val tags: Seq[Tag])
+                                 override val tags: Seq[Tag],
+                                 override val externalContext: Seq[AddressableRug])
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport

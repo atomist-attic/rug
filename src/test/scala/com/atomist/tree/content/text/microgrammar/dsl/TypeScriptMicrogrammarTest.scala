@@ -3,9 +3,8 @@ package com.atomist.tree.content.text.microgrammar.dsl
 import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
+import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}

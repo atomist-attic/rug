@@ -1,7 +1,7 @@
 package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
-import com.atomist.rug.runtime.rugdsl.RugDrivenProjectOperation
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 
 /**
@@ -19,8 +19,7 @@ trait RugCompiler {
   @throws[BadRugException]
   def compile(rugProgram: RugProgram,
               artifactSource: ArtifactSource = EmptyArtifactSource(""),
-              namespace: Option[String] = None,
-              knownOperations: Seq[ProjectOperation] = Nil): RugDrivenProjectOperation
+              knownOperations: Seq[AddressableRug] = Nil): ProjectOperation
 }
 
 case class MissingFunction(name: String)

@@ -9,7 +9,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
 import com.atomist.rug.parser._
-import com.atomist.rug.runtime.NamespaceUtils._
+import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
 import com.atomist.rug.spi.{MutableView, ReflectiveFunctionExport, TypeRegistry}
 import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
@@ -39,12 +39,37 @@ object RugOperationSupport {
     }.toMap
     parametersPassedIn ++ defaultParameterValuesNotSet
   }
+
+  /**
+    * Try to resolve the operation from the given namespace.
+    */
+  def resolve(name: String,
+              rug: Rug,
+              imports: Seq[Import] = Nil): Option[Rug] = {
+
+    if(rug == null){
+      return None//happens during tests!
+    }
+    // Look in imports
+    val theImport = imports.find(_.fqn.endsWith(s".$name"))
+    //convert to g:a:name format
+    val specificallyImported = theImport.flatMap(imp =>   rug.findRug(imp.fqn.replaceAll("\\.", ":")))
+    specificallyImported match {
+      case Some(o: ProjectOperation) => Some(o)
+      case _ => rug.findRug(name) match {
+        case Some(p: ProjectOperation) => Some(p)
+        case _ => None
+      }
+    }
+  }
 }
 
 /**
   * Useful functionality shared between runtime and test infrastructure.
   */
-trait RugOperationSupport extends LazyLogging {
+trait RugOperationSupport
+  extends LazyLogging
+  with Rug{
 
   val kindRegistry: TypeRegistry
 
@@ -57,13 +82,9 @@ trait RugOperationSupport extends LazyLogging {
   // Be consistent with types of generator-lib
   def parameters: Seq[Parameter]
 
-  def namespace: Option[String]
-
   def imports: Seq[Import]
 
   protected val scriptBlockActionExecutor: ScriptBlockActionExecutor = DefaultScriptBlockActionExecutor
-
-  protected def operations: Seq[ProjectOperation]
 
   /**
     *
@@ -90,7 +111,7 @@ trait RugOperationSupport extends LazyLogging {
     */
   protected def parametersForOtherOperation(
                                              roo: RunOtherOperation,
-                                             poa: ParameterValues) = {
+                                             poa: ParameterValues): SimpleParameterValues = {
     val context = null
     val idm = buildIdentifierMap(context, poa)
     val params: Seq[ParameterValue] = (idm.collect {
@@ -218,7 +239,7 @@ trait RugOperationSupport extends LazyLogging {
                           rugAs: ArtifactSource, // not used
                           as: ArtifactSource,
                           poa: ParameterValues): ModificationAttempt = {
-    resolve(roo.name, namespace, operations, imports) match {
+    resolve(roo.name) match {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown operation: ${roo.name}", null)
       case Some(pe: ProjectEditor) =>
@@ -252,7 +273,7 @@ trait RugOperationSupport extends LazyLogging {
                             rugAs: ArtifactSource, // not used
                             project: ArtifactSource,
                             poa: ParameterValues): ReviewResult = {
-    resolve(roo.name, namespace, operations, imports) match {
+    resolve(roo.name) match {
       case None =>
         throw new RugRuntimeException(name, s"Cannot run unknown reviewer: ${roo.name}", null)
       case Some(pr: ProjectReviewer) =>
@@ -260,5 +281,9 @@ trait RugOperationSupport extends LazyLogging {
       case Some(wtf) =>
         throw new RugRuntimeException(name, s"Project operation is not a ProjectEditor: ${roo.name}", null)
     }
+  }
+
+  protected def resolve(name: String) : Option[Rug] = {
+    RugOperationSupport.resolve(name, this, imports)
   }
 }

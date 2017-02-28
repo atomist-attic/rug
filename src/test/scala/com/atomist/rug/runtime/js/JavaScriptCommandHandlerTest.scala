@@ -197,7 +197,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
   it should "allow us to return a message directly from a handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningMessage))
-    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     assert(plan.messages.size === 1)
@@ -205,7 +205,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
   it should "be able to schedule an Execution and handle its response" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstructionCallingRespondable))
-    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val responseHandler = rugs.responseHandlers.head
 

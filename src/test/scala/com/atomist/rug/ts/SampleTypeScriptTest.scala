@@ -2,9 +2,8 @@ package com.atomist.rug.ts
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.runtime.js.{JavaScriptProjectEditor, JavaScriptProjectOperationFinder}
+import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 

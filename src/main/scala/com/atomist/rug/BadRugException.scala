@@ -86,3 +86,6 @@ class RugNotFoundException(msg: String)
 
 class BadPlanException(msg: String)
   extends BadRugException(msg)
+
+class MissingRugException(msg: String)
+  extends BadRugException(msg)

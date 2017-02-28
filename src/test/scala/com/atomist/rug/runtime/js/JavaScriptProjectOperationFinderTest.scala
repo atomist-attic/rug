@@ -1,8 +1,8 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.ProjectEditor
+import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.Timing._

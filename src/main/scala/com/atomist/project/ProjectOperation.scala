@@ -7,6 +7,6 @@ import com.atomist.rug.runtime.ParameterizedRug
   * Subtraits will define operations such as generate or modify, working
   * on parameters specified by this type.
   */
-trait ProjectOperation extends ParameterizedRug {
-  
+trait ProjectOperation
+  extends ParameterizedRug {
 }

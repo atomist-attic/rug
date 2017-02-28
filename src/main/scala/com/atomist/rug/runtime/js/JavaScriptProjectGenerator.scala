@@ -9,6 +9,7 @@ import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
+import com.atomist.rug.runtime.AddressableRug
 
 /**
   * Find Generators in a Nashorn
@@ -20,9 +21,9 @@ class JavaScriptProjectGeneratorFinder
     JsRugOperationSignature(Set("populate"),Set("name", "description")),
     JsRugOperationSignature(Set("populate"),Set("__name", "__description")))
 
-  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror): JavaScriptProjectGenerator = {
+  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): JavaScriptProjectGenerator = {
     val project: ArtifactSource = removeAtomistTemplateContent(jsc.rugAs)
-    new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project)
+    new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, externalContext)
   }
 }
 
@@ -34,9 +35,10 @@ class JavaScriptProjectGenerator(
                                           jsc: JavaScriptContext,
                                           jsVar: ScriptObjectMirror,
                                           rugAs: ArtifactSource,
-                                          startProject: ArtifactSource
+                                          startProject: ArtifactSource,
+                                          externalContext: Seq[AddressableRug]
                                         )
-  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
     with ProjectGenerator {
 
   @throws(classOf[InvalidParametersException])
@@ -46,7 +48,7 @@ class JavaScriptProjectGenerator(
 
     val tr = time {
       val project = new EmptyArtifactSource(projectName) + startProject
-      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, context)
+      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this))
       invokeMemberFunction(jsc, jsVar, "populate", wrapProject(pmv), validated)
       pmv.currentBackingObject
     }

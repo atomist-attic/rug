@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.rugdsl
 
-import com.atomist.param.{ParameterValues, SimpleParameterValues}
+import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -53,14 +53,16 @@ class RugEditorTest extends FlatSpec with Matchers {
     override def name: String = "other"
 
     override def description: String = name
+
+    override def tags: Seq[Tag] = Nil
   }
 
   private  def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
+    val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as)
     val red = ops.head.asInstanceOf[RugDrivenProjectEditor]
     assert(red.name === "SimpleEditor")
-    red.setContext(others)
+    red.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
@@ -88,10 +90,10 @@ class RugEditorTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifySomethingChanged(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as, None)
+    val ops = new DefaultRugPipeline(DefaultTypeRegistry).create(as)
     val red = ops.head.asInstanceOf[RugDrivenProjectEditor]
     assert(red.name === "TwoStepEditor")
-    red.setContext(others)
+    red.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("README", "I dub thee... Flounder"))
 

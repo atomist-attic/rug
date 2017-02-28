@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.{Parameter, Tag}
-import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -11,9 +11,9 @@ abstract class BaseJavaScriptHandlerFinder[T <: Rug]
   extends JavaScriptUtils
     with JavaScriptRugFinder[T] {
 
-  override def find(jsc: JavaScriptContext): Seq[T] = {
+  override def find(jsc: JavaScriptContext, externalContext: Seq[AddressableRug] = Nil): Seq[T] = {
     jsc.vars.collect {
-      case Var(_, handler) if isValidHandler(handler) && handler.getMember("__kind") == kind => extractHandler(jsc, handler)
+      case Var(_, handler) if isValidHandler(handler) && handler.getMember("__kind") == kind => extractHandler(jsc, handler, externalContext)
     }.flatten
   }
 
@@ -31,7 +31,7 @@ abstract class BaseJavaScriptHandlerFinder[T <: Rug]
     obj.hasMember("__kind") && obj.hasMember("__name") && obj.hasMember("__description") && obj.hasMember("handle")
   }
 
-  protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[T]
+  protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[T]
 
   protected def name(obj: ScriptObjectMirror): String = obj.getMember("__name").asInstanceOf[String]
 

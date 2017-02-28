@@ -4,6 +4,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.parser.{ParserCombinatorRugParser, RugParser}
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{ArtifactSource, FileArtifact}
@@ -27,10 +28,9 @@ class InterpreterRugPipeline(
   @throws[BadRugException]
   @throws[IllegalArgumentException]
   override def create(rugArchive: ArtifactSource,
-                      namespace: Option[String],
-                      knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
+                      knownOperations: Seq[AddressableRug]): Seq[ProjectOperation] = {
     val rugCompilationUnits = parseRugFiles(rugArchive)
-    compileRugPrograms(rugCompilationUnits, rugArchive, namespace, knownOperations)
+    compileRugPrograms(rugCompilationUnits, rugArchive, knownOperations)
   }
 
   def parseRugFiles(rugArchive: ArtifactSource): Seq[RugProgram] = {
@@ -45,13 +45,11 @@ class InterpreterRugPipeline(
 
   def compileRugPrograms(rugCompilationUnits: Seq[RugProgram],
                          rugArchive: ArtifactSource,
-                         namespace: Option[String],
-                         knownOperations: Seq[ProjectOperation] = Nil): Seq[ProjectOperation] = {
-    val ops =
-      rugCompilationUnits.map(program => compiler.compile(program, rugArchive, namespace, knownOperations))
-    val context = knownOperations ++ ops
-    ops.foreach(op => op.setContext(context))
-    ops
+                         knownOperations: Seq[AddressableRug] = Nil): Seq[ProjectOperation] = {
+    val progs = rugCompilationUnits.map(program => compiler.compile(program, rugArchive, knownOperations))
+    //tell each program in the archive about the others
+    progs.foreach(p => p.addToArchiveContext(progs.filter(other => p != other)))
+    progs
   }
 
   @throws[BadRugPackagingException]

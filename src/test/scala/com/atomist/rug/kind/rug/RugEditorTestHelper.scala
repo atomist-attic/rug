@@ -21,7 +21,7 @@ trait RugEditorTestHelper extends Matchers {
     val rugArchive = new SimpleFileBasedArtifactSource(DefaultRugArchive,
       StringFileArtifact(editorPath, program))
 
-    val eds = runtime.create(rugArchive,None)
+    val eds = runtime.create(rugArchive)
     assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
 

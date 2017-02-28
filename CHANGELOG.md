@@ -21,12 +21,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   Fixed referencing of editors in other archives in JS archives
 -   Fixed bug in LinkedJsonTreeDeserializer where it threw NPE on empty result set from neo4j-ingester
-    e.g. where the PE didn't match. Now returns EmptyLinkableContainerTreeNode.
+    e.g. where the PE didn't match. Now returns EmptyLinkableContainerTreeNode
 
 ### Changed
 
 -   **BREAKING** Removed Rug DSL-based BDD support. Use new Gherkin-based support.
+-   **BREAKING** Removed rug namespace support in preference to common approach of group:artifact:name
+    This means that DSL based rugs no longer contain their namepsace in their name
 -   **BREAKING** Only require context when running handlers
 -   **BREAKING** Removed CommandRegistry and related usages
 -   **BREAKING** Renamed old RugFunction to RugDslFunction

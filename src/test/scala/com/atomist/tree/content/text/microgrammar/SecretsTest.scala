@@ -61,7 +61,7 @@ class SecretsTest extends FlatSpec with Matchers with LazyLogging {
       """.stripMargin
     val rp = new DefaultRugPipeline
     val as = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(rp.defaultFilenameFor(prog), prog))
-    val ed = rp.create(as,  None).head.asInstanceOf[ProjectReviewer]
+    val ed = rp.create(as).head.asInstanceOf[ProjectReviewer]
 
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("application.yml", inYaml))

@@ -166,7 +166,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val moved = ts.withPathAbove(".atomist/handlers")
     val as = TypeScriptBuilder.compileWithModel(moved)
     val reader = new JavaScriptRugArchiveReader()
-    val ops = reader.find(as, None, Nil)
+    val ops = reader.find(as, Nil)
     val handler = ops.commandHandlers.find(p => p.name == "LicenseAdder").get
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("license","agpl")))
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil,null,null,null))

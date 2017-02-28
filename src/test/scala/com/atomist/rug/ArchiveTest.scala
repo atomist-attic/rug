@@ -32,7 +32,7 @@ class ArchiveTest extends FlatSpec with Matchers {
     val as = new SimpleFileBasedArtifactSource("",
       StringFileArtifact("Redeploy.rug", prog))
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.create(as, None, Nil)
+    val eds = runtime.create(as, Nil)
     eds shouldBe empty
   }
 
@@ -120,7 +120,7 @@ class ArchiveTest extends FlatSpec with Matchers {
 
   private def tryMod(rugAs: ArtifactSource, editorName: String, project: ArtifactSource): ModificationAttempt = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.create(rugAs, None)
+    val eds = runtime.create(rugAs)
     val peO = eds.find(_.name equals editorName)
     if (peO.isEmpty)
       fail(s"Did not find editor with name '$editorName': Have [${eds.map(_.name)}] " +

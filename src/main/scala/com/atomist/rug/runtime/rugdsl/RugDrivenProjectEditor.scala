@@ -1,15 +1,16 @@
 package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.project.predicate.ProjectPredicate
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.project.ProjectOperation
 import com.atomist.rug._
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.{Computation, RunOtherOperation, ScriptBlockAction, With}
 import com.atomist.rug.runtime.lang.ScriptBlockActionExecutor
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.atomist.rug.spi.{InstantEditorFailureException, TypeRegistry}
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing
@@ -20,19 +21,25 @@ class RugDrivenProjectEditor(
                               program: RugEditor,
                               rugAs: ArtifactSource,
                               kindRegistry: TypeRegistry,
-                              namespace: Option[String]
+                              externalContext: Seq[AddressableRug]
                             )
-  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, namespace)
+  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, externalContext)
     with ProjectEditorSupport
     with LazyLogging {
 
-  override protected def onSetContext(): Unit =
+  /**
+    * Override so that we can validate uses on the fly
+    * @param rugs
+    */
+  override def addToArchiveContext(rugs: Seq[Rug]): Unit = {
+    super.addToArchiveContext(rugs)
     (program.preconditions ++ program.postcondition).foreach(pre => {
       if (getCondition(pre).parameters.nonEmpty)
         throw new InvalidRugUsesException(name,
           s"Condition '${pre.predicateOrReviewerName}' has parameters. This is not allowed",
           pre.predicateOrReviewerName)
     })
+  }
 
   override def applicability(artifactSource: ArtifactSource): Applicability = {
     program.preconditions
@@ -102,19 +109,11 @@ class RugDrivenProjectEditor(
     case pred: ProjectPredicate => pred.holds(as, SimpleParameterValues.Empty)
   }
 
-  private def isMatch(pre: Condition, op: ProjectOperation): Boolean = {
-    op.name.equals(pre.predicateOrReviewerName) || {
-      namespace match {
-        case None => false
-        case Some(ns) => op.name.equals(ns + "." + pre.predicateOrReviewerName)
-      }
-    }
-  }
-
   private def getCondition(pre: Condition): ProjectOperation = {
-    operations.find(op => isMatch(pre, op)) match {
+
+    findParameterizedRug(pre.predicateOrReviewerName) match {
       case None =>
-        val knownPredicatesOrReviewers = operations collect {
+        val knownPredicatesOrReviewers = allRugs.collect {
           case p: RugDrivenProjectPredicate => p
           case r: ProjectReviewer => r
         }

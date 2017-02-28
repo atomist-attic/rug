@@ -2,12 +2,12 @@ package com.atomist.rug.ts
 
 import java.io.PrintWriter
 
-import com.atomist.param.{Parameter, ParameterValues, SimpleParameterValues}
+import com.atomist.param.{Parameter, ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -35,10 +35,10 @@ object TypeScriptInterfaceGenerator extends App {
   * @param typeRegistry registry of known Rug Types.
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
-                                   config: InterfaceGenerationConfig = InterfaceGenerationConfig())
+                                   config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
+                                   override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
-    with ProjectEditor
-    with ProjectOperationSupport {
+    with ProjectEditor {
 
   val DefaultTemplateName = "ts.vm"
 

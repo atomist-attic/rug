@@ -4,6 +4,7 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit.{ProjectEditorSupport, _}
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
@@ -19,8 +20,8 @@ class JavaScriptProjectEditorFinder
     JsRugOperationSignature(Set("edit"),Set("name", "description")),
     JsRugOperationSignature(Set("edit"), Set("__name", "__description")))
 
-  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror): JavaScriptProjectEditor = {
-    new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs)
+  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): JavaScriptProjectEditor = {
+    new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, externalContext)
   }
 }
 /**
@@ -29,9 +30,10 @@ class JavaScriptProjectEditorFinder
 class JavaScriptProjectEditor(
                                        jsc: JavaScriptContext,
                                        jsVar: ScriptObjectMirror,
-                                       rugAs: ArtifactSource
+                                       rugAs: ArtifactSource,
+                                       externalContext: Seq[AddressableRug]
                                      )
-  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
     with ProjectEditorSupport {
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK
@@ -46,7 +48,7 @@ class JavaScriptProjectEditor(
       val pmv = new ProjectMutableView(rugAs,
         targetProject,
         atomistConfig = DefaultAtomistConfig,
-        context)
+        Some(this))
 
       try {
         //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!

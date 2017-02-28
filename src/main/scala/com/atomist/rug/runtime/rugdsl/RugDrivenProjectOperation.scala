@@ -1,43 +1,31 @@
 package com.atomist.rug.runtime.rugdsl
 
 import com.atomist.param.{Parameter, Tag}
-import com.atomist.project.ProjectOperation
-import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.rug._
-import com.atomist.rug.runtime.NamespaceUtils
+import com.atomist.rug.runtime._
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 
-trait ContextAwareProjectOperation extends ProjectOperation {
-
-  /**
-    * Should be called before use to expose the context from which other editors can be found.
-    * Will compute parameters and validate dependencies in our Uses blocks.
-    *
-    * @param ctx context where we can find this editor
-    */
-  def setContext(ctx: Seq[ProjectOperation]): Unit
-
-}
-
 abstract class RugDrivenProjectOperation(
                                           val program: RugProgram,
                                           val rugAs: ArtifactSource,
                                           val kindRegistry: TypeRegistry,
-                                          val namespace: Option[String])
-  extends ContextAwareProjectOperation
-    with ProjectOperationSupport
-    with RugOperationSupport
+                                          override val externalContext: Seq[AddressableRug])
+  extends RugOperationSupport
+    with ParameterizedRug
+    with Rug
     with LazyLogging {
 
-  import NamespaceUtils._
-
-  private var context: Seq[ProjectOperation] = Nil
-
   private val params = new ListBuffer[Parameter] ++ program.parameters
+
+  override def addToArchiveContext(rugs: Seq[Rug]): Unit = {
+    super.addToArchiveContext(rugs)
+    validateUses
+    validateParameters()
+  }
 
   override def parameters: Seq[Parameter] = {
     //remove duplicates and maintain ordering
@@ -50,26 +38,19 @@ abstract class RugDrivenProjectOperation(
     }
   }
 
-  program.tags.foreach(t =>
-    addTag(Tag(t, t))
-  )
-
-  protected override def operations: Seq[ProjectOperation] = context
+  override def tags: Seq[Tag] = program.tags.map(t => Tag(t, t))
 
   override def imports: Seq[Import] = program.imports
 
-  override def setContext(ctx: Seq[ProjectOperation]): Unit = {
-    this.context = ctx
-    validateUses(ctx)
-    validateParameters(ctx)
-    onSetContext()
-  }
+  override def name: String = program.name
 
-  private def validateParameters(ctx: Seq[ProjectOperation]): Unit = {
+  override def description: String = program.description
+
+  private def validateParameters(): Unit = {
     val paramsToAdd = new ListBuffer[Parameter]()
     for {
       roo <- program.runs
-      op <- ctx.find(_.name.equals(namespaced(roo.name, namespace)))
+      op <- this.findParameterizedRug(roo.name)
       newParam <- op.parameters
       if !program.parameters.exists(existingParam => existingParam.getName.equals(newParam.getName))
       if !paramsToAdd.exists(alreadyAdded => alreadyAdded.getName.equals(newParam.getName))
@@ -84,7 +65,7 @@ abstract class RugDrivenProjectOperation(
     for {
       roo <- program.runs
       arg <- roo.args
-      op <- ctx.find(_.name.equals(namespaced(roo.name, namespace)))
+      op <-  this.findParameterizedRug(roo.name)
     } {
       if (arg.parameterName.isEmpty)
         throw new RugRuntimeException(name, s"Operation $name - All local arguments to 'run' statement must be named: Offending argument was $arg in ${roo.name}", null)
@@ -93,18 +74,18 @@ abstract class RugDrivenProjectOperation(
     }
   }
 
-  private def validateUses(ctx: Seq[ProjectOperation]): Unit = {
+  private def validateUses: Unit = {
     val missingUsed =
       for {
         used <- program.runs
-        resolved = resolve(used.name, namespace, ctx, program.imports)
+        resolved = resolve(used.name)
         if resolved.isEmpty
       }
         yield used.name
     if (missingUsed.nonEmpty)
       throw new UndefinedRugUsesException(name,
         s"'run' operation(s) not found when processing operation $name: [${missingUsed.mkString(",")}]. " +
-          s"Known operations are [${ctx.map(_.name).mkString(",")}]",
+          s"Known operations are [${allRugs.map(_.name).mkString(",")}]",
         missingUsed)
 
     val simpleNamesForImports = program.imports.map(imp => imp.simpleName)
@@ -117,16 +98,7 @@ abstract class RugDrivenProjectOperation(
         usedNotActuallyUsed)
   }
 
-  /**
-    * Subclasses can override this to perform further validity checks and initialization.
-    * They can now rely on the context.
-    */
-  protected def onSetContext(): Unit
-
-  override val name: String = namespaced(program.name, namespace)
-
-  override def description: String = program.description
-
   override def toString =
     s"${getClass.getName} name=${program.name},description=${program.description}, wrapping \n$program"
+
 }

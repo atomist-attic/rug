@@ -176,7 +176,7 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       Map("newComment" -> newComment)) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        println(theFile.content)
+        // println(theFile.content)
         assert(theFile.content === YamlFolded.replace(oldComment, rawNewComment))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")

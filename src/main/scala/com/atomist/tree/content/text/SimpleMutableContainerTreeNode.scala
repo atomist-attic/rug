@@ -37,7 +37,7 @@ object SimpleMutableContainerTreeNode {
   import OffsetInputPosition._
 
   /**
-    * Create a top level  node for the entire input, with the given child nodes
+    * Create a top level node for the entire input, with the given child nodes
     * that represent content parsed from the input. Creating padding nodes for
     * parts of the input that the fieldValues passed in don't explain.
     *

@@ -3,19 +3,19 @@ package com.atomist.rug.kind.core
 import java.util.{Collections, Objects}
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
-import com.atomist.project.ProjectOperation
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.RugRuntimeException
+import com.atomist.rug.{MissingRugException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
+import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
+import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
 import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.source._
-import com.atomist.tree.{AddressableTreeNode, PathAwareTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
+import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -44,7 +44,7 @@ class ProjectMutableView(
                           val rugAs: ArtifactSource,
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
-                          projectOperations: Seq[ProjectOperation] = Nil,
+                          creator: Option[Rug] = None,
                           ctx: RugContext = LocalRugContext)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
     with ChangeLogging[ArtifactSource] {
@@ -409,26 +409,22 @@ class ProjectMutableView(
     * @return
     */
   protected def editWith(editorName: String,
-                         params: Map[String, Object],
-                         context: Seq[ProjectOperation]): Unit = {
-    val ed: ProjectEditor = context.collect {
-      case pe: ProjectEditor if pe.name.equals(editorName) =>
-        pe
-    }.headOption.getOrElse(
-      throw new RugRuntimeException(name, s"Cannot find project editor [$editorName]")
-    )
-    ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
-      case sm: SuccessfulModification =>
-        updateTo(sm.result)
-      case nmn: NoModificationNeeded => currentBackingObject
-      case wtf =>
-        throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
-    }
-  }
+                         params: Map[String, Object]): Unit = {
 
-  protected def editWith(editorName: String, params: Map[String, Object]): Unit = {
-    logger.debug(s"Editing with ${this.projectOperations.map(_.name).mkString(",")}")
-    editWith(editorName, params, this.projectOperations)
+    creator match {
+      case Some(rug) => rug.findRug(editorName) match {
+        case Some(ed: ProjectEditor) =>
+          ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
+          case sm: SuccessfulModification =>
+            updateTo(sm.result)
+          case _: NoModificationNeeded => currentBackingObject
+          case wtf =>
+            throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
+        }
+        case _ => throw new MissingRugException(s"Unable to find editor: [$editorName]")
+      }
+      case _ => throw new RugRuntimeException(name, s"No Rug context in which to find other editor: [$editorName]")
+    }
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
@@ -450,7 +446,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true, description = "Return a new Project View based on the original backing object (normally the .atomist/ directory)")
   def backingArchiveProject(): ProjectMutableView = {
-    new ProjectMutableView(EmptyArtifactSource.apply(), rugAs, atomistConfig, projectOperations)
+    new ProjectMutableView(EmptyArtifactSource.apply(), rugAs, atomistConfig, creator)
   }
 
   /**
@@ -461,7 +457,7 @@ class ProjectMutableView(
                              poa: ParameterValues = SimpleParameterValues.Empty): ArtifactSource = {
     ed.modify(currentBackingObject, poa) match {
       case sm: SuccessfulModification => sm.result
-      case nmn: NoModificationNeeded => currentBackingObject
+      case _: NoModificationNeeded => currentBackingObject
       case wtf =>
         throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
     }
@@ -511,7 +507,7 @@ class ProjectMutableView(
 }
 
 /**
-  * For backwards compatability
+  * For backwards compatibility
   * @param ctx
   */
 class ProjectContext(ctx: RugContext) extends RugContext {

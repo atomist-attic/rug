@@ -2,6 +2,7 @@ package com.atomist.rug
 
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.parser._
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.runtime.rugdsl._
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -17,15 +18,16 @@ class DefaultRugCompiler(evaluator: Evaluator,
   override def compile(
                         rugProgram: RugProgram,
                         artifactSource: ArtifactSource,
-                        namespace: Option[String],
-                        knownOperations: Seq[ProjectOperation]): RugDrivenProjectOperation = {
+                        externalContext: Seq[AddressableRug]): ProjectOperation = {
     for (w <- rugProgram.withs)
       validateWithTypesAndReferences(rugProgram, w)
-    validateReferences(rugProgram, knownOperations)
+
+    validateReferences(rugProgram, externalContext)
+
     rugProgram match {
-      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, ed, artifactSource, typeRegistry, namespace)
-      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, rev, artifactSource, typeRegistry, namespace)
-      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, rpp, artifactSource, typeRegistry, namespace)
+      case ed: RugEditor => new RugDrivenProjectEditor(evaluator, ed, artifactSource, typeRegistry, externalContext)
+      case rev: RugReviewer => new RugDrivenProjectReviewer(evaluator, rev, artifactSource, typeRegistry, externalContext)
+      case rpp: RugProjectPredicate => new RugDrivenProjectPredicate(evaluator, rpp, artifactSource, typeRegistry, externalContext)
     }
   }
 
@@ -50,7 +52,7 @@ class DefaultRugCompiler(evaluator: Evaluator,
     }
   }
 
-  def validateReferences(rugProgram: RugProgram, knownOperations: Seq[ProjectOperation]): Unit = {
+  def validateReferences(rugProgram: RugProgram, knownOperations: Seq[AddressableRug]): Unit = {
     val undefineds = undefinedReferences(rugProgram, knownOperations)
     if (undefineds.nonEmpty) {
       val msg = s"Script references undefined identifiers: [${undefineds.mkString(",")}]"
@@ -58,7 +60,7 @@ class DefaultRugCompiler(evaluator: Evaluator,
     }
   }
 
-  private def undefinedReferences(rugProgram: RugProgram, knownOperations: Seq[ProjectOperation]): Seq[String] = {
+  private def undefinedReferences(rugProgram: RugProgram, knownOperations: Seq[AddressableRug]): Seq[String] = {
     val paramNames = rugProgram.parameters.map(p => p.getName) ++
       rugProgram.computations.map(comp => comp.name)
     rugProgram.withs

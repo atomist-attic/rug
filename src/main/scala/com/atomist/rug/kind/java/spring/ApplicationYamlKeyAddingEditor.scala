@@ -2,7 +2,7 @@ package com.atomist.rug.kind.java.spring
 
 import java.util
 
-import com.atomist.param.ParameterValues
+import com.atomist.param.{ParameterValues, Tag}
 import com.atomist.project.edit._
 import com.atomist.project.edit.ProjectEditorSupport
 import com.atomist.project.edit.ProjectEditorUtils._
@@ -48,4 +48,6 @@ object ApplicationYamlKeyAddingEditor extends ProjectEditorSupport {
   override def description: String = "Atomist Core Editor: Add key to application YAML"
 
   override def name: String = "ApplicationYamlKeyAddingEditor"
+
+  override def tags: Seq[Tag] = Nil
 }

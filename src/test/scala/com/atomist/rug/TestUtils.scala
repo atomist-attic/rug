@@ -1,11 +1,15 @@
 package com.atomist.rug
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, Rugs, SimpleJavaScriptProjectOperationFinder}
-import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
+import com.atomist.project.ProjectOperation
+import com.atomist.project.archive._
+import com.atomist.project.common.MissingParametersException
+import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -41,7 +45,7 @@ object TestUtils extends Matchers {
         SimpleJavaScriptProjectOperationFinder.find(as).editors.head
       } else {
         // Rug editor
-        val eds = pipeline.create(backingAs + program, None)
+        val eds = pipeline.create(backingAs + program)
         eds.size should be >= 1
         eds.head.asInstanceOf[ProjectEditor]
       }
@@ -97,5 +101,39 @@ object TestUtils extends Matchers {
     })
     val as = TypeScriptBuilder.compileWithModel(withAtomistDir)
     SimpleJavaScriptProjectOperationFinder.find(as)
+  }
+
+  /**
+    * Make a rug addressable
+    * @param rug
+    * @return
+    */
+  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3") : AddressableRug = {
+    new AddressableRug with ProjectEditor {
+
+      override def artifact = _artifact
+
+      override def group = _group
+
+      override def version = _version
+
+      override def description = rug.description
+
+      override def name = rug.name
+      override def tags = rug.tags
+
+      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as,poa)
+      override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
+    }
+  }
+}
+
+/**
+  * Convenience, but expensive as JavaScriptContext is not reused
+  * Also namespace/otherops not used. Really only for test/fun.
+  */
+object SimpleJavaScriptProjectOperationFinder {
+  def find(as: ArtifactSource) : Rugs = {
+    new JavaScriptProjectOperationFinder(new JavaScriptContext(as)).find(Nil)
   }
 }

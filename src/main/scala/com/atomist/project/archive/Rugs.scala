@@ -18,7 +18,7 @@ case class Rugs(
                 responseHandlers: Seq[ResponseHandler]
                ){
 
-  def projectOperations: Seq[ProjectOperation] = (editors ++ generators ++ reviewers).asInstanceOf[Seq[ProjectOperation]]
+  def projectOperations: Seq[ProjectOperation] = editors ++ generators ++ reviewers
 
   def editorNames: Seq[String] = names(editors)
   def generatorNames: Seq[String] = names(generators)

@@ -1,8 +1,8 @@
 package com.atomist.rug.kind.docker
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.TestUtils
+import com.atomist.project.edit.{ProjectEditor, SuccessfulModification}
+import com.atomist.rug.{DefaultRugPipeline, TestUtils}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -10,6 +10,7 @@ class DockerFileTypeTest extends FlatSpec with Matchers {
 
   it should "try docker type" in {
     val ed = TestUtils.editorInSideFile(this, "DockerUpgrade.ts")
+
     val target = new SimpleFileBasedArtifactSource("",
       StringFileArtifact(DockerFileType.DockerFileName,
         """

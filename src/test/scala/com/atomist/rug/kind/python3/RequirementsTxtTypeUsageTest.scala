@@ -19,7 +19,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
   def exec(program: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
     val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
     val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", program))
-    val eds = runtime.create(as,None)
+    val eds = runtime.create(as)
     assert(eds.size === 1)
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleParameterValues( params))

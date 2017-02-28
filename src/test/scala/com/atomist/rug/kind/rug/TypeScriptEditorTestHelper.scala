@@ -2,8 +2,8 @@ package com.atomist.rug.kind.rug
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.runtime.js.JavaScriptProjectEditor
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -30,8 +30,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
 
     val jsed = eds.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === editorName)
-    jsed.setContext(others)
-
+    jsed.addToArchiveContext(others)
     val pe = eds.head
     pe.modify(target, SimpleParameterValues( params)) match {
       case sm: SuccessfulModification =>

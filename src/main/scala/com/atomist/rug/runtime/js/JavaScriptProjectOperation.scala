@@ -4,11 +4,10 @@ import javax.script.{ScriptContext, SimpleBindings}
 
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.ProjectOperation
-import com.atomist.project.common.support.ProjectOperationSupport
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.runtime.js.interop.{PathExpressionException, jsSafeCommittingProxy}
-import com.atomist.rug.runtime.rugdsl.ContextAwareProjectOperation
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, RugRuntimeException}
 import com.atomist.source.ArtifactSource
 import com.typesafe.scalalogging.LazyLogging
@@ -28,10 +27,10 @@ import scala.util.control.NonFatal
 abstract class JavaScriptProjectOperation(
                                            _jsc: JavaScriptContext,
                                            _jsVar: ScriptObjectMirror,
-                                           rugAs: ArtifactSource
+                                           rugAs: ArtifactSource,
+                                           override val externalContext: Seq[AddressableRug]
                                          )
-  extends ProjectOperationSupport
-    with ContextAwareProjectOperation
+  extends ProjectOperation
     with LazyLogging
     with JavaScriptUtils {
 
@@ -39,20 +38,9 @@ abstract class JavaScriptProjectOperation(
   private[js] val jsVar = _jsVar
   private[js] val jsc = _jsc
 
-  tags(jsVar, Seq("__tags", "tags")).foreach(t => addTag(t))
+  override def tags = tags(jsVar, Seq("__tags", "tags"))
 
   override def parameters: Seq[Parameter] = parameters(jsVar, Seq("__parameters", "parameters"))
-
-
-  private var _context: Seq[ProjectOperation] = Nil
-
-  override def setContext(ctx: Seq[ProjectOperation]): Unit = {
-    _context = ctx
-  }
-
-  protected def context: Seq[ProjectOperation] = {
-    _context
-  }
 
   override def name: String = getMember(jsVar, Seq("__name", "name")).get.asInstanceOf[String]
 

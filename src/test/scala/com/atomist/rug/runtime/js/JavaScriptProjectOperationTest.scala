@@ -1,12 +1,11 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
 import com.atomist.project.common.MissingParametersException
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, SimpleJavaScriptProjectOperationFinder}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 

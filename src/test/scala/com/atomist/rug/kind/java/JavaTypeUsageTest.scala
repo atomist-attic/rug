@@ -73,7 +73,7 @@ object JavaTypeUsageTest extends Matchers {
 
     val progAs = new SimpleFileBasedArtifactSource("", StringFileArtifact(rugPath, program)).withPathAbove(".atomist") + TypeScriptBuilder.userModel
 
-    val eds = runtime.create(progAs,None)
+    val eds = runtime.create(progAs)
 
     val pe = eds.head.asInstanceOf[ProjectEditor]
     pe.modify(as, SimpleParameterValues(poa))

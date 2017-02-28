@@ -4,8 +4,8 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.generate.{EditorInvokingProjectGenerator, ProjectGenerator}
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.Rug
-import com.atomist.rug.runtime.rugdsl.{ContextAwareProjectOperation, DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
+import com.atomist.rug.runtime.AddressableRug
+import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator, RugDrivenProjectEditor}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{DefaultRugPipeline, EmptyRugDslFunctionRegistry, Import}
 import com.atomist.source.ArtifactSource
@@ -22,7 +22,7 @@ class RugDslArchiveReader(
                            typeRegistry: TypeRegistry = DefaultTypeRegistry
                          )
   extends LazyLogging
-    with RugArchiveReader[ProjectOperation] {
+    with RugArchiveReader {
 
   private val oldInterpreterPipeline = new DefaultRugPipeline(typeRegistry, evaluator, atomistConfig)
 
@@ -31,18 +31,12 @@ class RugDslArchiveReader(
   }
 
   override def find(startingProject: ArtifactSource,
-                    namespace: Option[String],
-                    otherOperations: Seq[Rug]): Rugs = {
+                    otherOperations: Seq[AddressableRug]): Rugs = {
 
     val otherProjectOperations = otherOperations.collect {
       case o: ProjectOperation => o
     }
-    val operations = oldInterpreterPipeline.create(startingProject, namespace, otherProjectOperations)
-
-    operations foreach {
-      case capo: ContextAwareProjectOperation =>
-        capo.setContext(operations ++ otherProjectOperations)
-    }
+    val operations = oldInterpreterPipeline.create(startingProject, otherProjectOperations)
 
     val editors = operations collect {
       case red: RugDrivenProjectEditor if red.program.publishedName.isEmpty => red
@@ -57,14 +51,17 @@ class RugDslArchiveReader(
         // TODO remove blanks in the generator names; we need to have a proper solution for this
         val name = red.program.publishedName.get
         logger.debug(s"Creating new generator with name $name")
-        new EditorInvokingProjectGenerator(name, red, project)
+        new EditorInvokingProjectGenerator(name, red, project, otherOperations)
     }
 
     val reviewers = operations collect {
       case r: ProjectReviewer => r
     }
 
-    Rugs(editors, generators, reviewers, Nil, Nil, Nil)
+    val rugs = Rugs(editors, generators, reviewers, Nil, Nil, Nil)
+    //tell the rugs about one another
+    rugs.allRugs.foreach(r => r.addToArchiveContext(rugs.allRugs))
+    rugs
   }
 }
 

@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.plans.MappedParameterSupport
+import com.atomist.rug.runtime.{AddressableRug, CommandHandler}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -18,8 +18,18 @@ class JavaScriptCommandHandlerFinder
 
   override def kind = "command-handler"
 
-  override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptCommandHandler] = {
-    Some(new JavaScriptCommandHandler(jsc, handler, name(handler), description(handler), parameters(handler), mappedParameters(handler), tags(handler), secrets(handler), intent(handler)))
+  override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptCommandHandler] = {
+    Some(new JavaScriptCommandHandler(
+      jsc,
+      handler,
+      name(handler),
+      description(handler),
+      parameters(handler),
+      mappedParameters(handler),
+      tags(handler),
+      secrets(handler),
+      intent(handler),
+      externalContext))
   }
 
   /**
@@ -92,7 +102,8 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                override val mappedParameters: Seq[MappedParameter],
                                override val tags: Seq[Tag],
                                override val secrets: Seq[Secret],
-                               override val intent: Seq[String] = Seq())
+                               override val intent: Seq[String] = Seq(),
+                               override val externalContext: Seq[AddressableRug])
   extends CommandHandler
   with MappedParameterSupport
   with JavaScriptUtils {

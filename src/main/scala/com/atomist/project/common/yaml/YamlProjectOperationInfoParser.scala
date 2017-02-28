@@ -4,6 +4,7 @@ import java.util.regex.{Pattern, PatternSyntaxException}
 
 import com.atomist.param._
 import com.atomist.project.common.template.{InvalidTemplateException, TemplateBasedProjectOperationInfo}
+import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory

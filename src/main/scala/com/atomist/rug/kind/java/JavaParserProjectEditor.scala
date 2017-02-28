@@ -19,7 +19,7 @@ abstract class JavaParserProjectEditor(val name: String,
   extends ProjectEditorSupport
     with LazyLogging {
 
-  addTag(JavaTag)
+  override def tags: Seq[JavaTag.type] = Seq(JavaTag)
 
   private val extractJavaFiles: ArtifactSource => Seq[FileArtifact] =
     a => JavaFilesExtractor(a / javaSourcePath).asScala

@@ -7,6 +7,7 @@ import com.atomist.project.review.{ReviewComment, Severity}
 import com.atomist.rug.RugProjectPredicate
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.{Computation, DoStep, With}
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
@@ -25,11 +26,9 @@ class RugDrivenProjectPredicate(
                                  program: RugProjectPredicate,
                                  rugAs: ArtifactSource,
                                  kindRegistry: TypeRegistry,
-                                 namespace: Option[String])
-  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, namespace)
+                                 externalContext: Seq[AddressableRug])
+  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, externalContext)
     with ProjectPredicate {
-
-  override protected def onSetContext(): Unit = {}
 
   override def holds(as: ArtifactSource, poa: ParameterValues): Boolean = {
     val reviewContext = new ReviewContext

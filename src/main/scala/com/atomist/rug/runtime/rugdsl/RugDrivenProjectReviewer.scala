@@ -6,6 +6,7 @@ import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult}
 import com.atomist.rug.RugReviewer
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.{Computation, RunOtherOperation, ScriptBlockAction, With}
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.runtime.lang.ScriptBlockActionExecutor
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.ArtifactSource
@@ -17,12 +18,10 @@ class RugDrivenProjectReviewer(
                                 program: RugReviewer,
                                 rugAs: ArtifactSource,
                                 kindRegistry: TypeRegistry,
-                                namespace: Option[String]
+                                externalContext: Seq[AddressableRug]
                               )
-  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, namespace)
+  extends RugDrivenProjectOperation(program, rugAs, kindRegistry, externalContext)
     with ProjectReviewer {
-
-  override protected def onSetContext(): Unit = {}
 
   override def review(as: ArtifactSource, poa: ParameterValues): ReviewResult = {
     val reviewContext = new ReviewContext

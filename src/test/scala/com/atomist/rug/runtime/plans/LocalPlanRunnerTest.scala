@@ -264,7 +264,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
   it ("should serialize complex instruction parameters to json during plan building") {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandWithObjectInstructionParamAsJson))
-    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     assert(plan.instructions.head.instruction.detail.parameters.head.getValue === """{"mucho":"coolness"}""")

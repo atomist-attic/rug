@@ -1,10 +1,10 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
+import com.atomist.project.ProjectOperation
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
-import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.SimpleJavaScriptProjectOperationFinder
+import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -402,6 +402,8 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     override def applicability(as: ArtifactSource): Applicability = Applicability.OK
     override def name: String = "other"
     override def description: String = name
+
+    override def tags: Seq[Tag] = Nil
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor adding to our parameters object" in {
@@ -526,7 +528,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val jsed = SimpleJavaScriptProjectOperationFinder.find(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
     assert(jsed.name === "SimpleGenerator")
 
-    jsed.setContext(others)
+    jsed.addToArchiveContext(others)
 
     val prj = jsed.generate("woot", SimpleParameterValues( Map("content" -> "Anders Hjelsberg is God")))
     assert(prj.id.name === "woot")
@@ -540,7 +542,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
 
-    jsed.setContext(others)
+    jsed.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
@@ -558,7 +560,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     val jsed = SimpleJavaScriptProjectOperationFinder.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
 
-    jsed.setContext(others)
+    jsed.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

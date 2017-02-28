@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
 
 object Excludes {
 
-  /** Antlr generated-class method names to exclude */
+  /** Antlr generated-class method names to exclude. */
   val ExcludedMethods = Set("getRuleIndex")
 }
 
@@ -125,7 +125,7 @@ class ModelBuildingListener(
     // There should be no overlap between these collections
     require(!lexerFields.exists(positionedParserFields.contains(_)))
 
-    def theresAnAliasFieldWithProvablySamePosition(what: TreeNode) = what match {
+    def theresAnAliasFieldWithProbablySamePosition(what: TreeNode) = what match {
       case pf: PositionedTreeNode =>
         positionedParserFields.exists(ppf => pf.hasSamePositionAs(ppf))
       case _ => false
@@ -133,7 +133,7 @@ class ModelBuildingListener(
 
     // We don't want lexer fields that have an alias field with the same position
     val deduped = fields.filter(f => !(lexerFields.contains(f) &&
-      theresAnAliasFieldWithProvablySamePosition(f))
+      theresAnAliasFieldWithProbablySamePosition(f))
     )
 
     def unwantedDuplicates(fields: Seq[TreeNode]): Seq[TreeNode] =

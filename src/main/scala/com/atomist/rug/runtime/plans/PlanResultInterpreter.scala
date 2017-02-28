@@ -7,7 +7,10 @@ import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class PlanResultInterpreter {
+/**
+  * Utils to example PlanResults
+  */
+object PlanResultInterpreter {
 
   def interpret(planResult: PlanResult): Response = {
     if (hasLogFailure(planResult.log)) {

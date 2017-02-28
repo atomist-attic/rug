@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{Parameter, ParameterValues, ParameterizedSupport, Tag}
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.{InstructionResponse, ParameterizedRug, ResponseHandler}
-import com.atomist.rug.spi.Handlers.Plan
+import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
+import com.atomist.rug.spi.Handlers.{Plan, Response}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -34,13 +34,17 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     with ParameterizedSupport
     with JavaScriptUtils {
 
-  override def handle(response: InstructionResponse, params: ParameterValues): Option[Plan] = {
+  override def handle(response: Response, params: ParameterValues): Option[Plan] = {
     //TODO this handle method is almost identical to the command handler - extract it
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
-    invokeMemberFunction(jsc, handler, "handle", response, validated) match {
+    invokeMemberFunction(jsc, handler, "handle", jsResponse(response.msg.orNull, String.valueOf(response.code.getOrElse(-1)), response.body.getOrElse(Nil)), validated) match {
       case plan: ScriptObjectMirror => ConstructPlan(plan)
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }
   }
 }
+
+private case class jsResponse(msg: String,
+                              code: String,
+                              body: AnyRef)

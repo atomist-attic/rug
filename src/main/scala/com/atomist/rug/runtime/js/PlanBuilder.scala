@@ -116,7 +116,11 @@ class PlanBuilder {
           o.keySet().toArray.toList.map { key =>
             val name = key.asInstanceOf[String]
             val value = o.getMember(name)
-            SimpleParameterValue(name, value)
+            SimpleParameterValue(name,
+              value match {
+                case s: String => s
+                case o => JsonSerializer.toJson(o)
+              })
           }
       }
 
@@ -142,11 +146,11 @@ class PlanBuilder {
     callback match {
       case u: Undefined => None
       case jsOnSuccess: ScriptObjectMirror =>
-        val callback = if (jsOnSuccess.hasMember("text") || jsOnSuccess.hasMember("body")) {
+        val callback = if (jsOnSuccess.hasMember("body")) {
           constructMessage(jsOnSuccess)
         } else if (jsOnSuccess.hasMember("kind")) {
           Respond(constructInstructionDetail(jsOnSuccess))
-        } else if (jsOnSuccess.hasMember("messages")) {
+        } else if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
           constructPlan(jsOnSuccess)
         } else {
           throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
@@ -155,3 +159,6 @@ class PlanBuilder {
     }
   }
 }
+
+
+

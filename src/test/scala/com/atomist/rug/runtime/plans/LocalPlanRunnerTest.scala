@@ -1,8 +1,12 @@
 package com.atomist.rug.runtime.plans
 
+import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.{DefaultAtomistConfig, JavaScriptRugArchiveReader}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
+import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.mockito.Matchers._
 import org.mockito.Mockito
 import org.mockito.Mockito._
@@ -28,7 +32,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
   it ("should run empty plan") {
     val plan = Plan(Nil, Nil)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanResponse = PlanResult(Seq())
     assert(actualPlanResult == expectedPlanResponse)
 
@@ -78,7 +82,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       PlanResult(Seq(MessageDeliveryError(Message(MessageText("nested plan"), Nil, None), null)))
     })
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success, None, Some(0), Some("edit1"))),
       InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, None, Some(0), Some("edit2"))),
@@ -93,14 +97,14 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     verify(messageDeliverer).deliver(
       Message(MessageText("message1"), Seq(Presentable(Generate(Detail("generate1", None, Nil, None)), Some("label1"))), None),
-      "plan input")
-    verify(instructionRunner).run(Edit(Detail("edit1", None, Nil, None)), "plan input")
-    verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), "plan input")
-    verify(messageDeliverer).deliver(Message(MessageText("pass"), Nil, None), "edit2")
-    verify(instructionRunner).run(Edit(Detail("edit3", None, Nil, None)), "plan input")
-    verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), "edit3")
-    verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), "plan input")
-    verify(nestedPlanRunner).run(Plan(Seq(Message(MessageText("nested plan"), Nil, None)), Nil), "edit4")
+      None)
+    verify(instructionRunner).run(Edit(Detail("edit1", None, Nil, None)), None)
+    verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
+    verify(messageDeliverer).deliver(Message(MessageText("pass"), Nil, None), Some(Response(Success,None,Some(0),Some("edit2"))))
+    verify(instructionRunner).run(Edit(Detail("edit3", None, Nil, None)), None)
+    verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Success, None, Some(0), Some("edit3"))))
+    verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), None)
+    verify(nestedPlanRunner).run(Plan(Seq(Message(MessageText("nested plan"), Nil, None)), Nil), Some(Response(Success,None,Some(0),Some("edit4"))))
 
     verify(logger).debug("Delivered message: MessageText(message1)")
     verify(logger).debug("Ran instruction: Edit(Detail(edit1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit1))")
@@ -133,15 +137,15 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsFailureResponseBody)
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 120.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, None, Some(0), Some("edit2")))
     )
     assert(actualPlanResult.log.toSet == expectedPlanLog)
 
     val inOrder = Mockito.inOrder(messageDeliverer, instructionRunner, nestedPlanRunner)
-    inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), "plan input")
-    inOrder.verify(messageDeliverer).deliver(Message(MessageText("fail"), Nil, None), "edit2")
+    inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
+    inOrder.verify(messageDeliverer).deliver(Message(MessageText("fail"), Nil, None ), Some(Response(Failure, None, Some(0), Some("edit2"))))
 
     verify(logger).debug("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Failure,None,Some(0),Some(edit2))")
     verify(logger).debug("Ran Message(MessageText(fail),List(),None) after Edit(Detail(edit2,None,List(),None))")
@@ -164,7 +168,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     when(messageDeliverer.deliver(any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
       MessageDeliveryError(Message(MessageText("message1"), Nil, None), new IllegalArgumentException("Uh oh!"))
     )
@@ -188,7 +192,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     when(instructionRunner.run(any(), any())).thenThrow(new IllegalArgumentException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
       InstructionError(Edit(Detail("fail", None, Nil, None)), new IllegalArgumentException("Uh oh!"))
     )
@@ -213,7 +217,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     when(instructionRunner.run(any(), any())).thenReturn(Response(Success, None, Some(0), None))
     when(nestedPlanRunner.run(any(), any())).thenThrow(new IllegalStateException("Uh oh!"))
 
-    val actualPlanResult = Await.result(planRunner.run(plan, "plan input"), 10.seconds)
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, Some(0), None)),
       CallbackError(Plan(List(Message(MessageText("fail"), Nil, None)), Nil), new IllegalArgumentException("Uh oh!"))
@@ -225,5 +229,44 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     verifyNoMoreInteractions(messageDeliverer, logger)
   }
+  val simpleCommandWithObjectInstructionParamAsJson =
+    StringFileArtifact(DefaultAtomistConfig.handlersRoot + "/Handler.ts",
+      """
+        |import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+        |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
+        |
+        |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
+        |@Tags("kitty", "youtube", "slack")
+        |@Intent("show me kitties","cats please")
+        |class KittieFetcher implements HandleCommand{
+        |
+        |  handle(ctx: HandlerContext) : Plan {
+        |
+        |    let result = new Plan()
+        |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {jsonparam: {mucho: "coolness"}}},
+        |                onSuccess: {name: "SimpleResponseHandler", kind: "respond"} });
+        |    return result;
+        |  }
+        |}
+        |
+        |@ResponseHandler("SimpleResponseHandler", "Checks response is equal to passed in parameter")
+        |class Responder implements HandleResponse<String> {
+        |  handle(response: Response<string>) : Plan {
+        |    return new Plan();
+        |  }
+        |}
+        |
+        |export let respond = new Responder();
+        |
+        |export let command = new KittieFetcher();
+        |
+    """.stripMargin)
 
+  it ("should serialize complex instruction parameters to json during plan building") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandWithObjectInstructionParamAsJson))
+    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, None, Nil)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    assert(plan.instructions.head.instruction.detail.parameters.head.getValue === """{"mucho":"coolness"}""")
+  }
 }

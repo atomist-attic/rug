@@ -11,8 +11,6 @@ import scala.concurrent.Future
 
 class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAssertions with OneInstancePerTest  {
 
-  val planResultInterpreter = new PlanResultInterpreter()
-
   val successfulInstructionResult = InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success))
   val failureInstructionResult = InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure))
   val errorInstructionResult = InstructionError(Edit(Detail("edit3", None, Nil, None)), new IllegalStateException("doh!"))
@@ -22,7 +20,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
 
   it ("should interpret empty plan result as success") {
     val planResult = PlanResult(Nil)
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Success)
     assert (actualResponse == expectedResponse)
   }
@@ -31,7 +29,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
     val planResult = PlanResult(Seq(
       successfulInstructionResult
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Success)
     assert (actualResponse == expectedResponse)
   }
@@ -40,7 +38,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
     val planResult = PlanResult(Seq(
       failureInstructionResult
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }
@@ -49,7 +47,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
     val planResult = PlanResult(Seq(
       errorInstructionResult
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }
@@ -59,7 +57,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
       successfulInstructionResult,
       failureInstructionResult
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }
@@ -69,7 +67,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
       successfulInstructionResult,
       errorInstructionResult
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }
@@ -79,7 +77,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
       successfulInstructionResult,
       successfulNestedPlan
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Success)
     assert (actualResponse == expectedResponse)
   }
@@ -89,7 +87,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
       successfulInstructionResult,
       failureNestedPlan
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }
@@ -99,7 +97,7 @@ class PlanResultInterpreterTest extends FunSpec with Matchers with DiagrammedAss
       successfulInstructionResult,
       errorNestedPlan
     ))
-    val actualResponse = planResultInterpreter.interpret(planResult)
+    val actualResponse = PlanResultInterpreter.interpret(planResult)
     val expectedResponse = Response(Failure)
     assert (actualResponse == expectedResponse)
   }

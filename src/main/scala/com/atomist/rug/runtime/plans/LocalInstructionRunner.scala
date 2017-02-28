@@ -6,7 +6,7 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.BadPlanException
 import com.atomist.rug.runtime._
-import com.atomist.rug.runtime.js.RugContext
+import com.atomist.rug.runtime.js.{JsonSerializer, RugContext}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
@@ -33,7 +33,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
     }
   }
 
-  override def run(instruction: Instruction, callbackInput: AnyRef): Response = {
+  override def run(instruction: Instruction, callbackInput: Option[Response]): Response = {
     val parameters = SimpleParameterValues(instruction.detail.parameters)
     instruction match {
       case Execute(detail) =>
@@ -41,7 +41,14 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case Some(fn) =>
             val replaced = secretResolver.replaceSecretTokens(detail.parameters)
             val resolved = SimpleParameterValues(replaced ++ secretResolver.resolveSecrets(fn.secrets))
-            fn.run(resolved)
+            val response = fn.run(resolved)
+
+            //serialize to json if not already a string
+            val newbody = response.body match {
+              case Some(s: String) => Some(s)
+              case o => JsonSerializer.toJson(o)
+            }
+            Response(response.status, response.msg, response.code, newbody)
           case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
         }
       case _ =>
@@ -69,7 +76,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
             Response(Success, None, None, planOption)
           case Some(rug: ResponseHandler) =>
             callbackInput match {
-              case response: InstructionResponse =>
+              case Some(response) =>
                 val planOption = rug.handle(response, parameters)
                 Response(Success, None, None, planOption)
               case c =>

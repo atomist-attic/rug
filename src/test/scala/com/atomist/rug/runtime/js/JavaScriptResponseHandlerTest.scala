@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.rug.runtime.InstructionResponse
+import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeMaterializer
@@ -50,7 +50,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
     handler.name should be(kitties)
     handler.description should be (kittyDesc)
     handler.tags.size should be (2)
-    val response = InstructionResponse("It worked! :p", 204, "woot")
+    val response = Response(Status.Success, Some("It worked! :p"), Some(204), Some("woot"))
     val plan = handler.handle(response, SimpleParameterValues(SimpleParameterValue("name","his dudeness")))
     //TODO validate the plan
   }

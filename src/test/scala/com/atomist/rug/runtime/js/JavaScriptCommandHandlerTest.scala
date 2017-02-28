@@ -6,7 +6,7 @@ import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.MissingSecretException
 import com.atomist.rug.runtime.{AddressableRug, CommandHandler, ResponseHandler}
 import com.atomist.rug.runtime.plans._
-import com.atomist.rug.spi.Handlers.{InstructionError, InstructionResult, Plan, Status}
+import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.{Handlers, Secret}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -213,7 +213,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Seq(new TestResponseHandler(responseHandler)), null, null, new TestSecretResolver(null) {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil}))
 
-    val results = Await.result(runner.run(plan, ""), 10.seconds)
+    val results = Await.result(runner.run(plan, None), 10.seconds)
     PlanUtils.drawEventLogs("testplan",results.log)
     results.log.foreach {
       case i: InstructionResult =>
@@ -296,7 +296,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         Seq(SimpleParameterValue("very", "cool"))
       }
     }))
-    Await.result(runner.run(handlers.head.handle(null, SimpleParameterValues.Empty).get, ""), 10.seconds).log.foreach {
+    Await.result(runner.run(handlers.head.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds).log.foreach {
       case i:
         InstructionResult =>
         assert(i.response.status === Status.Success)
@@ -313,7 +313,7 @@ class TestResponseHandler(r: ResponseHandler) extends AddressableRug with Respon
 
   override def version: String = ???
 
-  override def handle(response: com.atomist.rug.runtime.InstructionResponse, params: ParameterValues): Option[Plan] = {
+  override def handle(response: Response, params: ParameterValues): Option[Plan] = {
     None
   }
 

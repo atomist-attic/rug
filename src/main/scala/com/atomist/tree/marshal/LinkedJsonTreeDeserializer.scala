@@ -7,7 +7,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.typesafe.scalalogging.LazyLogging
 
 /**
-  * Deserialize a tree from JSON
+  * Deserialize a tree from JSON.
   */
 object LinkedJsonTreeDeserializer extends LazyLogging {
 
@@ -24,7 +24,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
   mapper.registerModule(DefaultScalaModule)
 
   /**
-    * Deserialize from JSON
+    * Deserialize from JSON.
     */
   def fromJson(json: String): ContainerTreeNode = {
     val l = toListOfMaps(json)
@@ -91,7 +91,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
       }
     }
 
-    return if (nodes.nonEmpty) nodes.head else new EmptyLinkableContainerTreeNode
+    if (nodes.nonEmpty) nodes.head else new EmptyLinkableContainerTreeNode
   }
 
   private def requiredStringEntry(m: Map[String,Any], key: String): String =
@@ -100,87 +100,4 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
       case Some(s: String) => s
       case Some(x) => x.toString
     }
-}
-
-class EmptyLinkableContainerTreeNode() extends ContainerTreeNode {
-
-  override def nodeName: String = "empty"
-
-  // Using null over Option as this is part of the interface to JavaScript
-  override def value: String = null
-
-  override def nodeTags: Set[String] = Set.empty
-
-  override def childNodeNames: Set[String] = Set.empty
-
-  override def childNodeTypes: Set[String] = Set.empty
-
-  override def childrenNamed(key: String): Seq[TreeNode] = Nil
-}
-
-private class LinkableContainerTreeNode(
-                                         val nodeName: String,
-                                         override val nodeTags: Set[String],
-                                         private var fieldValues: Seq[TreeNode]
-                               )
-  extends ContainerTreeNode {
-
-  def link(c: LinkableContainerTreeNode, link: String): Unit = {
-    // Add a child with the appropriate name
-    val nn = new WrappingLinkableContainerTreeNode(c, link)
-    fieldValues = fieldValues :+ nn
-  }
-
-  override def childNodeNames: Set[String] =
-    fieldValues.map(f => f.nodeName).toSet
-
-  override def childNodeTypes: Set[String] =
-    fieldValues.flatMap(f => f.nodeTags).toSet
-
-  override def value: String = ???
-
-  override def childrenNamed(key: String): Seq[TreeNode] =
-    fieldValues.filter(n => n.nodeName.equals(key))
-
-}
-
-private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
-                                                override val nodeName: String)
-  extends ContainerTreeNode {
-
-  override def value: String = wrappedNode.value
-
-  override def nodeTags: Set[String] = wrappedNode.nodeTags
-
-  override def childNodeNames: Set[String] = wrappedNode.childNodeNames
-
-  override def childNodeTypes: Set[String] = wrappedNode.childNodeTypes
-
-  override def childrenNamed(key: String): Seq[TreeNode] = wrappedNode.childrenNamed(key)
-}
-
-/**
-  * Allows us to return a ContainerTreeNode that encapsulates a json representation
-  * of the object tree.
-  * @param innerNode The ContainerTreeNode that we are encapsulating
-  * @param backingJson the json string that also represents this object tree
-  */
-class JsonBackedContainerTreeNode(val innerNode: ContainerTreeNode,
-                                  val backingJson: String,
-                                  val version: String)
-  extends ContainerTreeNode {
-
-  override def value: String = innerNode.value
-
-  override def nodeName: String = innerNode.nodeName
-
-  override def nodeTags: Set[String] = innerNode.nodeTags
-
-  override def childNodeNames: Set[String] = innerNode.childNodeNames
-
-  override def childNodeTypes: Set[String] = innerNode.childNodeTypes
-
-  override def childrenNamed(key: String): Seq[TreeNode] = innerNode.childrenNamed(key)
-
-  def jsonRepresentation: String = backingJson
 }

@@ -14,13 +14,20 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
   it should "parse and run path expression using name" in {
     val f = StringFileArtifact("test.yml", YamlNestedSeq)
     val tn = typeBeingTested.fileToRawNode(f).get
-    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+    // println(YamlNestedSeq)
 
     val nodes = evaluatePathExpression(tn, "/components/*")
     assert(NodeUtils.value(nodes.last) === "Nait 3R")
 
     val nodes2 = evaluatePathExpression(tn, "/components/cables/*")
     assert(NodeUtils.value(nodes2.last) === "A5 speaker cable")
+
+    val nodes3 = evaluatePathExpression(tn, "/components/Amplifier/future_upgrades/*")
+    assert(NodeUtils.value(nodes3.last) === "NAP250.2")
+
+    val nodes4 = evaluatePathExpression(tn, "/components/Amplifier/future_upgrades/NAC82/*")
+    assert(NodeUtils.value(nodes4.head) === "NAPSC power supply")
   }
 
   it should "parse and output unchanged" in {

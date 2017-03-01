@@ -14,8 +14,8 @@ import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
 
-import scala.concurrent.duration._
 import scala.concurrent.Await
+import scala.concurrent.duration._
 
 object JavaScriptEventHandlerTest {
 

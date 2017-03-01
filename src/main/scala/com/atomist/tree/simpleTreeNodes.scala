@@ -3,9 +3,10 @@ import com.atomist.tree.TreeNode.Significance
 
 /**
   * Convenient terminal node implementation.
-  * Prefer PaddingNode for padding.
+  * Prefer [[PaddingTreeNode]] for padding.
+  *
   * @param nodeName name of the field (usually unimportant)
-  * @param value field content.
+  * @param value field content
   */
 case class SimpleTerminalTreeNode(nodeName: String,
                                   value: String,

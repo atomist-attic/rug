@@ -12,68 +12,35 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
   import YamlUsageTestTargets._
 
   it should "change scalar value value" in {
-    val newContent = "Marx Brothers"
-    val prog =
-      s"""
-         |editor YamlEdit
-         |
-         |let group = $$(/*[@name='x.yml']/YamlFile()/group)
-         |
-         |with group
-         |     do update "$newContent"
-      """.stripMargin
+    val newValue = "Marx Brothers"
+    val pe = "/*[@name='x.yml']/YamlFile()/group"
     allAS.foreach(asChanges => {
-      val r = runProgAndCheck(prog, asChanges._1, 1)
-      assert(r.findFile("x.yml").get.content == xYaml.replace("queen", newContent))
+      val r = runProgAndCheck("EditPath.ts", asChanges._1, 1, Map("path" -> pe, "newValue" -> newValue))
+      assert(r.findFile("x.yml").get.content == xYaml.replace("queen", newValue))
     })
   }
 
   it should "change scalar value late in document" in {
-    val newContent = "earth"
-    val prog =
-      s"""
-         |editor YamlEdit
-         |
-         |let group = $$(/*[@name='x.yml']/YamlFile()/common)
-         |
-         |with group
-         |     do update "$newContent"
-      """.stripMargin
+    val newValue = "earth"
+    val pe = "/*[@name='x.yml']/YamlFile()/common"
     allAS.foreach(asChanges => {
-      val r = runProgAndCheck(prog, asChanges._1, 1)
-      assert(r.findFile("x.yml").get.content == xYaml.replace("everywhere", newContent))
+      val r = runProgAndCheck("EditPath.ts", asChanges._1, 1, Map("path" -> pe, "newValue" -> newValue))
+      assert(r.findFile("x.yml").get.content == xYaml.replace("everywhere", newValue))
     })
   }
 
   it should "change collection elements" in {
-    val prog =
-      s"""
-         |editor YamlEdit
-         |
-         |let group = $$(/*[@name='x.yml']/YamlFile()/dependencies/*)
-         |
-         |with group g
-         |     do update { g.value().replace("Death", "Life") } # Capitals are only present in the dependencies
-      """.stripMargin
     allAS.foreach(asChanges => {
-      val r = runProgAndCheck(prog, asChanges._1, 1)
+      val r = runProgAndCheck("Optimist.ts", asChanges._1, 1, Map())
       assert(r.findFile("x.yml").get.content == xYaml.replace("Death", "Life"))
     })
   }
 
   it should "update string in start YAML example" in {
-    val prog =
-      s"""
-         |editor YamlEdit
-         |
-         |let billTo = $$(//YamlFile()//*[@name='bill-to']/given/value)
-         |
-         |with billTo begin
-         |     do update "Christine"
-         |end
-      """.stripMargin
-    val r = runProgAndCheck(prog,
-      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)), 1)
+    val pe = "//YamlFile()//*[@name='bill-to']/given/value"
+    val newValue = "Christine"
+    val r = runProgAndCheck("EditPath.ts",
+      SimpleFileBasedArtifactSource(StringFileArtifact("x.yml", YamlOrgStart)), 1, Map("path" -> pe, "newValue" -> newValue))
     assert(r.findFile("x.yml").get.content == YamlOrgStart.replace("Chris", "Christine"))
   }
 

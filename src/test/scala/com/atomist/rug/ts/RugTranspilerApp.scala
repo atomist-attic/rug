@@ -6,15 +6,13 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |@description "Update Kube spec to redeploy a service"
-      |editor Redeploy
+      |editor Replacer
       |
-      |param service: ^[\w.\-_]+$
-      |param new_sha: ^[a-f0-9]{7}$
+      |with Project
+      |  do replace "org.springframework" "nonsense"
       |
-      |with Project p
-      |do
-      |  regexpReplace { return service + ":[a-f0-9]{7}" } { service + ":" + new_sha };
+      |with Replacer
+      |   do replaceItNoGlobal "org.springframework" "nonsense"
     """.stripMargin
 
   println(transpiler.transpile(rug))

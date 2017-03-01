@@ -90,7 +90,7 @@ object TestUtils extends Matchers {
     val raw = resourcesInPackage(caller)
     val tsAs = raw.filter(_ => true, f => names.contains(f.name))
     if (tsAs.empty) {
-      fail(s"Can't load resources named [$names] at class path resource in package [${caller.getClass.getPackage.getName}]")
+      fail(s"Can't load ANYTHING from resources named [${names.mkString(",")}] at class path resource in package [${caller.getClass.getPackage.getName}]")
     }
     val withAtomistDir = tsAs.edit(new FileEditor {
       override def canAffect(f: FileArtifact) = true

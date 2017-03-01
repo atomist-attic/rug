@@ -9,6 +9,8 @@ class StringReplacingMutableView(originalBackingObject: FileArtifact, parent: Pr
 
   private var _content: String = originalBackingObject.content
 
+  override def nodeTags = Set("ReplacerClj")
+
   override def currentContent: String = _content
 
   @ExportFunction(readOnly = false, description = "Replace some stuff")

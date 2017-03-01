@@ -6,13 +6,12 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |editor Replacer
+      |editor YamlEdit
       |
-      |with Project
-      |  do replace "org.springframework" "nonsense"
+      |let group = $(/*[@name='x.yml']/YamlFile()/dependencies/*)
       |
-      |with Replacer
-      |   do replaceItNoGlobal "org.springframework" "nonsense"
+      |with group g
+      |     do update { g.value().replace("Death", "Life") } # Capitals are only present in the dependencies
     """.stripMargin
 
   println(transpiler.transpile(rug))

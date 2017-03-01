@@ -16,6 +16,11 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers{
     }
   }
 
+  it should "Find and run a RugFunction from the registry via fq classname" in {
+    val fn = DefaultRugFunctionRegistry.find("com.atomist.rug.runtime.plans.ExampleRugFunction").get.asInstanceOf[ExampleRugFunction]
+
+  }
+
   it should "fail if a secret is not set in the parameter list" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     fn.clearSecrets

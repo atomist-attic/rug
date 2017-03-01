@@ -16,7 +16,7 @@ class JavaSourceType
 
   override def description = "Java source file"
 
-  override def runtimeClass = classOf[JavaSourceMutableView]
+  override def runtimeClass: Class[JavaSourceMutableView] = classOf[JavaSourceMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>

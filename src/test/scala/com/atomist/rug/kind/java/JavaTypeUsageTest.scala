@@ -61,7 +61,7 @@ object JavaTypeUsageTest extends Matchers {
       case sm: SuccessfulModification =>
         verifyJavaIsWellFormed(sm.result)
         sm.result
-      case _ => ???
+      case x => fail(s"Unexpected: $x")
     }
   }
 
@@ -69,10 +69,9 @@ object JavaTypeUsageTest extends Matchers {
                       rugPath: String,
                       as: ArtifactSource, poa: Map[String,String]): ModificationAttempt = {
 
+    //println(ArtifactSourceUtils.prettyListFiles(program))
     val progAs = TypeScriptBuilder.compileWithModel(program)
-
     val eds = SimpleJavaScriptProjectOperationFinder.find(progAs)
-
     val pe = eds.editors.head
     pe.modify(as, SimpleParameterValues(poa))
   }
@@ -182,7 +181,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "repackage class and verify explicitly importing users are updated" in pendingUntilFixed {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java7/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java7/ClassAnnotated.ts").withPathAbove(".atomist/editors")
 
     val as = new SimpleFileBasedArtifactSource("", Seq(dog, cat, squirrel))
 
@@ -198,7 +197,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "rename class and verify name" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java8/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java8/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val as = new SimpleFileBasedArtifactSource("", dog)
     val result = executeJava(program, "editors/ClassAnnotated.ts", as)
 
@@ -270,7 +269,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include(s"@$ann")
   }
 
-  it should "act on class that extends given superclass" in pendingUntilFixed { /* broken in TypeScript conversion */
+  it should "act on class that extends given superclass" in {
     val parentFile = StringFileArtifact("src/main/java/NotRelevant.java", "public class NotRelevant {}")
     val childFile = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
@@ -295,7 +294,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedChildFile.content should include(s"@$ann")
   }
 
-  it should "act on class that extends given abstract superclass" in pendingUntilFixed { /* broken in TypeScript conversion */
+  it should "act on class that extends given abstract superclass" in {
     val parentFile = StringFileArtifact("src/main/java/NotRelevant.java", "public abstract class NotRelevant {}")
     val childFile = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
@@ -319,7 +318,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedChildFile.content should include(s"@$ann")
   }
 
-  it should "add headers to files with long class names" in pendingUntilFixed { /* broken in TypeScript conversion */
+  it should "add headers to files with long class names" in {
     val notRelevantFile = StringFileArtifact("src/main/java/NotRelevant.java", "public class NotRelevant {}")
     val impl = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
@@ -332,8 +331,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val newHeader = "It appears that Rod still likes long names"
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java15/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java15/CommentClassesWithLongNames.ts").withPathAbove(".atomist/editors")
+    assert(program.totalFileCount === 1)
     val r = executeJava(program, "editors/ClassAnnotated.ts", as)
 
     val unupdatedNotRelevantFile = r.findFile(notRelevantFile.path).get
@@ -356,7 +355,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedImpl1.content shouldNot include(newHeader)
   }
 
-  it should "distinguish interfaces from classes" in pendingUntilFixed { /* broken in TypeScript conversion */
+  it should "distinguish interfaces from classes" in {
     val interfaceFile = StringFileArtifact("src/main/java/Absquatulator.java", "public interface Absquatulator {}")
     val impl = StringFileArtifact("src/main/java/VeryCleverAbsquatulator.java",
       """
@@ -402,9 +401,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     unchangedConcrete.content contentEquals concreteFile.content should be (true)
   }
 
-  it should "allow access to project" in pendingUntilFixed { /* broken in TypeScript conversion */
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java19/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+  it should "allow access to project" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java19/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -413,12 +411,11 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  it should "annotate constructor" in pendingUntilFixed { /* broken in TypeScript conversion */
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+  // TODO fails due to nodeTags in TreeHelper. Is that getting wrapped consistently?
+  it should "annotate constructor" in pendingUntilFixed {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import com.someone.FooBar;")
     f.content should include("@FooBar")
@@ -446,12 +443,11 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content shouldNot include("@FooBar")
   }
 
-  it should "annotate field" in pendingUntilFixed { /* broken in TypeScript conversion */
+  // TODO TypeScript breakage
+  it should "annotate field" in pendingUntilFixed {
     val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java23/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import com.someone.FooBar;")
     f.content should include("@FooBar")

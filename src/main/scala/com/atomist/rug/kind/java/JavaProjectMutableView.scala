@@ -22,7 +22,7 @@ class JavaProjectType
 
   override def description = "Java project"
 
-  override def runtimeClass = classOf[JavaProjectMutableView]
+  override def runtimeClass: Class[JavaProjectMutableView] = classOf[JavaProjectMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
     context match {

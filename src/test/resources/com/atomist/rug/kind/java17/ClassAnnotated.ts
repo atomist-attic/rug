@@ -6,17 +6,13 @@ import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
 import { JavaType, Project } from '@atomist/rug/model/Core'
 
-/**
-    ClassAnnotated
-    ClassAnnotated
- */
 @Editor("ClassAnnotated", "ClassAnnotated")
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            if (c.isInterface) {
+            if (c.isInterface()) {
                 c.addAnnotation("com.foo.bar", "Baz")
             }
         })

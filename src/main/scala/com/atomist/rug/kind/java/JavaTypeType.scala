@@ -19,7 +19,7 @@ class JavaTypeType
 
   override def description = "Java class"
 
-  override def runtimeClass = classOf[JavaClassOrInterfaceView]
+  override def runtimeClass: Class[JavaClassOrInterfaceView] = classOf[JavaClassOrInterfaceView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>
@@ -45,7 +45,7 @@ object JavaTypeType {
 
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
-    if (!annotations.exists(_.getName.getName.equals(annotationName))) {
+    if (!annotations.exists(_.getName.getName == annotationName)) {
       bd.setAnnotations((annotations :+ new MarkerAnnotationExpr(new NameExpr(annotationName))).asJava)
       true
     } else // It's already there
@@ -54,8 +54,8 @@ object JavaTypeType {
 
   def annotationRemovedFrom(bd: BodyDeclaration, annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
-    if (annotations.exists(_.getName.getName.equals(annotationName))) {
-      bd.setAnnotations(annotations.filterNot(_.getName.getName.equals(annotationName)).asJava)
+    if (annotations.exists(_.getName.getName == annotationName)) {
+      bd.setAnnotations(annotations.filterNot(_.getName.getName == annotationName).asJava)
       true
     } else // It's already gone
       false

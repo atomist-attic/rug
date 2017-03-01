@@ -20,21 +20,25 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
     case ConstructorAlias =>
       currentBackingObject.getMembers.asScala
         .collect {
-          case c: ConstructorDeclaration => c
-        }.map(new JavaConstructorView(_, this))
+          case c: ConstructorDeclaration =>
+            new JavaConstructorView(c, this)
+        }
     case MethodAlias =>
       currentBackingObject.getMembers.asScala
         .collect {
-          case m: MethodDeclaration => m
-        }.map(new JavaMethodView(_, this))
+          case m: MethodDeclaration => new JavaMethodView(m, this)
+        }
     case FieldAlias =>
       currentBackingObject.getMembers.asScala
         .collect {
-          case f: FieldDeclaration => f
-        }.map(new JavaFieldView(_, this))
+          case f: FieldDeclaration => new JavaFieldView(f, this)
+        }
     case _ =>
       throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
+
+  @ExportFunction(readOnly = true, description = "Is this an interface?")
+  def sourceFile: JavaSourceMutableView = parent
 
   @ExportFunction(readOnly = true, description = "Is this an interface?")
   def isInterface: Boolean = currentBackingObject.isInterface

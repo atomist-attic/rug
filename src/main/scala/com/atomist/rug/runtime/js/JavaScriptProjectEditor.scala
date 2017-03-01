@@ -10,6 +10,8 @@ import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
+import scala.util.control.NonFatal
+
 /**
   * Find Editors in a Nashorn
   */
@@ -69,6 +71,10 @@ class JavaScriptProjectEditor(
       catch {
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)
+        case sle: SourceLanguageRuntimeException =>
+          throw sle
+        case NonFatal(t) =>
+          throw new RuntimeException(s"Editor '${name}' failed due to ${t.getMessage}", t)
       }
     }
     logger.debug(s"$name modifyInternal took ${elapsedTime}ms")

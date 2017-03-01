@@ -6,17 +6,13 @@ import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
 import { JavaType, Project } from '@atomist/rug/model/Core'
 
-/**
-    ClassExtended
-    ClassExtended
- */
 @Editor("ClassExtended", "ClassExtended")
 class ClassExtended implements EditProject {
 
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', j => {
-            if (j.inheritsFrom) {
+            if (j.inheritsFrom("NotRelevant")) {
                 j.addAnnotation("com.foo", "Baz")
             }
         })

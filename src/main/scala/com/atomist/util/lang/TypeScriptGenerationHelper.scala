@@ -47,6 +47,13 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
+      case x if x.endsWith("MutableView") && x.contains(".") =>
+        val className = x.substring(x.lastIndexOf(".") + 1)
+        // TODO why doesn't this work??
+        //val cname = className.stripPrefix("MutableView")
+        val cname = className.dropRight(11)
+        //println(s"Returning [$cname]")
+        cname
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]. Did you export a function with this in its type signature?")
     }
   }

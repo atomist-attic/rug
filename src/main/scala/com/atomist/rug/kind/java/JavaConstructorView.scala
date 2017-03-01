@@ -22,7 +22,7 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
   }
 
   @ExportFunction(readOnly = true, description = "Return the name of the constructor")
-  def name = currentBackingObject.getName
+  def name: String = currentBackingObject.getName
 
   @ExportFunction(readOnly = true,
     description = "Return the Javadoc for the constructor, or an empty string if there isn't any")
@@ -30,5 +30,5 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
     DocumentableNodeUtils.javadoc(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "Return the number of constructor parameters")
-  def parametersSize = currentBackingObject.getParameters.size
+  def parametersSize: Int = currentBackingObject.getParameters.size
 }

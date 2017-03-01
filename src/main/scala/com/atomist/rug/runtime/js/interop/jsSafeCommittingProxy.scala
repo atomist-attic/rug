@@ -101,6 +101,7 @@ class jsSafeCommittingProxy(
         sobtn.invoke(name)
       case _ => throw new RugRuntimeException(null,
         s"Attempt to invoke method [$name] on type [${typ.description}]: " +
+          s"Wrapping node named ${node.nodeName}; " +
           s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
     }
   }

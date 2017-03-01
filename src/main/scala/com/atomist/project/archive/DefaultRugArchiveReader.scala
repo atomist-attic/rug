@@ -27,10 +27,10 @@ class DefaultRugArchiveReader(atomistConfig: AtomistConfig = DefaultAtomistConfi
     * @return
     */
   override def find(as: ArtifactSource, otherRugs: Seq[AddressableRug]): Rugs = {
-    readers.foldLeft[Rugs](Rugs(Nil,Nil,Nil,Nil,Nil,Nil)){ (acc, reader) =>
+    readers.foldLeft[Rugs](new Rugs(Nil,Nil,Nil,Nil,Nil,Nil)){ (acc, reader) =>
       val rugs = reader.find(as,otherRugs)
       //TODO - is there a fancy way to do this?
-     val result =  Rugs(
+     val result =  new Rugs(
         rugs.editors ++ acc.editors,
         rugs.generators ++ acc.generators,
         rugs.reviewers ++ acc.reviewers,

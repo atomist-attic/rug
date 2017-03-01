@@ -33,6 +33,7 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport
+    with RugSupport
     with JavaScriptUtils {
 
   override def handle(response: Response, params: ParameterValues): Option[Plan] = {

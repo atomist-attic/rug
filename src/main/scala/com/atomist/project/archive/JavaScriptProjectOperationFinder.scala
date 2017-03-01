@@ -27,7 +27,7 @@ class JavaScriptProjectOperationFinder(jsc: JavaScriptContext) {
     */
   def find(otherRugs: Seq[AddressableRug]): Rugs = {
     val ops = finders.flatMap(finder => finder.find(jsc, otherRugs))
-    val rugs = Rugs(
+    val rugs = new Rugs(
       ops.collect{case o: ProjectEditor => o},
       ops.collect{case o: ProjectGenerator => o},
       ops.collect{case o: ProjectReviewer => o},

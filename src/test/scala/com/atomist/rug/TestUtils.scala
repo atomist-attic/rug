@@ -9,7 +9,7 @@ import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.{AddressableRug, Rug}
+import com.atomist.rug.runtime.{AddressableRug, Rug, RugSupport}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -109,7 +109,7 @@ object TestUtils extends Matchers {
     * @return
     */
   def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3") : AddressableRug = {
-    new AddressableRug with ProjectEditor {
+    new AddressableRug with ProjectEditor with RugSupport {
 
       override def artifact = _artifact
 

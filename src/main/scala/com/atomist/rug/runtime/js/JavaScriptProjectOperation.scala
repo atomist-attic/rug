@@ -6,7 +6,7 @@ import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.AddressableRug
+import com.atomist.rug.runtime.{AddressableRug, RugSupport}
 import com.atomist.rug.runtime.js.interop.{PathExpressionException, jsSafeCommittingProxy}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, RugRuntimeException}
 import com.atomist.source.ArtifactSource
@@ -32,7 +32,8 @@ abstract class JavaScriptProjectOperation(
                                          )
   extends ProjectOperation
     with LazyLogging
-    with JavaScriptUtils {
+    with JavaScriptUtils
+    with RugSupport{
 
   //visible for test
   private[js] val jsVar = _jsVar

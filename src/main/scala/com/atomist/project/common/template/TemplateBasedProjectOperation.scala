@@ -1,8 +1,10 @@
 package com.atomist.project.common.template
 
-import com.atomist.rug.runtime.ParameterizedRug
+import com.atomist.rug.runtime.{ParameterizedRug, RugSupport}
 
-trait TemplateBasedProjectOperationInfo extends ParameterizedRug {
+trait TemplateBasedProjectOperationInfo
+  extends ParameterizedRug
+  with RugSupport{
 
   def templateType: Option[String]
 }

@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{MappedParameter, ParameterValues, SimpleParameterValue, Tag}
 import com.atomist.rug.{InvalidSecretException, MissingSecretException}
-import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.{CommandHandler, RugSupport}
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.Secret
@@ -50,7 +50,7 @@ class SecretResolverTest extends FlatSpec with Matchers {
   }
 }
 
-object handler extends CommandHandler {
+object handler extends CommandHandler with RugSupport{
 
   override def intent: Seq[String] = ???
 
@@ -67,7 +67,7 @@ object handler extends CommandHandler {
   override def tags: Seq[Tag] = ???
 }
 
-object invalidSecretHandler extends CommandHandler {
+object invalidSecretHandler extends CommandHandler with RugSupport{
 
   override def intent: Seq[String] = ???
 

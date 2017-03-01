@@ -16,7 +16,6 @@ abstract class RugDrivenProjectOperation(
                                           override val externalContext: Seq[AddressableRug])
   extends RugOperationSupport
     with ParameterizedRug
-    with Rug
     with LazyLogging {
 
   private val params = new ListBuffer[Parameter] ++ program.parameters

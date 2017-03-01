@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param._
+import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.spi.{RugFunction, Secret}
 
@@ -11,7 +12,8 @@ import scala.collection.mutable.ListBuffer
   */
 class ExampleRugFunction
   extends RugFunction
-  with SecretSupport{
+  with SecretSupport
+    with RugSupport{
 
   override def parameters = Seq(new Parameter("thingy"))
 

@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.runtime.plans.MappedParameterSupport
-import com.atomist.rug.runtime.{AddressableRug, CommandHandler}
+import com.atomist.rug.runtime.{AddressableRug, CommandHandler, RugSupport}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -106,6 +106,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                override val externalContext: Seq[AddressableRug])
   extends CommandHandler
   with MappedParameterSupport
+  with RugSupport
   with JavaScriptUtils {
 
   /**

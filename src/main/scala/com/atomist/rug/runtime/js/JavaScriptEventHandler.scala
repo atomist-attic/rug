@@ -4,7 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsSafeCommittingProxy}
-import com.atomist.rug.runtime.{AddressableRug, EventHandler, SystemEvent}
+import com.atomist.rug.runtime.{AddressableRug, EventHandler, RugSupport, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
@@ -40,7 +40,8 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
                               override val externalContext: Seq[AddressableRug]
                                  )
   extends EventHandler
-  with JavaScriptUtils {
+  with JavaScriptUtils
+    with RugSupport{
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 

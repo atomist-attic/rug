@@ -4,7 +4,7 @@ import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptRugArchiveReader}
 import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.MissingSecretException
-import com.atomist.rug.runtime.{AddressableRug, CommandHandler, ResponseHandler}
+import com.atomist.rug.runtime.{AddressableRug, CommandHandler, ResponseHandler, RugSupport}
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.{Handlers, Secret}
@@ -305,7 +305,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   }
 }
 
-class TestResponseHandler(r: ResponseHandler) extends AddressableRug with ResponseHandler {
+class TestResponseHandler(r: ResponseHandler) extends AddressableRug with ResponseHandler with RugSupport {
 
   override def artifact: String = ???
 

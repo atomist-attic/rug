@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.plans
 
+import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.AnnotatedRugFunction
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.spi.annotation.{Parameter, RugFunction, Secret, Tag}
@@ -8,7 +9,8 @@ import com.atomist.rug.spi.annotation.{Parameter, RugFunction, Secret, Tag}
   * For testing the annotation driven RugFunction api
   */
 class ExampleAnnotatedRugFunction
-  extends AnnotatedRugFunction{
+  extends AnnotatedRugFunction
+    with RugSupport{
 
   @RugFunction(name = "example-function", description = "Description of function", tags = Array(new Tag(name = "tag content")))
   def invoke(@Parameter (name="number") number: Int,

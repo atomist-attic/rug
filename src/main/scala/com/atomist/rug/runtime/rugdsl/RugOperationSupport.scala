@@ -9,7 +9,7 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
 import com.atomist.project.review.{ProjectReviewer, ReviewResult}
 import com.atomist.rug.parser._
-import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.{Rug, RugSupport}
 import com.atomist.rug.runtime.lang.{DefaultScriptBlockActionExecutor, ScriptBlockActionExecutor}
 import com.atomist.rug.spi.{MutableView, ReflectiveFunctionExport, TypeRegistry}
 import com.atomist.rug.{BadRugSyntaxException, Import, RugRuntimeException}
@@ -69,7 +69,7 @@ object RugOperationSupport {
   */
 trait RugOperationSupport
   extends LazyLogging
-  with Rug{
+  with RugSupport {
 
   val kindRegistry: TypeRegistry
 

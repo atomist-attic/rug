@@ -27,7 +27,7 @@ class JavaScriptRugArchiveReader
     val handlers = finders.flatMap(finder => finder.find(jsc, otherRugs))
     val ops = jsReader.find(otherRugs)
 
-    val rugs = Rugs(
+    val rugs = new Rugs(
       ops.editors,
       ops.generators,
       ops.reviewers,

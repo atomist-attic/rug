@@ -58,7 +58,7 @@ class RugDslArchiveReader(
       case r: ProjectReviewer => r
     }
 
-    val rugs = Rugs(editors, generators, reviewers, Nil, Nil, Nil)
+    val rugs = new Rugs(editors, generators, reviewers, Nil, Nil, Nil)
     //tell the rugs about one another
     rugs.allRugs.foreach(r => r.addToArchiveContext(rugs.allRugs))
     rugs

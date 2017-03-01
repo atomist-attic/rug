@@ -7,7 +7,7 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.AddressableRug
+import com.atomist.rug.runtime.{AddressableRug, RugSupport}
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -38,7 +38,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
                                    override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
-    with ProjectEditor {
+    with ProjectEditor
+    with RugSupport{
 
   val DefaultTemplateName = "ts.vm"
 

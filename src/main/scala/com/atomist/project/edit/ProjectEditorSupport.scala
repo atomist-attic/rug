@@ -1,6 +1,7 @@
 package com.atomist.project.edit
 
 import com.atomist.param.ParameterValues
+import com.atomist.rug.runtime.RugSupport
 import com.atomist.source.ArtifactSource
 
 /**
@@ -8,7 +9,8 @@ import com.atomist.source.ArtifactSource
   * and to check whether the post condition is already satisfied.
   */
 trait ProjectEditorSupport
-  extends ProjectEditor {
+  extends ProjectEditor
+    with RugSupport{
 
   /**
     * Should we fail if we were called are are not applicable?

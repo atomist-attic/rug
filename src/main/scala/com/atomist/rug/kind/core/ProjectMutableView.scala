@@ -369,6 +369,7 @@ class ProjectMutableView(
     case ic: FunctionInvocationContext[_] => ic.identifierMap
     case som: ScriptObjectMirror =>
       NashornUtils.extractProperties(som)
+    case null => Map()
   }
 
   @ExportFunction(readOnly = false,

@@ -87,6 +87,11 @@ object TestUtils extends Matchers {
   }
 
   def rugsInSideFile(caller: Object, names: String*): Rugs = {
+    val as = rugsInSideFileAsArtifactSource(caller, names:_*)
+    SimpleJavaScriptProjectOperationFinder.find(as)
+  }
+
+  def rugsInSideFileAsArtifactSource(caller: Object, names: String*): ArtifactSource = {
     val raw = resourcesInPackage(caller)
     val tsAs = raw.filter(_ => true, f => names.contains(f.name))
     if (tsAs.empty) {
@@ -98,8 +103,7 @@ object TestUtils extends Matchers {
       // Put the editor in the .atomist directory so it's found
       override def edit(f: FileArtifact) = f.withPath(".atomist/editors/" + f.path)
     })
-    val as = TypeScriptBuilder.compileWithModel(withAtomistDir)
-    SimpleJavaScriptProjectOperationFinder.find(as)
+    TypeScriptBuilder.compileWithModel(withAtomistDir)
   }
 
   /**

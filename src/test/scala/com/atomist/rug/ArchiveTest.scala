@@ -3,13 +3,14 @@ package com.atomist.rug
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.project.edit._
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * Test for rug archive format
   */
+// TODO convert to TypeScript
 class ArchiveTest extends FlatSpec with Matchers {
 
   val atomistConfig = DefaultAtomistConfig
@@ -19,60 +20,15 @@ class ArchiveTest extends FlatSpec with Matchers {
   }
 
   it should "ignore editors in root directory" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |with File f
-        | when { f.name().contains("80-deployment") }
-        |do
-        |  replace ".*" "foo"
-      """.stripMargin
-    val as = new SimpleFileBasedArtifactSource("",
-      StringFileArtifact("Redeploy.rug", prog))
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.create(as, Nil)
-    eds shouldBe empty
+    val tss = TestUtils.resourcesInPackage(this).filter(
+      _.path == "",
+      _.name == "K8Redeploy.ts")
+    assert(tss.totalFileCount === 1)
+    val as = TypeScriptBuilder.compileWithModel(tss)
+    val rugs = SimpleJavaScriptProjectOperationFinder.find(as)
+    rugs.allRugs shouldBe (empty)
   }
 
-  it should s"find single file under ${atomistConfig.editorsRoot}" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |with File f
-        | when { f.name().contains("80-deployment") }
-        |do
-        |  replace ".*" "foo"
-      """.stripMargin
-    val f = StringFileArtifact(atomistConfig.editorsRoot + "/Redeploy.rug", prog)
-    val as = toArchive(Seq(f))
-    tryMod(as, "Redeploy", as) match {
-      case n: NoModificationNeeded =>
-      case _ => ???
-    }
-  }
-
-  it should s"find single file under ${atomistConfig.editorsDirectory}" in {
-    val prog =
-      """
-        |@description "Update Kube spec to redeploy a service"
-        |editor Redeploy
-        |
-        |with File f
-        | when { f.name().contains("80-deployment") }
-        |do
-        |  replace ".*" "foo"
-      """.stripMargin
-    val f = StringFileArtifact(atomistConfig.editorsDirectory + "/Redeploy.rug", prog)
-    val as = toArchive(Seq(f))
-    tryMod(as, "Redeploy", as) match {
-      case n: NoModificationNeeded =>
-      case _ => ???
-    }
-  }
 
   val prog1 = StringFileArtifact(atomistConfig.editorsRoot + "/Dude.rug",
     s"""
@@ -93,40 +49,35 @@ class ArchiveTest extends FlatSpec with Matchers {
     """.stripMargin
   )
 
-  it should "find 2 editors in separate files and access template under .atomist" in {
+  it should "find editor and access template under .atomist" in {
     val canAccess = true
-    verify2FilesWithArchiveAccess(Seq(prog1, prog2), canAccess)
+    verifyFileWithArchiveAccess(Seq(prog1, prog2), canAccess)
   }
 
-  it should "find 2 editors in separate files and access template under root" in {
+  it should "find editor and access template under root" in {
     val canAccess = false
-    verify2FilesWithArchiveAccess(Seq(prog1, prog2), canAccess)
+    verifyFileWithArchiveAccess(Seq(prog1, prog2), canAccess)
   }
 
-  private def verify2FilesWithArchiveAccess(files: Seq[FileArtifact], useDotAtomist: Boolean) {
+  private def verifyFileWithArchiveAccess(files: Seq[FileArtifact], useDotAtomist: Boolean) {
     val rootToUse = if (useDotAtomist) atomistConfig.templatesRoot else atomistConfig.templatesDirectory
-    val as = toArchive(files) + StringFileArtifact(s"$rootToUse/template.vm", "content")
-    tryMod(as, "Dude", as) match {
+    val as = TestUtils.rugsInSideFileAsArtifactSource(this, "Merge.ts") +
+      StringFileArtifact(s"$rootToUse/template.vm", "content")
+    tryMod(as, "Merge", as) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("dude.txt").isDefined
-      case _ => ???
-    }
-    tryMod(as, "Donny", as) match {
-      case sm: SuccessfulModification =>
-        sm.result.findFile("donny.txt").isDefined
       case _ => ???
     }
   }
 
   private def tryMod(rugAs: ArtifactSource, editorName: String, project: ArtifactSource): ModificationAttempt = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val eds = runtime.create(rugAs)
+    val rugs = SimpleJavaScriptProjectOperationFinder.find(rugAs)
+    val eds = rugs.editors
     val peO = eds.find(_.name equals editorName)
     if (peO.isEmpty)
       fail(s"Did not find editor with name '$editorName': Have [${eds.map(_.name)}] " +
         s"\n${ArtifactSourceUtils.prettyListFiles(rugAs)}")
-
-    peO.get.asInstanceOf[ProjectEditor].modify(project, SimpleParameterValues(Map[String, String](
+    peO.get.modify(project, SimpleParameterValues(Map[String, String](
     )))
   }
 }

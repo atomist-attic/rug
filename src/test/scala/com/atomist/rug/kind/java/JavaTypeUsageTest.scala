@@ -1,9 +1,8 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug._
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.java.JavaVerifier._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._

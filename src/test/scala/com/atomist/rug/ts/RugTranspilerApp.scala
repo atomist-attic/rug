@@ -6,12 +6,18 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |editor YamlEdit
+      |reviewer FindSecrets
       |
-      |let group = $(/*[@name='x.yml']/YamlFile()/dependencies/*)
+      |#let secret = ""
       |
-      |with group g
-      |     do update { g.value().replace("Death", "Life") } # Capitals are only present in the dependencies
+      |with File f when { f.name().endsWith('yml') }
+      |	do eval {
+      |     var secret = "";
+      |     var matches = f.content().match(secret);
+      |     for ( i = 0; i < matches.length; i++)
+      |       f.majorProblem(matches[i], ic);
+      |     return null;
+      | }
     """.stripMargin
 
   println(transpiler.transpile(rug))

@@ -17,8 +17,7 @@ class DefaultRugArchiveReader(atomistConfig: AtomistConfig = DefaultAtomistConfi
   extends RugArchiveReader{
 
   private val readers: Seq[RugArchiveReader] = Seq(
-    new JavaScriptRugArchiveReader(),
-    new RugDslArchiveReader(atomistConfig,evaluator,typeRegistry))
+    new JavaScriptRugArchiveReader())
 
   /**
     *

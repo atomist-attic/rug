@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added annotations and helper class for implementing RugFunctions
 -   Added new BDD test framework for Rug archives, based on Gherkin and TypeScript/JavaScript
 -   Added support for replacing tokens with secrets in RugFunction parameters
 -   Added support for resolving secrets during Plan execution

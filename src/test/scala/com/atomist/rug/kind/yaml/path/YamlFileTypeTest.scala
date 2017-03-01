@@ -4,14 +4,14 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.YamlUsageTestTargets._
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.utils.NodeUtils
+import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class YamlFileTypeTest extends AbstractTypeUnderFileTest {
 
   override protected def typeBeingTested: TypeUnderFile = new YamlFileType
 
-  it should "parse and run path expression using name" in pendingUntilFixed {
+  it should "parse and run path expression using name" in {
     val f = StringFileArtifact("test.yml", YamlNestedSeq)
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))

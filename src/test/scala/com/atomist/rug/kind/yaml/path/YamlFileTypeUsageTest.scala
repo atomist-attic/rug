@@ -386,6 +386,30 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
+  it should "add to nested sequence" in {
+    modify("AddToNestedSequence.ts",
+      new SimpleFileBasedArtifactSource("single", StringFileArtifact("x.yml", YamlNestedSeq))) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content.contains("NAP500"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
+  it should "add to deep nested sequence" in {
+    modify("AddToDeepNestedSequence.ts",
+      new SimpleFileBasedArtifactSource("single", StringFileArtifact("x.yml", YamlNestedSeq))) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content.contains("Audio Principe Signature power cable"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
+
   it should "remove from sequence" in {
     modify("RemoveFromSequence.ts", singleAS) match {
       case sm: SuccessfulModification =>

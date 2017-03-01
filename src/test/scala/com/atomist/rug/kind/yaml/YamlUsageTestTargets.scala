@@ -333,7 +333,7 @@ object YamlUsageTestTargets {
       |components:
       |- Amplifier:
       |  - SuperUniti
-      |  - future_upgrades:
+      |  - future upgrades:
       |    - NAC82:
       |      - NAPSC power supply
       |      - Hicap
@@ -347,7 +347,7 @@ object YamlUsageTestTargets {
       |  - Snaic 4pin to 5pin
       |  - A5 speaker cable
       |- Nait 3R
-      |future_upgrades:
+      |future upgrades:
       |- NDX
       |- CDX
       |""".stripMargin

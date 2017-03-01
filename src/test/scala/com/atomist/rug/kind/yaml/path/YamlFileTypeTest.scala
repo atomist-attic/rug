@@ -4,30 +4,48 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.YamlUsageTestTargets._
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
+import com.atomist.tree.utils.NodeUtils
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class YamlFileTypeTest extends AbstractTypeUnderFileTest {
 
   override protected def typeBeingTested: TypeUnderFile = new YamlFileType
 
-  it should "parse and run path expression using name" in {
+  it should "parse and run path expression to find sequence" in {
     val f = StringFileArtifact("test.yml", YamlNestedSeq)
     val tn = typeBeingTested.fileToRawNode(f).get
-    println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-    // println(YamlNestedSeq)
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
     val nodes = evaluatePathExpression(tn, "/components/*")
     assert(NodeUtils.value(nodes.last) === "Nait 3R")
+  }
 
-    val nodes2 = evaluatePathExpression(tn, "/components/cables/*")
-    assert(NodeUtils.value(nodes2.last) === "A5 speaker cable")
+  it should "parse and run path expression to find nested sequence" in {
+    val f = StringFileArtifact("test.yml", YamlNestedSeq)
+    val tn = typeBeingTested.fileToRawNode(f).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
-    val nodes3 = evaluatePathExpression(tn, "/components/Amplifier/future_upgrades/*")
-    assert(NodeUtils.value(nodes3.last) === "NAP250.2")
+    val nodes = evaluatePathExpression(tn, "/components/cables/*")
+    assert(NodeUtils.value(nodes.last) === "A5 speaker cable")
+  }
 
-    val nodes4 = evaluatePathExpression(tn, "/components/Amplifier/future_upgrades/NAC82/*")
-    assert(NodeUtils.value(nodes4.head) === "NAPSC power supply")
+  it should "parse and run path expression to find deeper nested sequence" in {
+    val f = StringFileArtifact("test.yml", YamlNestedSeq)
+    val tn = typeBeingTested.fileToRawNode(f).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/*[@value='NAP250.2']")
+    assert(nodes.size === 1)
+    assert(NodeUtils.value(nodes.last) === "NAP250.2")
+  }
+
+  it should "parse and run path expression to find deepest nested sequence" in {
+    val f = StringFileArtifact("test.yml", YamlNestedSeq)
+    val tn = typeBeingTested.fileToRawNode(f).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+
+    val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/NAC82/*")
+    assert(NodeUtils.value(nodes.head) === "NAPSC power supply")
   }
 
   it should "parse and output unchanged" in {

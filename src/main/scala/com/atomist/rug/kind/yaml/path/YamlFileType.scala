@@ -54,9 +54,6 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     * Uses a state machine to handle SnakeYAML events, which include node positions.
     */
   override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[PositionedTreeNode] = {
-    val reader = new InputStreamReader(f.inputStream())
-    val events: Iterable[Event] = yaml.parse(reader).asScala
-
     // We're currently adding to the node on top of the stack
     val nodeStack: mutable.Stack[ParsedMutableContainerTreeNode] = new mutable.Stack()
     var state: State = InDocument
@@ -67,6 +64,8 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     root.endPosition = OffsetInputPosition(f.contentLength)
     nodeStack.push(root)
 
+    val reader = new InputStreamReader(f.inputStream())
+    val events = yaml.parse(reader).asScala
     for (e <- events) {
       val oldState = state
       state = state.transition(Input(f.content, e, nodeStack))
@@ -98,16 +97,14 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
         nodeStack.top.insertFieldCheckingPosition(container)
         previousState
       case Input(content, sse: SequenceStartEvent, nodeStack) =>
-        val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) SequenceType else keyTerminal.value
-        val newContainer = new ParsedMutableContainerTreeNode(containerName)
+        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal.value)
         newContainer.addType(SequenceType)
         newContainer.startPosition = markToPosition(content, sse.getStartMark)
         nodeStack.top.appendField(newContainer)
         nodeStack.push(newContainer)
         InSequence(previousState)
       case Input(content, mse: MappingStartEvent, nodeStack) =>
-        val containerName = if (canBeUsedAsNodeName(keyTerminal.value)) MappingType else keyTerminal.value
-        val newContainer = new ParsedMutableContainerTreeNode(containerName)
+        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal.value)
         newContainer.addType(MappingType)
         newContainer.startPosition = markToPosition(content, mse.getStartMark)
         nodeStack.top.appendField(newContainer)
@@ -160,8 +157,6 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     f.addType(ScalarType)
     f
   }
-
-  private def canBeUsedAsNodeName(s: String) = s.exists(_.isWhitespace)
 
   private def markToPosition(in: String, m: Mark): InputPosition = {
     // Snake YAML shows positions in toStrings from 1 but returns them from 0

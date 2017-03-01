@@ -95,4 +95,7 @@ class DefaultRugPipeline(
     new ParserCombinatorRugParser,
     new DefaultRugCompiler(evaluator, kindRegistry),
     atomistConfig
-  )
+  ) {
+
+  //???
+}

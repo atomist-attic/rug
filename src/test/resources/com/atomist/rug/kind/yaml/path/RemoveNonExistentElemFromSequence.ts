@@ -4,7 +4,7 @@ import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class RemoveFromSequence2 implements ProjectEditor {
+class RemoveNonExistentElemFromSequence implements ProjectEditor {
     name: string = "RemoveFromSequence2"
     description = "Remove from sequence 2"
 
@@ -22,4 +22,4 @@ class RemoveFromSequence2 implements ProjectEditor {
 
 }
 
-export let editor = new RemoveFromSequence2()
+export let editor = new RemoveNonExistentElemFromSequence()

@@ -422,10 +422,24 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
   }
 
   it should "fail to remove non-existent element from sequence" in {
-    modify("RemoveFromSequence2.ts", singleAS) match {
+    modify("RemoveNonExistentElemFromSequence.ts", singleAS) match {
       case sm: SuccessfulModification => fail(s"Expected NoModificationNeeded, not $sm")
       case nom: NoModificationNeeded =>
       case _ => fail(s"Expected NoModificationNeeded")
+    }
+  }
+
+  it should "remove from deep nested sequence" in {
+    modify("RemoveFromDeepNestedSequence.ts",
+      new SimpleFileBasedArtifactSource("single", StringFileArtifact("x.yml", YamlNestedSeq))) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        val tn = typeBeingTested.fileToRawNode(theFile).get
+        val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/NAC82/*")
+        assert(!nodes.map(_.nodeName).contains("Hicap"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
 

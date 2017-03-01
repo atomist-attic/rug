@@ -117,7 +117,6 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
   }
 
   private case class InMapping(previousState: State) extends State {
-
     protected override def on = {
       case Input(content, see: MappingEndEvent, nodeStack) =>
         nodeStack.top.endPosition = markToPosition(content, see.getStartMark)
@@ -128,8 +127,14 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     }
   }
 
-  private case class InSequence(previousState: State) extends State {
+  private case class InNewKey(previousState: State) extends State {
+    protected override def on = {
+      case Input(content, s: ScalarEvent, _) =>
+        SeenKey(keyTerminal = scalarToTreeNode(content, s), previousState)
+    }
+  }
 
+  private case class InSequence(previousState: State) extends State {
     protected override def on = {
       case Input(content, see: SequenceEndEvent, nodeStack) =>
         nodeStack.top.endPosition = markToPosition(content, see.getStartMark)
@@ -139,6 +144,8 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
         val sf = scalarToTreeNode(content, s)
         nodeStack.top.insertFieldCheckingPosition(sf)
         this
+      case Input(content, mse: MappingStartEvent, nodeStack) =>
+        InNewKey(this)
     }
   }
 
@@ -146,11 +153,10 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     * Value will be the full structure.
     */
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
-    val startPos = markToPosition(in, se.getStartMark)
-    val fullValue = in.substring(
-      startPos.offset,
-      markToPosition(in, se.getEndMark).offset)
-    val f = new MutableTerminalTreeNode(ScalarName, fullValue, startPos)
+    val start = markToPosition(in, se.getStartMark)
+    val end = markToPosition(in, se.getEndMark)
+    val fullValue = in.substring(start.offset, end.offset)
+    val f = new MutableTerminalTreeNode(ScalarName, fullValue, start)
     f.addType(ScalarType)
     f
   }

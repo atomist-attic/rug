@@ -2,15 +2,14 @@ package com.atomist.rug.kind.core
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.{ModificationAttempt, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
+import com.atomist.rug.TestUtils
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.java.JavaTypeUsageTest
+import com.atomist.source.ArtifactSource
 import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
-  import com.atomist.rug.TestUtils._
 
   // NOTES:
   // - Removing this.content = this.content + "otherstuff" from the view doesn't matter (test will still fail to replace text for last file in path)
@@ -19,23 +18,10 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
   // other calls to parent.replace get overridden by this.setPath and this.content modifications in between
 
   it should "Break a pom by replacing groupId with something broken using global replace" in
-    doIt("""
-           |editor Replacer
-           |
-           |with Replacer r
-           |   do replaceIt "org.springframework" "nonsense"
-         """.stripMargin)
+    doIt("Replacer.ts")
 
   it should "Break a pom by replacing groupId with something broken" in
-    doIt("""
-           |editor Replacer
-           |
-           |with Project
-           |  do replace "org.springframework" "nonsense"
-           |
-           |with Replacer
-           |   do replaceItNoGlobal "org.springframework" "nonsense"
-         """.stripMargin)
+    doIt("Replacer2.ts")
 
   private def doIt(prog: String) {
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
@@ -56,16 +42,12 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "change the contents of some clojure files" in {
-    val prog =
-      """
-        |editor Replacer
-        |
-        |with ReplacerClj r
-        |   do replaceIt "com.atomist.sample" "com.atomist.wassom"
-      """.stripMargin
+  it should "find string replacing type" in {
+    assert(DefaultTypeRegistry.findByName("ReplacerClj").isDefined)
+  }
 
-    updateWith(prog, ClassPathArtifactSource.toArtifactSource("./lein_package_rename")) match {
+  it should "change the contents of some clojure files" in {
+    updateWith("ReplacerClj.ts", ClassPathArtifactSource.toArtifactSource("./lein_package_rename")) match {
       case nmn: SuccessfulModification => {
         nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("com.atomist.wassom") should be(true)
         nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("otherstuff") should be(true)
@@ -81,10 +63,8 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
   }
 
   // Return new content
-  private def updateWith(prog: String, project: ArtifactSource): ModificationAttempt = {
-
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
-    attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(Map(
+  private def updateWith(ts: String, project: ArtifactSource): ModificationAttempt = {
+    TestUtils.editorInSideFile(this, ts).modify(project, SimpleParameterValues(Map(
       "foo" -> "bar"
     )))
   }

@@ -6,18 +6,11 @@ object RugTranspilerApp extends App {
 
   val rug =
     """
-      |reviewer FindSecrets
+      |editor Dude
       |
-      |#let secret = ""
-      |
-      |with File f when { f.name().endsWith('yml') }
-      |	do eval {
-      |     var secret = "";
-      |     var matches = f.content().match(secret);
-      |     for ( i = 0; i < matches.length; i++)
-      |       f.majorProblem(matches[i], ic);
-      |     return null;
-      | }
+      |with Project p
+      |do
+      |  merge "template.vm" "dude.txt"
     """.stripMargin
 
   println(transpiler.transpile(rug))

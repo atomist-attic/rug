@@ -4,13 +4,17 @@ object RugTranspilerApp extends App {
 
   val transpiler = new RugTranspiler()
 
-
   val rug =
     """
-      |editor PropertiesEdit
+      |@description "Update Kube spec to redeploy a service"
+      |editor Redeploy
       |
-      |with Properties p when path = "src/main/resources/application.properties"
-      |do setProperty "server.port" "8181"
+      |param service: ^[\w.\-_]+$
+      |param new_sha: ^[a-f0-9]{7}$
+      |
+      |with Project p
+      |do
+      |  regexpReplace { return service + ":[a-f0-9]{7}" } { service + ":" + new_sha };
     """.stripMargin
 
   println(transpiler.transpile(rug))

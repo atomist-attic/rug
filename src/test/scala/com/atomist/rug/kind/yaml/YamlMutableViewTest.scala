@@ -2,7 +2,6 @@ package com.atomist.rug.kind.yaml
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -84,8 +83,6 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
       """.stripMargin
     val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
-    val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -103,8 +100,6 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
       """.stripMargin
     val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
-    val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -125,8 +120,6 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
       """.stripMargin
     val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
-    val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -153,8 +146,6 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
       """.stripMargin
     val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
-    val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
-      SimpleParameterValues.Empty, Nil)
     yv.updateKey("name", "Theresa")
     assert(yv.dirty === true)
     assert("Theresa".r.findAllIn(yv.content).toList.size === 1)
@@ -177,4 +168,5 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
       new ProjectMutableView(EmptyArtifactSource(""), as))
     yv.valueOf("name") should be("test1")
   }
+
 }

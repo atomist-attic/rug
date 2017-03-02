@@ -4,7 +4,6 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.spring.SpringTypeSelectors
 import com.atomist.rug.kind.java.support.JavaAssertions
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi._
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
@@ -19,7 +18,7 @@ class SpringBootProjectType
 
   override def description = "Spring Boot project"
 
-  override def runtimeClass = classOf[SpringBootProjectMutableView]
+  override def runtimeClass: Class[SpringBootProjectMutableView] = classOf[SpringBootProjectMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case jpv: JavaProjectMutableView =>

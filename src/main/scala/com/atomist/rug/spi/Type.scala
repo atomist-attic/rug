@@ -1,7 +1,6 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.rugdsl.Evaluator
 
 /**
   * Support for a new Rug "kind" or "type" that can be used in `with` or `from` comprehensions, such
@@ -15,4 +14,5 @@ abstract class Type
 
   /** Describe the MutableView subclass to allow for reflective function export */
   def runtimeClass:Class[_]
+
 }

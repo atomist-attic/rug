@@ -2,7 +2,6 @@ package com.atomist.rug.kind.java
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.typesafe.scalalogging.LazyLogging
 

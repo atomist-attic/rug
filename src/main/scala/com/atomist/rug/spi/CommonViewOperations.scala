@@ -1,8 +1,6 @@
 package com.atomist.rug.spi
 
 import com.atomist.project.review.{ReviewComment, Severity}
-import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -35,32 +33,6 @@ trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
     description = "The message to be displayed")
                     msg: String): Unit = {
     Console.println(msg)
-  }
-
-  @ExportFunction(readOnly = true,
-    description = "Report a minor problem")
-  final def minorProblem(@ExportFunctionParameterDescription(name = "msg",
-    description = "The message to be displayed")
-                         msg: String, ic: FunctionInvocationContext[_]): Unit = review(msg, POLISH, ic)
-
-  @ExportFunction(readOnly = true,
-    description = "Report a major problem")
-  final def majorProblem(@ExportFunctionParameterDescription(name = "msg",
-    description = "The message to be displayed")
-                         msg: String, ic: FunctionInvocationContext[_]): Unit = review(msg, MAJOR, ic)
-
-  @ExportFunction(readOnly = true,
-    description = "Report a severe, blocking problem")
-  final def blockingProblem(@ExportFunctionParameterDescription(name = "msg",
-    description = "The message to be displayed")
-                            msg: String, ic: FunctionInvocationContext[_]): Unit = review(msg, BROKEN, ic)
-
-  private def review(msg: String, severity: Severity, ic: FunctionInvocationContext[_]): Unit = {
-    logger.debug(s"Adding review comment $msg in $this")
-    if (ic.reviewContext == null) {
-      throw new RugRuntimeException(null, s"Unable to raise review comment: No ReviewContent. Probably an internal error")
-    }
-    ic.reviewContext.comment(toReviewComment(msg, severity))
   }
 
   /**

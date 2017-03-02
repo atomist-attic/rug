@@ -6,10 +6,8 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.FileArtifact
-import com.atomist.tree.TreeNode
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration

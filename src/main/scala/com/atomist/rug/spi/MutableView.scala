@@ -1,6 +1,5 @@
 package com.atomist.rug.spi
 
-import com.atomist.rug.runtime.rugdsl.Evaluator
 import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
 
 /**
@@ -45,8 +44,6 @@ trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
     * Register an updater that will be invoked before a call to currentObject.
     */
   def registerUpdater(u: Updater[T])
-
-  def evaluator: Evaluator
 
   /**
     * Commit all changes, invoking updaters and calling parent if necessary.

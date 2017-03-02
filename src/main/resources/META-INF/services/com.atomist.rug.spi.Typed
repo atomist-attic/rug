@@ -14,8 +14,6 @@ com.atomist.rug.kind.java.JavaProjectType
 com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.java.path.JavaFileType
 
-com.atomist.rug.kind.rug.archive.RugArchiveProjectType
-
 com.atomist.rug.kind.json.JsonType
 
 com.atomist.rug.kind.pom.PomType

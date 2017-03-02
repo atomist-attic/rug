@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.rug.MissingSecretException
-import com.atomist.rug.spi.Handlers.{Response, Status}
-import com.atomist.rug.spi.Secret
+import com.atomist.rug.spi.Handlers.Status
+import com.atomist.rug.spi._
 import org.scalatest.{FlatSpec, Matchers}
 
 class RugFunctionRegistryTest extends FlatSpec with Matchers{
@@ -11,7 +11,7 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers{
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     fn.clearSecrets
     fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot"))) match {
-      case Response(Status.Success, _, _, Some(body)) => assert(body === "woot")
+      case FunctionResponse(Status.Success, _, _, Some(Body(Some(str), None))) => assert(str === "woot")
       case _ => ???
     }
   }
@@ -28,5 +28,10 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers{
     assertThrows[MissingSecretException]{
       fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot")))
     }
+  }
+
+  it should "serialize things to json easily" in {
+    val bodyStr = JsonBodyOption(FunctionResponse(Status.Success, Some("woot"), Some(200), StringBodyOption("woot"))).get.str.get
+    assert(bodyStr === """{"FunctionResponse":{"status":{},"msg":"woot","code":200,"body":{"str":"woot","bytes":null}}}""")
   }
 }

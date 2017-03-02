@@ -89,3 +89,9 @@ class BadPlanException(msg: String)
 
 class MissingRugException(msg: String)
   extends BadRugException(msg)
+
+class BadRugFunctionResponseException(msg: String)
+  extends BadRugException(msg)
+
+class InvalidHandlerException(msg: String)
+  extends BadRugException(msg)

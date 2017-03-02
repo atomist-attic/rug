@@ -1,9 +1,9 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.rug.runtime.RugSupport
-import com.atomist.rug.spi.AnnotatedRugFunction
-import com.atomist.rug.spi.Handlers.{Response, Status}
+import com.atomist.rug.spi.Handlers.Status
 import com.atomist.rug.spi.annotation.{Parameter, RugFunction, Secret, Tag}
+import com.atomist.rug.spi.{AnnotatedRugFunction, FunctionResponse}
 
 /**
   * For testing the annotation driven RugFunction api
@@ -14,11 +14,11 @@ class ExampleAnnotatedRugFunction
 
   @RugFunction(name = "example-function", description = "Description of function", tags = Array(new Tag(name = "tag content")))
   def invoke(@Parameter (name="number") number: Int,
-             @Secret(name = "user_token", path = "github/user_token=repo") user_token: String): Response = {
+             @Secret(name = "user_token", path = "github/user_token=repo") user_token: String): FunctionResponse = {
     if(number == 100 && user_token == "woot"){
-      Response(Status.Success)
+      FunctionResponse(Status.Success)
     }else{
-      Response(Status.Failure)
+      FunctionResponse(Status.Failure)
     }
   }
 }

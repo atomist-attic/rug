@@ -8,7 +8,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
-  * Serialize nashorn objects to Json
+  * Serialize objects to Json
   */
 object JsonSerializer {
 
@@ -35,6 +35,9 @@ object JsonSerializer {
     val writer = new StringWriter()
     objectWriter.writeValue(writer, ref)
     val str = writer.toString
-    str.substring(22).dropRight(1)
+    ref match {
+      case o: ScriptObjectMirror => str.substring(22).dropRight(1)//objects coming out of nashor seem to be wrapped
+      case _ => str
+    }
   }
 }

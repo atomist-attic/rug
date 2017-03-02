@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param._
 import com.atomist.rug.runtime.RugSupport
-import com.atomist.rug.spi.Handlers.{Response, Status}
-import com.atomist.rug.spi.{RugFunction, Secret}
+import com.atomist.rug.spi.Handlers.Status
+import com.atomist.rug.spi._
 
 import scala.collection.mutable.ListBuffer
 
@@ -32,9 +32,9 @@ class ExampleRugFunction
     * @param parameters
     * @return
     */
-  override def run(parameters: ParameterValues): Response = {
+  override def run(parameters: ParameterValues): FunctionResponse = {
     validateParameters(parameters)
-    Response(Status.Success,Some("It worked! :p"), Some(204), Some(parameters.parameterValues.head.getValue.toString))
+    FunctionResponse(Status.Success,Some("It worked! :p"), Some(204), StringBodyOption(parameters.parameterValues.head.getValue.toString))
   }
 
   /**

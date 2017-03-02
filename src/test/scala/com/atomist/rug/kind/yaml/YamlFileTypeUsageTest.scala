@@ -1,8 +1,7 @@
-package com.atomist.rug.kind.yaml.path
+package com.atomist.rug.kind.yaml
 
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
-import com.atomist.rug.kind.yaml.{AbstractYamlUsageTest, YamlUsageTestTargets}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 
 class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlUsageTest {

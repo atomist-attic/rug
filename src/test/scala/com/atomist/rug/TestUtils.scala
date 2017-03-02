@@ -66,7 +66,7 @@ object TestUtils extends Matchers {
   }
 
   /**
-    * Compile the named TypeScript file in the package of the caller
+    * Compile the named TypeScript file in the package of the caller.
     */
   def editorInSideFile(caller: Object, name: String): ProjectEditor =
     rugsInSideFile(caller, name).editors.head
@@ -75,7 +75,7 @@ object TestUtils extends Matchers {
     rugsInSideFile(caller, name).reviewers.head
 
   /**
-    * Return all resources in this package as an ArtifactSource
+    * Return all resources in this package as an ArtifactSource.
     */
   def resourcesInPackage(caller: Object): ArtifactSource = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
@@ -104,9 +104,7 @@ object TestUtils extends Matchers {
   }
 
   /**
-    * Make a rug addressable
-    * @param rug
-    * @return
+    * Make a rug addressable.
     */
   def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3") : AddressableRug = {
     new AddressableRug with ProjectEditor with RugSupport {

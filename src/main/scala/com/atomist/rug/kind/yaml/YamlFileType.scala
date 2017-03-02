@@ -1,9 +1,9 @@
-package com.atomist.rug.kind.yaml.path
+package com.atomist.rug.kind.yaml
 
 import java.io.InputStreamReader
 
 import com.atomist.rug.kind.grammar.TypeUnderFile
-import com.atomist.rug.kind.yaml.path.YamlFileType._
+import com.atomist.rug.kind.yaml.YamlFileType._
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text._

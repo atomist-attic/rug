@@ -35,21 +35,20 @@ trait TreeNode extends GraphNode {
   def childNodeTypes: Set[String]
 
   /**
-    * Return all visible children of this node
+    * Return all visible children of this node.
     *
-    * @return the children of this node.
-    *         Ordering is significant
+    * @return the children of this node. Ordering is significant
     */
   def childNodes: Seq[TreeNode] =
     childNodeNames.toSeq.flatMap(name => childrenNamed(name))
 
   /**
-    * Convenient method to return whether this is a leaf node
+    * Convenient method to return whether this is a leaf node.
     */
   def isLeaf: Boolean = childNodes.isEmpty
 
   /**
-    * Convenience method for Java callers and JavaScript
+    * Convenience method for Java callers and JavaScript.
     */
   @ExportFunction(readOnly = true, description = "Children")
   def children: java.util.List[TreeNode] = {
@@ -76,7 +75,8 @@ object TreeNode {
   case object Undeclared extends Significance
 
   /**
-    * Tag added to all dynamically created nodes, such as those backed by microgrammars, Antlr or LinkableContainerTreeNodes
+    * Tag added to all dynamically created nodes, such as those backed by microgrammars,
+    * Antlr or LinkableContainerTreeNodes.
     */
   val Dynamic: String = "-dynamic"
 }

@@ -4,7 +4,7 @@ import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class AddToDeepNestedSequence implements ProjectEditor {
+class AddToNestedSequence implements ProjectEditor {
     name: string = "AddToNestedSequence"
     description = "Add to nested sequence"
 
@@ -12,15 +12,15 @@ class AddToDeepNestedSequence implements ProjectEditor {
         let eng: PathExpressionEngine =
             new YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-        let findNested = `/*[@name='x.yml']/YamlFile()/components/Amplifier/*[@name='future upgrades']/NAC82`
+        let findNested = `/*[@name='x.yml']/YamlFile()/components/Amplifier/*[@name='future upgrades']`
 
-        eng.with<yaml.Sequence>(project, findNested, yamlValue => {
+        eng.with<yaml.YamlSequence>(project, findNested, yamlValue => {
             // console.log(`${this.description}: text value is \n[${yamlValue.value()}]`)
-            yamlValue.addElement('Audio Principe Signature power cable')
+            yamlValue.addElement('NAP500')
             //  console.log(`${this.description}: updated text value is \n[${yamlValue.value()}]`)
         })
     }
 
 }
 
-export let editor = new AddToDeepNestedSequence()
+export let editor = new AddToNestedSequence()

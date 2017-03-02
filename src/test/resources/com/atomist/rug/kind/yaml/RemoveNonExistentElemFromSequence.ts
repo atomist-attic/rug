@@ -14,7 +14,7 @@ class RemoveNonExistentElemFromSequence implements ProjectEditor {
 
         let findDependencies = `/*[@name='x.yml']/YamlFile()/dependencies`
 
-        eng.with<yaml.Sequence>(project, findDependencies, yamlValue => {
+        eng.with<yaml.YamlSequence>(project, findDependencies, yamlValue => {
             yamlValue.removeElement('"Killer Queen"')
             // console.log(`${this.description}: updated text value is \n[${yamlValue.value()}]`)
         })

@@ -82,8 +82,6 @@ class JsonMutableView(
 
   override def value: String = currentParsed.value
 
-  //println(TreeNodeUtils.toShorterString(currentParsed))
-
   // There's just one value
   /*
  json
@@ -156,7 +154,7 @@ private class PairMutableView(
   override def childNodeNames: Set[String] = kids.map(k => k.nodeName).toSet
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
-    kids.filter(k => k.nodeName.equals(fieldName))
+    kids.filter(_.nodeName.equals(fieldName))
 
   @ExportFunction(readOnly = false, description = "setValue")
   def setValue(newValue: String): Unit = {
@@ -202,9 +200,7 @@ private class JsonStringView(
   def valueOf: String = originalBackingObject.value
 
   @ExportFunction(readOnly = false, description = "Update the value of the sole key")
-  def setValue(@ExportFunctionParameterDescription(name = "name",
-    description = "The new value")
-               newValue: String): Unit =
+  def setValue(@ExportFunctionParameterDescription(name = "name", description = "The new value") newValue: String): Unit =
     originalBackingObject.update("\"" + newValue + "\"")
 
   override val childNodeNames: Set[String] = Set(originalBackingObject.nodeName)

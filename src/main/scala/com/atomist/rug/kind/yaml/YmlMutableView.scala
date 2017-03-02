@@ -14,14 +14,13 @@ import org.yaml.snakeyaml.Yaml
   * @param originalBackingObject original FileArtifact
   * @param parent the parent project
   */
-@deprecated("Use YamlMutableView instead", "0.13.0")
 class YmlMutableView(
                       originalBackingObject: FileArtifact,
                       parent: ProjectMutableView)
   extends LazyFileArtifactBackedMutableView(originalBackingObject, parent)
     with TerminalView[FileArtifact] {
 
-  private var model = new YamlModel(originalBackingObject.content)
+  private var model = new YmlModel(originalBackingObject.content)
 
   override protected def currentContent: String = model.yaml
 
@@ -53,11 +52,10 @@ class YmlMutableView(
   private def update(key: String, oldValue: String, newValue: String): Unit = {
     //because the yaml library seems to like \n's
     val updatedYaml = content.toUnix.replace(oldValue, newValue)
-    this.model = new YamlModel(updatedYaml)
+    this.model = new YmlModel(updatedYaml)
   }
 }
 
-@deprecated("Use YamlModel instead", "0.13.0")
 private[yaml] class YmlModel(val yaml: String) {
 
   import scala.collection.JavaConverters._

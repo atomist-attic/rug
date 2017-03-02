@@ -30,9 +30,7 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   final def isWellFormed: Boolean = wellFormed
 
   /**
-    * Subclasses should override this method to return whether or not their content is
-    * well-formed
-    * @return
+    * Subclasses should override this method to return whether or not their content is well-formed.
     */
   protected def wellFormed: Boolean = true
 
@@ -61,9 +59,9 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
     path.startsWith(root)
 
   /**
-    * Not to be directly exposed to views in most cases
+    * Not to be directly exposed to views in most cases.
     *
-    * @param newPath new path
+    * @param newPath the new path
     */
   def setPath(newPath: String): Unit
 

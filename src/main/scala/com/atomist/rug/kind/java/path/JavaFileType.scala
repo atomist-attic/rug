@@ -5,7 +5,7 @@ import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStrategy
 
 /**
-  * Path-expression oriented Java type built on JavaParser
+  * Path-expression oriented Java type built on JavaParser.
   */
 class JavaFileType
   extends AntlrRawFileType("compilationUnit",

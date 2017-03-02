@@ -71,9 +71,9 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
 
   @ExportFunction(readOnly = false, description = "Move the source file to the given package")
   def movePackage(@ExportFunctionParameterDescription(name = "newPackage",
-    description = "The package to move the source file to")
-                  newPackage: String): Unit = compilationUnit match {
-    case Some(cu) => val pathToReplace = pkg.replace(".", "/")
+    description = "The package to move the source file to") newPackage: String): Unit = compilationUnit match {
+    case Some(cu) =>
+      val pathToReplace = pkg.replace(".", "/")
       val newPath = newPackage.replace(".", "/")
       cu.setPackage(new PackageDeclaration(new NameExpr(newPackage)))
       setPath(path.replace(pathToReplace, newPath))

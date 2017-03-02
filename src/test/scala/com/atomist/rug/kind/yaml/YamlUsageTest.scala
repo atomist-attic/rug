@@ -9,7 +9,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |with Yaml x when path = "x.yml"
+        |with Yml x when path = "x.yml"
         |  do updateKey "group" "Marx Brothers"
       """.stripMargin
     allAS.foreach(asChanges => runProgAndCheck(prog, asChanges._1, 1))
@@ -20,7 +20,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |with Yaml x
+        |with Yml x
         |  do updateKey "group" "Marx Brothers"
       """.stripMargin
     allAS.foreach(asChanges => runProgAndCheck(prog, asChanges._1, 1))
@@ -31,7 +31,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |with Yaml x
+        |with Yml x
         |  do updateKey "common" "Be"
       """.stripMargin
     allAS.foreach(asChanges => runProgAndCheck(prog, asChanges._1, asChanges._2))
@@ -42,7 +42,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |let pe = $(/*[@name='x.yml']/Yaml())
+        |let pe = $(/*[@name='x.yml']/Yml())
         |
         |with pe
         |  do valueOf "group"
@@ -55,7 +55,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |let pe = $(/*[@name='x.yml']/Yaml())
+        |let pe = $(/*[@name='x.yml']/Yml())
         |
         |with pe
         |  do updateKey "group" "Marx Brothers"
@@ -68,7 +68,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |let pe = $(/Yaml())
+        |let pe = $(/Yml())
         |
         |with pe
         |  do updateKey "group" "Marx Brothers"
@@ -81,7 +81,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |let pe = $(/Yaml())
+        |let pe = $(/Yml())
         |
         |with pe
         |  do updateKey "common" "Be"
@@ -94,7 +94,7 @@ class YamlUsageTest extends AbstractYamlUsageTest {
       """
         |editor YamlEdit
         |
-        |let pe = $(/src/*[@name='x.yml']/Yaml())
+        |let pe = $(/src/*[@name='x.yml']/Yml())
         |
         |with pe
         |  do updateKey "common" "Be"

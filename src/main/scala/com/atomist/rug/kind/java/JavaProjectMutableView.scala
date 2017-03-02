@@ -2,38 +2,17 @@ package com.atomist.rug.kind.java
 
 import java.util.{List => JList}
 
-import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.rug.spi._
 import com.atomist.source.FileArtifact
-import com.atomist.tree.TreeNode
 import com.atomist.util.lang.JavaHelpers
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
 import scala.collection.JavaConverters._
-
-class JavaProjectType
-  extends Type
-    with ReflectivelyTypedType {
-
-  override def description = "Java project"
-
-  override def runtimeClass = classOf[JavaProjectMutableView]
-
-  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
-    context match {
-      case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
-        Some(Seq(new JavaProjectMutableView(pv)))
-      case _ => Some(Nil)
-    }
-  }
-}
-
-import com.atomist.rug.kind.java.JavaSourceType._
 
 /**
   * Exposes Java project status, allowing refactoring, tests for
@@ -45,7 +24,7 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
   import JavaProjectMutableView._
 
   @ExportFunction(readOnly = true, description = "Return the number of Java files in this module")
-  def javaFileCount: Int = currentBackingObject.allFiles.count(f => f.name.endsWith(".java"))
+  def javaFileCount: Int = currentBackingObject.allFiles.count(_.name.endsWith(".java"))
 
   @ExportFunction(readOnly = true, description = "Is this a Maven project?")
   def isMaven: Boolean = JavaAssertions.isMaven(currentBackingObject)
@@ -57,18 +36,13 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
   def isSpringBoot: Boolean = JavaAssertions.isSpringBoot(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "List the packages in this project")
-  def packages: JList[PackageInfo] = {
+  def packages: JList[PackageInfo] =
     PackageFinder.packages(currentBackingObject).asJava
-  }
 
   @ExportFunction(readOnly = false, description = "Rename the given package. All package under it will also be renamed")
-  def renamePackage(@ExportFunctionParameterDescription(
-    name = "oldPackage",
-    description = "Old package name")
+  def renamePackage(@ExportFunctionParameterDescription(name = "oldPackage", description = "Old package name")
                     oldPackageName: String,
-                    @ExportFunctionParameterDescription(
-                      name = "newPackage",
-                      description = "The new package name")
+                    @ExportFunctionParameterDescription(name = "newPackage", description = "The new package name")
                     newPackageName: String): Unit = {
     // We do this will string operations rather than JavaParser
     if (!JavaHelpers.isValidPackageName(newPackageName))
@@ -91,7 +65,7 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
     currentBackingObject.allFiles
       .filter(_.name.endsWith(JavaExtension))
       .view
-      .map(f => new JavaSourceMutableView(f, this))
+      .map(new JavaSourceMutableView(_, this))
 
   def compilationUnits: Seq[CompilationUnit] =
     javaSourceViews.flatMap(jsv => jsv.compilationUnit)

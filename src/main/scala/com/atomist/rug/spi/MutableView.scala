@@ -6,7 +6,7 @@ import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
 /**
   * Exposed to Rug "with" and "from" blocks, and access from JavaScript.
   * Typically backed by an object from another hierarchy.
-  * View implementations will create their own methods for updates
+  * View implementations will create their own methods for updates.
   *
   * Methods annotated with @ExportFunction are exposed via views. Predicates
   * should return Boolean, transform functions the view type.
@@ -17,7 +17,7 @@ import com.atomist.tree.{ContainerTreeNode, PathAwareTreeNode}
   * Return types should be Java, rather than Scala, as they may
   * be invoked from JavaScript via Nashorn.
   *
-  * @tparam  T type of the underlying object
+  * @tparam T type of the underlying object
   */
 trait MutableView[T] extends PathAwareTreeNode with ContainerTreeNode {
 

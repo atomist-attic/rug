@@ -35,7 +35,7 @@ abstract class TypeUnderFile
           .files
           .asScala
           .filter(f => isOfType(f.currentBackingObject))
-          .flatMap(f => toView(f))
+          .flatMap(toView(_))
         )
       case f: FileMutableView if isOfType(f.currentBackingObject) =>
         Some(toView(f).toSeq)
@@ -60,7 +60,7 @@ abstract class TypeUnderFile
     */
   protected def createView(tn: UpdatableTreeNode, f: FileArtifactBackedMutableView): TreeNode = tn match {
     case ottn: OverwritableTextTreeNode => ottn
-    case n: MutableView[_] => n // this might not be necessary
+    case n: MutableView[_] => n // This might not be necessary
     case n: MutableContainerTreeNode => new MutableContainerMutableView(n, f)
   }
 

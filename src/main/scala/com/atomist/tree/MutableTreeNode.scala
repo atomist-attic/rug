@@ -11,8 +11,8 @@ trait AnnotatableTreeNode extends TreeNode {
   override def nodeTags: Set[String] = types
 
   /**
-    * Add an additional type to this node. It's impossible
-    * to remove a type.
+    * Add an additional type to this node. It's impossible to remove a type.
+    *
     * @param t type to add
     */
   def addType(t: String): Unit = {
@@ -20,13 +20,13 @@ trait AnnotatableTreeNode extends TreeNode {
   }
 
   /**
-    * Add multiple types to this node
+    * Add multiple types to this node.
+    *
     * @param s set of node types
     */
   def addTypes(s: Set[String]): Unit = {
     types = types ++ s
   }
-
 }
 
 /**
@@ -35,18 +35,16 @@ trait AnnotatableTreeNode extends TreeNode {
   * will overwrite their child structure.
   * Also adds the ability to add additional types to nodes.
   */
-trait MutableTreeNode extends AnnotatableTreeNode  with UpdatableTreeNode {
+trait MutableTreeNode extends AnnotatableTreeNode with UpdatableTreeNode {
 
   def dirty: Boolean
-
 }
 
 trait UpdatableTreeNode extends TreeNode {
+
   /**
     * Update String contents to this content. May
     * involve updating an entire structure.
-    *
-    * @return
     */
   def update(to: String): Unit
 }

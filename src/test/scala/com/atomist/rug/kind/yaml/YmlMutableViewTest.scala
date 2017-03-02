@@ -6,7 +6,7 @@ import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-object YamlMutableViewTest {
+object YmlMutableViewTest {
 
   val yaml =
     """
@@ -50,9 +50,9 @@ object YamlMutableViewTest {
     """.stripMargin
 }
 
-class YamlMutableViewTest extends FlatSpec with Matchers {
+class YmlMutableViewTest extends FlatSpec with Matchers {
 
-  import YamlMutableViewTest._
+  import YmlMutableViewTest._
 
   val y = StringFileArtifact("info.yml", yaml)
 
@@ -71,7 +71,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
          |description:
          |  A template of profound illustrative power.
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     yv.valueOf("name") should be("test1")
   }
@@ -82,7 +82,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
         |name:
         |    test1
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleParameterValues.Empty, Nil)
@@ -101,7 +101,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
         |other:
         |    test1 # Yet Another Comment!
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleParameterValues.Empty, Nil)
@@ -123,7 +123,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
          |other:
          |    test1 $thirdComment
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleParameterValues.Empty, Nil)
@@ -151,7 +151,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
          |other:
          |    test1 $thirdComment
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", simpleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", simpleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     val ic = SimpleFunctionInvocationContext("p", null, yv, as, null, Map(),
       SimpleParameterValues.Empty, Nil)
@@ -173,7 +173,7 @@ class YamlMutableViewTest extends FlatSpec with Matchers {
         |name: test2
         |description: Ignored less powerful template.
       """.stripMargin
-    val yv = new YamlMutableView(StringFileArtifact("info.yml", doubleYaml),
+    val yv = new YmlMutableView(StringFileArtifact("info.yml", doubleYaml),
       new ProjectMutableView(EmptyArtifactSource(""), as))
     yv.valueOf("name") should be("test1")
   }

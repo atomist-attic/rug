@@ -12,5 +12,4 @@ trait PositionedTreeNode extends TreeNode with Positioned {
 
   def includes(pos: InputPosition): Boolean =
     this.startPosition.offset <= pos.offset && this.endPosition.offset >= pos.offset
-
 }

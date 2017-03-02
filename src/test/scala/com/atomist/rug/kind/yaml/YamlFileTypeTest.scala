@@ -1,4 +1,4 @@
-package com.atomist.rug.kind.yaml.path
+package com.atomist.rug.kind.yaml
 
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}

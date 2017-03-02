@@ -1,9 +1,8 @@
 package com.atomist.util.scalaparsing
 
-import com.atomist.tree.content.text._
-import com.atomist.rug.parser.RugParser._
 import com.atomist.rug.{BadRugException, BadRugSyntaxException, RugRuntimeException}
 import com.atomist.source.FileArtifact
+import com.atomist.tree.content.text._
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.util.{Visitable, Visitor}
 import com.typesafe.scalalogging.LazyLogging
@@ -121,7 +120,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
   case class IdentifierLookup(id: String)
 
   // Lookup for an identifier beginning with @ such as @java_class in a well-known regular expression
-  protected def identifierLookup: Parser[IdentifierLookup] = AtToken ~> ident ^^ (s => IdentifierLookup(s))
+  protected def identifierLookup: Parser[IdentifierLookup] = "@" ~> ident ^^ (s => IdentifierLookup(s))
 
   // TODO should tighten this up
   def regexp: Parser[String] = """.*""".r

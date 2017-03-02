@@ -2,15 +2,10 @@ package com.atomist.rug
 
 import javax.script.ScriptException
 
-import com.atomist.rug.parser.Annotation
 import com.atomist.util.scalaparsing.ErrorInfo
-import com.atomist.source.FileArtifact
 
 abstract class BadRugException(msg: String, rootCause: Throwable = null)
   extends Exception(msg, rootCause)
-
-class BadRugPackagingException(msg: String, val f: FileArtifact, val progs: Seq[RugProgram])
-  extends BadRugException(f.path + ": " + msg)
 
 /**
   * Parser exception.
@@ -26,9 +21,6 @@ class BadRugSyntaxException(
     info.toString
 
 }
-
-class InvalidRugAnnotationValueException(op: String, val ann: Annotation)
-  extends BadRugException(op + ": " + s"Invalid annotation: $ann")
 
 class UndefinedRugTypeException(op: String, msg: String, val typeName: String)
   extends BadRugException(op + ": " + msg)

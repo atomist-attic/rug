@@ -1,7 +1,6 @@
 package com.atomist.rug.kind.core
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.runtime.rugdsl.DefaultEvaluator
 import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 
@@ -13,7 +12,7 @@ class ProjectType
     "Consider using file and other lower types by preference as project" +
     "operations can be inefficient."
 
-  override def runtimeClass = classOf[ProjectMutableView]
+  override def runtimeClass: Class[ProjectMutableView] = classOf[ProjectMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = {
     // Special case where we want only one

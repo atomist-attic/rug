@@ -13,5 +13,6 @@ abstract class Type
     with Typed {
 
   /** Describe the MutableView subclass to allow for reflective function export */
-  def runtimeClass: Class[_]
+  def runtimeClass:Class[_]
+
 }

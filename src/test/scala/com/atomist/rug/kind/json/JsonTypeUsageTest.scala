@@ -2,11 +2,8 @@ package com.atomist.rug.kind.json
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
 import com.atomist.rug._
-import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.ts.{RugTranspiler, TypeScriptBuilder}
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 object JsonTypeUsageTest {
@@ -74,7 +71,6 @@ object JsonTypeUsageTest {
 class JsonTypeUsageTest extends FlatSpec with Matchers {
 
   import JsonTypeUsageTest._
-  import com.atomist.rug.TestUtils._
 
   it should "update node value, going via file and path expression" in {
     val edited = updateWith("Rename.ts")

@@ -2,8 +2,8 @@ package com.atomist.rug.kind.java
 
 import java.util.{List => JList}
 
-import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.support._
 import com.atomist.rug.kind.support.ProjectDecoratingMutableView
 import com.atomist.rug.spi._
@@ -13,25 +13,6 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 
 import scala.collection.JavaConverters._
-
-class JavaProjectType
-  extends Type
-    with ReflectivelyTypedType {
-
-  override def description = "Java project"
-
-  override def runtimeClass: Class[JavaProjectMutableView] = classOf[JavaProjectMutableView]
-
-  override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = {
-    context match {
-      case pv: ProjectMutableView if JavaAssertions.isJava(pv.currentBackingObject) =>
-        Some(Seq(new JavaProjectMutableView(pv)))
-      case _ => Some(Nil)
-    }
-  }
-}
-
-import com.atomist.rug.kind.java.JavaSourceType._
 
 /**
   * Exposes Java project status, allowing refactoring, tests for

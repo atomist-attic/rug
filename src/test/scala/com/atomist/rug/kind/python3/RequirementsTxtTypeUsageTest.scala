@@ -1,9 +1,6 @@
 package com.atomist.rug.kind.python3
 
-import com.atomist.param.SimpleParameterValues
-import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.DefaultRugPipeline
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -17,12 +14,7 @@ abstract class RequirementsTxtTypeUsageTest extends FlatSpec with Matchers {
     )
 
   def exec(program: String, as: ArtifactSource, params: Map[String, String] = Map()): ModificationAttempt = {
-    val runtime = new DefaultRugPipeline(DefaultTypeRegistry)
-    val as = new SimpleFileBasedArtifactSource("", StringFileArtifact("editor/LineCommenter.rug", program))
-    val eds = runtime.create(as)
-    assert(eds.size === 1)
-    val pe = eds.head.asInstanceOf[ProjectEditor]
-    pe.modify(as, SimpleParameterValues( params))
+    ???
   }
 
   def modifyRequirementsTxtAndReparseSuccessfully(program: String, as: ArtifactSource, params: Map[String, String] = Map()): ArtifactSource = {

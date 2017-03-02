@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util
+
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -23,16 +25,18 @@ class jsSafeCommittingProxy(
   extends AbstractJSObject
     with TreeNode {
 
+  import scala.collection.JavaConverters._
+  import jsSafeCommittingProxy._
+
   override def toString: String = s"SafeCommittingProxy around $node"
 
   private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
   private var additionalMembers: Map[String, Object] = Map()
 
-  import jsSafeCommittingProxy.MagicJavaScriptMethods
-
   //-----------------------------------------------------
-  // Delegate TreeNode methods to backing node
+  // Delegate GraphNode and TreeNode methods to backing node
+  // We need to override all of them to wrap the results in ourselves
 
   override def nodeName: String = node.nodeName
 
@@ -43,7 +47,25 @@ class jsSafeCommittingProxy(
   override def childNodeTypes: Set[String] = node.relatedNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] =
-    node.relatedNodesNamed(key).map(new jsSafeCommittingProxy(_, typeRegistry))
+    node match {
+      case tn: TreeNode =>
+        //println(s"Wrapping childrenNamed of $node")
+        tn.childrenNamed(key).map(wrapOne)
+      case _ => ???
+    }
+
+  override def children: util.List[TreeNode] = node match {
+    case tn: TreeNode =>
+      //println(s"Wrapping children of $node")
+      tn.children.asScala.map(wrapOne).map(_.asInstanceOf[TreeNode]).asJava
+    case _ => ???
+  }
+
+  override def relatedNodes: Seq[TreeNode] =
+    node.relatedNodes.map(wrapOne)
+
+  override def relatedNodesNamed(key: String): Seq[TreeNode] =
+    node.relatedNodesNamed(key).map(wrapOne)
 
   /**
     * A user is adding a named member e.g.
@@ -118,8 +140,8 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       possibleOps.find(op => op.parameters.size == args.size) match {
         case None =>
-            throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
+          throw new RugRuntimeException(null,
+            s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
         case Some(op) =>
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)

@@ -6,12 +6,18 @@ import com.github.javaparser.ast.body.ConstructorDeclaration
 
 import scala.collection.JavaConverters._
 
-class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent: JavaClassOrInterfaceView)
+
+class JavaConstructorTypeProvider extends TypeProvider(classOf[JavaConstructorMutableView]) {
+
+  override def description: String = "Java constructor"
+}
+
+class JavaConstructorMutableView(originalBackingObject: ConstructorDeclaration, parent: JavaClassOrInterfaceMutableView)
   extends BodyDeclarationView[ConstructorDeclaration](originalBackingObject, parent) {
 
-  override def nodeName: String = "constructor"
+  override def nodeName: String = JavaTypeType.ConstructorAlias
 
-  override def nodeTags: Set[String] = Set("constructor")
+  override def nodeTags: Set[String] = Set(JavaTypeType.ConstructorAlias)
 
   override def childNodeNames: Set[String] = Set("JavaParameter")
 
@@ -31,4 +37,5 @@ class JavaConstructorView(originalBackingObject: ConstructorDeclaration, parent:
 
   @ExportFunction(readOnly = true, description = "Return the number of constructor parameters")
   def parametersSize: Int = currentBackingObject.getParameters.size
+
 }

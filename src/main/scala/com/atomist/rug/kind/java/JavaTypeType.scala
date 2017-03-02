@@ -19,7 +19,7 @@ class JavaTypeType
 
   override def description = "Java class"
 
-  override def runtimeClass: Class[JavaClassOrInterfaceView] = classOf[JavaClassOrInterfaceView]
+  override def runtimeClass: Class[JavaClassOrInterfaceMutableView] = classOf[JavaClassOrInterfaceMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>
@@ -46,9 +46,11 @@ object JavaTypeType {
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
     if (!annotations.exists(_.getName.getName == annotationName)) {
+      println(s"Added $annotationName to $bd")
       bd.setAnnotations((annotations :+ new MarkerAnnotationExpr(new NameExpr(annotationName))).asJava)
       true
-    } else // It's already there
+    }
+    else // It's already there
       false
   }
 
@@ -57,15 +59,16 @@ object JavaTypeType {
     if (annotations.exists(_.getName.getName == annotationName)) {
       bd.setAnnotations(annotations.filterNot(_.getName.getName == annotationName).asJava)
       true
-    } else // It's already gone
+    }
+    else // It's already gone
       false
   }
 
-  val ConstructorAlias: String = "constructor"
+  val ConstructorAlias: String = "JavaConstructor"
 
-  val FieldAlias: String = "field"
+  val FieldAlias: String = "JavaField"
 
-  val MethodAlias: String = "method"
+  val MethodAlias: String = "JavaMethod"
 
   val JavaTypeAlias: String = Typed.typeClassToTypeName(classOf[JavaTypeType])
 }

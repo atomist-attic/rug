@@ -7,7 +7,7 @@ import com.github.javaparser.ast.body._
 
 import scala.collection.JavaConverters._
 
-class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSourceMutableView)
+class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: JavaSourceMutableView)
   extends TypeDeclarationView[ClassOrInterfaceDeclaration](old, parent) {
 
   override def nodeName: String = currentBackingObject.getName
@@ -21,12 +21,12 @@ class JavaClassOrInterfaceView(old: ClassOrInterfaceDeclaration, parent: JavaSou
       currentBackingObject.getMembers.asScala
         .collect {
           case c: ConstructorDeclaration =>
-            new JavaConstructorView(c, this)
+            new JavaConstructorMutableView(c, this)
         }
     case MethodAlias =>
       currentBackingObject.getMembers.asScala
         .collect {
-          case m: MethodDeclaration => new JavaMethodView(m, this)
+          case m: MethodDeclaration => new JavaMethodMutableView(m, this)
         }
     case FieldAlias =>
       currentBackingObject.getMembers.asScala

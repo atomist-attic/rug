@@ -4,7 +4,7 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.RugCompilerTest
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.java.JavaClassOrInterfaceView
+import com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView
 import com.atomist.rug.kind.pom.PomMutableView
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
@@ -160,7 +160,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     // We have left out test classes
     assert(rtn3.right.get.size === 1)
     rtn3.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -187,7 +187,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     // We have left out test classes
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -199,7 +199,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -211,7 +211,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -248,7 +248,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -260,7 +260,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -272,7 +272,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }
@@ -284,7 +284,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
-      case j: JavaClassOrInterfaceView =>
+      case j: JavaClassOrInterfaceMutableView =>
 
     }
   }

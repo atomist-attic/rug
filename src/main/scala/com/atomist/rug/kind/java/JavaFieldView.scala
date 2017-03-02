@@ -5,7 +5,7 @@ import com.github.javaparser.ast.body.FieldDeclaration
 
 import scala.collection.JavaConverters._
 
-class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOrInterfaceView)
+class JavaFieldView(originalBackingObject: FieldDeclaration, parent: JavaClassOrInterfaceMutableView)
   extends BodyDeclarationView[FieldDeclaration](originalBackingObject, parent)
     with TerminalView[FieldDeclaration] {
 

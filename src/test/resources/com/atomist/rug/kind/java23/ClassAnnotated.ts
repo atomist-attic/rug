@@ -4,7 +4,7 @@ import { EditProject } from '@atomist/rug/operations/ProjectEditor'
 import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
 import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
-import { JavaSource, JavaType, Project } from '@atomist/rug/model/Core'
+import { JavaSource, JavaType, Project, JavaField } from '@atomist/rug/model/Core'
 
 /**
     ClassAnnotated
@@ -17,8 +17,8 @@ class ClassAnnotated implements EditProject {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
-                eng.with<any>(c, '//field()', f => {
-                    if ( f.nodeName().contains("Field") && f.parent().name().contains("Dog") ) {
+                eng.with<JavaField>(c, '//JavaField()', f => {
+                    if (f.nodeName().indexOf("Field") > -1 && f.type().name().indexOf("Dog") > -1) {
                         f.addAnnotation("com.someone", "FooBar")
                     }
                 })

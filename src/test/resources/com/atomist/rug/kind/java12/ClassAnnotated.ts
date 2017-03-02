@@ -6,10 +6,6 @@ import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
 import { JavaSource, JavaType, Project } from '@atomist/rug/model/Core'
 
-/**
-    ClassAnnotated
-    ClassAnnotated
- */
 @Editor("ClassAnnotated", "ClassAnnotated")
 class ClassAnnotated implements EditProject {
 
@@ -17,7 +13,7 @@ class ClassAnnotated implements EditProject {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
-                c.addAnnotation("$pkg", "$ann")
+                c.addAnnotation("com.foo", "Baz")
             })
         })
     }

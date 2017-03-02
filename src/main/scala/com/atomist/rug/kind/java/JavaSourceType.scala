@@ -31,5 +31,5 @@ object JavaSourceType {
 
   val JavaExtension = ".java"
 
-  val FieldAlias = "field"
+  val FieldAlias = "JavaField"
 }

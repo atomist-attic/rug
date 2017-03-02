@@ -4,7 +4,7 @@ import { EditProject } from '@atomist/rug/operations/ProjectEditor'
 import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
 import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
-import { JavaSource, JavaType, Project } from '@atomist/rug/model/Core'
+import { JavaSource, JavaType, JavaField, Project } from '@atomist/rug/model/Core'
 
 @Editor("ClassAnnotated", "I remove FooBar annotation")
 class ClassAnnotated implements EditProject {
@@ -13,8 +13,8 @@ class ClassAnnotated implements EditProject {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
-                eng.with<any>(c, '//field()', f => {
-                    if ( f.name().contains("Field") && f.parent().name().contains("Dog") ) {
+                eng.with<JavaField>(c, '//JavaField()', f => {
+                    if (f.type().name().indexOf("Dog") > -1) {
                         f.removeAnnotation("com.someone", "ComFooBar")
                     }
                 })

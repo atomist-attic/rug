@@ -6,17 +6,13 @@ import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
 import { Pattern } from '@atomist/rug/operations/RugOperation'
 import { JavaType, Project } from '@atomist/rug/model/Core'
 
-/**
-    AbstractClass
-    AbstractClass
- */
 @Editor("AbstractClass", "AbstractClass")
 class AbstractClass implements EditProject {
 
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            if (c.isAbstract) {
+            if (c.isAbstract()) {
                 c.addAnnotation("com.foo.bar", "Baz")
             }
         })

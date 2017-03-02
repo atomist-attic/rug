@@ -31,7 +31,7 @@ class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: 
     case FieldAlias =>
       currentBackingObject.getMembers.asScala
         .collect {
-          case f: FieldDeclaration => new JavaFieldView(f, this)
+          case f: FieldDeclaration => new JavaFieldMutableView(f, this)
         }
     case _ =>
       throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")

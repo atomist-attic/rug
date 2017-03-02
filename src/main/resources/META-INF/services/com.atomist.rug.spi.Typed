@@ -13,6 +13,7 @@ com.atomist.rug.kind.java.JavaSourceType
 com.atomist.rug.kind.java.JavaProjectType
 com.atomist.rug.kind.java.JavaMethodTypeProvider
 com.atomist.rug.kind.java.JavaConstructorTypeProvider
+com.atomist.rug.kind.java.JavaFieldTypeProvider
 com.atomist.rug.kind.java.SpringBootProjectType
 com.atomist.rug.kind.java.path.JavaFileType
 

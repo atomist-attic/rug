@@ -240,6 +240,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content shouldNot include("import java.util.Set")
   }
 
+  // TODO this needs a fix in addImport implementation. Not to do with DSL -> TypeScript
   it should "not add import for annotation added to class in same package" in pendingUntilFixed {
     val impl = StringFileArtifact("src/main/java/Absquatulator.java",
       """
@@ -255,7 +256,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val program =
       ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java12/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
     val r = executeJava(program, "editors/ClassAnnotated.ts", as)
     val f = r.findFile(impl.path).get
     f.content.lines.size should be > 0
@@ -371,7 +371,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     updatedInterface.content should include("@Baz")
   }
 
-  it should "distinguish abstract classes" in pendingUntilFixed { /* broken in TypeScript conversion */
+  it should "distinguish abstract classes" in {
     val interfaceFile = StringFileArtifact("src/main/java/Absquatulated.java", "public interface Absquatulated {}")
     val abstractFile = StringFileArtifact("src/main/java/AbstractAbsquatulator.java", "public abstract class AbstractAbsquatulator implements Absquatulated {}")
     val concreteFile = StringFileArtifact("src/main/java/Absquatulator.java", "public class Absquatulator extends AbstractAbsquatulator {}")
@@ -379,9 +379,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val program =
       ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java18/AbstractClass.ts").withPathAbove(".atomist/editors")
-
     val r = executeJava(program, "editors/AbstractClass.ts", as)
-
     val updatedInterface = r.findFile(interfaceFile.path).get
     updatedInterface.content should include(s"import com.foo.bar.Baz;")
     updatedInterface.content should include("@Baz")
@@ -424,20 +422,17 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  it should "remove annotation from method" in pendingUntilFixed { /* broken in TypeScript conversion */
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java22/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+  it should "remove annotation from method" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java22/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import com.someone.FooBar;")
     f.content shouldNot include("@FooBar")
   }
 
-  // TODO TypeScript breakage
-  it should "annotate field" in pendingUntilFixed {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java23/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+  it should "annotate field" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java23/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -445,12 +440,10 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  it should "remove annotation from field" in pendingUntilFixed { /* broken in TypeScript conversion */
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java24/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+  it should "remove annotation from field" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java24/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import com.someone.ComFooBar;")
     f.content shouldNot include("@ComFooBar")

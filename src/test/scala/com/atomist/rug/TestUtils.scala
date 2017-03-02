@@ -1,15 +1,11 @@
 package com.atomist.rug
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
-import com.atomist.project.ProjectOperation
 import com.atomist.project.archive._
-import com.atomist.project.common.MissingParametersException
 import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.rug.InterpreterRugPipeline.DefaultRugArchive
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.runtime.{AddressableRug, Rug}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -22,10 +18,9 @@ object TestUtils extends Matchers {
   def doModification(program: ArtifactSource,
                      as: ArtifactSource,
                      backingAs: ArtifactSource,
-                     poa: ParameterValues,
-                     pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ArtifactSource = {
+                     poa: ParameterValues): ArtifactSource = {
 
-    attemptModification(program, as, backingAs, poa, pipeline) match {
+    attemptModification(program, as, backingAs, poa) match {
       case sm: SuccessfulModification => sm.result
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
@@ -37,8 +32,7 @@ object TestUtils extends Matchers {
   def attemptModification(program: ArtifactSource,
                           as: ArtifactSource,
                           backingAs: ArtifactSource,
-                          poa: ParameterValues,
-                          pipeline: RugPipeline = new DefaultRugPipeline(DefaultTypeRegistry)): ModificationAttempt = {
+                          poa: ParameterValues): ModificationAttempt = {
     val pe: ProjectEditor =
       if (isTypeScript(program)) {
         val as = TypeScriptBuilder.compileWithModel(program)
@@ -60,7 +54,7 @@ object TestUtils extends Matchers {
     * @return result of the modification attempt
     */
   def updateWith(prog: String, project: ArtifactSource, params: Map[String, Object] = Map()): ModificationAttempt = {
-    val pas = new SimpleFileBasedArtifactSource(DefaultRugArchive, StringFileArtifact(new DefaultRugPipeline().defaultFilenameFor(prog), prog))
+    val pas = new SimpleFileBasedArtifactSource("", StringFileArtifact(".atomist/editors/Default.ts", prog))
     attemptModification(pas, project, EmptyArtifactSource(""), SimpleParameterValues(params))
   }
 

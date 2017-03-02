@@ -43,7 +43,7 @@ trait AnnotatedRugFunction extends RugFunction {
     }
   }).flatten.toSeq
 
-  override def run(parameters: ParameterValues): Response = {
+  override def run(parameters: ParameterValues): FunctionResponse = {
     val method = functionMethod()
     val args = method.getParameters.map(p => {
       val parameterAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Parameter])
@@ -58,6 +58,6 @@ trait AnnotatedRugFunction extends RugFunction {
         throw new IllegalArgumentException(s"Parameter ${p.getName} not annotated with either @Secret or @Parameter")
       }
     })
-    method.invoke(this, args:_*).asInstanceOf[Response]
+    method.invoke(this, args:_*).asInstanceOf[FunctionResponse]
   }
 }

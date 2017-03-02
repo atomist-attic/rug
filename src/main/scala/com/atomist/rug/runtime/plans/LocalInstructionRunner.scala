@@ -4,13 +4,13 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.rug.BadPlanException
+import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.{JsonSerializer, RugContext}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
-import com.atomist.rug.spi.RugFunctionRegistry
+import com.atomist.rug.spi.{Body, RugFunctionRegistry}
 
 /**
   * Run instructions synchronously in this JVM
@@ -44,11 +44,13 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
             val response = fn.run(resolved)
 
             //serialize to json if not already a string
-            val newbody = response.body match {
-              case Some(s: String) => Some(s)
-              case o => JsonSerializer.toJson(o)
+            val thedata = response.body match {
+              case Some(Body(Some(str), None)) => Some(str)
+              case Some(Body(None, Some(bytes))) => Some(bytes)
+              case Some(Body(_,_)) => throw new BadRugFunctionResponseException(s"Function `${fn.name}` should return a string body or a byte array, but not both")
+              case _ => None
             }
-            Response(response.status, response.msg, response.code, newbody)
+            Response(response.status, response.msg, response.code, thedata)
           case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
         }
       case _ =>
@@ -56,20 +58,20 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case Some(rug: ProjectGenerator) =>
             doWithProjectName(instruction, (projectName: String) => {
               val artifact = projectManagement.generate(rug, parameters, projectName)
-              Response(Success, None, None, Some(artifact))
+              Response(Success)//TODO serialize the response?
             })
           case Some(rug: ProjectEditor) =>
             doWithProjectName(instruction, (projectName: String) => {
               projectManagement.edit(rug,parameters, projectName) match {
-                case success: SuccessfulModification => Response(Success, None, None, Some(success))
-                case success: NoModificationNeeded => Response(Success, None, None, Some(success))
-                case failure: FailedModificationAttempt => Response(Failure, None, None, Some(failure))
+                case success: SuccessfulModification => Response(Success)
+                case success: NoModificationNeeded => Response(Success,Some(success.comment))
+                case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
               }
             })
           case Some(rug: ProjectReviewer) =>
             doWithProjectName(instruction, (projectName: String) => {
               val reviewResult = projectManagement.review(rug,parameters, projectName)
-              Response(Success, None, None, Some(reviewResult))
+              Response(Success, None, None, Some(JsonSerializer.toJson(reviewResult)))
             })
           case Some(rug: CommandHandler) =>
             val planOption = rug.handle(rugContext, parameters)

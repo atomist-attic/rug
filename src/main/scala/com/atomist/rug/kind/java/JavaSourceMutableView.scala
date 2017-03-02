@@ -42,7 +42,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
         .collect {
           case c: ClassOrInterfaceDeclaration => c
         }
-        .map(c => new JavaClassOrInterfaceView(c, this))
+        .map(c => new JavaClassOrInterfaceMutableView(c, this))
 
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }

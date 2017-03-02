@@ -90,19 +90,17 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "annotate class using function" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java1/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java1/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     annotateClass(program)
   }
 
   it should "annotate class going straight to class without enclosing JavaSource" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java2/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java2/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     annotateClass(program)
   }
 
   it should "add an annotation with properties to class" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java3/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java3/ClassAnnotated.ts").withPathAbove(".atomist/editors")
 
     val result = executeJava(program, "editors/ClassAnnotated.ts")
     val f = result.findFile("src/main/java/Dog.java").get
@@ -206,7 +204,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("class Dingo")
   }
 
-  it should "verify users of renamed class are updated" is pending
+  it should "verify usages of renamed class are updated" is pending
 
   private  def annotateClass(program: ArtifactSource): Unit = {
     val result = executeJava(program, "editors/ClassAnnotated.ts")
@@ -217,18 +215,15 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "add import" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java9/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java9/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import java.util.List")
   }
 
   it should "add and remove import" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java10/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java10/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -237,8 +232,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove an import" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java11/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java11/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -285,7 +279,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
       ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java13/ClassExtended.ts").withPathAbove(".atomist/editors")
 
     val r = executeJava(program, "editors/ClassExtended.ts", as)
-
     val unupdatedParentFile = r.findFile(parentFile.path).get
     unupdatedParentFile shouldEqual parentFile
 
@@ -411,7 +404,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  // TODO fails due to nodeTags in TreeHelper. Is that getting wrapped consistently?
+  // TODO issue is commit is not being called...apparently proxying doesn't go
+  // all the way down
   it should "annotate constructor" in pendingUntilFixed {
     val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
@@ -421,12 +415,10 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  it should "annotate method" in pendingUntilFixed { /* broken in TypeScript conversion */
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java21/ClassAnnotated.ts").withPathAbove(".atomist/editors")
-
+  it should "annotate method" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java21/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
-
     f.content.lines.size should be > 0
     f.content should include("import com.someone.FooBar;")
     f.content should include("@FooBar")

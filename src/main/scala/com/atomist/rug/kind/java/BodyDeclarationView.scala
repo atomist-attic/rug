@@ -20,7 +20,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
   override def childNodeTypes: Set[String] = childNodeNames
 
   @ExportFunction(readOnly = true, description = "Line count")
-  override def lineCount =
+  override def lineCount: Int =
     FileMetrics.lineCount(currentBackingObject.toString)
 
   @ExportFunction(readOnly = false, description = "Add an import to the containing Java source")
@@ -29,7 +29,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
                 fqn: String): Unit = {
     val compilationUnit: Option[CompilationUnit] = parent match {
       case jsv: JavaSourceMutableView => jsv.compilationUnit
-      case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
+      case jcoiv: JavaClassOrInterfaceMutableView => jcoiv.compilationUnit
       case _ => throw new IllegalArgumentException("Failed to get compilation unit")
     }
     compilationUnit.foreach(JavaParserUtils.addImportsIfNeeded(Seq(fqn), _))
@@ -41,7 +41,7 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
                    fqn: String): Unit = {
     val compilationUnit: Option[CompilationUnit] = parent match {
       case jsv: JavaSourceMutableView => jsv.compilationUnit
-      case jcoiv: JavaClassOrInterfaceView => jcoiv.compilationUnit
+      case jcoiv: JavaClassOrInterfaceMutableView => jcoiv.compilationUnit
       case _ => throw new IllegalArgumentException("Failed to get compilation unit")
     }
     compilationUnit.foreach(JavaParserUtils.removeImportsIfNeeded(Seq(fqn), _))

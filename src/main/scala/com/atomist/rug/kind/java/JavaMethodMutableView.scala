@@ -6,7 +6,12 @@ import com.github.javaparser.ast.body.MethodDeclaration
 
 import scala.collection.JavaConverters._
 
-class JavaMethodView(originalBackingObject: MethodDeclaration, parent: JavaClassOrInterfaceView)
+class JavaMethodTypeProvider extends TypeProvider(classOf[JavaMethodMutableView]) {
+
+  override def description: String = "Java method"
+}
+
+class JavaMethodMutableView(originalBackingObject: MethodDeclaration, parent: JavaClassOrInterfaceMutableView)
   extends BodyDeclarationView[MethodDeclaration](originalBackingObject, parent) {
 
   override def nodeName: String = name

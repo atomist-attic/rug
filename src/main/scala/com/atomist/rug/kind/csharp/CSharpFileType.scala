@@ -25,10 +25,3 @@ class CSharpFileType
     f.name.endsWith(CSharpExtension)
 
 }
-
-object CSharpFileMutableView {
-
-  import PathExpressionParser.parseString
-
-  val FirstUsingStatement: PathExpression = "//using_directive[1]"
-}

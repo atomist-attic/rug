@@ -12,7 +12,7 @@ object JavaAssertions {
     project => project.findFile(MavenConstants.PomPath).isDefined
 
   val isSpring: ArtifactSource => Boolean = project =>
-    GetMavenPom(project).exists(f => f.content.contains("org.springframework"))
+    project.findFile(MavenConstants.PomPath).exists(f => f.content.contains("org.springframework"))
 
   val SpringBootStarterParent: String = "spring-boot-starter-parent"
 
@@ -23,5 +23,5 @@ object JavaAssertions {
 
   val isSpringBoot: ArtifactSource => Boolean = project =>
     isSpring(project) &&
-      GetMavenPom(project).exists(f => f.content.contains(SpringBootStarterParent))
+      project.findFile(MavenConstants.PomPath).exists(pom => pom.content.contains(SpringBootStarterParent))
 }

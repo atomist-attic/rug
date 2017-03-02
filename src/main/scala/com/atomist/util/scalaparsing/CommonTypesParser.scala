@@ -21,12 +21,7 @@ import scala.util.parsing.input.{CharSequenceReader, OffsetPosition, Positional}
   */
 abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
-  val CComment = """/\*[\S\s]*?\*/"""
-
   val HashLineComment = """\#.*[\n|\r\n]"""
-
-  /** White space honoring C style block comments and Python style # line comments */
-  val CBlockCommentAndHashLineCommentWhitespace: Regex = ("""(\s|""" + HashLineComment + "|" + CComment + ")+").r
 
   // NB: This does not correctly preserve positions
   def doubleQuotedString: Parser[String] = (stringLiteral | ("\"" ~ "[^\"]+".r ~ "\"")) ^^ {
@@ -35,50 +30,11 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
       s"It looks like you're trying to use a string, but [$illFormedString] is not a valid Java String") {}
   }
 
-  // Taken from Scala superclass
-  def doubleQuotedStringContent: Parser[String] = """([^"\p{Cntrl}\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*+""".r
-
-  val PlusToken = "+"
-
   val EqualsToken = "="
-
-  val LiteralDot = "."
 
   def singleQuote = "'"
 
   def singleQuotedString: Parser[String] = singleQuote ~> """[^']*""".r <~ singleQuote
-
-  def tripleQuote: Parser[String] = "\"{3}".r
-
-  val openBlock: Parser[String] = "{"
-
-  val closeBlock: Parser[String] = "}"
-
-  // TODO should tighten this up
-  def regexp: Parser[String] = """.*""".r
-
-  def eof: Parser[String] = "\\Z".r
-
-  def terminator: Parser[String] = ";"
-
-  def capitalLetter: Parser[String] = "[A-Z]".r
-
-  def lowercaseLetter: Parser[String] = "[a-z]".r
-
-  /**
-    * Must start with a capital letter.
-    *
-    * @return identifier value
-    */
-  def capitalizedIdentifier: Parser[String] = capitalLetter ~ opt(ident) ^^ {
-    case l ~ Some(rest) => l + rest
-    case l ~ None => l
-  }
-
-  def camelCaseIdentifier: Parser[String] = lowercaseLetter ~ opt(ident) ^^ {
-    case l ~ Some(rest) => l + rest
-    case l ~ None => l
-  }
 
   case class IdentifierRef(name: String)
 
@@ -103,7 +59,7 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
     }
   }
 
-  protected def identifierRefString(reservedWords: Set[String], underlying: Parser[String] = ident) =
+  protected def identifierRefString(reservedWords: Set[String], underlying: Parser[String] = ident): Parser[String] =
     identifierRef(reservedWords, underlying) ^^ (ir => ir.name)
 
   case class PositionedString(s: String) extends Positional

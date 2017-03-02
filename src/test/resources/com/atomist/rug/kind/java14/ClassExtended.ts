@@ -9,7 +9,6 @@ import { JavaType, Project } from '@atomist/rug/model/Core'
 class ClassExtended implements EditProject {
 
     edit(project: Project) {
-        console.log("Using path extended")
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', j => {
             if (j.inheritsFrom("NotRelevant")) {

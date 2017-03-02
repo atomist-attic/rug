@@ -46,7 +46,6 @@ object JavaTypeType {
   def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
     if (!annotations.exists(_.getName.getName == annotationName)) {
-      println(s"Added $annotationName to $bd")
       bd.setAnnotations((annotations :+ new MarkerAnnotationExpr(new NameExpr(annotationName))).asJava)
       true
     }

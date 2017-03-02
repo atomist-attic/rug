@@ -17,9 +17,7 @@ class ClassAnnotated implements EditProject {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', jt => {
-                console.log(`type=${jt}`)
                 eng.with<JavaMethod>(jt, '//JavaMethod()', m => {
-                    console.log(`method is ${m}`)
                     if (m.name().indexOf("bark") > -1) {
                         m.addAnnotation("com.someone", "FooBar")
                     }

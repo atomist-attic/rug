@@ -18,9 +18,7 @@ class ClassAnnotated implements EditProject {
                 .filter(n => n.nodeName() == "JavaConstructor")
                 .forEach(k => {
                     let ctor = k as JavaConstructor
-                    console.log(`Constructor is ${ctor}`)
                     if (ctor.parametersSize() == 1 ) {
-                        console.log(`Constructor has one param: ${ctor}`)
                         ctor.addAnnotation("com.someone", "FooBar")
                     }
                 })

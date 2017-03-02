@@ -402,9 +402,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content should include("@FooBar")
   }
 
-  // TODO issue is commit is not being called...apparently proxying doesn't go
-  // all the way down
-  it should "annotate constructor" in pendingUntilFixed {
+  it should "annotate constructor" in {
     val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get

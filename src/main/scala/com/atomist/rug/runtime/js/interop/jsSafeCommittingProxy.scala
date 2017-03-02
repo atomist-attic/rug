@@ -54,13 +54,6 @@ class jsSafeCommittingProxy(
       case _ => ???
     }
 
-  override def children: util.List[TreeNode] = node match {
-    case tn: TreeNode =>
-      //println(s"Wrapping children of $node")
-      tn.children.asScala.map(wrapOne).map(_.asInstanceOf[TreeNode]).asJava
-    case _ => ???
-  }
-
   override def relatedNodes: Seq[TreeNode] =
     node.relatedNodes.map(wrapOne)
 
@@ -96,7 +89,8 @@ class jsSafeCommittingProxy(
         x
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
-      case None if name == "toString" => new AlwaysReturns(node.toString)
+      case None if name == "toString" =>
+        new AlwaysReturns(s"${getClass.getSimpleName} wrapping [$node]")
       case _ => invokeConsideringTypeInformation(name)
     }
   }
@@ -152,8 +146,8 @@ class jsSafeCommittingProxy(
           // The returned type needs to be wrapped if it's a collection
           import scala.collection.JavaConverters._
           returned match {
-            case l: java.util.List[_] => new JavaScriptArray(l)
-            case s: Seq[_] => new JavaScriptArray(s.asJava)
+            case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala))
+            case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s))
             case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
             case _ => returned
           }
@@ -219,6 +213,14 @@ object jsSafeCommittingProxy {
     */
   def wrap(nodes: Seq[GraphNode]): java.util.List[jsSafeCommittingProxy] =
     new JavaScriptArray(nodes.map(wrapOne).asJava)
+
+  def wrapIfNecessary(nodes: Seq[_]): java.util.List[Object] = {
+    val wrapped = nodes map {
+      case n: GraphNode => wrapOne(n)
+      case x => x
+    }
+    wrapped.map(_.asInstanceOf[Object]).asJava
+  }
 
   def wrapOne(n: GraphNode): jsSafeCommittingProxy =
     new jsSafeCommittingProxy(n)

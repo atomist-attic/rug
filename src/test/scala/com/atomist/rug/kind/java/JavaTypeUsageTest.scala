@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.edit.{ModificationAttempt, NoModificationNeeded, SuccessfulModification}
 import com.atomist.rug._
 import com.atomist.rug.kind.java.JavaVerifier._
@@ -71,7 +72,7 @@ object JavaTypeUsageTest extends Matchers {
 
     //println(ArtifactSourceUtils.prettyListFiles(program))
     val progAs = TypeScriptBuilder.compileWithModel(program)
-    val eds = SimpleJavaScriptProjectOperationFinder.find(progAs)
+    val eds = RugArchiveReader.find(progAs)
     val pe = eds.editors.head
     pe.modify(as, SimpleParameterValues(poa))
   }

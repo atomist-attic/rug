@@ -1,11 +1,12 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.common.MissingParametersException
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, SimpleJavaScriptProjectOperationFinder}
+import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -217,7 +218,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
   it should "Set the default value of a parameter correctly" in {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithDefaultParameterValue)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues.Empty)
@@ -262,7 +263,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
   it should "create two separate js objects for each operation" in {
     val tsf = StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val jsed = RugArchiveReader.find(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     val v1 = jsed.cloneVar(jsed.jsc, jsed.jsVar)
     v1.put("name", "dude")
     jsed.jsVar.get("name") should be ("Simple")
@@ -271,7 +272,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
   it should "Should throw an exception if required parameters are not set" in {
     val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithRequiredParameterButNoDefault)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     assert(jsed.name  == "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
@@ -282,7 +283,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifySimpleEditor(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues( Map("content" -> "http://blah.com"))) match {
@@ -294,7 +295,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifySimpleReviewer(tsf: FileArtifact): ProjectReviewer = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsr = SimpleJavaScriptProjectOperationFinder.find(as).reviewers.head
+    val jsr = RugArchiveReader.find(as).reviewers.head
     assert(jsr.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsr.review(target, SimpleParameterValues( Map("content" -> "http://blah.com"))) match {
@@ -306,7 +307,7 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifyEditorWithDefaults(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues( Map[String,String]())) match {

@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.{DefaultAtomistConfig, JavaScriptRugArchiveReader}
+import com.atomist.project.archive.{DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
@@ -264,7 +264,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
   it ("should serialize complex instruction parameters to json during plan building") {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandWithObjectInstructionParamAsJson))
-    val rugs = new JavaScriptRugArchiveReader().find(rugArchive, Nil)
+    val rugs = RugArchiveReader.find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     assert(plan.instructions.head.instruction.detail.parameters.head.getValue === """{"mucho":"coolness"}""")

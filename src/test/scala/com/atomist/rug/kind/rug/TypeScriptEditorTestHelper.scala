@@ -2,8 +2,8 @@ package com.atomist.rug.kind.rug
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.ProjectOperation
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.runtime.js.JavaScriptProjectEditor
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -21,7 +21,7 @@ trait TypeScriptEditorTestHelper extends Matchers {
       TypeScriptBuilder.compileWithModel(as)
     }
 
-    val eds = SimpleJavaScriptProjectOperationFinder.find(cas).editors
+    val eds = RugArchiveReader.find(cas).editors
 
     if (eds.isEmpty) {
       print(program)

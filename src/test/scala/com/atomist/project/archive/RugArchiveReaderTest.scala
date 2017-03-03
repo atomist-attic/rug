@@ -1,32 +1,27 @@
 package com.atomist.project.archive
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
-import com.atomist.project.ProjectOperation
 import com.atomist.project.edit._
-import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.runtime.AddressableRug
-import com.atomist.rug.runtime.js.JavaScriptProjectEditor
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
-class JavaScriptRugArchiveReaderTest extends FlatSpec with Matchers {
+class RugArchiveReaderTest extends FlatSpec with Matchers {
 
 
   it should "load handlers of different kinds from an archive" in {
     val ts = ClassPathArtifactSource.toArtifactSource("com/atomist/project/archive/MyHandlers.ts")
     val moved = ts.withPathAbove(".atomist/handlers")
     val as = TypeScriptBuilder.compileWithModel(moved)
-    val reader = new JavaScriptRugArchiveReader()
-    val ops = reader.find(as, Nil)
+    val ops = RugArchiveReader.find(as, Nil)
     assert(ops.responseHandlers.size === 2)
     assert(ops.commandHandlers.size === 2)
     assert(ops.eventHandlers.size === 1)
   }
   it should "find and invoke plain javascript generators" in {
-    val apc =  new JavaScriptRugArchiveReader()
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
 
@@ -37,7 +32,7 @@ class JavaScriptRugArchiveReaderTest extends FlatSpec with Matchers {
       f2
     ) + TypeScriptBuilder.userModel
 
-    val ops = apc.find(rugAs, Nil)
+    val ops = RugArchiveReader.find(rugAs, Nil)
     assert(ops.editors.size === 1)
     assert(ops.editors.head.parameters.size === 1)
   }
@@ -124,8 +119,7 @@ class JavaScriptRugArchiveReaderTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], others: Seq[AddressableRug] = Nil): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf:_*))
-    val reader = new JavaScriptRugArchiveReader()
-    val jsed = reader.find(as, others).editors.head
+    val jsed = RugArchiveReader.find(as, others).editors.head
 
     assert(jsed.name === "Simple")
 

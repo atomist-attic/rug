@@ -36,7 +36,7 @@ object TestUtils extends Matchers {
     val pe: ProjectEditor =
       if (isTypeScript(program)) {
         val as = TypeScriptBuilder.compileWithModel(program)
-        SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+        RugArchiveReader.find(as).editors.head
       }
       else {
         // Rug editor
@@ -82,7 +82,7 @@ object TestUtils extends Matchers {
 
   def rugsInSideFile(caller: Object, names: String*): Rugs = {
     val as = rugsInSideFileAsArtifactSource(caller, names:_*)
-    SimpleJavaScriptProjectOperationFinder.find(as)
+    RugArchiveReader.find(as)
   }
 
   def rugsInSideFileAsArtifactSource(caller: Object, names: String*): ArtifactSource = {
@@ -122,16 +122,5 @@ object TestUtils extends Matchers {
 
       override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
     }
-  }
-}
-
-/**
-  * Convenience, but expensive as JavaScriptContext is not reused
-  * Also namespace/otherops not used. Really only for test/fun.
-  */
-object SimpleJavaScriptProjectOperationFinder {
-
-  def find(as: ArtifactSource): Rugs = {
-    new JavaScriptProjectOperationFinder(new JavaScriptContext(as)).find(Nil)
   }
 }

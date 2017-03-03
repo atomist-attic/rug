@@ -15,8 +15,6 @@ trait Rug
 
   def tags: Seq[Tag]
 
-
-
   def findRug(simpleOrFq: String) : Option[Rug]
 
   def findParameterizedRug(simpleOrFq: String) : Option[ParameterizedRug]

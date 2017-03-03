@@ -3,8 +3,8 @@ package com.atomist.util.lang
 import java.util
 
 import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor}
-import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -235,7 +235,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
   private  def invokeAndVerifyConstructed(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     assert(jsed.name === "Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))

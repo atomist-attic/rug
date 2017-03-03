@@ -1,14 +1,13 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.ParameterValues
-import com.atomist.project.archive.DefaultAtomistConfig
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import com.atomist.project.archive.ProjectOperationArchiveReaderUtils.removeAtomistTemplateContent
 import com.atomist.rug.runtime.AddressableRug
 
 /**
@@ -24,6 +23,9 @@ class JavaScriptProjectGeneratorFinder
   override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): JavaScriptProjectGenerator = {
     val project: ArtifactSource = removeAtomistTemplateContent(jsc.rugAs)
     new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, externalContext)
+  }
+  private def removeAtomistTemplateContent(startingProject: ArtifactSource, atomistConfig: AtomistConfig = DefaultAtomistConfig): ArtifactSource = {
+    startingProject.filter(d => !d.path.equals(atomistConfig.atomistRoot), f => true)
   }
 }
 

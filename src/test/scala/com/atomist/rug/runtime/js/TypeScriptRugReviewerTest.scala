@@ -5,7 +5,8 @@ import com.atomist.project.ProjectOperation
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.review.{ReviewResult, Severity}
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.rug.{SimpleJavaScriptProjectOperationFinder, TestUtils}
+import com.atomist.rug.TestUtils
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -261,7 +262,7 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   private  def reviewSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val reviewer = SimpleJavaScriptProjectOperationFinder.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
+    val reviewer = RugArchiveReader.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
     assert(reviewer.name === "Simple")
     reviewer.addToArchiveContext(others)
 

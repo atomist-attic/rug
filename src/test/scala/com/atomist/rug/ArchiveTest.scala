@@ -1,7 +1,7 @@
 package com.atomist.rug
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.DefaultAtomistConfig
+import com.atomist.project.archive.{DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.project.edit._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
@@ -25,7 +25,7 @@ class ArchiveTest extends FlatSpec with Matchers {
       _.name == "K8Redeploy.ts")
     assert(tss.totalFileCount === 1)
     val as = TypeScriptBuilder.compileWithModel(tss)
-    val rugs = SimpleJavaScriptProjectOperationFinder.find(as)
+    val rugs = RugArchiveReader.find(as)
     rugs.allRugs shouldBe (empty)
   }
 
@@ -71,7 +71,7 @@ class ArchiveTest extends FlatSpec with Matchers {
   }
 
   private def tryMod(rugAs: ArtifactSource, editorName: String, project: ArtifactSource): ModificationAttempt = {
-    val rugs = SimpleJavaScriptProjectOperationFinder.find(rugAs)
+    val rugs = RugArchiveReader.find(rugAs)
     val eds = rugs.editors
     val peO = eds.find(_.name equals editorName)
     if (peO.isEmpty)

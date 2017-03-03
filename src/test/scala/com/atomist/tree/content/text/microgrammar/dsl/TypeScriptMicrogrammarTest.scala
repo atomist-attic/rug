@@ -4,7 +4,7 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.ProjectOperation
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -197,7 +197,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   it should "navigate nested using path expression" in {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingPathExpression)))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
@@ -234,7 +234,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   it should "throw an error when calling a method that doesn't exist" in {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedAndCallsNonexistentMethod)))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     try {
       jsed.modify(target, SimpleParameterValues.Empty)
@@ -252,7 +252,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
   it should "navigate nested using property" in {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
       StringFileArtifact(s".atomist/editors/SimpleEditor.ts", NavigatesNestedUsingProperty)))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
@@ -264,7 +264,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
 
   private def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil) = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = SimpleJavaScriptProjectOperationFinder.find(as).editors.head
+    val jsed = RugArchiveReader.find(as).editors.head
     val target = ParsingTargets.NewStartSpringIoProject
     val before = target.findFile("pom.xml").get.content
     jsed.modify(target, SimpleParameterValues.Empty) match {

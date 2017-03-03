@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, JavaScriptRugArchiveReader}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.rug.runtime.SystemEvent
 import com.atomist.rug.runtime.plans.{LocalInstructionRunner, LocalPlanRunner}
 import com.atomist.rug.spi.Handlers._
@@ -165,8 +165,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val ts = ClassPathArtifactSource.toArtifactSource("com/atomist/project/archive/MyHandlers.ts")
     val moved = ts.withPathAbove(".atomist/handlers")
     val as = TypeScriptBuilder.compileWithModel(moved)
-    val reader = new JavaScriptRugArchiveReader()
-    val ops = reader.find(as, Nil)
+    val ops = RugArchiveReader.find(as, Nil)
     val handler = ops.commandHandlers.find(p => p.name == "LicenseAdder").get
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("license","agpl")))
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil,null,null,null))

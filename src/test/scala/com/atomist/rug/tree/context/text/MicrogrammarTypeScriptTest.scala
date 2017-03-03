@@ -4,8 +4,8 @@ import java.io.File
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit.SuccessfulModification
-import com.atomist.rug.SimpleJavaScriptProjectOperationFinder
 import com.atomist.rug.runtime.js.JavaScriptProjectEditor
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.{ClassPathArtifactSource, FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import org.scalatest.{FlatSpec, Matchers}
@@ -24,7 +24,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-    val projectEditor = SimpleJavaScriptProjectOperationFinder.find(artifactSourceWithRugNpmModule).editors.head
+    val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head
 
     // apply the operation
     projectEditor.modify(target, parameters) match {
@@ -52,7 +52,7 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-    val projectEditor = SimpleJavaScriptProjectOperationFinder.find(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
 
     // apply the operation
     projectEditor.modify(target, parameters) match {

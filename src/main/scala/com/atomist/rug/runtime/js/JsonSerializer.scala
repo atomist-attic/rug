@@ -1,23 +1,29 @@
 package com.atomist.rug.runtime.js
 
-import java.io.StringWriter
 
-import com.fasterxml.jackson.databind.{ObjectMapper, ObjectWriter, SerializationFeature}
+import java.text.SimpleDateFormat
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Serialize objects to Json
   */
 object JsonSerializer {
 
-  // Configure this to handle Scala
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
-  mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true)
-
-  private val objectWriter: ObjectWriter = mapper.writer()
+    .registerModule(new JavaTimeModule())
+    .registerModule(new Jdk8Module())
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, SerializationFeature.INDENT_OUTPUT)
+    .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .setSerializationInclusion(Include.NON_NULL)
+    .setSerializationInclusion(Include.NON_ABSENT)
+    .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"))
 
   def toJson(ref: Option[AnyRef]): Option[String] = {
     if(ref.nonEmpty){
@@ -32,12 +38,6 @@ object JsonSerializer {
   }
 
   private def toJsonInternal(ref: AnyRef): String = {
-    val writer = new StringWriter()
-    objectWriter.writeValue(writer, ref)
-    val str = writer.toString
-    ref match {
-      case o: ScriptObjectMirror => str.substring(22).dropRight(1)//objects coming out of nashor seem to be wrapped
-      case _ => str
-    }
+    mapper.writeValueAsString(ref)
   }
 }

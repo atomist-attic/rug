@@ -26,12 +26,12 @@ object Rugs {
 }
 
 case class Rugs(
-            _editors: Seq[ProjectEditor],
-            _generators: Seq[ProjectGenerator],
-            _reviewers: Seq[ProjectReviewer],
-            _commandHandlers: Seq[CommandHandler],
-            _eventHandlers: Seq[EventHandler],
-            _responseHandlers: Seq[ResponseHandler]
+            private val _editors: Seq[ProjectEditor],
+            private val _generators: Seq[ProjectGenerator],
+            private val _reviewers: Seq[ProjectReviewer],
+            private val _commandHandlers: Seq[CommandHandler],
+            private val _eventHandlers: Seq[EventHandler],
+            private val _responseHandlers: Seq[ResponseHandler]
           ) {
 
   //sort them on the wait out

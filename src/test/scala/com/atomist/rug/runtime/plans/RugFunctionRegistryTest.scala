@@ -32,6 +32,9 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers{
 
   it should "serialize things to json easily" in {
     val bodyStr = JsonBodyOption(FunctionResponse(Status.Success, Some("woot"), Some(200), StringBodyOption("woot"))).get.str.get
-    assert(bodyStr === """{"FunctionResponse":{"status":{},"msg":"woot","code":200,"body":{"str":"woot","bytes":null}}}""")
+    assert(bodyStr === """{"status":{},"msg":"woot","code":200,"body":{"str":"woot"}}""")
+
+    val listStr = JsonBodyOption(Seq(FunctionResponse(Status.Success, Some("woot"), Some(200), StringBodyOption("woot")), FunctionResponse(Status.Success, Some("woot"), Some(200), StringBodyOption("woot")))).get.str.get
+    assert(listStr === """[{"status":{},"msg":"woot","code":200,"body":{"str":"woot"}},{"status":{},"msg":"woot","code":200,"body":{"str":"woot"}}]""")
   }
 }

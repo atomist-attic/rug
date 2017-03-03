@@ -13,6 +13,16 @@ object Rugs {
   def Empty: Rugs = {
     new Rugs(Nil,Nil,Nil,Nil,Nil,Nil)
   }
+
+  def apply(rugs: Seq[AddressableRug]) : Rugs = {
+    new Rugs(
+      rugs.collect{case r: ProjectEditor => r},
+      rugs.collect{case r: ProjectGenerator => r},
+      rugs.collect{case r: ProjectReviewer => r},
+      rugs.collect{case r: CommandHandler => r},
+      rugs.collect{case r: EventHandler => r},
+      rugs.collect{case r: ResponseHandler => r})
+  }
 }
 
 case class Rugs(

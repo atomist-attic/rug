@@ -3,22 +3,12 @@ package com.atomist.rug.spi
 import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.atomist.rug._
-import com.atomist.rug.runtime.rugdsl.Evaluator.FunctionTarget
-import com.atomist.rug.runtime.rugdsl.{FunctionInvocationContext, RugDslFunction}
 import org.springframework.util.ReflectionUtils
 
 /**
   * Export @[[ExportFunction]] methods.
   */
 object ReflectiveFunctionExport {
-
-  /**
-    * Export functions.
-    */
-  def exportedFunctions(c: Class[_]): Traversable[RugDslFunction[_, _]] =
-    ReflectionUtils.getAllDeclaredMethods(c)
-      .filter(_.getAnnotations.exists(_.isInstanceOf[ExportFunction]))
-      .map(new ReflectiveRugDslFunction[FunctionTarget, Any](_))
 
   def allExportedOperations(c: Class[_]): Seq[TypeOperation] =
     if (c == null) Nil
@@ -55,90 +45,6 @@ object ReflectiveFunctionExport {
     )
   }
 
-  final def exportedRegistry(c: Class[_]): RugDslFunctionRegistry = {
-    new FixedRugDslFunctionRegistry(exportedFunctions(c))
-  }
 }
 
-private class ReflectiveRugDslFunction[T <: FunctionTarget, R](m: Method)
-  extends RugDslFunction[T, R] {
 
-  override def name: String = m.getName
-
-  private val annotation: ExportFunction = m.getAnnotation(classOf[ExportFunction])
-
-  require(annotation != null, s"Internal error. Reflective function $m must have an @ExportFunction annotation")
-
-  override val description = Some(annotation.description())
-
-  override val readOnly: Boolean = annotation.readOnly()
-
-  override def invoke(ic: FunctionInvocationContext[T]): R = {
-    // Pass invocation context as additional argument if it's called for
-    val argsToUse = ic.localArgs ++ {
-      if (m.getParameterCount > ic.localArgs.size)
-        Seq(ic)
-      else Nil
-    }
-
-    try {
-      val result =
-        if (ic.functionInvocation.pathBelow.isEmpty) {
-          // Simple invocation of the target method
-          val m2 = findMethod(ic.target, m.getName, ic.localArgs.length)
-          if (m2 == null) {
-            val m3 = findMethod(ic.target, m.getName)
-            m3.invoke(ic.target, argsToUse: _*)
-          } else {
-            m2.invoke(ic.target, ic.localArgs: _*)
-          }
-        } else {
-          var target = m.invoke(ic.target)
-          for (pe <- ic.functionInvocation.pathBelow.dropRight(1)) {
-            val m2 = findMethod(target, pe)
-            target = m2.invoke(target)
-          }
-          val m2 = findMethod(target, ic.functionInvocation.pathBelow.last)
-          m2.invoke(target, argsToUse: _*)
-        }
-      result.asInstanceOf[R]
-    } catch {
-      case iae: IllegalArgumentException =>
-        throw new RugRuntimeException(name,
-          s"Encountered '${iae.getMessage}' trying to invoke $m with [${argsToUse.mkString(",")}] on ${ic.target}", iae)
-      case ite: InvocationTargetException =>
-        ite.getTargetException match {
-          case f: InstantEditorFailureException =>
-            throw f
-          case _ =>
-            throw new RugRuntimeException(name,
-              s"Encountered '${ite.getTargetException.getMessage}' invoking $m with [${ic.localArgs.mkString(",")}] on ${ic.target}",
-              ite.getTargetException)
-        }
-    }
-  }
-
-  private def findMethod(target: Object, name: String): Method = {
-    try {
-      ReflectionUtils.getAllDeclaredMethods(target.getClass)
-        .find(_.getName.equals(name))
-        .getOrElse(throw new RugRuntimeException(null, s"Unknown method '$name' on ${target.getClass}"))
-    } catch {
-      case e: NoSuchMethodException =>
-        throw new RugRuntimeException(null, s"Unknown method '$name' on ${target.getClass}", e)
-    }
-  }
-
-  private def findMethod(target: Object, name: String, num_params: Int): Method = {
-    try {
-      ReflectionUtils.getAllDeclaredMethods(target.getClass).find(m =>
-        m.getName.equals(name) && m.getParameterCount == num_params
-      ).orNull
-    } catch {
-      case e: NoSuchMethodException =>
-        throw new RugRuntimeException(null, s"Unknown method '$name' on ${target.getClass}", e)
-    }
-  }
-
-  override def toString: String = name
-}

@@ -70,11 +70,11 @@ trait Typed {
   */
 private case class UnionType(types: Set[Typed]) extends Typed {
 
-  override val name = s"Union(${types.map(_.name)})"
-
   private val typesToUnion = Set(TypeOperation.TreeNodeType) ++ types
 
-  override def description: String = s"Union-${typesToUnion.map(_.name).mkString(":")}"
+  override val name: String = typesToUnion.map(_.name).mkString(" & ")
+
+  override def description: String = name
 
   // TODO what about duplicate names?
   override val allOperations: Seq[TypeOperation] =

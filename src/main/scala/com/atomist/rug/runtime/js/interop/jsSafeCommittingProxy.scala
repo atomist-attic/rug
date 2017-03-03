@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util
+
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -23,16 +25,18 @@ class jsSafeCommittingProxy(
   extends AbstractJSObject
     with TreeNode {
 
+  import scala.collection.JavaConverters._
+  import jsSafeCommittingProxy._
+
   override def toString: String = s"SafeCommittingProxy around $node"
 
   private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
   private var additionalMembers: Map[String, Object] = Map()
 
-  import jsSafeCommittingProxy.MagicJavaScriptMethods
-
   //-----------------------------------------------------
-  // Delegate TreeNode methods to backing node
+  // Delegate GraphNode and TreeNode methods to backing node
+  // We need to override all of them to wrap the results in ourselves
 
   override def nodeName: String = node.nodeName
 
@@ -43,7 +47,18 @@ class jsSafeCommittingProxy(
   override def childNodeTypes: Set[String] = node.relatedNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] =
-    node.relatedNodesNamed(key).map(new jsSafeCommittingProxy(_, typeRegistry))
+    node match {
+      case tn: TreeNode =>
+        //println(s"Wrapping childrenNamed of $node")
+        tn.childrenNamed(key).map(wrapOne)
+      case _ => ???
+    }
+
+  override def relatedNodes: Seq[TreeNode] =
+    node.relatedNodes.map(wrapOne)
+
+  override def relatedNodesNamed(key: String): Seq[TreeNode] =
+    node.relatedNodesNamed(key).map(wrapOne)
 
   /**
     * A user is adding a named member e.g.
@@ -74,7 +89,8 @@ class jsSafeCommittingProxy(
         x
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
-      case None if name == "toString" => new AlwaysReturns(node.toString)
+      case None if name == "toString" =>
+        new AlwaysReturns(s"${getClass.getSimpleName} wrapping [$node]")
       case _ => invokeConsideringTypeInformation(name)
     }
   }
@@ -101,6 +117,7 @@ class jsSafeCommittingProxy(
         sobtn.invoke(name)
       case _ => throw new RugRuntimeException(null,
         s"Attempt to invoke method [$name] on type [${typ.description}]: " +
+          s"Wrapping node named ${node.nodeName}; " +
           s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
     }
   }
@@ -117,8 +134,8 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       possibleOps.find(op => op.parameters.size == args.size) match {
         case None =>
-            throw new RugRuntimeException(null,
-              s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
+          throw new RugRuntimeException(null,
+            s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
         case Some(op) =>
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
@@ -129,8 +146,8 @@ class jsSafeCommittingProxy(
           // The returned type needs to be wrapped if it's a collection
           import scala.collection.JavaConverters._
           returned match {
-            case l: java.util.List[_] => new JavaScriptArray(l)
-            case s: Seq[_] => new JavaScriptArray(s.asJava)
+            case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala))
+            case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s))
             case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
             case _ => returned
           }
@@ -196,6 +213,14 @@ object jsSafeCommittingProxy {
     */
   def wrap(nodes: Seq[GraphNode]): java.util.List[jsSafeCommittingProxy] =
     new JavaScriptArray(nodes.map(wrapOne).asJava)
+
+  def wrapIfNecessary(nodes: Seq[_]): java.util.List[Object] = {
+    val wrapped = nodes map {
+      case n: GraphNode => wrapOne(n)
+      case x => x
+    }
+    wrapped.map(_.asInstanceOf[Object]).asJava
+  }
 
   def wrapOne(n: GraphNode): jsSafeCommittingProxy =
     new jsSafeCommittingProxy(n)

@@ -1,13 +1,14 @@
 package com.atomist.rug.kind.java
 
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription}
+import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.TypeDeclaration
 import com.github.javaparser.ast.comments.BlockComment
 
 abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: T, parent: JavaSourceMutableView)
   extends BodyDeclarationView[T](originalBackingObject, parent) {
 
-  def compilationUnit = parent.compilationUnit
+  def compilationUnit: Option[CompilationUnit] = parent.compilationUnit
 
   @ExportFunction(readOnly = true, description = "Return the package")
   def pkg: String = parent.pkg

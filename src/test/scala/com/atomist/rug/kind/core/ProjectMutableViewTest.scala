@@ -4,7 +4,6 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.rug.runtime.rugdsl.SimpleFunctionInvocationContext
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.file.FileSystemArtifactSource
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -101,10 +100,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val outputAs = EmptyArtifactSource("")
     val newContentDir = "newContent"
     val pmv = new ProjectMutableView(backingTemplates, outputAs)
-    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
-      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
-      FirstPoa, Nil)
-    pmv.mergeTemplates("", newContentDir, ic)
+    pmv.mergeTemplates("", newContentDir, FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap)
     assert(pmv.currentBackingObject.totalFileCount === 3)
 
     val expectedPath = newContentDir + "/location_was_true.txt"
@@ -136,9 +132,10 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       StringFileArtifact(copyInputPath, "file content")
     )
     val pmv = new ProjectMutableView(backing, outputAs)
-    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
-      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
-      FirstPoa, Nil)
+//    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
+//      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
+//      FirstPoa, Nil)
+    val ic = FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap
     pmv.merge(templatePath, mergeOutputPath, ic)
     assert(pmv.currentBackingObject.totalFileCount === 1)
     assert(pmv.currentBackingObject.cachedDeltas.size === 1)

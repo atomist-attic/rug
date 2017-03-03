@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import java.util.Objects
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, LazyFileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView}
 import com.atomist.source.FileArtifact
 import com.github.javaparser.JavaParser
@@ -42,7 +42,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
         .collect {
           case c: ClassOrInterfaceDeclaration => c
         }
-        .map(c => new JavaClassOrInterfaceView(c, this))
+        .map(c => new JavaClassOrInterfaceMutableView(c, this))
 
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
@@ -53,6 +53,10 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
       parent.updateFile(old, latest)
     }
   }
+
+  @ExportFunction(readOnly = true, description = "Return the Java project")
+  def javaProject: JavaProjectMutableView =
+    new JavaProjectMutableView(parent)
 
   /**
     * Return the package name.

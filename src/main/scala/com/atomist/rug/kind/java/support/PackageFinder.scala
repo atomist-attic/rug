@@ -24,7 +24,7 @@ object PackageFinder {
     * @return all identified packages
     */
   def packages(as: ArtifactSource): Seq[PackageInfo] = {
-    JavaFilesExtractor(as).asScala
+    as.allFiles.filter(_.name.endsWith(".java"))
       .map(f => (findPackage(f.content), f))
       .groupBy(_._1)
       .map {
@@ -41,5 +41,5 @@ object PackageFinder {
   */
 case class PackageInfo(name: String, files: Int) {
 
-  def isChild(pi: PackageInfo) = pi.name.contains(this.name)
+  def isChild(pi: PackageInfo): Boolean = pi.name.contains(this.name)
 }

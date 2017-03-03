@@ -1,7 +1,6 @@
 package com.atomist.rug.spi
 
 import com.atomist.rug.kind.core.{ChangeCounting, FileArtifactBackedMutableView}
-import com.atomist.rug.runtime.rugdsl.{DefaultEvaluator, Evaluator}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.{MutableContainerTreeNode, PositionedMutableContainerTreeNode}
 
@@ -84,8 +83,6 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
       parent.commit()
   }
 
-  override val evaluator: Evaluator =
-    new DefaultEvaluator(ReflectiveFunctionExport.exportedRegistry(getClass))
 }
 
 abstract class TreeViewSupport[T <: TreeNode](originalBackingObject: T, parent: MutableView[_])

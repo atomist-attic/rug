@@ -3,7 +3,7 @@ package com.atomist.rug.kind.java
 import com.atomist.param.ParameterValues
 import com.atomist.project.common.JavaTag
 import com.atomist.project.edit.{ProjectEditorSupport, _}
-import com.atomist.rug.kind.java.support.{JavaAssertions, JavaFilesExtractor}
+import com.atomist.rug.kind.java.support.JavaAssertions
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileEditor, StringFileArtifact}
 import com.atomist.util.lang.JavaConstants
 import com.github.javaparser.ast.CompilationUnit
@@ -21,15 +21,12 @@ abstract class JavaParserProjectEditor(val name: String,
 
   override def tags: Seq[JavaTag.type] = Seq(JavaTag)
 
-  private val extractJavaFiles: ArtifactSource => Seq[FileArtifact] =
-    a => JavaFilesExtractor(a / javaSourcePath).asScala
-
   final override def applicability(as: ArtifactSource): Applicability = {
     Applicability(JavaAssertions.isJava(as), "IsJava")
   }
 
   protected final override def modifyInternal(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
-    val javaFiles = extractJavaFiles(as)
+    val javaFiles = (as / javaSourcePath).allFiles.filter(_.name.endsWith(".java"))
 
     val filesAndCompilationUnits = GitHubJavaParserExtractor(javaFiles.asJava)
 

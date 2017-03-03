@@ -24,7 +24,7 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
   import JavaProjectMutableView._
 
   @ExportFunction(readOnly = true, description = "Return the number of Java files in this module")
-  def javaFileCount: Int = currentBackingObject.allFiles.count(_.name.endsWith(".java"))
+  def javaFileCount: Int = currentBackingObject.allFiles.count(f => f.name.endsWith(".java"))
 
   @ExportFunction(readOnly = true, description = "Is this a Maven project?")
   def isMaven: Boolean = JavaAssertions.isMaven(currentBackingObject)
@@ -36,13 +36,18 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
   def isSpringBoot: Boolean = JavaAssertions.isSpringBoot(currentBackingObject)
 
   @ExportFunction(readOnly = true, description = "List the packages in this project")
-  def packages: JList[PackageInfo] =
+  def packages: JList[PackageInfo] = {
     PackageFinder.packages(currentBackingObject).asJava
+  }
 
   @ExportFunction(readOnly = false, description = "Rename the given package. All package under it will also be renamed")
-  def renamePackage(@ExportFunctionParameterDescription(name = "oldPackage", description = "Old package name")
+  def renamePackage(@ExportFunctionParameterDescription(
+    name = "oldPackage",
+    description = "Old package name")
                     oldPackageName: String,
-                    @ExportFunctionParameterDescription(name = "newPackage", description = "The new package name")
+                    @ExportFunctionParameterDescription(
+                      name = "newPackage",
+                      description = "The new package name")
                     newPackageName: String): Unit = {
     // We do this will string operations rather than JavaParser
     if (!JavaHelpers.isValidPackageName(newPackageName))
@@ -65,7 +70,7 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
     currentBackingObject.allFiles
       .filter(_.name.endsWith(JavaExtension))
       .view
-      .map(new JavaSourceMutableView(_, this))
+      .map(f => new JavaSourceMutableView(f, this))
 
   def compilationUnits: Seq[CompilationUnit] =
     javaSourceViews.flatMap(jsv => jsv.compilationUnit)

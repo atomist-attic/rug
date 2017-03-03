@@ -11,7 +11,6 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
-import com.atomist.rug.runtime.rugdsl.FunctionInvocationContext
 import com.atomist.rug.spi._
 import com.atomist.source._
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
@@ -366,9 +365,13 @@ class ProjectMutableView(
   }
 
   private def mapToUse(arg: Any): Map[String, Object] = arg match {
-    case ic: FunctionInvocationContext[_] => ic.identifierMap
     case som: ScriptObjectMirror =>
       NashornUtils.extractProperties(som)
+    case m: Map[String,Object]@unchecked => m
+    case m: java.util.Map[String,Object]@unchecked =>
+      import scala.collection.JavaConverters._
+      m.asScala.toMap
+    case null => Map()
   }
 
   @ExportFunction(readOnly = false,

@@ -41,11 +41,6 @@
             <artifactId>artifact-source</artifactId>
             <version>0.14.4</version>
         </dependency>
-        <dependency>
-            <groupId>com.atomist</groupId>
-            <artifactId>rug-compiler</artifactId>
-            <version>0.6.0</version>
-        </dependency>
         <!-- For now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
              when running rug install etc. This has to become part of the language <-> runtime version mapping -->
         <dependency>
@@ -107,17 +102,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
@@ -159,12 +143,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.scalacheck</groupId>
-            <artifactId>scalacheck_${scala.binary.version}</artifactId>
-            <version>1.13.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.10.19</version>
@@ -199,10 +177,6 @@
             <groupId>com.github.mifmif</groupId>
             <artifactId>generex</artifactId>
             <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
     <build>

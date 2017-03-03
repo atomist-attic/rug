@@ -3,23 +3,23 @@
 [![Build Status](https://travis-ci.org/atomist/rug.svg?branch=master)](https://travis-ci.org/atomist/rug)
 [![Slack Status](https://join.atomist.com/badge.svg)](https://join.atomist.com/)
 
-The Rug runtime: Support for Atomist **project operations** such as project editors and executors (aka *rugs*).
+The Rug runtime: Support for Atomist **project operations** and **handlers** (aka *rugs*). Rugs are authored in JavaScript or any language that compiles to JavaScript capable of executing in [Nashorn](https://en.wikipedia.org/wiki/Nashorn_(JavaScript_engine)). We recommend [TypeScript](http://www.typescriptlang.org/) and provide TypeScript interfaces for the Atomist project and team model.
 
-Key areas of functionality:
+Key areas of functionality of this project:
 
 
-|  Area |  Purpose | Base Package |  Remarks | 
+|  Area |  Purpose | Base Package/Path |  Remarks | 
 |---|---|---|---|---|
 |  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions  
-| Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in the Rug DSL or TypeScript.
+| Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in TypeScript, JavaScript or any language that compiles to JavaScript.
 |  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |  
-| TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | We also provide a TypeScript library to simplify authoring TypeScript rugs 
-| Rug DSL | DSL for writing simple Rugs | `com.atomist.rug.runtime.rugdsl` | Implemented using Scala parser combinators. *The Rug interpreter implementation will be replaced by a Rug-to-TypeScript transpiler.*
-| Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Immature, but an important part of the ultimate vision
+| JavaScript/TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | Uses Nashorn
+| Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Incomplete, but an important part of the ultimate vision
+| TypeScript library |A `node` module to simplify authoring TypeScript rugs  | `src/main/typescript`| See [architectural overview](https://github.com/atomist/rug/blob/master/docs/TypeScriptLibrary.md). Will eventually be moved into a separate project.
 
 See
 
-*  [Documentation of the Rug language](http://docs.atomist.com/).
+*  [Documentation](http://docs.atomist.com/).
 *  [Introductory blog](https://medium.com/the-composition/software-that-writes-and-evolves-software-953578a6fc36#.blgtxoyu4) by Rod Johnson
 
 ## Using

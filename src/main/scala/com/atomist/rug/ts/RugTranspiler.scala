@@ -71,7 +71,7 @@ class RugTranspiler(config: RugTranspilerConfig = RugTranspilerConfig(),
 
   private def specificImports(rugs: Seq[RugProgram]): String = {
     val set = importSet(rugs)
-    val ordered = set.toList.sorted.map(JavaHelpers.toJavaClassName(_))
+    val ordered = (set ++ Set("Project")).toList.sorted.map(JavaHelpers.toJavaClassName(_))
     s"import { ${ordered.mkString(", ")} } from '@atomist/rug/model/Core'\n"
   }
 

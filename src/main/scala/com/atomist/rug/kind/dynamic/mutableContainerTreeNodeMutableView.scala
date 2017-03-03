@@ -24,7 +24,7 @@ class MutableContainerTypeProvider extends TypeProvider(classOf[MutableContainer
 }
 
 /**
-  * Fronts any mutable view
+  * Fronts any mutable view.
   */
 class MutableContainerMutableView(
                                    originalBackingObject: MutableContainerTreeNode,
@@ -40,7 +40,7 @@ class MutableContainerMutableView(
   override def address: String = {
       val myType = originalBackingObject.nodeTags.mkString(",")
       if (parent == null)
-        s"Root Mutable Container of type ${myType}" // this would be weird, but it could happen in test
+        s"Root Mutable Container of type $myType" // this would be weird, but it could happen in test
       else {
         val parentTest = {
           val myIndex = parent.currentBackingObject match {
@@ -94,7 +94,6 @@ class MutableContainerMutableView(
     originalBackingObject match {
       case msoo: MutableTreeNode =>
         msoo.update(newValue)
-      //println(s"Updated to $msoo")
       case other => throw new Exception(s"waaah I don't know what to do with a $other")
     }
     require(dirty)

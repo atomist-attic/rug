@@ -13,7 +13,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import scala.util.control.NonFatal
 
 /**
-  * Find Editors in a Nashorn
+  * Find Editors in a Nashorn.
   */
 class JavaScriptProjectEditorFinder
   extends JavaScriptProjectOperationFinder[JavaScriptProjectEditor]{
@@ -63,8 +63,7 @@ class JavaScriptProjectEditor(
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")
-        }
-        else {
+        } else {
           SuccessfulModification(pmv.currentBackingObject, pmv.changeLogEntries)
         }
       }

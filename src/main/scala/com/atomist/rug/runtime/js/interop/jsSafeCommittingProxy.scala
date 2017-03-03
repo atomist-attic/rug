@@ -1,7 +1,5 @@
 package com.atomist.rug.runtime.js.interop
 
-import java.util
-
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -25,7 +23,6 @@ class jsSafeCommittingProxy(
   extends AbstractJSObject
     with TreeNode {
 
-  import scala.collection.JavaConverters._
   import jsSafeCommittingProxy._
 
   override def toString: String = s"SafeCommittingProxy around $node"
@@ -97,11 +94,10 @@ class jsSafeCommittingProxy(
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val st = typ
-    val possibleOps = st.allOperations.filter(
-      op => name.equals(op.name))
-    if (possibleOps.isEmpty) {
+    val possibleOps = st.allOperations.filter(op => name.equals(op.name))
+    if (possibleOps.isEmpty)
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
-    } else
+    else
       new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
   }
 

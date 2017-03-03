@@ -12,9 +12,9 @@ class UpdateKey implements ProjectEditor {
         let eng: PathExpressionEngine =
             new YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-        let findDependencies = `/*[@name='x.yml']/YamlFile()/*[@name='dependencies']`
+        let findDependencies = `/*[@name='x.yml']/YamlFile()/dependencies`
 
-        eng.with<yaml.YamlUpdateKey>(project, findDependencies, yamlValue => {
+        eng.with<yaml.YamlSequence>(project, findDependencies, yamlValue => {
             // console.log(`Raw value is [${yamlValue.value()}]`)
             yamlValue.updateKey("songs")
             // console.log(`${this.description}: updated text value is [${yamlValue.text()}]`)

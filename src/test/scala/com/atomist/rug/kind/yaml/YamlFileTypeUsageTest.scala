@@ -341,16 +341,16 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
     }
   }
 
-//  it should "update a key" in {
-//    modify("UpdateKey.ts", singleAS) match {
-//      case sm: SuccessfulModification =>
-//        val theFile = sm.result.findFile("x.yml").get
-//        // println(theFile.content)
-//        assert(theFile.content === xYaml.replace("dependencies", "songs"))
-//        validateResultContainsValidFiles(sm.result)
-//      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
-//    }
-//  }
+  it should "update a key" in pendingUntilFixed {
+    modify("UpdateKey.ts", singleAS) match {
+      case sm: SuccessfulModification =>
+        val theFile = sm.result.findFile("x.yml").get
+        // println(theFile.content)
+        assert(theFile.content === xYaml.replace("dependencies", "songs"))
+        validateResultContainsValidFiles(sm.result)
+      case wtf => fail(s"Expected SuccessfulModification, not $wtf")
+    }
+  }
 
   it should "add to sequence" in {
     modify("AddToSequence.ts", singleAS) match {

@@ -26,11 +26,9 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
 
   override def dirty: Boolean = changeCount > 0
 
-  // Implementation of FormatInfoProvider relevant if subclasses choose to
-  // implement that trait
+  // Implementation of FormatInfoProvider relevant if subclasses choose to implement that trait
   protected def rootNode: Option[MutableContainerTreeNode] = {
     def highestNodeWithinFile(mv: MutableView[_]): Option[MutableView[_]] = {
-      //println(s"Looking at node $mv with parent ${mv.parent}")
       if (mv.parent == null) None // We failed
       else if (mv.parent.isInstanceOf[FileArtifactBackedMutableView]) {
         Some(mv)
@@ -39,7 +37,6 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
     }
 
     val hnwf = highestNodeWithinFile(this)
-    //println(s"HNWF=$hnwf")
     hnwf.flatMap(mv => mv.originalBackingObject match {
       case pmct: PositionedMutableContainerTreeNode => Some(pmct)
       case _ => None

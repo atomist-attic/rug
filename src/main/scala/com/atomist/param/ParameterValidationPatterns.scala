@@ -15,7 +15,7 @@ object ParameterValidationPatterns {
   val JavaPackage = "^(?:(?:[A-Za-z_$][\\w$]*\\.)*[A-Za-z_$][\\w$]*)*$"
   val JavaClass = JavaIdentifier
   val GroupName = "^(?:[A-Za-z_][\\w]*\\.)*[-A-Za-z_][-\\w]*$"
-  val ArtifactId = "^[a-z][-a-z0-9_]*$"
+  val ArtifactId = "^[a-z][-a-z0-9_\\.]*$"
 
   val RubyClass = "^[A-Z][A-Za-z0-9_]*$"
   val RubyIdentifier = "^[A-Za-z_][A-Za-z0-9_]*$"

@@ -4,22 +4,23 @@ import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class RemoveFromDeepNestedSequence implements ProjectEditor {
-    name: string = "RemoveFromSequence"
-    description = "Remove from sequence"
+class UpdateKey implements ProjectEditor {
+    name: string = "UpdateKey"
+    description: string = "Changes a key"
 
     edit(project: Project) {
         let eng: PathExpressionEngine =
             new YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-        let findNested = `/*[@name='x.yml']/YamlFile()/components/Amplifier/*[@name='future upgrades']/NAC82`
+        let findDependencies = `/*[@name='x.yml']/YamlFile()/*[@name='dependencies']`
 
-        eng.with<yaml.YamlSequence>(project, findNested, yamlValue => {
-            yamlValue.removeElement('Hicap')
-            // console.log(`${this.description}: updated text value is \n[${yamlValue.value()}]`)
+        eng.with<yaml.YamlUpdateKey>(project, findDependencies, yamlValue => {
+            // console.log(`Raw value is [${yamlValue.value()}]`)
+            yamlValue.updateKey("songs")
+            // console.log(`${this.description}: updated text value is [${yamlValue.text()}]`)
         })
     }
 
 }
 
-export let editor = new RemoveFromDeepNestedSequence()
+export let editor = new UpdateKey()

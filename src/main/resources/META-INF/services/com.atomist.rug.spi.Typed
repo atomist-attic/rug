@@ -15,7 +15,7 @@ com.atomist.rug.kind.java.JavaMethodTypeProvider
 com.atomist.rug.kind.java.JavaConstructorTypeProvider
 com.atomist.rug.kind.java.JavaFieldTypeProvider
 com.atomist.rug.kind.java.SpringBootProjectType
-com.atomist.rug.kind.java.path.JavaFileType
+com.atomist.rug.kind.java.JavaFileType
 
 com.atomist.rug.kind.json.JsonType
 
@@ -38,7 +38,6 @@ com.atomist.rug.kind.xml.XmlType
 com.atomist.rug.kind.xml.XmlFileType
 
 com.atomist.rug.kind.yaml.YamlFileType
-com.atomist.rug.kind.yaml.YmlType
 
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider

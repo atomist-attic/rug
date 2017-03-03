@@ -1,4 +1,4 @@
-package com.atomist.rug.kind.java.path
+package com.atomist.rug.kind.java
 
 import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact

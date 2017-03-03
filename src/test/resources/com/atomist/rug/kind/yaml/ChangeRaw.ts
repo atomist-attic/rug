@@ -12,9 +12,9 @@ class ChangeRaw implements ProjectEditor {
         let eng: PathExpressionEngine =
             new YamlPathExpressionEngine(project.context().pathExpressionEngine())
 
-        let findDependencies = `/*[@name='x.yml']/YamlFile()/group/value`
+        let findGroup = `/*[@name='x.yml']/YamlFile()/group/value`
 
-        eng.with<yaml.YamlString>(project, findDependencies, yamlValue => {
+        eng.with<yaml.YamlString>(project, findGroup, yamlValue => {
             //console.log(`Raw value is [${yamlValue.value()}]`)
             if (yamlValue.value() != "queen")
                 throw new Error(`[${yamlValue.value()}] not 'queen'"`)

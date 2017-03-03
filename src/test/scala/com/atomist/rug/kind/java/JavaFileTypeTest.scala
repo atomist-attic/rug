@@ -1,4 +1,4 @@
-package com.atomist.rug.kind.java.path
+package com.atomist.rug.kind.java
 
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView

@@ -11,7 +11,6 @@ import org.scalatest.{FlatSpec, Matchers}
 class OverwriteableTextTreeNodeTypeScriptTest extends FlatSpec with Matchers {
 
   it should "use OverwriteableTextTreeNode from TypeScript" in {
-
     // RUN THIS EDITOR
     val tsEditorResource = "com/atomist/tree/content/text/OverwriteableTextTreeNodeTypeScriptTest.ts"
     val parameters = SimpleParameterValues.Empty
@@ -24,23 +23,15 @@ class OverwriteableTextTreeNodeTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-
     val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
 
     // apply the operation
-
     try {
       projectEditor.modify(target, parameters)
       fail("OutOfDateNodeException should have been thrown")
-    }
-    catch {
+    } catch {
       case r: RuntimeException =>
         assert(r.getCause.isInstanceOf[OutOfDateNodeException])
-
     }
-
-
   }
-
 }
-

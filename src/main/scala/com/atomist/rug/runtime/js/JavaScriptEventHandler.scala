@@ -19,7 +19,7 @@ class JavaScriptEventHandlerFinder
   override def kind = "event-handler"
 
   override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptEventHandler] = {
-    if(someVar.hasMember("__expression")){
+    if (someVar.hasMember("__expression")) {
       val expression: String = someVar.getMember("__expression").asInstanceOf[String]
       Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), externalContext))
     } else {
@@ -32,16 +32,16 @@ class JavaScriptEventHandlerFinder
   * An invokable JS based handler for System Events
   */
 class JavaScriptEventHandler(jsc: JavaScriptContext,
-                              handler: ScriptObjectMirror,
-                              pathExpressionStr: String,
-                              override val name: String,
-                              override val description: String,
-                              override val tags: Seq[Tag],
-                              override val externalContext: Seq[AddressableRug]
-                                 )
+                             handler: ScriptObjectMirror,
+                             pathExpressionStr: String,
+                             override val name: String,
+                             override val description: String,
+                             override val tags: Seq[Tag],
+                             override val externalContext: Seq[AddressableRug]
+                            )
   extends EventHandler
-  with JavaScriptUtils
-    with RugSupport{
+    with JavaScriptUtils
+    with RugSupport {
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 
@@ -52,10 +52,9 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   }
 
   override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
-
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
-    val root = new SimpleContainerGraphNode("root", targetNode)
+    val root = SimpleContainerGraphNode("root", targetNode)
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, DefaultTypeRegistry, None) match {
       case Right(Nil) => None
       case Right(matches) =>
@@ -66,15 +65,12 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
         invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
           case plan: ScriptObjectMirror => ConstructPlan(plan)
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
-
         }
-
       case Left(failure) =>
         throw new RugRuntimeException(pathExpressionStr,
           s"Error evaluating path expression $pathExpression: [$failure]")
     }
   }
-
 }
 
 case class SimpleContainerGraphNode(nodeName: String, child: GraphNode) extends GraphNode {
@@ -89,11 +85,13 @@ case class SimpleContainerGraphNode(nodeName: String, child: GraphNode) extends 
 }
 
 /**
-  * Represents an event that drives a handler
+  * Represents an event that drives a handler.
   *
   * @param cm the root node in the tree
   */
 private case class jsMatch(cm: jsContextMatch) {
+
   def root(): Object = cm.root
+
   def matches(): java.util.List[jsSafeCommittingProxy] = cm.matches
 }

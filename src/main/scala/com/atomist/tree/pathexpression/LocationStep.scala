@@ -2,7 +2,6 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
 /**

@@ -35,7 +35,7 @@ abstract class TypeUnderFile
           .files
           .asScala
           .filter(f => isOfType(f.currentBackingObject))
-          .flatMap(toView(_))
+          .flatMap(toView)
         )
       case f: FileMutableView if isOfType(f.currentBackingObject) =>
         Some(toView(f).toSeq)

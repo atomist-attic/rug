@@ -53,7 +53,7 @@ class JavaScriptProjectEditor(
         Some(this))
 
       try {
-        //important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
+        // Important that we don't invoke edit on the prototype as otherwise all constructor effects are lost!
         invokeMemberFunction(
           jsc,
           jsVar,
@@ -66,8 +66,7 @@ class JavaScriptProjectEditor(
         } else {
           SuccessfulModification(pmv.currentBackingObject, pmv.changeLogEntries)
         }
-      }
-      catch {
+      } catch {
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)
         case sle: SourceLanguageRuntimeException =>

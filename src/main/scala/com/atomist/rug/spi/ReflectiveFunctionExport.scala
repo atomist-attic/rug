@@ -1,8 +1,7 @@
 package com.atomist.rug.spi
 
-import java.lang.reflect.{InvocationTargetException, Method}
+import java.lang.reflect.Method
 
-import com.atomist.rug._
 import org.springframework.util.ReflectionUtils
 
 /**
@@ -46,5 +45,3 @@ object ReflectiveFunctionExport {
   }
 
 }
-
-

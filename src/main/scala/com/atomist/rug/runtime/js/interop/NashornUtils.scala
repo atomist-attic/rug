@@ -7,7 +7,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.ConsString
 
 /**
-  * Utilities to help in binding to Nashorn
+  * Utilities to help in binding to Nashorn.
   */
 object NashornUtils {
 
@@ -26,16 +26,14 @@ object NashornUtils {
   def toJavaMap(nashornReturn: Object): Map[String, Object] =
     nashornReturn match {
       case som: ScriptObjectMirror =>
-        val scalaMap = som.entrySet().asScala.map{
-          case e: Entry[String, Object] =>
-            (e.getKey, e.getValue)
+        val scalaMap = som.entrySet().asScala.map {
+          e: Entry[String, Object] => (e.getKey, e.getValue)
         }.toMap
-          scalaMap.mapValues {
-            case som: ScriptObjectMirror =>
-              toJavaMap(som)
-            case x =>
-              toJavaType(x)
-
+        scalaMap.mapValues {
+          case som: ScriptObjectMirror =>
+            toJavaMap(som)
+          case x =>
+            toJavaType(x)
         }
     }
 
@@ -46,24 +44,23 @@ object NashornUtils {
 
   /**
     * Return the given property of the JavaScript object or default value if not found
+    *
     * @param default default value if not found. Defaults to null.
     */
-  def stringProperty(som: ScriptObjectMirror, name: String, default: String = null): String = {
+  def stringProperty(som: ScriptObjectMirror, name: String, default: String = null): String =
     som.get(name) match {
       case null => default
       case x => Objects.toString(x)
     }
-  }
 
   /**
     * Call the given JavaScript function, which must return a string
     */
-  def stringFunction(som: ScriptObjectMirror, name: String): String = {
+  def stringFunction(som: ScriptObjectMirror, name: String): String =
     som.callMember(name) match {
       case null => null
       case x => Objects.toString(x)
     }
-  }
 
   /**
     * Are all these properties defined

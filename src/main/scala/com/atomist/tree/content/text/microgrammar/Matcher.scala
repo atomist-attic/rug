@@ -72,7 +72,6 @@ object Matcher {
   def prettyPrint(m: Matcher): String = prettyPrintLines(m).mkString("\n")
 
   private def prettyPrintLines(m: Matcher): Seq[String] = {
-
     def nameOrNot(named: Option[String]): String = named.map(_ + " = ").getOrElse("")
 
     def mkSeq(pre: String, in: Seq[String], post: String = ")") = Seq(pre) ++ in ++ Seq(post)

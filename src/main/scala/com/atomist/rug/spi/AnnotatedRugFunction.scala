@@ -36,12 +36,12 @@ trait AnnotatedRugFunction extends RugFunction {
     }
   }
 
-  override def parameters: Seq[Parameter] = functionMethod().getParameters.map(p => {
+  override def parameters: Seq[Parameter] = functionMethod().getParameters.flatMap(p => {
     AnnotationUtils.findAnnotation(p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
       case pa: com.atomist.rug.spi.annotation.Parameter => Some(Parameter(pa.name(), pa.pattern()))
       case _ => None
     }
-  }).flatten.toSeq
+  }).toSeq
 
   override def run(parameters: ParameterValues): FunctionResponse = {
     val method = functionMethod()
@@ -50,11 +50,9 @@ trait AnnotatedRugFunction extends RugFunction {
       val secretAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Secret])
       if (parameterAnnotation == null && secretAnnotation != null) {
         parameters.paramValue(secretAnnotation.name()).asInstanceOf[Object]
-      }
-      else if (parameterAnnotation != null && secretAnnotation == null) {
+      } else if (parameterAnnotation != null && secretAnnotation == null) {
         parameters.paramValue(parameterAnnotation.name()).asInstanceOf[Object]
-      }
-      else {
+      } else {
         throw new IllegalArgumentException(s"Parameter ${p.getName} not annotated with either @Secret or @Parameter")
       }
     })

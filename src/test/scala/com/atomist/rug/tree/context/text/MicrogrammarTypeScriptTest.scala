@@ -13,7 +13,6 @@ import org.scalatest.{FlatSpec, Matchers}
 class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
 
   it should "use Microgrammar from TypeScript" in {
-
     val tsEditorResource = "com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.ts"
     val parameters = SimpleParameterValues.Empty
     val target = FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/test/scala/com/atomist/rug/tree/context/text/MicrogrammarTypeScriptTest.scala")))

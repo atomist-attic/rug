@@ -26,14 +26,15 @@ class JavaScriptProjectEditorFinder
     new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, externalContext)
   }
 }
+
 /**
   * ProjectEditor implementation that invokes a JavaScript function.
   */
 class JavaScriptProjectEditor(
-                                       jsc: JavaScriptContext,
-                                       jsVar: ScriptObjectMirror,
-                                       rugAs: ArtifactSource,
-                                       externalContext: Seq[AddressableRug]
+                               jsc: JavaScriptContext,
+                               jsVar: ScriptObjectMirror,
+                               rugAs: ArtifactSource,
+                               externalContext: Seq[AddressableRug]
                                      )
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
     with ProjectEditorSupport {
@@ -66,7 +67,8 @@ class JavaScriptProjectEditor(
         } else {
           SuccessfulModification(pmv.currentBackingObject, pmv.changeLogEntries)
         }
-      } catch {
+      }
+      catch {
         case f: InstantEditorFailureException =>
           FailedModificationAttempt(f.getMessage)
         case sle: SourceLanguageRuntimeException =>

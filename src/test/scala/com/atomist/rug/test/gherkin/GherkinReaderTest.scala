@@ -204,6 +204,7 @@ object GherkinReaderTest {
       | Given an empty project
       | When run simple generator
       | Then we have Anders
+      | Then we have file from start project
     """.stripMargin
 
   val GenerationFeatureFile = StringFileArtifact(".atomist/test/Generation.feature", GenerationFeature)
@@ -216,14 +217,16 @@ object GherkinReaderTest {
       |
       |import {$gen} from "../generators/$gen"
       |
-      |When("run simple generator", p => {
+      |When("run simple generator", (p, world) => {
       |  let g = new $gen()
-      |  g.populate(p)
+      |  world.generateWith(g)
       |})
-      |
       |Then("we have Anders", p => {
       |   let f = p.findFile("src/from/typescript")
       |   return f != null && f.content().indexOf("Anders") > -1
+      |})
+      |Then("we have file from start project", p => {
+      |   return p.findFile("pom.xml") != null
       |})
     """.stripMargin
 

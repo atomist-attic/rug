@@ -34,11 +34,11 @@ class JavaScriptProjectGeneratorFinder
   * TypeScript compilation, but need not be. Attempts to source metadata from annotations.
   */
 class JavaScriptProjectGenerator(
-                                          jsc: JavaScriptContext,
-                                          jsVar: ScriptObjectMirror,
-                                          rugAs: ArtifactSource,
-                                          startProject: ArtifactSource,
-                                          externalContext: Seq[AddressableRug]
+                                  jsc: JavaScriptContext,
+                                  jsVar: ScriptObjectMirror,
+                                  rugAs: ArtifactSource,
+                                  startProject: ArtifactSource,
+                                  externalContext: Seq[AddressableRug]
                                         )
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
     with ProjectGenerator {
@@ -48,14 +48,14 @@ class JavaScriptProjectGenerator(
     val validated = addDefaultParameterValues(poa)
     validateParameters(validated)
 
-    val tr = time {
+    val (result, elapsedMillis) = time {
       val project = new EmptyArtifactSource(projectName) + startProject
       val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this))
       invokeMemberFunction(jsc, jsVar, "populate", wrapProject(pmv), validated)
       pmv.currentBackingObject
     }
-    logger.debug(s"$name modifyInternal took ${tr._2}ms")
-    tr._1
+    logger.debug(s"$name.populate took ${elapsedMillis}ms")
+    result
   }
 
 }

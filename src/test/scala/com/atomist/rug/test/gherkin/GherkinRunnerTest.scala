@@ -36,7 +36,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     println(new TestReport(run))
     run.result match {
-      case f: Failed =>
+      case _: Failed =>
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -97,7 +97,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(sum.contains("SUCCESS"))
   }
 
-  it should "test a generator" in {
+  it should "test a generator that copies starting content without parameters" in {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("SimpleGen"))
         .withPathAbove(".atomist/generators") +
@@ -139,7 +139,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.result.isInstanceOf[Failed])
   }
 
-  it should "run two sets of tests" in {
+  it should "run two sets of tests without side effect" in {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,

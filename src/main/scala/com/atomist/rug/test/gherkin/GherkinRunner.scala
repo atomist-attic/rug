@@ -1,6 +1,7 @@
 package com.atomist.rug.test.gherkin
 
 import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.util.lang.JavaHelpers
 import com.typesafe.scalalogging.LazyLogging
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -45,7 +46,8 @@ class GherkinRunner(jsc: JavaScriptContext) extends LazyLogging {
 
 object GherkinRunner {
 
-  val DefinitionsObjectName = "_definitions"
+  val DefinitionsObjectName: String = (getClass.getName + "_definitions").replace(".", "_")
+
 }
 
 

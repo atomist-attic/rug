@@ -105,7 +105,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
     //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
-    println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
+    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
     val run = grt.execute()
     assert(run.testCount > 0)

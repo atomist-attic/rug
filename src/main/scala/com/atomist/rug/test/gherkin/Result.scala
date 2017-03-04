@@ -53,7 +53,7 @@ abstract class MultiTestRun(results: Seq[TestRun]) extends TestRun {
         .map(_.result)
       r match {
         case Some(Failed(why)) => Failed(why)
-        case _ => NotYetImplemented(results.toString)
+        case _ => NotYetImplemented(results.mkString(","))
       }
     }
 }

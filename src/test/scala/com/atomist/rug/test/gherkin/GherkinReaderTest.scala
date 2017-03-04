@@ -223,7 +223,7 @@ object GherkinReaderTest {
       |
       |Then("we have Anders", p => {
       |   let f = p.findFile("src/from/typescript")
-      |   return p != null && p.content().indexOf("Anders") > -1
+      |   return f != null && f.content().indexOf("Anders") > -1
       |})
     """.stripMargin
 

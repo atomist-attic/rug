@@ -8,7 +8,6 @@ import com.atomist.tree.content.text.{LineInputPosition, LineInputPositionImpl}
 import jdk.nashorn.internal.objects.NativeTypeError
 import jdk.nashorn.internal.runtime.ECMAException
 
-
 case class RuntimeErrorInfo(message: String,
                             filePath: String,
                             pos: LineInputPosition,

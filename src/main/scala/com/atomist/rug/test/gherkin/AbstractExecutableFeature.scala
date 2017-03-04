@@ -71,7 +71,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
         }
       case None =>
         //println(s"No Then for [${step.getText}]=$somo")
-        AssertionResult(step.getText, NotYetImplemented)
+        AssertionResult(step.getText, NotYetImplemented(step.getText))
     }
   }
 

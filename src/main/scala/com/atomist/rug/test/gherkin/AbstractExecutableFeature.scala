@@ -32,6 +32,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
   protected def createWorld(target: T): World = new World
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
+    println(s"\tExecuting test scenario ${scenario.getName}")
     val fixture = createFixture
     val world = createWorld(fixture)
     val assertionResults: Seq[AssertionResult] =

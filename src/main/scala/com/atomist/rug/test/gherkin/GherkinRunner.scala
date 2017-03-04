@@ -20,7 +20,9 @@ class GherkinRunner(jsc: JavaScriptContext) extends LazyLogging {
   jsc.atomistContent
     .filter(_ => true, jsc.atomistConfig.isJsTest)
     .allFiles
-    .foreach(jsc.evaluate)
+    .foreach(f => {
+      jsc.evaluate(f)
+    })
 
   /**
     * Features found in this archive
@@ -35,6 +37,7 @@ class GherkinRunner(jsc: JavaScriptContext) extends LazyLogging {
   def execute(): ArchiveTestResult = {
     logger.info(s"Execute on $this")
     ArchiveTestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
+      println(s"Executing feature ${ef.definition.feature.getName}")
       ef.execute()
     }))
   }

@@ -208,16 +208,16 @@ object GherkinReaderTest {
 
   val GenerationFeatureFile = StringFileArtifact(".atomist/test/Generation.feature", GenerationFeature)
 
-  val GenerationTest =
-    """
+  def generationTest(gen: String) =
+    s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
       |
-      |import {SimpleGenerator} from "../generators/SimpleGenerator"
+      |import {$gen} from "../generators/$gen"
       |
       |When("run simple generator", p => {
-      |  let g = new SimpleGenerator()
+      |  let g = new $gen()
       |  g.populate(p)
       |})
       |

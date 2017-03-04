@@ -4,12 +4,7 @@ import {Generator} from '@atomist/rug/operations/Decorators'
 @Generator("SimpleGenerator","My simple Generator")
 export class SimpleGenerator {
 
-     content: string = "woot"
-
      populate(project: Project) {
-        // if(project.name() != "woot"){
-        //    throw Error(`Project name should be woot, but was ${project.name()}`)
-        // }
         project.addFile("src/from/typescript", "Anders Hjelsberg is God");
     }
 }

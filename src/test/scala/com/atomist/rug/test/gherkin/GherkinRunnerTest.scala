@@ -95,11 +95,32 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
 
   it should "test a generator" in {
     val atomistStuff: ArtifactSource =
-      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("Gen"))
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("SimpleGen"))
         .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts", GenerationTest)
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator"))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
+    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    println(run.result)
+    assert(run.result === Passed)
+    println(new TestReport(run).testSummary)
+  }
+
+  it should "test a failing generator" in {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("Failing"))
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("FailingGenerator"))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject

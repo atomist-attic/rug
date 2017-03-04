@@ -5,7 +5,7 @@ import java.util.Objects
 import com.atlassian.sourcemap.SourceMapImpl
 import com.atomist.source.ArtifactSource
 import com.atomist.tree.content.text.{LineInputPosition, LineInputPositionImpl}
-import jdk.nashorn.internal.objects.NativeTypeError
+import jdk.nashorn.internal.objects.{NativeError, NativeTypeError}
 import jdk.nashorn.internal.runtime.ECMAException
 
 
@@ -32,6 +32,11 @@ object ExceptionEnhancer {
   def enhanceIfPossible(rugAs: ArtifactSource, ecmaEx: ECMAException): Exception = {
     //println(s"${ecmaEx.getFileName} at ${ecmaEx.getLineNumber}/${ecmaEx.getColumnNumber}, thrown = ${ecmaEx.getThrown}, ${ecmaEx.getCause}, ${ecmaEx.getEcmaError}")
     //e.getThrown.asInstanceOf[Throwable].printStackTrace()
+
+    // Let this through. They probably threw it voluntarily.
+    if (ecmaEx.thrown.isInstanceOf[NativeError])
+      throw ecmaEx
+
     ecmaEx.getFileName match {
       case "<eval>" | null =>
         // Can't add much useful info

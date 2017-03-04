@@ -59,15 +59,18 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
       case Some(som) =>
         // TODO #187. We might be interested in a reviewer, in which case we should be able to get at a review context.
         // Could look for review in the text?
-        val r = som.call("apply", new jsSafeCommittingProxy(target), world)
+        val r = callFunction(som, target, world)
         r match {
-          case b: java.lang.Boolean =>
+          case Right(b: java.lang.Boolean) =>
             AssertionResult(step.getText, Result(b, som.toString))
-          case rsom: ScriptObjectMirror =>
+          case Right(rsom: ScriptObjectMirror) =>
             val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
             //println(s"Raw result=$r, unwrapped = $result")
             AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
-          case wtf => throw new IllegalArgumentException(s"Unexpected: $wtf")
+          case Right(wtf) =>
+            throw new IllegalArgumentException(s"Unexpected: $wtf")
+          case Left(t) =>
+            AssertionResult(step.getText, Failed(t.getMessage))
         }
       case None =>
         //println(s"No Then for [${step.getText}]=$somo")
@@ -80,7 +83,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.call("apply", new jsSafeCommittingProxy(target), world)
+        callFunction(som, target, world)
       case None =>
         logger.info(s"When [${step.getText}] not yet implemented")
     }
@@ -91,11 +94,18 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        som.call("apply", new jsSafeCommittingProxy(target), world)
+        callFunction(som, target, world)
       case None =>
         logger.info(s"Given [${step.getText}] not yet implemented")
     }
   }
+
+  // Call a ScriptObjectMirror function with appropriate error handling
+  private def callFunction(som: ScriptObjectMirror, target: T, world: Object): Either[Throwable,Object] = {
+    import scala.util.control.Exception._
+    allCatch.either(som.call("apply", new jsSafeCommittingProxy(target), world))
+  }
+
 }
 
 

@@ -76,7 +76,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
+    //println(new TestReport(run).testSummary)
   }
 
   it should "test a reviewer" in {
@@ -90,7 +90,8 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
+    val sum = new TestReport(run).testSummary
+    assert(sum.contains("SUCCESS"))
   }
 
   it should "test a generator" in {
@@ -109,12 +110,14 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
     val run = grt.execute()
     assert(run.testCount > 0)
-    println(run.result)
+    //println(run.result)
     assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
   }
 
-  it should "test a failing generator" in {
+  /**
+    * This generator deliberately fails. We want to see a good error message.
+    */
+  it should "test a generator failing with deliberate exception" in {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("Failing"))
         .withPathAbove(".atomist/generators") +
@@ -125,14 +128,12 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
     //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
     val run = grt.execute()
     assert(run.testCount > 0)
-    println(run.result)
-    assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
+    //println(run.result)
+    assert(run.result.isInstanceOf[Failed])
   }
 
 }

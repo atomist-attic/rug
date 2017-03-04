@@ -1,10 +1,13 @@
 package com.atomist.rug.test.gherkin
 
+import javax.script.ScriptContext
+
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
+import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerTest extends FlatSpec with Matchers {
@@ -134,6 +137,27 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.testCount > 0)
     //println(run.result)
     assert(run.result.isInstanceOf[Failed])
+  }
+
+  it should "run two sets of tests" in {
+    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+      SimpleFileBasedArtifactSource(
+        CorruptionFeatureFile,
+        StringFileArtifact(".atomist/test/CorruptionSteps.ts", CorruptionTest)
+      )
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt1 = new GherkinRunner(new JavaScriptContext(cas))
+    val run1 = grt1.execute()
+    val grt2 = new GherkinRunner(new JavaScriptContext(cas))
+    val run2 = grt2.execute()
+
+    val hopefullyCleanEngine = new NashornScriptEngineFactory()
+      .getScriptEngine("--optimistic-types", "--language=es6", "--no-java")
+      .asInstanceOf[NashornScriptEngine]
+    import GherkinRunner._
+    hopefullyCleanEngine.getBindings(ScriptContext.ENGINE_SCOPE).containsKey(DefinitionsObjectName) should be (false)
+    val globs = hopefullyCleanEngine.getBindings(ScriptContext.GLOBAL_SCOPE)
+    (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
   }
 
 }

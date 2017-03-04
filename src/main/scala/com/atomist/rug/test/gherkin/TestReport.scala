@@ -25,8 +25,8 @@ class TestReport(archiveTestResult: ArchiveTestResult) {
         "\nTest SUCCESS\n"
       case Failed(_) =>
         "\nTest FAILURE\n"
-      case NotYetImplemented =>
-        "\nTest NOT YET IMPLEMENTED\n"
+      case NotYetImplemented(s) =>
+        s"\nTest NOT YET IMPLEMENTED: $s\n"
     })
 
   override def toString: String = testSummary

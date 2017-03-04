@@ -25,9 +25,9 @@ case object Passed extends Result {
 
 case class Failed(message: String) extends Result
 
-case object NotYetImplemented extends Result {
+case class NotYetImplemented(name: String) extends Result {
 
-  override def message = "Not yet implemented"
+  override def message = s"Not yet implemented: [$name]"
 }
 
 /**
@@ -53,7 +53,7 @@ abstract class MultiTestRun(results: Seq[TestRun]) extends TestRun {
         .map(_.result)
       r match {
         case Some(Failed(why)) => Failed(why)
-        case _ => NotYetImplemented
+        case _ => NotYetImplemented(results.mkString(","))
       }
     }
 }

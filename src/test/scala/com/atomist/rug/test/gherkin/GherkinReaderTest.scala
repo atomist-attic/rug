@@ -193,4 +193,38 @@ object GherkinReaderTest {
       |})
     """.stripMargin
 
+  val GenerationFeature =
+    """
+      |Feature: Generate a new project
+      | This is a test
+      | to see whether
+      | we can test project generators
+      |
+      |Scenario: New project should have content from template
+      | Given an empty project
+      | When run simple generator
+      | Then we have Anders
+    """.stripMargin
+
+  val GenerationFeatureFile = StringFileArtifact(".atomist/test/Generation.feature", GenerationFeature)
+
+  def generationTest(gen: String) =
+    s"""
+      |import {Project} from "@atomist/rug/model/Core"
+      |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
+      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |
+      |import {$gen} from "../generators/$gen"
+      |
+      |When("run simple generator", p => {
+      |  let g = new $gen()
+      |  g.populate(p)
+      |})
+      |
+      |Then("we have Anders", p => {
+      |   let f = p.findFile("src/from/typescript")
+      |   return f != null && f.content().indexOf("Anders") > -1
+      |})
+    """.stripMargin
+
 }

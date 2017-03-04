@@ -1,9 +1,10 @@
 package com.atomist.rug.test.gherkin
 
+import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerTest extends FlatSpec with Matchers {
@@ -14,7 +15,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
     val grt = new GherkinRunner(new JavaScriptContext(as))
     val run = grt.execute()
-    assert(run.result === NotYetImplemented)
+    assert(run.result.isInstanceOf[NotYetImplemented])
     println(new TestReport(run).testSummary)
   }
 
@@ -73,8 +74,9 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
     val run = grt.execute()
+    assert(run.testCount > 0)
     assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
+    //println(new TestReport(run).testSummary)
   }
 
   it should "test a reviewer" in {
@@ -86,8 +88,52 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
     val run = grt.execute()
+    assert(run.testCount > 0)
     assert(run.result === Passed)
-    println(new TestReport(run).testSummary)
+    val sum = new TestReport(run).testSummary
+    assert(sum.contains("SUCCESS"))
+  }
+
+  it should "test a generator" in {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("SimpleGen"))
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator"))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
+    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    //println(run.result)
+    assert(run.result === Passed)
+  }
+
+  /**
+    * This generator deliberately fails. We want to see a good error message.
+    */
+  it should "test a generator failing with deliberate exception" in {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("Failing"))
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("FailingGenerator"))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    //println(run.result)
+    assert(run.result.isInstanceOf[Failed])
   }
 
 }

@@ -5,8 +5,7 @@ import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.TreeNode.Significance
 
 /**
-  * Represents a node in a tree. A tree is a graph that is
-  * hierarchical but non-cyclical.
+  * Represents a node in a tree. A tree is a graph that is hierarchical but non-cyclical.
   * May be terminal or non-terminal.
   *
   * Many Rug types are TreeNodes. Some TreeNodes are updatable, some are
@@ -64,7 +63,6 @@ trait TreeNode extends GraphNode {
     * to the user and the outside world?
     */
   def significance: Significance = TreeNode.Undeclared
-
 }
 
 object TreeNode {
@@ -80,8 +78,3 @@ object TreeNode {
     */
   val Dynamic: String = "-dynamic"
 }
-
-/**
-  * Tag interface for TreeNodes that are intended to contain other TreeNodes.
-  */
-trait ContainerTreeNode extends TreeNode

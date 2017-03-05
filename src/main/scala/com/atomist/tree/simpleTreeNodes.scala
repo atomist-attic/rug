@@ -1,4 +1,5 @@
 package com.atomist.tree
+
 import com.atomist.tree.TreeNode.Significance
 
 /**
@@ -17,7 +18,8 @@ case class SimpleTerminalTreeNode(nodeName: String,
 }
 
 /**
-  * Convenient class for padding nodes
+  * Convenient class for padding nodes.
+  *
   * @param description description of what's being padded
   * @param value padding content
   */
@@ -27,5 +29,4 @@ case class PaddingTreeNode(description: String, value: String)
   override def significance: Significance = TreeNode.Noise
 
   override def nodeName = s"padding:$description"
-
 }

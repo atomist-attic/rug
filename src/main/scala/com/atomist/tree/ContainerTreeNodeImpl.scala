@@ -1,7 +1,8 @@
 package com.atomist.tree
 
 /**
-  * Simple implementation of ContainerTreeNode allowing fields to be added
+  * Simple implementation of ContainerTreeNode allowing fields to be added.
+  *
   * @param nodeName node name
   * @param nodeTags node type
   */
@@ -15,9 +16,8 @@ class ContainerTreeNodeImpl(
 
   private var kids: Seq[TreeNode] = Seq()
 
-  def addField(tn: TreeNode): Unit = {
+  def addField(tn: TreeNode): Unit =
     kids = kids :+ tn
-  }
 
   override def childNodeNames: Set[String] = kids.map(_.nodeName).toSet
 

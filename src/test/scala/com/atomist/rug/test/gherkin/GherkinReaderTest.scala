@@ -1,5 +1,6 @@
 package com.atomist.rug.test.gherkin
 
+import com.atomist.param.ParameterValues
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -209,7 +210,10 @@ object GherkinReaderTest {
 
   val GenerationFeatureFile = StringFileArtifact(".atomist/test/Generation.feature", GenerationFeature)
 
-  def generationTest(gen: String) =
+  /**
+    * @param params map to string representation of param, e.g. including "
+    */
+  def generationTest(gen: String, params: Map[String,String]) =
     s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
@@ -219,6 +223,7 @@ object GherkinReaderTest {
       |
       |When("run simple generator", (p, world) => {
       |  let g = new $gen()
+      |  ${params.map(p => s"g.${p._1}=${p._2}").mkString("\n")}
       |  world.generateWith(g)
       |})
       |Then("we have Anders", p => {

@@ -136,6 +136,26 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.result === Passed)
   }
 
+  it should "test giving a generator invalid parameters" in {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts",
+            // Fails due to numbers
+            generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1 God`")))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    println(run.result)
+    assert(run.result.isInstanceOf[Failed])
+  }
+
   /**
     * This generator deliberately fails. We want to see a good error message.
     */

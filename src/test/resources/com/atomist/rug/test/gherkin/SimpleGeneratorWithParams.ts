@@ -5,7 +5,7 @@ import {Parameter} from '@atomist/rug/operations/Decorators'
 @Generator("SimpleGenerator","My simple Generator")
 export class SimpleGeneratorWithParams {
 
-    @Parameter({description: "text", pattern: "^.*$"})
+    @Parameter({description: "text", pattern: "^[a-zA-Z ]*$"})
     text: string
 
      populate(project: Project) {

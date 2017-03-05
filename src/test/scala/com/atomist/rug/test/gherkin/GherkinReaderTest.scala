@@ -86,16 +86,17 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,Result,ProjectWorld} from "@atomist/rug/test/Core"
       |
       |import {AlpEditor} from "../editors/AlpEditor"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("politics takes its course", p => {
+      |When("politics takes its course", (p, w) => {
+      |  let world = w as ProjectWorld
       |  let e = new AlpEditor()
-      |  e.edit(p)
+      |  world.editWith(e)
       |})
       |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
@@ -113,11 +114,11 @@ object GherkinReaderTest {
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("politics takes its course", p => {
+      |When("politics takes its course", (p, world) => {
       |  let e = new AlpEditor()
       |  // Simply inject property
       |  e.heir = "Paul"
-      |  e.edit(p)
+      |  world.editWith(e)
       |})
       |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
@@ -213,7 +214,7 @@ object GherkinReaderTest {
   /**
     * @param params map to string representation of param, e.g. including "
     */
-  def generationTest(gen: String, params: Map[String,String]) =
+  def generationTest(gen: String, params: Map[String,String]): String =
     s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"

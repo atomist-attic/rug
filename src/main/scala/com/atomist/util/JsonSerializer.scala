@@ -1,5 +1,4 @@
-package com.atomist.rug.runtime.js
-
+package com.atomist.util
 
 import java.text.SimpleDateFormat
 
@@ -11,7 +10,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 
 /**
-  * Serialize objects to Json
+  * Serialize objects to Json.
   */
 object JsonSerializer {
 
@@ -23,21 +22,17 @@ object JsonSerializer {
     .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     .setSerializationInclusion(Include.NON_NULL)
     .setSerializationInclusion(Include.NON_ABSENT)
+    // .configure(SerializationFeature.WRAP_ROOT_VALUE, true)
     .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"))
 
-  def toJson(ref: Option[AnyRef]): Option[String] = {
-    if(ref.nonEmpty){
-      Some(toJsonInternal(ref.get))
-    }else{
-      None
-    }
-  }
+  def toJson(value: Any): String = mapper.writeValueAsString(value)
 
-  def toJson(ref: AnyRef): String = {
-   toJsonInternal(ref)
-  }
+  def toJsonPrettyPrint(value: Any): String = mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
 
-  private def toJsonInternal(ref: AnyRef): String = {
-    mapper.writeValueAsString(ref)
-  }
+  def fromJson[T](json: String)(implicit m: Manifest[T]): T = mapper.readValue[T](json)
+
+  def fromJson[T](json: String, clazz: Class[T]): T = mapper.readValue(json, clazz)
+
+  def toJson(ref: Option[AnyRef]): Option[String] =
+    if (ref.isDefined) Some(toJson(ref.get)) else None
 }

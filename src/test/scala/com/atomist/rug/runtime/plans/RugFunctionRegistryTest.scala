@@ -6,8 +6,9 @@ import com.atomist.rug.spi.Handlers.Status
 import com.atomist.rug.spi._
 import org.scalatest.{FlatSpec, Matchers}
 
-class RugFunctionRegistryTest extends FlatSpec with Matchers{
-  it should "Find and run a RugFunction from the registry" in {
+class RugFunctionRegistryTest extends FlatSpec with Matchers {
+
+  it should "find and run a RugFunction from the registry" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     fn.clearSecrets
     fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot"))) match {
@@ -16,16 +17,15 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers{
     }
   }
 
-  it should "Find and run a RugFunction from the registry via fq classname" in {
+  it should "find and run a RugFunction from the registry via fq classname" in {
     val fn = DefaultRugFunctionRegistry.find("com.atomist.rug.runtime.plans.ExampleRugFunction").get.asInstanceOf[ExampleRugFunction]
-
   }
 
   it should "fail if a secret is not set in the parameter list" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     fn.clearSecrets
     fn.addSecret(Secret("very", "/secret/crazy"))
-    assertThrows[MissingSecretException]{
+    assertThrows[MissingSecretException] {
       fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot")))
     }
   }

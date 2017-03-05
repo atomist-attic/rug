@@ -1,8 +1,8 @@
 package com.atomist.rug.spi
 
 import com.atomist.param.ParameterValues
-import com.atomist.rug.runtime.js.JsonSerializer
 import com.atomist.rug.spi.Handlers.{Response, Status}
+import com.atomist.util.JsonSerializer
 
 /**
   * Arbitrary functions to be executed as a result add 'execute' instructions to a Plan

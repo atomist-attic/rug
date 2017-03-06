@@ -2,6 +2,8 @@ package com.atomist.rug
 
 import javax.script.ScriptException
 
+import com.atomist.project.edit.ProjectEditor
+import com.atomist.rug.runtime.Rug
 import com.atomist.util.scalaparsing.ErrorInfo
 
 abstract class BadRugException(msg: String, rootCause: Throwable = null)
@@ -81,6 +83,24 @@ class BadPlanException(msg: String)
 
 class MissingRugException(msg: String)
   extends BadRugException(msg)
+
+class EditorNotFoundException(msg: String)
+  extends BadRugException(msg) {
+  def this(requestedEditorName: String, knownRugs: Seq[Rug]) = {
+    this(EditorNotFoundExceptionStr(requestedEditorName, knownRugs))
+  }
+}
+
+
+/**
+  * Generate a an exception string containing all known editors.
+  */
+private object EditorNotFoundExceptionStr {
+  def apply(requestedEditorName: String, knownRugs: Seq[Rug]): String = {
+    s"""|Could not find editor [$requestedEditorName]. Known editors:
+        |[${knownRugs.collect{case o: ProjectEditor => o}.map(p => p.name).mkString(",")}]""".stripMargin
+  }
+}
 
 class BadRugFunctionResponseException(msg: String)
   extends BadRugException(msg)

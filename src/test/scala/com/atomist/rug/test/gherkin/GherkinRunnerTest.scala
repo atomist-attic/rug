@@ -36,7 +36,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     println(new TestReport(run))
     run.result match {
-      case f: Failed =>
+      case _: Failed =>
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -97,13 +97,13 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(sum.contains("SUCCESS"))
   }
 
-  it should "test a generator" in {
+  it should "test a generator that copies starting content without parameters" in {
     val atomistStuff: ArtifactSource =
-      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("SimpleGen"))
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGenerator.ts")
         .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator"))
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
@@ -117,6 +117,46 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.result === Passed)
   }
 
+  it should "test a generator that copies starting content with parameters" in {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts",
+            generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is God`")))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    //println(run.result)
+    assert(run.result === Passed)
+  }
+
+  it should "test giving a generator invalid parameters" in pendingUntilFixed {
+    val atomistStuff: ArtifactSource =
+      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
+        .withPathAbove(".atomist/generators") +
+        SimpleFileBasedArtifactSource(
+          GenerationFeatureFile,
+          StringFileArtifact(".atomist/test/GenerationSteps.ts",
+            // Fails due to numbers
+            generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1 God`")))
+        )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    println(run.result)
+    assert(run.result.isInstanceOf[Failed])
+    assert(!run.featureResults.exists(fr => fr.assertions.exists(_.passed)))
+  }
+
   /**
     * This generator deliberately fails. We want to see a good error message.
     */
@@ -126,7 +166,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("FailingGenerator"))
+          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("FailingGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
@@ -139,7 +179,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.result.isInstanceOf[Failed])
   }
 
-  it should "run two sets of tests" in {
+  it should "run two sets of tests without side effect" in {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,

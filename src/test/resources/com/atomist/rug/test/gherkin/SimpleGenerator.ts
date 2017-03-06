@@ -5,6 +5,7 @@ import {Generator} from '@atomist/rug/operations/Decorators'
 export class SimpleGenerator {
 
      populate(project: Project) {
+         console.log("In SimpleGenerator")
         project.addFile("src/from/typescript", "Anders Hjelsberg is God");
     }
 }

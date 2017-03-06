@@ -35,11 +35,13 @@ abstract class JavaScriptProjectOperation(
     with JavaScriptUtils
     with RugSupport{
 
-  //visible for test
-  private[js] val jsVar = _jsVar
+  /** Needed by BDD testing support */
+  val jsVar: ScriptObjectMirror = _jsVar
+
+  // Visible for test
   private[js] val jsc = _jsc
 
-  override def tags = tags(jsVar, Seq("__tags", "tags"))
+  override def tags: Seq[Tag] = tags(jsVar, Seq("__tags", "tags"))
 
   override def parameters: Seq[Parameter] = parameters(jsVar, Seq("__parameters", "parameters"))
 

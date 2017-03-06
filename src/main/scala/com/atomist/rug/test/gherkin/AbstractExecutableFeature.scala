@@ -29,12 +29,12 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     * Create a world for overall context, based on the fixture.
     * This creates a default world.
     */
-  protected def createWorld(target: T): World = new World
+  protected def createWorldForScenario(target: T): ScenarioWorld = new ScenarioWorld(definitions)
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
-    println(s"\tExecuting test scenario ${scenario.getName}")
+    //println(s"\tExecuting test scenario ${scenario.getName}")
     val fixture = createFixture
-    val world = createWorld(fixture)
+    val world = createWorldForScenario(fixture)
     val assertionResults: Seq[AssertionResult] =
       scenario.getSteps.asScala.flatMap(step => {
         step.getKeyword match {
@@ -106,25 +106,5 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     import scala.util.control.Exception._
     allCatch.either(som.call("apply", new jsSafeCommittingProxy(target), world))
   }
-
-}
-
-
-/**
-  * Standard world that lets us add bindings
-  */
-class World {
-
-  private var bindings: Map[String,Object] = Map()
-
-  def put(key: String, value: Object): Unit = {
-    bindings = bindings + (key -> value)
-  }
-
-  def get(key: String): Object =
-    bindings.get(key).orNull
-
-  def clear(key: String): Unit =
-    bindings = bindings - key
 
 }

@@ -73,6 +73,11 @@ case class ScenarioResult(scenario: ScenarioDefinition, results: Seq[AssertionRe
 case class FeatureResult(feature: Feature, scenarioResults: Seq[ScenarioResult])
   extends MultiTestRun(scenarioResults) {
 
+  /**
+    * Results of all the individual assertions executed in running this scenario
+    */
+  def assertions: Seq[AssertionResult] = scenarioResults.flatMap(sr => sr.results)
+
   override def toString: String =
     s"Feature [${feature.getName}]: Results = {${scenarioResults.mkString(",")}"
 }
@@ -81,4 +86,5 @@ case class FeatureResult(feature: Feature, scenarioResults: Seq[ScenarioResult])
   * Result of running tests for all features in an archive
   * @param featureResults results for each feature in the archive
   */
-case class ArchiveTestResult(featureResults: Seq[FeatureResult]) extends MultiTestRun(featureResults)
+case class ArchiveTestResult(featureResults: Seq[FeatureResult])
+  extends MultiTestRun(featureResults)

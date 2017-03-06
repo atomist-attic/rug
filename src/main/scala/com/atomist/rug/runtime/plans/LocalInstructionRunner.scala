@@ -44,7 +44,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
             val resolved = SimpleParameterValues(replaced ++ secretResolver.resolveSecrets(fn.secrets))
             val response = fn.run(resolved)
 
-            //serialize to json if not already a string
+            //ensure the body is String or byte[]!
             val thedata = response.body match {
               case Some(Body(Some(str), None)) => Some(str)
               case Some(Body(None, Some(bytes))) => Some(bytes)

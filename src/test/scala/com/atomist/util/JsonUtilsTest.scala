@@ -3,15 +3,23 @@ package com.atomist.util
 import com.atomist.tree.pathexpression._
 import org.scalatest.{FlatSpec, Matchers}
 
-class JsonSerializerTest extends FlatSpec with Matchers {
+class JsonUtilsTest extends FlatSpec with Matchers {
 
   it should "serialize single location step expression" in {
     val pe = PathExpression(Seq(
       LocationStep(Child, NamedNodeTest("foo"), Seq(TruePredicate)))
     )
-    val json = JsonSerializer.toJsonPrettyPrint(pe)
+    val json = JsonUtils.toJsonPrettyPrint(pe)
     // println(json)
     json.contains("Child\"") should be(true)
+  }
+
+  it should "support the wrapped json too" in {
+    val pe = PathExpression(Seq(
+      LocationStep(Child, NamedNodeTest("foo"), Seq(TruePredicate)))
+    )
+    val json = JsonUtils.toWrappedJson(pe)
+    assert(json.contains("PathExpression") === true)
   }
 
   it should "serialize more complex step expression" in {
@@ -25,14 +33,14 @@ class JsonSerializerTest extends FlatSpec with Matchers {
           NodeNamePredicate("Commit")
         )
       )))
-    val json = JsonSerializer.toJson(pe)
+    val json = JsonUtils.toJson(pe)
     // println(json)
   }
 
   it should "serialize expression with nested predicate" in {
     val expr = "/src//File()[/JavaType()]"
     val pe = PathExpressionParser.parsePathExpression(expr)
-    val json = JsonSerializer.toJsonPrettyPrint(pe)
+    val json = JsonUtils.toJsonPrettyPrint(pe)
     // println(json)
     json.contains("NestedPath") should be(true)
   }

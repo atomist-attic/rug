@@ -2,7 +2,7 @@ package com.atomist.rug.spi
 
 import com.atomist.param.ParameterValues
 import com.atomist.rug.spi.Handlers.{Response, Status}
-import com.atomist.util.JsonSerializer
+import com.atomist.util.JsonUtils
 
 /**
   * Arbitrary functions to be executed as a result add 'execute' instructions to a Plan
@@ -31,7 +31,7 @@ object StringBodyOption {
 
 object JsonBodyOption {
   def apply(body: AnyRef) : Option[Body] = {
-    StringBodyOption(JsonSerializer.toJson(body))
+    StringBodyOption(JsonUtils.toJson(body))
   }
 }
 

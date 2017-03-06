@@ -12,7 +12,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 /**
   * Serialize objects to Json.
   */
-object JsonSerializer {
+object JsonUtils {
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
@@ -22,10 +22,27 @@ object JsonSerializer {
     .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     .setSerializationInclusion(Include.NON_NULL)
     .setSerializationInclusion(Include.NON_ABSENT)
-    // .configure(SerializationFeature.WRAP_ROOT_VALUE, true)
     .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"))
 
-  def toJson(value: Any): String = mapper.writeValueAsString(value)
+  private val wrapper = new ObjectMapper() with ScalaObjectMapper
+  wrapper.registerModule(DefaultScalaModule)
+    .registerModule(new JavaTimeModule())
+    .registerModule(new Jdk8Module())
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, SerializationFeature.INDENT_OUTPUT)
+    .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .setSerializationInclusion(Include.NON_NULL)
+    .setSerializationInclusion(Include.NON_ABSENT)
+    .configure(SerializationFeature.WRAP_ROOT_VALUE, true)
+    .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"))
+
+
+  //wrap should be the default to avoid breaking a bunch of stuff outside rug that use it!
+  def toJson(value: Any): String =
+    mapper.writeValueAsString(value)
+
+  def toWrappedJson(value: Any): String = {
+    wrapper.writeValueAsString(value)
+  }
 
   def toJsonPrettyPrint(value: Any): String = mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
 

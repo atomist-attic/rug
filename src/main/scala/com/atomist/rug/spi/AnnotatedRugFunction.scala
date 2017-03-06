@@ -49,13 +49,36 @@ trait AnnotatedRugFunction extends RugFunction {
       val parameterAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Parameter])
       val secretAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Secret])
       if (parameterAnnotation == null && secretAnnotation != null) {
-        parameters.paramValue(secretAnnotation.name()).asInstanceOf[Object]
+        convert(p, parameters.paramValue(secretAnnotation.name()))
       } else if (parameterAnnotation != null && secretAnnotation == null) {
-        parameters.paramValue(parameterAnnotation.name()).asInstanceOf[Object]
+        convert(p, parameters.paramValue(parameterAnnotation.name()))
       } else {
         throw new IllegalArgumentException(s"Parameter ${p.getName} not annotated with either @Secret or @Parameter")
       }
     })
     method.invoke(this, args:_*).asInstanceOf[FunctionResponse]
+  }
+
+  /**
+    * Convert the paramter value based on the type of the paramter
+    * @param param
+    * @param avalue
+    * @return
+    */
+  private def convert(param: java.lang.reflect.Parameter, avalue: Any): Object = {
+    avalue match {
+      case o: String => param.getType match {
+        case p if p == classOf[Int] => o.toInt.asInstanceOf[Object]
+        case p if p == classOf[Integer] => Integer.parseInt(o).asInstanceOf[Object]
+        case p if p == classOf[Boolean] => o.toBoolean.asInstanceOf[Object]
+        case p if p == classOf[java.lang.Boolean] => java.lang.Boolean.parseBoolean(o).asInstanceOf[Object]
+        case p if p == classOf[Double] => o.toDouble.asInstanceOf[Object]
+        case p if p == classOf[java.lang.Double] => java.lang.Double.parseDouble(o).asInstanceOf[Object]
+        case p if p == classOf[Float] => o.toFloat.asInstanceOf[Object]
+        case p if p == classOf[java.lang.Float] => java.lang.Float.parseFloat(o).asInstanceOf[Object]
+        case p if p == classOf[String] => o.asInstanceOf[Object]
+      }
+      case _ => avalue.asInstanceOf[Object]
+    }
   }
 }

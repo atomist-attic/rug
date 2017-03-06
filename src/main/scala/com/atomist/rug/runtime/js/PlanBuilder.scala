@@ -4,7 +4,7 @@ import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
-import com.atomist.util.JsonSerializer
+import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.Undefined
 
@@ -120,7 +120,7 @@ class PlanBuilder {
             SimpleParameterValue(name,
               value match {
                 case s: String => s
-                case o => JsonSerializer.toJson(o)
+                case o => JsonUtils.toJson(o)
               })
           }
       }

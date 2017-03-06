@@ -11,7 +11,7 @@ import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
 import com.atomist.rug.spi.{Body, RugFunctionRegistry}
-import com.atomist.util.JsonSerializer
+import com.atomist.util.JsonUtils
 
 /**
   * Run instructions synchronously in this JVM
@@ -72,7 +72,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case Some(rug: ProjectReviewer) =>
             doWithProjectName(instruction, (projectName: String) => {
               val reviewResult = projectManagement.review(rug,parameters, projectName)
-              Response(Success, None, None, Some(JsonSerializer.toJson(reviewResult)))
+              Response(Success, None, None, Some(JsonUtils.toJson(reviewResult)))
             })
           case Some(rug: CommandHandler) =>
             val planOption = rug.handle(rugContext, parameters)

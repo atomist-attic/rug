@@ -4,7 +4,7 @@ import javax.script.{ScriptContext, SimpleBindings}
 
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.spi.Handlers.Response
-import com.atomist.util.JsonSerializer
+import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -18,7 +18,7 @@ class JsonResponseCoercer(jsc: JavaScriptContext, handler: ScriptObjectMirror) e
     val body = response.body match {
       case Some(bytes: Array[Byte]) => new String(bytes)
       case Some(str: String) => str
-      case Some(o) => JsonSerializer.toJson(o)
+      case Some(o) => JsonUtils.toJson(o)
       case agg => throw new RuntimeException(s"Could not recognize body type for coercion: $agg")
     }
     Response(response.status, response.msg, response.code, Some(toJSObject(body)))

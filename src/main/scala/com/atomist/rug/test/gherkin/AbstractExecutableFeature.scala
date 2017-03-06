@@ -29,12 +29,12 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     * Create a world for overall context, based on the fixture.
     * This creates a default world.
     */
-  protected def createWorld(target: T): World = new World(definitions)
+  protected def createWorldForScenario(target: T): ScenarioWorld = new ScenarioWorld(definitions)
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
-    println(s"\tExecuting test scenario ${scenario.getName}")
+    //println(s"\tExecuting test scenario ${scenario.getName}")
     val fixture = createFixture
-    val world = createWorld(fixture)
+    val world = createWorldForScenario(fixture)
     val assertionResults: Seq[AssertionResult] =
       scenario.getSteps.asScala.flatMap(step => {
         step.getKeyword match {

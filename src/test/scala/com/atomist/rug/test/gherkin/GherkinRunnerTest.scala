@@ -136,7 +136,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.result === Passed)
   }
 
-  it should "test giving a generator invalid parameters" in {
+  it should "test giving a generator invalid parameters" in pendingUntilFixed {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
         .withPathAbove(".atomist/generators") +
@@ -154,6 +154,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     assert(run.testCount > 0)
     println(run.result)
     assert(run.result.isInstanceOf[Failed])
+    assert(!run.featureResults.exists(fr => fr.assertions.exists(_.passed)))
   }
 
   /**

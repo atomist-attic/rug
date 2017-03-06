@@ -8,9 +8,7 @@ import com.atomist.project.common.{IllformedParametersException, InvalidParamete
 trait ParameterizedSupport
   extends Parameterized {
 
-
    override def parameters: Seq[Parameter] = Nil
-
 
   /**
     * Fill out any default values not present in pvs but are required.
@@ -36,7 +34,7 @@ trait ParameterizedSupport
     * @throws InvalidParametersException if the parameters are invalid
     */
   @throws[InvalidParametersException]
-  protected def validateParameters(poa: ParameterValues) {
+  def validateParameters(poa: ParameterValues) {
     val missingParameters = findMissingParameters(poa)
     if (missingParameters.nonEmpty)
       throw new MissingParametersException(
@@ -49,7 +47,7 @@ trait ParameterizedSupport
     val validationErrors =
       for {
         pv <- poa.parameterValues
-        param <- parameters.find(_.name.equals(pv.getName))
+        param <- parameters.find(_.name == pv.getName)
         // Only validate optional values if they're supplied
         if param.isRequired || !validEmptyOptionalValue(pv.getValue)
         if !param.isValidValue(pv.getValue)

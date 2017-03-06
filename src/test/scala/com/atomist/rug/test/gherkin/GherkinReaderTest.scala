@@ -1,6 +1,5 @@
 package com.atomist.rug.test.gherkin
 
-import com.atomist.param.ParameterValues
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -18,7 +17,7 @@ class GherkinReaderTest extends FlatSpec with Matchers {
       case feature :: Nil =>
         assert(feature.feature.getChildren.size === 1)
         val scenario = feature.feature.getChildren.get(0)
-        assert(scenario.getSteps.size() === 4)
+        assert(scenario.getSteps.size() >= 4)
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -48,6 +47,7 @@ object GherkinReaderTest {
       | Given an empty project
       | Given a visionary leader
       | When politics takes its course
+      | Then one edit was made
       | Then the rage is maintained
     """.stripMargin
 
@@ -79,6 +79,7 @@ object GherkinReaderTest {
       |When("politics takes its course", (p, world) => {
       | //console.log(`The world is $${world}`)
       |})
+      |Then("one edit was made", p => true)
       |Then("the rage is maintained", p => p.fileExists("Gough"))
     """.stripMargin
 
@@ -86,7 +87,7 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result,ProjectWorld} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
       |
       |import {AlpEditor} from "../editors/AlpEditor"
       |
@@ -94,9 +95,13 @@ object GherkinReaderTest {
       | p.addFile("Gough", "Maintain the rage")
       |})
       |When("politics takes its course", (p, w) => {
-      |  let world = w as ProjectWorld
+      |  let world = w as ProjectScenarioWorld
       |  let e = new AlpEditor()
       |  world.editWith(e)
+      |})
+      |Then("one edit was made", (p, world) => {
+      | console.log(`Editors run=$${world.editorsRun()}`)
+      | return world.editorsRun() == 1
       |})
       |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
@@ -119,6 +124,10 @@ object GherkinReaderTest {
       |  // Simply inject property
       |  e.heir = "Paul"
       |  world.editWith(e)
+      |})
+      |Then("one edit was made", (p, world) => {
+      | console.log(`Editors run=$${world.editorsRun()}`)
+      | return world.editorsRun() == 1
       |})
       |Then("the rage is maintained", p => {
       |   return p.fileExists("Paul")
@@ -205,6 +214,7 @@ object GherkinReaderTest {
       |Scenario: New project should have content from template
       | Given an empty project
       | When run simple generator
+      | Then parameters were valid
       | Then we have Anders
       | Then we have file from start project
     """.stripMargin
@@ -227,6 +237,7 @@ object GherkinReaderTest {
       |  ${params.map(p => s"g.${p._1}=${p._2}").mkString("\n")}
       |  world.generateWith(g)
       |})
+      |Then("parameters were valid", (p, world) => !world.invalidParameters())
       |Then("we have Anders", p => {
       |   let f = p.findFile("src/from/typescript")
       |   return f != null && f.content().indexOf("Anders") > -1

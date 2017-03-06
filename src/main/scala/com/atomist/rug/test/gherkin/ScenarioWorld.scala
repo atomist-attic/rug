@@ -1,9 +1,10 @@
 package com.atomist.rug.test.gherkin
 
 /**
-  * Standard world that lets us add bindings
+  * Standard world for a scenario that lets us add bindings
+  * and subclasses attach further state and helper methods.
   */
-class World(val definitions: Definitions) {
+class ScenarioWorld(val definitions: Definitions) {
 
   private var bindings: Map[String,Object] = Map()
 

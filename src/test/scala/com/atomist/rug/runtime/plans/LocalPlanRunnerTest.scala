@@ -157,7 +157,9 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
   val makeEventsComparable = (log: Iterable[PlanLogEvent]) => log.map {
     case InstructionResult(i, r) => (i, r)
-    case NestedPlanRun(p, f) => (p, f.value.get)
+    case NestedPlanRun(p, f) =>
+      val r = Await.result(f, 10.seconds)
+      (p, r)
     case InstructionError(i, e) => (i, e.getMessage)
     case MessageDeliveryError(m, e) => (m, e.getMessage)
     case CallbackError(c, e) => (c, e.getMessage)

@@ -11,7 +11,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
-import com.atomist.rug.spi._
+import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
 import com.atomist.source._
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
@@ -127,6 +127,10 @@ class ProjectMutableView(
                        description = "The content to check against the given file")
                      content: String): Boolean =
     currentBackingObject.findFile(path).exists(f => Objects.equals(content, f.content))
+
+  @ExportFunction(readOnly = true,
+    description = "The total number of files in the project")
+  def totalFileCount: Int = currentBackingObject.totalFileCount
 
   @ExportFunction(readOnly = true,
     description = "The number of files directly in this directory")
@@ -511,7 +515,6 @@ class ProjectMutableView(
 
 /**
   * For backwards compatibility
-  * @param ctx
   */
 class ProjectContext(ctx: RugContext) extends RugContext {
 

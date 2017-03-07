@@ -7,7 +7,7 @@ class GherkinReaderTest extends FlatSpec with Matchers {
 
   import GherkinReaderTest._
 
-  it should "handle empty ArtifactSource" in {
+  "Gherkin reader" should "handle empty ArtifactSource" in {
     GherkinReader.findFeatures(EmptyArtifactSource("")).isEmpty should be (true)
   }
 
@@ -185,6 +185,7 @@ object GherkinReaderTest {
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
       |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import * as helpers from "@atomist/rug/test/Helpers"
       |
       |import {FindCorruption} from "../editors/FindCorruption"
       |
@@ -199,6 +200,8 @@ object GherkinReaderTest {
       |   world.put("review", rr)
       |})
       |Then("we have comments", (p, world) => {
+      |   if (helpers.prettyListFiles(p).indexOf("NSW") == -1) throw new Error("Bad pretty list")
+      |   if (helpers.dump(p, "NSW").indexOf("Wran") == -1)  throw new Error("Bad dump")
       |   let rr = world.get("review")
       |   return rr.comments.length == 1
       |})

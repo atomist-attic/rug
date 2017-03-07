@@ -14,6 +14,18 @@ class FileMutableViewTest extends FlatSpec with Matchers {
     fmv.nameContains("name") should be (true)
   }
 
+  it should "return contentLength" in {
+    val s =
+      """
+        |I'm talkin' about ethics
+        |String men also cry
+        |This aggression will not stand
+      """.stripMargin
+    val f = StringFileArtifact("name", s)
+    val fmv = new FileMutableView(f, null)
+    assert(fmv.contentLength === s.length)
+  }
+
   it should "return linecount in single line file" in {
     val f = StringFileArtifact("name", "The quick brown jumped over the lazy dog")
     val fmv = new FileMutableView(f, null)

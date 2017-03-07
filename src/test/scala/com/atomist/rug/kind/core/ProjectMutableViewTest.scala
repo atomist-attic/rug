@@ -79,6 +79,13 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.name === "demo")
   }
 
+  it should "correctly calculate totalFileCount" in {
+    val as = ParsingTargets.NewStartSpringIoProject
+    val pmv = new ProjectMutableView(as)
+    assert(pmv.totalFileCount === as.totalFileCount)
+  }
+
+
   it should "handle path and content replace" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)

@@ -34,8 +34,11 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
     */
   protected def wellFormed: Boolean = true
 
-  @ExportFunction(readOnly = true, description = "Return file content")
+  @ExportFunction(readOnly = true, description = "Return content length")
   def content: String = currentBackingObject.content
+
+  @ExportFunction(readOnly = true, description = "Return file size")
+  def contentLength: Int = currentBackingObject.contentLength
 
   @ExportFunction(readOnly = true, description = "Return file name, excluding path")
   def filename: String = currentBackingObject.name

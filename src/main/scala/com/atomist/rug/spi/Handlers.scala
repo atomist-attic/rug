@@ -10,16 +10,31 @@ import scala.concurrent.Future
   */
 object Handlers {
 
-  case class Plan(messages: Seq[Message], instructions: Seq[Plannable]) extends Callback
+  case class Plan(messages: Seq[Message], instructions: Seq[Plannable]) extends Callback {
+    override def toDisplay: String = {
+      s"Plan[${(messages.map(_.toDisplay) ++ instructions.map(_.toDisplay)).mkString(", ")}]"
+    }
+  }
 
   case class Message(body: MessageBody,
                      instructions: Seq[Presentable],
-                     channelId: Option[String]) extends Callback
+                     channelId: Option[String]) extends Callback {
+    override def toDisplay: String = {
+      val channel = channelId match {
+        case Some(c) => s"$c: "
+        case None => ""
+      }
+      s"$channel'${body.value}'"
+    }
+  }
 
-  sealed trait Callback
+  sealed trait Callback {
+    def toDisplay: String
+  }
 
   sealed trait Plannable {
     def instruction: Instruction
+    def toDisplay = instruction.toDisplay
   }
 
   case class Respondable(instruction: RespondableInstruction,
@@ -34,6 +49,11 @@ object Handlers {
 
   sealed trait Instruction {
     def detail: Detail
+
+    def toDisplay: String = {
+      val name = this.getClass.getName.split('$').last
+      s"$name ${detail.name}(${detail.parameters.mkString(", ")})"
+    }
   }
 
   object Instruction {
@@ -77,16 +97,33 @@ object Handlers {
                              artifact: String) {
   }
 
-  sealed trait MessageBody
+  sealed trait MessageBody {
+    def value: String
+  }
 
-  case class JsonBody(json: String) extends MessageBody
+  case class JsonBody(json: String) extends MessageBody {
+    override def value: String = { json }
+  }
 
-  case class MessageText(text: String) extends MessageBody
+  case class MessageText(text: String) extends MessageBody {
+    override def value: String = { text }
+  }
 
   case class Response(status: Status,
                       msg: Option[String] = None,
                       code: Option[Int] = None,
-                      body: Option[AnyRef] = None)
+                      body: Option[AnyRef] = None) {
+    def toDisplay: String = {
+      val name = status.getClass.getName.split('$').last
+      val value = (msg, code) match {
+        case (Some(m), Some(c)) => s":$c:$m"
+        case (Some(m), None) => s":$m"
+        case (None, Some(c)) => s":${c.toString}"
+        case _ => ""
+      }
+      s"$name$value"
+    }
+  }
 
   case class PlanResult(log: Seq[PlanLogEvent])
 

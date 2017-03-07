@@ -16,6 +16,8 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest._
 import org.slf4j.Logger
 
+import org.mockito.Matchers.{eq => expected}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -174,7 +176,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
-    verify(logger).error("Failed to deliver message: MessageText(message1) - Uh oh!")
+    verify(logger).error(expected("Failed to deliver message: MessageText(message1) - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(instructionRunner, nestedPlanRunner, logger)
   }
@@ -198,7 +200,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
-    verify(logger).error("Failed to run instruction: Edit(Detail(fail,None,List(),None)) - Uh oh!")
+    verify(logger).error(expected("Failed to run instruction: Edit(Detail(fail,None,List(),None)) - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, nestedPlanRunner, logger)
   }
@@ -225,7 +227,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
     verify(logger).debug("Ran instruction: Edit(Detail(edit,None,List(),None)) and got response: Response(Success,None,Some(0),None)")
-    verify(logger).error("Failed to run Plan(List(Message(MessageText(fail),List(),None)),List()) after Edit(Detail(edit,None,List(),None)) - Uh oh!")
+    verify(logger).error(expected("Failed to run Plan(List(Message(MessageText(fail),List(),None)),List()) after Edit(Detail(edit,None,List(),None)) - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, logger)
   }

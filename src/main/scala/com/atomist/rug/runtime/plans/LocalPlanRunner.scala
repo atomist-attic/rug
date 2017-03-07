@@ -27,7 +27,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
       Try(messageDeliverer.deliver(message, callbackInput)) match {
         case ScalaFailure(error) =>
           val msg = s"Failed to deliver message: ${message.body} - ${error.getMessage}"
-          logger.error(msg)
+          logger.error(msg, error)
           Some(MessageDeliveryError(message, error))
         case ScalaSuccess(_) =>
           val msg = s"Delivered message: ${message.body}"
@@ -48,7 +48,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     Try { instructionRunner.run(plannable.instruction, callbackInput) } match {
       case ScalaFailure(error) =>
         val msg = s"Failed to run instruction: ${plannable.instruction} - ${error.getMessage}"
-        logger.error(msg)
+        logger.error(msg, error)
         Seq(InstructionError(plannable.instruction, error))
       case ScalaSuccess(response) =>
         val msg = s"Ran instruction: ${plannable.instruction} and got response: $response"
@@ -70,7 +70,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
           Try(handleCallback(callback, Some(response))) match {
             case ScalaFailure(error) =>
               val msg = s"Failed to run $callback after ${plannable.instruction} - ${error.getMessage}"
-              logger.error(msg)
+              logger.error(msg, error)
               Seq(CallbackError(callback, error))
             case ScalaSuccess(nestedPlanExecutionOption) =>
               val msg = s"Ran $callback after ${plannable.instruction}"

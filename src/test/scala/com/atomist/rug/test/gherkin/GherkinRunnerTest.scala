@@ -3,6 +3,7 @@ package com.atomist.rug.test.gherkin
 import javax.script.ScriptContext
 
 import com.atomist.parse.java.ParsingTargets
+import com.atomist.project.archive.{RugArchiveReader, RugArchiveReaderTest}
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -56,14 +57,14 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         |    }
         |}
         |
-        |let xx_editor = new AlpEditor()
+        |export let xx_editor = new AlpEditor()
       """.stripMargin
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/AlpEditor.ts", alpEditor),
       SimpleFeatureFile,
       EditorWithoutParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)))
     val run = grt.execute()
     assert(run.result === Passed)
     println(new TestReport(run).testSummary)
@@ -75,7 +76,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         SimpleFeatureFile,
         EditorWithParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -100,7 +101,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   it should "test a generator that copies starting content without parameters" in {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGenerator.ts")
-        .withPathAbove(".atomist/generators") +
+        .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
           StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
@@ -110,7 +111,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
     //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
     //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     //println(run.result)
@@ -120,7 +121,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   it should "test a generator that copies starting content with parameters" in {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
-        .withPathAbove(".atomist/generators") +
+        .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
           StringFileArtifact(".atomist/test/GenerationSteps.ts",
@@ -129,7 +130,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     //println(run.result)

@@ -96,8 +96,7 @@ object GherkinReaderTest {
       |})
       |When("politics takes its course", (p, w) => {
       |  let world = w as ProjectScenarioWorld
-      |  let e = new AlpEditor()
-      |  world.editWith(e)
+      |  world.editWith(world.editor("AlpEditor"), {})
       |})
       |Then("one edit was made", (p, world) => {
       | console.log(`Editors run=$${world.editorsRun()}`)
@@ -112,18 +111,16 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
       |
       |import {AlpEditor} from "../editors/AlpEditor"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
       |})
-      |When("politics takes its course", (p, world) => {
-      |  let e = new AlpEditor()
-      |  // Simply inject property
-      |  e.heir = "Paul"
-      |  world.editWith(e)
+      |When("politics takes its course", (p, w) => {
+      |  let world = w as ProjectScenarioWorld
+      |  world.editWith(world.editor("AlpEditor"), {heir: "Paul"})
       |})
       |Then("one edit was made", (p, world) => {
       | console.log(`Editors run=$${world.editorsRun()}`)
@@ -231,14 +228,12 @@ object GherkinReaderTest {
     s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
       |
-      |import {$gen} from "../generators/$gen"
-      |
-      |When("run simple generator", (p, world) => {
-      |  let g = new $gen()
-      |  ${params.map(p => s"g.${p._1}=${p._2}").mkString("\n")}
-      |  world.generateWith(g)
+      |When("run simple generator", (p, w) => {
+      |  let world = w as ProjectScenarioWorld
+      |  let g = world.generator("$gen")
+      |  world.generateWith(g, {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}})
       |})
       |Then("parameters were valid", (p, world) => !world.invalidParameters())
       |Then("we have Anders", p => {

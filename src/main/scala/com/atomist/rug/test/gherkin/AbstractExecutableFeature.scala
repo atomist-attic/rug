@@ -32,7 +32,8 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
   protected def createWorldForScenario(target: T): ScenarioWorld = new ScenarioWorld(definitions)
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
-    //println(s"\tExecuting test scenario ${scenario.getName}")
+    // TODO until we have proper event handling we need the println for the CLI
+    println(s"\tExecuting test scenario ${scenario.getName}")
     val fixture = createFixture
     val world = createWorldForScenario(fixture)
     val assertionResults: Seq[AssertionResult] =
@@ -40,10 +41,8 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
         step.getKeyword match {
           case "Given " =>
             runGiven(fixture, world, step)
-            None
           case "When " =>
             runWhen(fixture, world, step)
-            None
           case "Then " =>
             Some(runThen(fixture, world, step))
         }
@@ -79,25 +78,39 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
     }
   }
 
-  private def runWhen(target: T, world: Object, step: Step) = {
+  private def runWhen(target: T, world: Object, step: Step): Option[AssertionResult] = {
     val somo = definitions.whenFor(step.getText)
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        callFunction(som, target, world)
+        callFunction(som, target, world) match {
+          case Left(t) =>
+            logger.error(t.getMessage, t)
+            Option(AssertionResult(step.getText, Failed(t.getMessage)))
+          case _ =>
+            None
+        }
       case None =>
         logger.info(s"When [${step.getText}] not yet implemented")
+        None
     }
   }
 
-  private def runGiven(target: T, world: Object, step: Step) = {
+  private def runGiven(target: T, world: Object, step: Step): Option[AssertionResult] = {
     val somo = definitions.givenFor(step.getText)
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        callFunction(som, target, world)
+        callFunction(som, target, world) match {
+          case Left(t) =>
+            logger.error(t.getMessage, t)
+            Option(AssertionResult(step.getText, Failed(t.getMessage)))
+          case _ =>
+            None
+        }
       case None =>
         logger.info(s"Given [${step.getText}] not yet implemented")
+        None
     }
   }
 

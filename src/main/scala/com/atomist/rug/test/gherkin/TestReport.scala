@@ -14,7 +14,7 @@ class TestReport(archiveTestResult: ArchiveTestResult) {
       .filter(_.result.isInstanceOf[Failed])
 
   def notYetImplemented: Seq[FeatureResult] = archiveTestResult.featureResults
-    .filter(_.result == NotYetImplemented)
+    .filter(_.result.isInstanceOf[NotYetImplemented])
 
   def testSummary: String = s"Test report: " +
     s"${passedTests.size} of ${archiveTestResult.testCount} tests passed\n" +

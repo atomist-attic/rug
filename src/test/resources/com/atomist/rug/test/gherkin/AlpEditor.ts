@@ -14,4 +14,4 @@ export class AlpEditor implements ProjectEditor {
     }
 }
 
-let xx_editor = new AlpEditor()
+export let xx_editor = new AlpEditor()

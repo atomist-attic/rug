@@ -26,11 +26,11 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     val messageLog: Seq[MessageDeliveryError] = plan.messages.flatMap { message =>
       Try(messageDeliverer.deliver(message, callbackInput)) match {
         case ScalaFailure(error) =>
-          val msg = s"Failed to deliver message: ${message.body} - ${error.getMessage}"
+          val msg = s"Failed to deliver message ${message.toDisplay} - ${error.getMessage}"
           logger.error(msg, error)
           Some(MessageDeliveryError(message, error))
         case ScalaSuccess(_) =>
-          val msg = s"Delivered message: ${message.body}"
+          val msg = s"Delivered message ${message.toDisplay}"
           logger.debug(msg)
           None
       }
@@ -47,11 +47,11 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
   private def handleInstruction(plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
     Try { instructionRunner.run(plannable.instruction, callbackInput) } match {
       case ScalaFailure(error) =>
-        val msg = s"Failed to run instruction: ${plannable.instruction} - ${error.getMessage}"
+        val msg = s"Failed to run ${plannable.toDisplay} - ${error.getMessage}"
         logger.error(msg, error)
         Seq(InstructionError(plannable.instruction, error))
       case ScalaSuccess(response) =>
-        val msg = s"Ran instruction: ${plannable.instruction} and got response: $response"
+        val msg = s"Ran ${plannable.toDisplay} and then ${response.toDisplay}"
         logger.debug(msg)
         val callbackOption: Option[Callback] = plannable match {
           case nr: Nonrespondable =>
@@ -69,11 +69,11 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
         val callbackResults: Option[Seq[PlanLogEvent]] = callbackOption.map { callback =>
           Try(handleCallback(callback, Some(response))) match {
             case ScalaFailure(error) =>
-              val msg = s"Failed to run $callback after ${plannable.instruction} - ${error.getMessage}"
+              val msg = s"Failed to invoke ${callback.toDisplay} after ${plannable.toDisplay} - ${error.getMessage}"
               logger.error(msg, error)
               Seq(CallbackError(callback, error))
             case ScalaSuccess(nestedPlanExecutionOption) =>
-              val msg = s"Ran $callback after ${plannable.instruction}"
+              val msg = s"Invoked ${callback.toDisplay} after ${plannable.toDisplay}"
               logger.debug(msg)
               nestedPlanExecutionOption
           }

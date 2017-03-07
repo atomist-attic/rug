@@ -22,7 +22,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest with MockitoSugar  {
+class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest with MockitoSugar with DiagrammedAssertions {
 
   val messageDeliverer = mock[MessageDeliverer]
   val instructionRunner = mock[InstructionRunner]
@@ -76,7 +76,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     val instructionNameAsSuccessResponseBody = new Answer[Response]() {
       def answer(invocation: InvocationOnMock) = {
         val input = invocation.getArgumentAt(0, classOf[Instruction]).detail.name
-        Response(Success, None, Some(0), Some(input))
+        Response(Success, Some(input), Some(0), None)
       }
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsSuccessResponseBody)
@@ -86,11 +86,11 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
-      InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success, None, Some(0), Some("edit1"))),
-      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, None, Some(0), Some("edit2"))),
-      InstructionResult(Edit(Detail("edit3", None, Nil, None)), Response(Success, None, Some(0), Some("edit3"))),
-      InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, None, Some(0), Some("edit4"))),
-      InstructionResult(Respond(Detail("respond1", None, Nil, None)),Response(Success,None,Some(0),Some("respond1"))),
+      InstructionResult(Edit(Detail("edit1", None, Nil, None)), Response(Success, Some("edit1"), Some(0), None)),
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, Some("edit2"), Some(0), None)),
+      InstructionResult(Edit(Detail("edit3", None, Nil, None)), Response(Success, Some("edit3"), Some(0), None)),
+      InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, Some("edit4"), Some(0), None)),
+      InstructionResult(Respond(Detail("respond1", None, Nil, None)),Response(Success, Some("respond1"), Some(0), None)),
       NestedPlanRun(Plan(List(Message(MessageText("nested plan"), Nil, None)), Nil),
         Future(PlanResult(List(MessageDeliveryError(Message(MessageText("nested plan"), Nil, None), null)))))
       )
@@ -102,21 +102,21 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       None)
     verify(instructionRunner).run(Edit(Detail("edit1", None, Nil, None)), None)
     verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
-    verify(messageDeliverer).deliver(Message(MessageText("pass"), Nil, None), Some(Response(Success,None,Some(0),Some("edit2"))))
+    verify(messageDeliverer).deliver(Message(MessageText("pass"), Nil, None), Some(Response(Success, Some("edit2"), Some(0), None)))
     verify(instructionRunner).run(Edit(Detail("edit3", None, Nil, None)), None)
-    verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Success, None, Some(0), Some("edit3"))))
+    verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Success, Some("edit3"), Some(0), None)))
     verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), None)
-    verify(nestedPlanRunner).run(Plan(Seq(Message(MessageText("nested plan"), Nil, None)), Nil), Some(Response(Success,None,Some(0),Some("edit4"))))
+    verify(nestedPlanRunner).run(Plan(Seq(Message(MessageText("nested plan"), Nil, None)), Nil), Some(Response(Success, Some("edit4"), Some(0), None)))
 
-    verify(logger).debug("Delivered message: MessageText(message1)")
-    verify(logger).debug("Ran instruction: Edit(Detail(edit1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit1))")
-    verify(logger).debug("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit2))")
-    verify(logger).debug("Ran instruction: Edit(Detail(edit3,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit3))")
-    verify(logger).debug("Ran instruction: Edit(Detail(edit4,None,List(),None)) and got response: Response(Success,None,Some(0),Some(edit4))")
-    verify(logger).debug("Ran instruction: Respond(Detail(respond1,None,List(),None)) and got response: Response(Success,None,Some(0),Some(respond1))")
-    verify(logger).debug("Ran Message(MessageText(pass),List(),None) after Edit(Detail(edit2,None,List(),None))")
-    verify(logger).debug("Ran Respond(Detail(respond1,None,List(),None)) after Edit(Detail(edit3,None,List(),None))")
-    verify(logger).debug("Ran Plan(List(Message(MessageText(nested plan),List(),None)),List()) after Edit(Detail(edit4,None,List(),None))")
+    verify(logger).debug("Delivered message 'message1'")
+    verify(logger).debug("Ran Edit edit1() and then Success:0:edit1")
+    verify(logger).debug("Ran Edit edit2() and then Success:0:edit2")
+    verify(logger).debug("Ran Edit edit3() and then Success:0:edit3")
+    verify(logger).debug("Ran Edit edit4() and then Success:0:edit4")
+    verify(logger).debug("Ran Respond respond1() and then Success:0:respond1")
+    verify(logger).debug("Invoked 'pass' after Edit edit2()")
+    verify(logger).debug("Invoked Respond respond1() after Edit edit3()")
+    verify(logger).debug("Invoked Plan['nested plan'] after Edit edit4()")
 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
@@ -134,28 +134,34 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     val instructionNameAsFailureResponseBody = new Answer[Response]() {
       def answer(invocation: InvocationOnMock) = {
         val input = invocation.getArgumentAt(0, classOf[Instruction]).detail.name
-        Response(Failure, None, Some(0), Some(input))
+        Response(Failure, Some(input), Some(0), None)
       }
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsFailureResponseBody)
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
     val expectedPlanLog = Set(
-      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, None, Some(0), Some("edit2")))
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, Some("edit2"), Some(0), None))
     )
     assert(actualPlanResult.log.toSet == expectedPlanLog)
 
     val inOrder = Mockito.inOrder(messageDeliverer, instructionRunner, nestedPlanRunner)
     inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
-    inOrder.verify(messageDeliverer).deliver(Message(MessageText("fail"), Nil, None ), Some(Response(Failure, None, Some(0), Some("edit2"))))
+    inOrder.verify(messageDeliverer).deliver(Message(MessageText("fail"), Nil, None ), Some(Response(Failure, Some("edit2"), Some(0), None)))
 
-    verify(logger).debug("Ran instruction: Edit(Detail(edit2,None,List(),None)) and got response: Response(Failure,None,Some(0),Some(edit2))")
-    verify(logger).debug("Ran Message(MessageText(fail),List(),None) after Edit(Detail(edit2,None,List(),None))")
+    verify(logger).debug("Ran Edit edit2() and then Failure:0:edit2")
+    verify(logger).debug("Invoked 'fail' after Edit edit2()")
 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
 
-  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => PlanUtils.drawEventLogs("events", log.toSeq)
+  val makeEventsComparable = (log: Iterable[PlanLogEvent]) => log.map {
+    case InstructionResult(i, r) => (i, r)
+    case NestedPlanRun(p, f) => (p, f.value.get)
+    case InstructionError(i, e) => (i, e.getMessage)
+    case MessageDeliveryError(m, e) => (m, e.getMessage)
+    case CallbackError(c, e) => (c, e.getMessage)
+  }
 
   it ("should handle error during message delivery") {
     val plan = Plan(
@@ -176,7 +182,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
-    verify(logger).error(expected("Failed to deliver message: MessageText(message1) - Uh oh!"), any(classOf[Throwable]))
+    verify(logger).error(expected("Failed to deliver message 'message1' - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(instructionRunner, nestedPlanRunner, logger)
   }
@@ -200,7 +206,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
-    verify(logger).error(expected("Failed to run instruction: Edit(Detail(fail,None,List(),None)) - Uh oh!"), any(classOf[Throwable]))
+    verify(logger).error(expected("Failed to run Edit fail() - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, nestedPlanRunner, logger)
   }
@@ -216,18 +222,18 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
         )
       )
     )
-    when(instructionRunner.run(any(), any())).thenReturn(Response(Success, None, Some(0), None))
+    when(instructionRunner.run(any(), any())).thenReturn(Response(Success, None, None, None))
     when(nestedPlanRunner.run(any(), any())).thenThrow(new IllegalStateException("Uh oh!"))
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
-      InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, Some(0), None)),
+      InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, None, None)),
       CallbackError(Plan(List(Message(MessageText("fail"), Nil, None)), Nil), new IllegalArgumentException("Uh oh!"))
     )
-    assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
+    assert(makeEventsComparable(actualPlanResult.log.toSet) === makeEventsComparable(expectedPlanLog))
 
-    verify(logger).debug("Ran instruction: Edit(Detail(edit,None,List(),None)) and got response: Response(Success,None,Some(0),None)")
-    verify(logger).error(expected("Failed to run Plan(List(Message(MessageText(fail),List(),None)),List()) after Edit(Detail(edit,None,List(),None)) - Uh oh!"), any(classOf[Throwable]))
+    verify(logger).debug("Ran Edit edit() and then Success")
+    verify(logger).error(expected("Failed to invoke Plan['fail'] after Edit edit() - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, logger)
   }

@@ -1,12 +1,15 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.param.SimpleParameterValues
+import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor}
+import com.atomist.rug.EditorNotFoundException
 import com.atomist.rug.kind.java.JavaTypeUsageTest
+import com.atomist.rug.runtime.{AddressableRug, ParameterizedRug, Rug}
 import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.file.FileSystemArtifactSource
-import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
@@ -79,10 +82,30 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.name === "demo")
   }
 
+
   it should "correctly calculate totalFileCount" in {
     val as = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(as)
     assert(pmv.totalFileCount === as.totalFileCount)
+  }
+
+  it should "throw MissingEditorException if an editor cannot be found via editWith" in {
+    val as = ParsingTargets.NewStartSpringIoProject
+    as.isInstanceOf[FileSystemArtifactSource] should be(true)
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(EditorStub))
+    assertThrows[EditorNotFoundException] {
+      pmv.editWith("blah", None)
+    }
+  }
+
+  it should "throw MissingEditorException with a helpful message if we can help" in {
+    val as = ParsingTargets.NewStartSpringIoProject
+    as.isInstanceOf[FileSystemArtifactSource] should be(true)
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(EditorStub))
+    val caught = intercept[EditorNotFoundException] {
+      pmv.editWith("fully:qualified:EditorStub", None)
+    }
+    assert(caught.getMessage === "Could not find editor: fully:qualified:EditorStub. Did you mean: EditorStub?")
   }
 
 
@@ -412,4 +435,24 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.files.asScala.map(_.path).contains(oldPath) should be(false)
     pmv.files.asScala.map(_.path).contains(newPath) should be(true)
   }
+}
+
+private object EditorStub extends ProjectEditor {
+  override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = ???
+  override def applicability(as: ArtifactSource): Applicability = ???
+  override def name: String = "EditorStub"
+  override def description: String = ???
+  override def tags: Seq[Tag] = ???
+  override def findRug(simpleOrFq: String): Option[Rug] = {
+    if(simpleOrFq == "EditorStub"){
+      Some(this)
+    }else{
+      None
+    }
+  }
+  override def findParameterizedRug(simpleOrFq: String): Option[ParameterizedRug] = ???
+  override def allRugs: Seq[Rug] = Nil
+  override def addToArchiveContext(rugs: Seq[Rug]): Unit = ???
+  override def externalContext: Seq[AddressableRug] = ???
+  override def archiveContext: Seq[Rug] = ???
 }

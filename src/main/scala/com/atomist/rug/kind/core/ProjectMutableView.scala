@@ -6,7 +6,7 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.{MissingRugException, RugRuntimeException}
+import com.atomist.rug.{EditorNotFoundException, MissingRugException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
@@ -17,6 +17,7 @@ import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTre
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
+import org.apache.commons.lang.StringUtils
 
 import scala.util.Properties
 
@@ -428,14 +429,23 @@ class ProjectMutableView(
           case wtf =>
             throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
         }
-        case _ => throw new MissingRugException(s"Unable to find editor: [$editorName]")
+        case None =>
+          if(editorName.contains(":")){
+            val shortName = StringUtils.substringAfterLast(editorName, ":")
+            if(rug.findRug(shortName).nonEmpty){
+              throw new EditorNotFoundException(s"Could not find editor: $editorName. Did you mean: $shortName?")
+            }
+          }
+          throw new EditorNotFoundException(editorName, rug.allRugs);
+        case _ =>
+          throw new EditorNotFoundException(editorName, rug.allRugs);
       }
       case _ => throw new RugRuntimeException(name, s"No Rug context in which to find other editor: [$editorName]")
     }
   }
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
-  protected def editWith(
+  def editWith(
                           @ExportFunctionParameterDescription(name = "editorName",
                             description = "Name of the editor to invoke")
                           editorName: String,
@@ -447,6 +457,7 @@ class ProjectMutableView(
         // The user has created a new JavaScript object, as in { foo: "bar" },
         // to pass up as an argument to the invoked editor. Extract its properties
         NashornUtils.extractProperties(som)
+      case _ => Map.empty
     }
     editWith(editorName, m)
   }

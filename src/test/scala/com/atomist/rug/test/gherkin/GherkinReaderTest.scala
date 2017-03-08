@@ -47,6 +47,7 @@ object GherkinReaderTest {
       | Given an empty project
       | Given a visionary leader
       | When politics takes its course
+      | Then changes were made
       | Then one edit was made
       | Then the rage is maintained
     """.stripMargin
@@ -79,6 +80,7 @@ object GherkinReaderTest {
       |When("politics takes its course", (p, world) => {
       | //console.log(`The world is $${world}`)
       |})
+      |Then("changes were made", p => true) // Override this one for this test
       |Then("one edit was made", p => true)
       |Then("the rage is maintained", p => p.fileExists("Gough"))
     """.stripMargin

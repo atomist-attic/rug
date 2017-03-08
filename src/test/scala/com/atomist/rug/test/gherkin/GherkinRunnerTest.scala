@@ -3,11 +3,11 @@ package com.atomist.rug.test.gherkin
 import javax.script.ScriptContext
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.archive.{RugArchiveReader, RugArchiveReaderTest}
+import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
 

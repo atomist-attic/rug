@@ -90,7 +90,7 @@ class XmlMutableView(
   import XmlMutableView._
 
   @ExportFunction(readOnly = false, description = "Add the specified content under the indicated xpath-selected node")
-  private def addChildNode(@ExportFunctionParameterDescription(name = "xpath",
+  def addChildNode(@ExportFunctionParameterDescription(name = "xpath",
     description = "The XPath selector for the node to add the content under")
                            xpath: String,
                            @ExportFunctionParameterDescription(name = "newNode",

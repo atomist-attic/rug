@@ -247,4 +247,18 @@ object GherkinReaderTest {
       |})
     """.stripMargin
 
+  def generateWithInvalidParameters(gen: String, params: Map[String,String]): String =
+    s"""
+       |import {Project} from "@atomist/rug/model/Core"
+       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
+       |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
+       |
+       |When("run simple generator", (p, w) => {
+       |  let world = w as ProjectScenarioWorld
+       |  let g = world.generator("$gen")
+       |  world.generateWith(g, {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}})
+       |})
+    """.stripMargin
+
+
 }

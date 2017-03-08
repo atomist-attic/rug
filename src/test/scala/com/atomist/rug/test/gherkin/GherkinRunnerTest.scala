@@ -7,9 +7,10 @@ import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
+import org.springframework.expression.spel.ast.AstUtils
 
 class GherkinRunnerTest extends FlatSpec with Matchers {
 
@@ -130,32 +131,40 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     //println(run.result)
     assert(run.result === Passed)
   }
 
-  it should "test giving a generator invalid parameters" in pendingUntilFixed {
+  it should "test passing generator invalid parameters" in {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
-        .withPathAbove(".atomist/generators") +
-        SimpleFileBasedArtifactSource(
-          GenerationFeatureFile,
+        .withPathAbove(".atomist/editors") +
+        SimpleFileBasedArtifactSource(StringFileArtifact("Simple.feature",
+          """
+            |Feature: Generate a new project
+            | This is a test
+            | to see whether
+            | we can test project generators
+            |
+            |Scenario: New project should have content from template
+            | Given an empty project
+            | When run simple generator
+            | Then parameters were invalid
+          """.stripMargin),
           StringFileArtifact(".atomist/test/GenerationSteps.ts",
-            // Fails due to numbers
-            generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1 God`")))
+            generateWithInvalidParameters("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1God`")))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
-    println(run.result)
-    assert(run.result.isInstanceOf[Failed])
-    assert(!run.featureResults.exists(fr => fr.assertions.exists(_.passed)))
+    //println(run.result)
+    assert(run.result === Passed)
   }
 
   /**

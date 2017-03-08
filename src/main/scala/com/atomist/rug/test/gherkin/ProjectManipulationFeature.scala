@@ -38,6 +38,9 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
 
+  /**
+    * Return the editor with the given name or throw an exception
+    */
   def editor(name: String): ProjectEditor = {
     rugs match {
       case Some(r) =>
@@ -50,6 +53,10 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
     }
   }
 
+  /**
+    * Return the generator with the given name.
+    * Throw an exception if it can't be found.
+    */
   def generator(name: String): ProjectGenerator = {
     rugs match {
       case Some(r) =>
@@ -103,13 +110,6 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
     case Right(_: FailedModificationAttempt) => true
     case _ => false
   }
-
-  /**
-    * Last invalid parameters issue
-    */
-  def invalidParameters: InvalidParametersException = editorResults.collect {
-    case Left(ipe: InvalidParametersException) => ipe
-  }.lastOption.orNull
 
   def editorsRun: Int = editorResults.size
 

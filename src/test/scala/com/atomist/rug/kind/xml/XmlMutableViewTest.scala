@@ -177,6 +177,12 @@ class XmlMutableViewTest extends FlatSpec with Matchers {
     xv.contains(nodeToReplaceXpathSelector) should be (false)
   }
 
+  it should "add child nodes" in {
+    val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+    xv.addChildNode("/project", "testnode", "<testcontent>blah</testcontent>")
+    assert(xv.contains("/project/testcontent[text()='blah']") === true)
+  }
+
   it should "successfully execute a combinatorial selection" in {
     val xv = new XmlMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     val validCombinationXPath = s"/project/dependencies/dependency/artifactId[text()='spring-boot-starter-web' and ../groupId[text() = 'org.springframework.boot']]"

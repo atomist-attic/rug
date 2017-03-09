@@ -80,7 +80,6 @@ class ProjectScenarioWorld( definitions: Definitions,
       case Left(unknown) =>
         throw unknown
     }
-    //println(s"EditorRuns=${editorResults}")
   }
 
   def modificationsMade: Boolean = editorResults.exists {

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Upgraded TypeScript to 2.2.1 via rug-typescript-compiler 0.12.0
 -   **BREAKING** Removed Rug DSL-based BDD support. Use new Gherkin-based support.
 -   **BREAKING** Removed rug namespace support in preference to common approach of group:artifact:name
     This means that DSL based rugs no longer contain their namepsace in their name

@@ -55,6 +55,7 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
         }
       })
     val sr = ScenarioResult(scenario, assertionResults, "")
+    println(s"\tCompleted test scenario ${scenario.getName}")
     //println(sr)
     sr
   }
@@ -95,8 +96,9 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
             // Can sometimes get this wrapped
             world.logInvalidParameters(e.getCause.asInstanceOf[InvalidParametersException])
           case Left(t) =>
-            world.abort()
+            println(s"\t\t${t.getMessage}")
             logger.error(t.getMessage, t)
+            world.abort()
           case _ =>
             // Do nothing
         }
@@ -112,9 +114,10 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, target, world) match {
           case Left(t) =>
+            println(s"\t\t${t.getMessage}")
             logger.error(t.getMessage, t)
             world.abort()
-          case _ =>
+            case _ =>
             // OK
         }
       case None =>

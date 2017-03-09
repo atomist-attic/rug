@@ -2,6 +2,7 @@ package com.atomist.rug.test.gherkin
 
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.test.gherkin.project.ProjectManipulationFeature
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}
 
@@ -114,7 +115,7 @@ trait GherkinExecutionListener {
   * Simple no-op GherkinExecutionListener allowing clients to overwrite just certain
   * methods of interest
   */
-class GerkinExecutionListenerAdapter extends GherkinExecutionListener {
+class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 
   override def featureStarting(feature: FeatureDefinition): Unit = {}
 

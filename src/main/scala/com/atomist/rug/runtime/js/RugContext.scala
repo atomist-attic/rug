@@ -9,6 +9,7 @@ import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
   * Editors or Executors or Handlers etc.
   */
 trait RugContext {
+
   def pathExpressionEngine: jsPathExpressionEngine
 
   /**
@@ -27,7 +28,7 @@ object LocalRugContext extends RugContext {
 
   var _treeMaterializer: TreeMaterializer = IdentityTreeMaterializer
 
-  def apply(trees: TreeMaterializer) = {
+  def apply(trees: TreeMaterializer): LocalRugContext.type = {
     this._treeMaterializer = trees
     this
   }

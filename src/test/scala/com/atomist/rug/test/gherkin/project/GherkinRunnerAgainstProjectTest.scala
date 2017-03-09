@@ -1,4 +1,4 @@
-package com.atomist.rug.test.gherkin
+package com.atomist.rug.test.gherkin.project
 
 import javax.script.ScriptContext
 
@@ -6,17 +6,19 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import gherkin.ast.ScenarioDefinition
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
 
-class GherkinRunnerTest extends FlatSpec with Matchers {
+class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   import GherkinReaderTest._
+  import ProjectTestTargets._
 
-  "Gherkin runner" should "fail without JS" in {
+  "Gherkin project testing" should "fail without JS" in {
     val el = new TestExecutionListener
     val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
     val grt = new GherkinRunner(new JavaScriptContext(as), None, Seq(el))
@@ -87,7 +89,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
-    //println(new TestReport(run).testSummary)
     assert(el.fsCount == 1)
     assert(el.fcCount == 1)
     assert(el.ssCount == 1)
@@ -100,7 +101,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/test/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/test/project/CorruptionSteps.ts", CorruptionTest)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
@@ -118,17 +119,14 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
+          StringFileArtifact(".atomist/test/project/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
-    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result === Passed)
     assert(el.fsCount == 1)
     assert(el.fcCount == 1)
@@ -144,7 +142,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts",
+          StringFileArtifact(".atomist/test/project/GenerationSteps.ts",
             generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is God`")))
         )
 
@@ -153,7 +151,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result === Passed)
   }
 
@@ -161,7 +158,8 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
         .withPathAbove(".atomist/editors") +
-        SimpleFileBasedArtifactSource(StringFileArtifact("Simple.feature",
+        SimpleFileBasedArtifactSource(StringFileArtifact(
+          ".atomist/test/project/Simple.feature",
           """
             |Feature: Generate a new project
             | This is a test
@@ -173,7 +171,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
             | When run simple generator
             | Then parameters were invalid
           """.stripMargin),
-          StringFileArtifact(".atomist/test/GenerationSteps.ts",
+          StringFileArtifact(".atomist/test/project/GenerationSteps.ts",
             generateWithInvalidParameters("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1God`")))
         )
 
@@ -182,7 +180,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result === Passed)
   }
 
@@ -195,7 +192,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/GenerationSteps.ts", generationTest("FailingGenerator", Map()))
+          StringFileArtifact(".atomist/test/project/GenerationSteps.ts", generationTest("FailingGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
@@ -203,7 +200,6 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result.isInstanceOf[Failed])
   }
 
@@ -211,7 +207,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/test/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/test/project/CorruptionSteps.ts", CorruptionTest)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt1 = new GherkinRunner(new JavaScriptContext(cas))
@@ -228,7 +224,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
   }
 
-  class TestExecutionListener extends GerkinExecutionListenerAdapter {
+  class TestExecutionListener extends GherkinExecutionListenerAdapter {
 
     var fsCount = 0
     var fcCount = 0

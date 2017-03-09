@@ -1,41 +1,23 @@
-package com.atomist.rug.test.gherkin
+package com.atomist.rug.test.gherkin.project
 
-import com.atomist.param.{ParameterValues, SimpleParameterValue, SimpleParameterValues}
+import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.edit._
+import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.runtime.js.JavaScriptProjectOperation
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
-import jdk.nashorn.api.scripting.ScriptObjectMirror
-
-/**
-  * Executable feature that manipulates projects
-  */
-private[gherkin] class ProjectManipulationFeature(
-                                                   definition: FeatureDefinition,
-                                                   definitions: Definitions,
-                                                   rugArchive: ArtifactSource,
-                                                   rugs: Option[Rugs] = None,
-                                                   listeners: Seq[GherkinExecutionListener] = Nil)
-  extends AbstractExecutableFeature[ProjectMutableView](definition, definitions, listeners) {
-
-  override protected def createFixture = new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
-
-  override protected def createWorldForScenario(fixture: ProjectMutableView): ScenarioWorld = {
-    new ProjectScenarioWorld(definitions, fixture, rugs)
-  }
-}
-
+import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.rug.test.gherkin._
 
 /**
   * Convenient methods for working with projects
   */
-class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView, rugs: Option[Rugs] = None)
-  extends ScenarioWorld(definitions) {
+class ProjectScenarioWorld( definitions: Definitions,
+                            project: ProjectMutableView,
+                            rugs: Option[Rugs] = None)
+  extends ScenarioWorld(definitions, rugs) {
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
 
@@ -65,7 +47,7 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
           case Some(g) => g
           case _ => throw new RugNotFoundException(
             s"Generator with name '$name' can not be found in current context. Known generators are [${r.generatorNames.mkString(", ")}]")
-      }
+        }
       case _ => throw new RugNotFoundException("No context provided")
     }
   }
@@ -92,13 +74,12 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
       case Right(sm: SuccessfulModification) =>
         project.updateTo(sm.result)
       case Right(_) =>
-        // We've already logged it. Do nothing
+      // We've already logged it. Do nothing
       case Left(ipe: InvalidParametersException) =>
         ???
       case Left(unknown) =>
         throw unknown
     }
-    //println(s"EditorRuns=${editorResults}")
   }
 
   def modificationsMade: Boolean = editorResults.exists {
@@ -119,20 +100,9 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
   private def validateParams(op: JavaScriptProjectOperation): Unit = {
     // Pull parameters from script object mirror
     val paramValues = op.jsVar.getOwnKeys(true).map(k => {
-      //println(s"Found key: $k")
       SimpleParameterValue(k, NashornUtils.stringProperty(op.jsVar, k, ""))
     })
     op.validateParameters(SimpleParameterValues(paramValues))
-  }
-
-  private def parameters(params: Any): ParameterValues = {
-    val m: Map[String, Object] = params match {
-      case som: ScriptObjectMirror =>
-        // The user has created a new JavaScript object, as in { foo: "bar" },
-        // to pass up as an argument to the invoked editor. Extract its properties
-        NashornUtils.extractProperties(som)
-    }
-    SimpleParameterValues(m)
   }
 
 }

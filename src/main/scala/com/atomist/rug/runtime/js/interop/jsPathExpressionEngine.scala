@@ -43,7 +43,7 @@ case class jsMatch(root: TreeNode, matches: _root_.java.util.List[jsSafeCommitti
 class jsPathExpressionEngine(
                               rugContext: RugContext,
                               val ee: ExpressionEngine = new PathExpressionEngine,
-                              typeRegistry: TypeRegistry = DefaultTypeRegistry) {
+                              val typeRegistry: TypeRegistry = DefaultTypeRegistry) {
 
   import jsSafeCommittingProxy._
 
@@ -98,7 +98,7 @@ class jsPathExpressionEngine(
     val hydrated = rugContext.treeMaterializer.hydrate(rugContext.teamId, toUnderlyingTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
-        val m = jsMatch(root, wrap(nodes))
+        val m = jsMatch(root, wrap(nodes, typeRegistry))
         m
       case Left(_) =>
         jsMatch(root, Collections.emptyList())
@@ -195,7 +195,7 @@ class jsPathExpressionEngine(
     (typ, rootTn) match {
       case (cr: ChildResolver, mv: MutableView[_]) =>
         val kids = cr.findAllIn(mv).getOrElse(Nil)
-        wrap(kids)
+        wrap(kids, typeRegistry)
       case _ => ???
     }
   }

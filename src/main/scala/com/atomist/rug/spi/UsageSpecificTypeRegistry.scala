@@ -9,7 +9,7 @@ class UsageSpecificTypeRegistry(delegate: TypeRegistry,
                                 newTypes: Seq[Typed]) extends TypeRegistry {
 
   override def findByName(kind: String): Option[Typed] =
-    newTypes.find(t => kind.equals(t.name)).orElse(delegate.findByName(kind))
+    newTypes.find(t => kind == t.name).orElse(delegate.findByName(kind))
 
   override def typeNames: Traversable[String] =
     newTypes.map(_.name) ++ delegate.typeNames

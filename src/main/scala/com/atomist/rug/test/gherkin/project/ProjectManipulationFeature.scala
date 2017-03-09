@@ -12,14 +12,11 @@ class ProjectManipulationFeature(
                                   definition: FeatureDefinition,
                                   definitions: Definitions,
                                   rugArchive: ArtifactSource,
-                                  rugs: Option[Rugs] = None,
+                                  rugs: Option[Rugs],
                                   listeners: Seq[GherkinExecutionListener] = Nil)
-  extends AbstractExecutableFeature[ProjectMutableView, ProjectScenarioWorld](definition, definitions, listeners) {
+  extends AbstractExecutableFeature[ProjectScenarioWorld](definition, definitions, rugs, listeners) {
 
-  override protected def createFixture =
-    new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
-
-  override protected def createWorldForScenario(fixture: ProjectMutableView): ScenarioWorld = {
-    new ProjectScenarioWorld(definitions, fixture, rugs)
+  override protected def createWorldForScenario: ScenarioWorld = {
+    new ProjectScenarioWorld(definitions, rugs)
   }
 }

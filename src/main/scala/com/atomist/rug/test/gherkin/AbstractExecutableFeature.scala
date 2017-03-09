@@ -1,6 +1,7 @@
 package com.atomist.rug.test.gherkin
 
 import com.atomist.graph.GraphNode
+import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.runtime.js.interop.{NashornUtils, jsSafeCommittingProxy}
 import com.typesafe.scalalogging.LazyLogging
@@ -12,9 +13,10 @@ import scala.collection.JavaConverters._
 /**
   * Superclass for all features, regardless of what they act on
   */
-abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
+abstract class AbstractExecutableFeature[W <: ScenarioWorld](
                                           val definition: FeatureDefinition,
                                           val definitions: Definitions,
+                                          val rugs: Option[Rugs],
                                           listeners: Seq[GherkinExecutionListener] = Nil)
   extends LazyLogging {
 
@@ -25,30 +27,27 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
     )
   }
 
-  protected def createFixture: T
-
   /**
-    * Create a world for overall context, based on the fixture.
+    * Create a world for overall context
     * This creates a default world.
     */
-  protected def createWorldForScenario(target: T): ScenarioWorld
+  protected def createWorldForScenario(): ScenarioWorld
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
     listeners.foreach(_.scenarioStarting(scenario))
-    val fixture = createFixture
-    val world = createWorldForScenario(fixture)
+    val world = createWorldForScenario()
     val assertionResults: Seq[AssertionResult] =
       scenario.getSteps.asScala.flatMap(step => {
         listeners.foreach(_.stepStarting(step))
         val result = step.getKeyword match {
           case "Given " if !world.aborted =>
-            runGiven(fixture, world, step)
+            runGiven(world, step)
             None
           case "When " if !world.aborted =>
-            runWhen(fixture, world, step)
+            runWhen(world, step)
             None
           case "Then " if !world.aborted =>
-            Some(runThen(fixture, world, step))
+            Some(runThen(world, step))
           case "Then " if world.aborted =>
             Some(AssertionResult(step.getText, Failed("Scenario aborted: Could not evaluate")))
           case _ =>
@@ -62,12 +61,12 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
     sr
   }
 
-  private def runThen(target: T, world: ScenarioWorld, step: Step): AssertionResult = {
+  private def runThen(world: ScenarioWorld, step: Step): AssertionResult = {
     val somo = definitions.thenFor(step.getText)
     logger.debug(s"Then for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        val r = callFunction(som, target, world)
+        val r = callFunction(som, world)
         r match {
           case Right(b: java.lang.Boolean) =>
             AssertionResult(step.getText, Result(b, som.toString))
@@ -84,12 +83,12 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
     }
   }
 
-  private def runWhen(target: T, world: ScenarioWorld, step: Step): Unit = {
+  private def runWhen(world: ScenarioWorld, step: Step): Unit = {
     val somo = definitions.whenFor(step.getText)
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        callFunction(som, target, world) match {
+        callFunction(som, world) match {
           case Left(ipe: InvalidParametersException) =>
             listeners.foreach(_.stepFailed(step, ipe))
             world.logInvalidParameters(ipe)
@@ -109,12 +108,12 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
     }
   }
 
-  private def runGiven(target: T, world: ScenarioWorld, step: Step):Unit = {
+  private def runGiven(world: ScenarioWorld, step: Step):Unit = {
     val somo = definitions.givenFor(step.getText)
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
       case Some(som) =>
-        callFunction(som, target, world) match {
+        callFunction(som, world) match {
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
@@ -128,12 +127,12 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
   }
 
   // Call a ScriptObjectMirror function with appropriate error handling
-  private def callFunction(som: ScriptObjectMirror, target: T, world: Object): Either[Throwable,Object] = {
+  private def callFunction(som: ScriptObjectMirror, world: ScenarioWorld): Either[Throwable,Object] = {
     import scala.util.control.Exception._
     allCatch.either(som.call("apply",
-      target match {
-        case gn: GraphNode => new jsSafeCommittingProxy(gn)
-        case _ => target
+      world.target match {
+        case gn: GraphNode => new jsSafeCommittingProxy(gn, world.typeRegistry)
+        case target => target
       },
       world)
     )

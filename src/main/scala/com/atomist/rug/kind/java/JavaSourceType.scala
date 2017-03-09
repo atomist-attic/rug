@@ -20,7 +20,7 @@ class JavaSourceType
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pv: ProjectMutableView =>
         Some(JavaProjectMutableView(pv).javaSourceViews)
-      case fmv: FileArtifactBackedMutableView =>
+      case fmv: FileArtifactBackedMutableView if fmv.path.endsWith(JavaSourceType.JavaExtension)=>
         val jpv = JavaProjectMutableView(fmv.parent)
         Some(Seq(new JavaSourceMutableView(fmv.currentBackingObject, jpv)))
       case _ => None

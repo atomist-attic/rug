@@ -39,7 +39,8 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
     val world = createWorldForScenario(fixture)
     val assertionResults: Seq[AssertionResult] =
       scenario.getSteps.asScala.flatMap(step => {
-        step.getKeyword match {
+        listeners.foreach(_.stepStarting(step))
+        val result = step.getKeyword match {
           case "Given " if !world.aborted =>
             runGiven(fixture, world, step)
             None
@@ -53,6 +54,8 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
           case _ =>
             None
         }
+        listeners.foreach(_.stepCompleted(step))
+        result
       })
     val sr = ScenarioResult(scenario, assertionResults, "")
     listeners.foreach(_.scenarioCompleted(scenario, sr))
@@ -70,7 +73,6 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
             AssertionResult(step.getText, Result(b, som.toString))
           case Right(rsom: ScriptObjectMirror) =>
             val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
-            //println(s"Raw result=$r, unwrapped = $result")
             AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
           case Right(wtf) =>
             throw new IllegalArgumentException(s"Unexpected result from Then '${step.getText}': $wtf")
@@ -78,7 +80,6 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
             AssertionResult(step.getText, Failed(t.getMessage))
         }
       case None =>
-        //println(s"No Then for [${step.getText}]=$somo")
         AssertionResult(step.getText, NotYetImplemented(step.getText))
     }
   }
@@ -90,12 +91,14 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, target, world) match {
           case Left(ipe: InvalidParametersException) =>
+            listeners.foreach(_.stepFailed(step, ipe))
             world.logInvalidParameters(ipe)
           case Left(e: Exception) if e.getCause != null && e.getCause.isInstanceOf[InvalidParametersException] =>
             // Can sometimes get this wrapped
+            listeners.foreach(_.stepFailed(step, e.getCause.asInstanceOf[InvalidParametersException]))
             world.logInvalidParameters(e.getCause.asInstanceOf[InvalidParametersException])
           case Left(t) =>
-            println(s"\t\t${t.getMessage}")
+            listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             world.abort()
           case _ =>
@@ -113,7 +116,7 @@ abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, target, world) match {
           case Left(t) =>
-            println(s"\t\t${t.getMessage}")
+            listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             world.abort()
             case _ =>

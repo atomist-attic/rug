@@ -229,7 +229,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
   }
 
-  class TestExecutionListener extends GherkinExecutionListener {
+  class TestExecutionListener extends GerkinExecutionListenerAdapter {
 
     var fsCount = 0
     var fcCount = 0

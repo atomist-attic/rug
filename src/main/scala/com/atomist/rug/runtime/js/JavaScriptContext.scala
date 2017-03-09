@@ -123,7 +123,8 @@ class JavaScriptContext(val rugAs: ArtifactSource,
     }).toSeq
   }
 
-  private class ArtifactSourceBasedFolder private(val artifacts: ArtifactSource, val parent: Folder, val path: String) extends AbstractFolder(parent, path) {
+  private class ArtifactSourceBasedFolder private(val artifacts: ArtifactSource, val parent: Folder, val path: String)
+    extends AbstractFolder(parent, path) {
 
     private val commentPattern: Pattern = Pattern.compile("^//.*$", Pattern.MULTILINE)
 

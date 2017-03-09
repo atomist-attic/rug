@@ -1,6 +1,5 @@
-import {Project} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-import {Editor} from '@atomist/rug/operations/Decorators'
+import { Project } from '@atomist/rug/model/Core'
+import { Editor } from '@atomist/rug/operations/Decorators'
 
 @Editor("SampleTypeScriptTest", "Uses Sample from TypeScript")
 class SampleTypeScriptTest {

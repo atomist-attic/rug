@@ -16,7 +16,8 @@ class ProjectManipulationFeature(
                                   listeners: Seq[GherkinExecutionListener] = Nil)
   extends AbstractExecutableFeature[ProjectMutableView, ProjectScenarioWorld](definition, definitions, listeners) {
 
-  override protected def createFixture = new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
+  override protected def createFixture =
+    new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
 
   override protected def createWorldForScenario(fixture: ProjectMutableView): ScenarioWorld = {
     new ProjectScenarioWorld(definitions, fixture, rugs)

@@ -1,6 +1,6 @@
 package com.atomist.rug.test.gherkin.project
 
-import com.atomist.param.{ParameterValues, SimpleParameterValue, SimpleParameterValues}
+import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
@@ -10,7 +10,6 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.JavaScriptProjectOperation
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.test.gherkin._
-import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Convenient methods for working with projects
@@ -102,7 +101,6 @@ class ProjectScenarioWorld( definitions: Definitions,
   private def validateParams(op: JavaScriptProjectOperation): Unit = {
     // Pull parameters from script object mirror
     val paramValues = op.jsVar.getOwnKeys(true).map(k => {
-      //println(s"Found key: $k")
       SimpleParameterValue(k, NashornUtils.stringProperty(op.jsVar, k, ""))
     })
     op.validateParameters(SimpleParameterValues(paramValues))

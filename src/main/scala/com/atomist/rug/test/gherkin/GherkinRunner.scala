@@ -115,7 +115,7 @@ trait GherkinExecutionListener {
   * Simple no-op GherkinExecutionListener allowing clients to overwrite just certain
   * methods of interest
   */
-class GerkinExecutionListenerAdapter extends GherkinExecutionListener {
+class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 
   override def featureStarting(feature: FeatureDefinition): Unit = {}
 

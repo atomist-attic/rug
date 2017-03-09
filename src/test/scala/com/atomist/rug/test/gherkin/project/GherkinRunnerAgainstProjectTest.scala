@@ -89,7 +89,6 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
-    //println(new TestReport(run).testSummary)
     assert(el.fsCount == 1)
     assert(el.fcCount == 1)
     assert(el.ssCount == 1)
@@ -125,12 +124,9 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
-    //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result === Passed)
     assert(el.fsCount == 1)
     assert(el.fcCount == 1)
@@ -155,7 +151,6 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
-    //println(run.result)
     assert(run.result === Passed)
   }
 
@@ -229,7 +224,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
   }
 
-  class TestExecutionListener extends GerkinExecutionListenerAdapter {
+  class TestExecutionListener extends GherkinExecutionListenerAdapter {
 
     var fsCount = 0
     var fcCount = 0

@@ -2,6 +2,7 @@ package com.atomist.rug.test.gherkin
 
 import com.atomist.project.archive.{RugArchiveReader, Rugs}
 import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.test.gherkin.project.ProjectManipulationFeature
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -10,6 +11,9 @@ import com.typesafe.scalalogging.LazyLogging
   * @param jsc JavaScript backed by a Rug archive
   */
 class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None) extends LazyLogging {
+
+  // TODO could pass in with default but would break Java callers
+  private val featureFactory: ExecutableFeatureFactory = DefaultExecutableFeatureFactory
 
   import GherkinRunner._
 
@@ -28,7 +32,8 @@ class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None) extends L
     */
   val features: Seq[FeatureDefinition] = GherkinReader.findFeatures(jsc.rugAs)
 
-  private val executableFeatures = features.map(f => new ProjectManipulationFeature(f, definitions, jsc.rugAs, rugs))
+  private val executableFeatures = features.map(f =>
+    featureFactory.executableFeatureFor(f, definitions, jsc.rugAs, rugs))
 
   /**
     * Execute all the tests in this archive

@@ -1,39 +1,24 @@
-package com.atomist.rug.test.gherkin
+package com.atomist.rug.test.gherkin.project
 
 import com.atomist.param.{ParameterValues, SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
-import com.atomist.project.edit._
+import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.runtime.js.JavaScriptProjectOperation
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-
-/**
-  * Executable feature that manipulates projects
-  */
-private[gherkin] class ProjectManipulationFeature(
-                                                   definition: FeatureDefinition,
-                                                   definitions: Definitions,
-                                                   rugArchive: ArtifactSource,
-                                                   rugs: Option[Rugs] = None)
-  extends AbstractExecutableFeature[ProjectMutableView](definition, definitions) {
-
-  override protected def createFixture = new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
-
-  override protected def createWorldForScenario(fixture: ProjectMutableView): ScenarioWorld = {
-    new ProjectScenarioWorld(definitions, fixture, rugs)
-  }
-}
-
 
 /**
   * Convenient methods for working with projects
   */
-class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView, rugs: Option[Rugs] = None)
+class ProjectScenarioWorld(
+                            definitions: Definitions,
+                            project: ProjectMutableView,
+                            rugs: Option[Rugs] = None)
   extends ScenarioWorld(definitions) {
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
@@ -64,7 +49,7 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
           case Some(g) => g
           case _ => throw new RugNotFoundException(
             s"Generator with name '$name' can not be found in current context. Known generators are [${r.generatorNames.mkString(", ")}]")
-      }
+        }
       case _ => throw new RugNotFoundException("No context provided")
     }
   }
@@ -91,7 +76,7 @@ class ProjectScenarioWorld(definitions: Definitions, project: ProjectMutableView
       case Right(sm: SuccessfulModification) =>
         project.updateTo(sm.result)
       case Right(_) =>
-        // We've already logged it. Do nothing
+      // We've already logged it. Do nothing
       case Left(ipe: InvalidParametersException) =>
         ???
       case Left(unknown) =>

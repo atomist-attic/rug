@@ -56,7 +56,7 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then} from "@atomist/rug/test/project/Core"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
@@ -72,7 +72,7 @@ object GherkinReaderTest {
     s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
+      |import {Given,When,Then} from "@atomist/rug/test/project/Core"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
@@ -89,9 +89,9 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,ProjectScenarioWorld} from "@atomist/rug/test/project/Core"
       |
-      |import {AlpEditor} from "../editors/AlpEditor"
+      |import {AlpEditor} from "../../editors/AlpEditor"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
@@ -113,9 +113,9 @@ object GherkinReaderTest {
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,ProjectScenarioWorld} from "@atomist/rug/test/project/Core"
       |
-      |import {AlpEditor} from "../editors/AlpEditor"
+      |import {AlpEditor} from "../../editors/AlpEditor"
       |
       |Given("a visionary leader", p => {
       | p.addFile("Gough", "Maintain the rage")
@@ -134,13 +134,16 @@ object GherkinReaderTest {
     """.stripMargin
 
 
-  val PassingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", PassingSimpleTs)
+  val PassingSimpleTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+    PassingSimpleTs)
 
-  val FailingSimpleTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", FailingSimpleTs)
+  val FailingSimpleTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+    FailingSimpleTs)
 
-  val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorWithoutParametersTs)
+  val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+    EditorWithoutParametersTs)
 
-  val EditorWithParametersTsFile = StringFileArtifact(".atomist/test/Simple_definitions.ts", EditorWithParametersTs)
+  val EditorWithParametersTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts", EditorWithParametersTs)
 
   val TwoScenarios =
     """
@@ -160,9 +163,9 @@ object GherkinReaderTest {
       | Then everything's done
     """.stripMargin
 
-  val SimpleFeatureFile = StringFileArtifact(".atomist/test/Simple.feature", Simple)
+  val SimpleFeatureFile = StringFileArtifact(".atomist/test/project/Simple.feature", Simple)
 
-  val TwoScenarioFeatureFile = StringFileArtifact(".atomist/test/Two.feature", TwoScenarios)
+  val TwoScenarioFeatureFile = StringFileArtifact(".atomist/test/project/Two.feature", TwoScenarios)
 
   val CorruptionFeature =
     """
@@ -177,16 +180,18 @@ object GherkinReaderTest {
       | Then we have comments
     """.stripMargin
 
-  val CorruptionFeatureFile = StringFileArtifact(".atomist/test/Corruption.feature", CorruptionFeature)
+  val CorruptionFeatureFile = StringFileArtifact(
+    ".atomist/test/project/Corruption.feature",
+    CorruptionFeature)
 
   val CorruptionTest =
     """
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import {Given,When,Then,Result} from "@atomist/rug/test/Core"
-      |import * as helpers from "@atomist/rug/test/Helpers"
+      |import {Given,When,Then} from "@atomist/rug/test/project/Core"
+      |import * as helpers from "@atomist/rug/test/project/Helpers"
       |
-      |import {FindCorruption} from "../editors/FindCorruption"
+      |import {FindCorruption} from "../../editors/FindCorruption"
       |
       |Given("a number of files", p => {
       | p.addFile("NSW", "Wran")
@@ -221,7 +226,9 @@ object GherkinReaderTest {
       | Then we have file from start project
     """.stripMargin
 
-  val GenerationFeatureFile = StringFileArtifact(".atomist/test/Generation.feature", GenerationFeature)
+  val GenerationFeatureFile = StringFileArtifact(
+    ".atomist/test/project/Generation.feature",
+    GenerationFeature)
 
   /**
     * @param params map to string representation of param, e.g. including "
@@ -230,7 +237,7 @@ object GherkinReaderTest {
     s"""
       |import {Project} from "@atomist/rug/model/Core"
       |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
-      |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
+      |import {Given,When,Then,ProjectScenarioWorld} from "@atomist/rug/test/project/Core"
       |
       |When("run simple generator", (p, w) => {
       |  let world = w as ProjectScenarioWorld
@@ -251,7 +258,7 @@ object GherkinReaderTest {
     s"""
        |import {Project} from "@atomist/rug/model/Core"
        |import {ProjectGenerator} from "@atomist/rug/operations/ProjectGenerator"
-       |import {Given,When,Then,Result,ProjectScenarioWorld} from "@atomist/rug/test/Core"
+       |import {Given,When,Then,ProjectScenarioWorld} from "@atomist/rug/test/project/Core"
        |
        |When("run simple generator", (p, w) => {
        |  let world = w as ProjectScenarioWorld

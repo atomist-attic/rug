@@ -15,9 +15,7 @@ class Replacer1 implements ProjectEditor {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
     
             eng.with<Replacer>(project, '//Replacer()', r => {
-                if (true) {
-                    r.replaceIt("org.springframework", "nonsense")
-                }
+                r.replaceIt("org.springframework", "nonsense")
             })
     
     }

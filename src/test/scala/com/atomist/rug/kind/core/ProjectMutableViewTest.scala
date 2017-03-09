@@ -173,7 +173,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.currentBackingObject.cachedDeltas.exists(d => d.path == mergeOutputPath) should be(true)
 
     pmv.copyEditorBackingFilesWithNewRelativePath(sourceDir = copyInputDir, destinationPath = copyOutputDir)
-    assert(pmv.fileCount === 2)
+    assert(pmv.totalFileCount === 2)
     assert(pmv.currentBackingObject.cachedDeltas.size === 3)
     assert(pmv.currentBackingObject.findFile(mergeOutputPath).get.content === "content")
     assert(pmv.currentBackingObject.findFile(copyOutputPath).get.content === "file content")

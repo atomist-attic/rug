@@ -2,6 +2,7 @@ package com.atomist.rug.spi
 
 import com.atomist.param.ParameterValue
 import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
+import com.atomist.tree.TreeNode
 
 import scala.concurrent.Future
 
@@ -18,13 +19,24 @@ object Handlers {
 
   case class Message(body: MessageBody,
                      instructions: Seq[Presentable],
-                     channelId: Option[String]) extends Callback {
+                     channelId: Option[String],
+                     correlationId: Option[String] = None,
+                     treeNode: Option[TreeNode] = None) extends Callback {
     override def toDisplay: String = {
       val channel = channelId match {
         case Some(c) => s"$c: "
         case None => ""
       }
-      s"$channel'${body.value}'"
+
+      val correlation = correlationId match {
+        case Some(c) => s" ($c)"
+        case None => ""
+      }
+      val tree = treeNode match {
+        case Some(c) => s" regarding: ${c.nodeName}"
+        case None => ""
+      }
+      s"$channel'${body.value}'$tree$correlation"
     }
   }
 

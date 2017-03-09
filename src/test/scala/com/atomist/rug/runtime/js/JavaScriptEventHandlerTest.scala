@@ -98,7 +98,24 @@ object JavaScriptEventHandlerTest {
        |}
        |export let handler = new SimpleHandler();
       """.stripMargin)
+
+  val eventHandlerWithTreeNode =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    s"""
+       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
+       |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
+       |
+       |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/issue"))
+       |@Tags("github", "build")
+       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
+       |  handle(event: Match<TreeNode, TreeNode>): Message{
+       |     return new Message("woot").withCorrelationId("dude").withTreeNode(event.root());
+       |  }
+       |}
+       |export let handler = new SimpleHandler();
+      """.stripMargin)
 }
+
 
 class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedAssertions {
 
@@ -187,6 +204,22 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
 
     val actualPlan = handler.handle(LocalRugContext(EmptyTreeMaterializer), SysEvent)
     assert(actualPlan === None)
+  }
+
+  it should "allow a correlation id and treenode to be added to a message" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithTreeNode))
+    val finder = new JavaScriptEventHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val handler = handlers.head
+    handler.rootNodeName should be("issue")
+    handler.pathExpression should not be null
+    val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
+    assert(actualPlan.nonEmpty)
+    assert(actualPlan.get.messages.size === 1)
+    val msg = actualPlan.get.messages.head
+    assert(msg.treeNode.nonEmpty)
+    assert(msg.correlationId.nonEmpty)
   }
 }
 

@@ -9,14 +9,13 @@ import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.JavaScriptProjectOperation
 import com.atomist.rug.runtime.js.interop.NashornUtils
-import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
+import com.atomist.rug.test.gherkin._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Convenient methods for working with projects
   */
-class ProjectScenarioWorld(
-                            definitions: Definitions,
+class ProjectScenarioWorld( definitions: Definitions,
                             project: ProjectMutableView,
                             rugs: Option[Rugs] = None)
   extends ScenarioWorld(definitions, rugs) {

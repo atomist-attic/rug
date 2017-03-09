@@ -7,21 +7,26 @@ import com.atomist.project.archive.RugArchiveReader
 import com.atomist.rug.TestUtils
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
+import gherkin.ast.ScenarioDefinition
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
-import org.springframework.expression.spel.ast.AstUtils
 
 class GherkinRunnerTest extends FlatSpec with Matchers {
 
   import GherkinReaderTest._
 
   "Gherkin runner" should "fail without JS" in {
+    val el = new TestExecutionListener
     val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
-    val grt = new GherkinRunner(new JavaScriptContext(as))
+    val grt = new GherkinRunner(new JavaScriptContext(as), None, Seq(el))
     val run = grt.execute()
     assert(run.result.isInstanceOf[NotYetImplemented])
     println(new TestReport(run).testSummary)
+    assert(el.fsCount == 1)
+    assert(el.fcCount == 1)
+    assert(el.ssCount == 2)
+    assert(el.scCount == 2)
   }
 
   it should "pass with passing JS" in {
@@ -72,16 +77,23 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   }
 
   it should "run an editor with parameters" in {
+    val el = new TestExecutionListener
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         SimpleFeatureFile,
         EditorWithParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
     //println(new TestReport(run).testSummary)
+    assert(el.fsCount == 1)
+    assert(el.fcCount == 1)
+    assert(el.ssCount == 1)
+    assert(el.scCount == 1)
+    assert(el.fResult.passed)
+    assert(el.sResult.passed)
   }
 
   it should "test a reviewer" in {
@@ -100,6 +112,7 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
   }
 
   it should "test a generator that copies starting content without parameters" in {
+    val el = new TestExecutionListener
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGenerator.ts")
         .withPathAbove(".atomist/editors") +
@@ -112,11 +125,17 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
     //println(ArtifactSourceUtils.prettyListFiles(rugArchive))
     //println(rugArchive.findFile(".atomist/test/GenerationSteps.js").get.content)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     //println(run.result)
     assert(run.result === Passed)
+    assert(el.fsCount == 1)
+    assert(el.fcCount == 1)
+    assert(el.ssCount == 1)
+    assert(el.scCount == 1)
+    assert(el.fResult.passed)
+    assert(el.sResult.passed)
   }
 
   it should "test a generator that copies starting content with parameters" in {
@@ -208,6 +227,34 @@ class GherkinRunnerTest extends FlatSpec with Matchers {
     hopefullyCleanEngine.getBindings(ScriptContext.ENGINE_SCOPE).containsKey(DefinitionsObjectName) should be (false)
     val globs = hopefullyCleanEngine.getBindings(ScriptContext.GLOBAL_SCOPE)
     (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
+  }
+
+  class TestExecutionListener extends GherkinExecutionListener {
+
+    var fsCount = 0
+    var fcCount = 0
+    var ssCount = 0
+    var scCount = 0
+    var fResult: FeatureResult = null
+    var sResult: ScenarioResult = null
+
+    override def featureStarting(feature: FeatureDefinition): Unit = {
+      fsCount = fsCount + 1
+    }
+
+    override def featureCompleted(feature: FeatureDefinition, result: FeatureResult): Unit = {
+      fcCount = fcCount + 1
+      fResult = result
+    }
+
+    override def scenarioStarting(scenario: ScenarioDefinition): Unit = {
+      ssCount = ssCount + 1
+    }
+
+    override def scenarioCompleted(scenario: ScenarioDefinition, result: ScenarioResult): Unit = {
+      scCount = scCount + 1
+      sResult = result
+    }
   }
 
 }

@@ -16,6 +16,12 @@ trait AtomistConfig {
   def editorsDirectory: String
 
   /**
+    * Generators directory under Atomist root or root of archive.
+    */
+  def generatorsDirectory: String
+
+
+  /**
     * Templates directory under Atomist root or root of archive.
     */
   def templatesDirectory: String
@@ -50,6 +56,8 @@ trait AtomistConfig {
   def jsExtension: String
 
   def editorsRoot = s"$atomistRoot/$editorsDirectory"
+
+  def generatorsRoot = s"$atomistRoot/$generatorsDirectory"
 
   def templatesRoot = s"$atomistRoot/$templatesDirectory"
 
@@ -97,11 +105,13 @@ trait AtomistConfig {
 
   def isAtomistSource(f: FileArtifact): Boolean = {
       f.path.startsWith(editorsRoot) ||
+      f.path.startsWith(generatorsRoot) ||
       f.path.startsWith(reviewersRoot) ||
       f.path.startsWith(executorsRoot) ||
       f.path.startsWith(handlersRoot) ||
       f.path.startsWith(handlersDirectory) ||
       f.path.startsWith(editorsDirectory) ||
+      f.path.startsWith(generatorsDirectory) ||
       f.path.startsWith(reviewersDirectory) ||
       f.path.startsWith(executorsDirectory)
   }
@@ -128,6 +138,8 @@ object DefaultAtomistConfig extends AtomistConfig {
   override val atomistRoot = ".atomist"
 
   override val editorsDirectory = "editors"
+
+  override val generatorsDirectory = "generators"
 
   override val templatesDirectory = "templates"
 

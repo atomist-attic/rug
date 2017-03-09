@@ -11,8 +11,15 @@ class DirectoryMutableView(
   @ExportFunction(readOnly = true, description = "Return the name of the directory")
   override def name: String = currentBackingObject.name
 
+  @ExportFunction(readOnly = true, description = "Return the path of the directory")
+  def path: String = currentBackingObject.path
+
+  @ExportFunction(readOnly = true, description = "Return the number of files directly in this directory")
+  def fileCount: Int = currentBackingObject.files.size
+
   @ExportFunction(readOnly = true, description = "Node content")
   override def value: String = currentBackingObject.path
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
+
 }

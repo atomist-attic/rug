@@ -93,6 +93,10 @@ class ProjectMutableView(
     segments.reverse(0)
   }
 
+  @ExportFunction(readOnly = true,
+    description = "The total number of files in this project")
+  def fileCount: Int = currentBackingObject.totalFileCount
+
   @ExportFunction(readOnly = true, description = "Create a directory")
   def addDirectory(@ExportFunctionParameterDescription(name = "name",
     description = "The name of the directory being added")
@@ -128,10 +132,6 @@ class ProjectMutableView(
                        description = "The content to check against the given file")
                      content: String): Boolean =
     currentBackingObject.findFile(path).exists(f => Objects.equals(content, f.content))
-
-  @ExportFunction(readOnly = true,
-    description = "The total number of files in the project")
-  def totalFileCount: Int = currentBackingObject.totalFileCount
 
   @ExportFunction(readOnly = true,
     description = "The number of files directly in this directory")

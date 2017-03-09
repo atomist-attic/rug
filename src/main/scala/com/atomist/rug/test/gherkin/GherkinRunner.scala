@@ -37,7 +37,9 @@ class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None) extends L
     logger.info(s"Execute on $this")
     ArchiveTestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
       println(s"Executing feature ${ef.definition.feature.getName}")
-      ef.execute()
+      val result = ef.execute()
+      println(s"Completed feature ${ef.definition.feature.getName}")
+      result
     }))
   }
 

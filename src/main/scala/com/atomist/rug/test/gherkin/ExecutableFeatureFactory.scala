@@ -8,7 +8,11 @@ import com.atomist.source.ArtifactSource
   */
 trait ExecutableFeatureFactory {
 
-  def executableFeatureFor(f: FeatureDefinition, definitions: Definitions, rugAs: ArtifactSource, rugs: Option[Rugs]): AbstractExecutableFeature[_,_]
+  def executableFeatureFor(f: FeatureDefinition,
+                           definitions: Definitions,
+                           rugAs: ArtifactSource,
+                           rugs: Option[Rugs],
+                           listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_,_]
 }
 
 

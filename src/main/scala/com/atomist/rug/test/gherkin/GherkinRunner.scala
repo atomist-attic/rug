@@ -16,6 +16,8 @@ class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None, listeners
 
   import GherkinRunner._
 
+  private val featureFactory: ExecutableFeatureFactory = DefaultExecutableFeatureFactory
+
   private val definitions = new Definitions(jsc)
 
   jsc.engine.put(DefinitionsObjectName, definitions)
@@ -32,7 +34,7 @@ class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None, listeners
   val features: Seq[FeatureDefinition] = GherkinReader.findFeatures(jsc.rugAs)
 
   private val executableFeatures = features.map(f =>
-    new ProjectManipulationFeature(f, definitions, jsc.rugAs, rugs, listeners))
+    featureFactory.executableFeatureFor(f, definitions, jsc.rugAs, rugs, listeners))
 
   /**
     * Execute all the tests in this archive

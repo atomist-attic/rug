@@ -13,9 +13,13 @@ object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
 
   private val atomistConfig = DefaultAtomistConfig
 
-  override def executableFeatureFor(f: FeatureDefinition, definitions: Definitions, rugAs: ArtifactSource, rugs: Option[Rugs]): AbstractExecutableFeature[_,_] = {
+  override def executableFeatureFor(f: FeatureDefinition,
+                                    definitions: Definitions,
+                                    rugAs: ArtifactSource,
+                                    rugs: Option[Rugs],
+                                    listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_,_] = {
     if (f.definition.path.contains("project"))
-      new ProjectManipulationFeature(f, definitions, rugAs, rugs)
+      new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners)
     else {
       throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or ${atomistConfig.testsDirectory}/handlers]")
     }

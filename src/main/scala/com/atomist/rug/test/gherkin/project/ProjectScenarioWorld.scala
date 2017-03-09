@@ -19,7 +19,7 @@ class ProjectScenarioWorld(
                             definitions: Definitions,
                             project: ProjectMutableView,
                             rugs: Option[Rugs] = None)
-  extends ScenarioWorld(definitions) {
+  extends ScenarioWorld(definitions, rugs) {
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
 
@@ -107,16 +107,6 @@ class ProjectScenarioWorld(
       SimpleParameterValue(k, NashornUtils.stringProperty(op.jsVar, k, ""))
     })
     op.validateParameters(SimpleParameterValues(paramValues))
-  }
-
-  private def parameters(params: Any): ParameterValues = {
-    val m: Map[String, Object] = params match {
-      case som: ScriptObjectMirror =>
-        // The user has created a new JavaScript object, as in { foo: "bar" },
-        // to pass up as an argument to the invoked editor. Extract its properties
-        NashornUtils.extractProperties(som)
-    }
-    SimpleParameterValues(m)
   }
 
 }

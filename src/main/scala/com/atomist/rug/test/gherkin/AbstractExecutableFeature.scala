@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 /**
   * Superclass for all features, regardless of what they act on
   */
-abstract class AbstractExecutableFeature[T <: GraphNode, W <: ScenarioWorld](
+abstract class AbstractExecutableFeature[T <: Object, W <: ScenarioWorld](
                                           val definition: FeatureDefinition,
                                           val definitions: Definitions)
   extends LazyLogging {
@@ -125,7 +125,13 @@ abstract class AbstractExecutableFeature[T <: GraphNode, W <: ScenarioWorld](
   // Call a ScriptObjectMirror function with appropriate error handling
   private def callFunction(som: ScriptObjectMirror, target: T, world: Object): Either[Throwable,Object] = {
     import scala.util.control.Exception._
-    allCatch.either(som.call("apply", new jsSafeCommittingProxy(target), world))
+    allCatch.either(som.call("apply",
+      target match {
+        case gn: GraphNode => new jsSafeCommittingProxy(gn)
+        case _ => target
+      },
+      world)
+    )
   }
 
 }

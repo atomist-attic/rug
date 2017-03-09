@@ -15,8 +15,9 @@ import org.scalatest.{FlatSpec, Matchers}
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   import GherkinReaderTest._
+  import ProjectTestTargets._
 
-  "Gherkin runner" should "fail without JS" in {
+  "Gherkin project testing" should "fail without JS" in {
     val as = SimpleFileBasedArtifactSource(TwoScenarioFeatureFile)
     val grt = new GherkinRunner(new JavaScriptContext(as))
     val run = grt.execute()

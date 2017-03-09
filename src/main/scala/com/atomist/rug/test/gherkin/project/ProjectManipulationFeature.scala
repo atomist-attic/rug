@@ -13,7 +13,7 @@ class ProjectManipulationFeature(
                                   definitions: Definitions,
                                   rugArchive: ArtifactSource,
                                   rugs: Option[Rugs] = None)
-  extends AbstractExecutableFeature[ProjectMutableView](definition, definitions) {
+  extends AbstractExecutableFeature[ProjectMutableView, ProjectScenarioWorld](definition, definitions) {
 
   override protected def createFixture = new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
 

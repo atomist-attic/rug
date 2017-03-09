@@ -6,7 +6,7 @@ import com.atomist.project.common.InvalidParametersException
   * Standard world for a scenario that lets us add bindings
   * and subclasses attach further state and helper methods.
   */
-class ScenarioWorld(val definitions: Definitions) {
+abstract class ScenarioWorld(val definitions: Definitions) {
 
   private var bindings: Map[String,Object] = Map()
 

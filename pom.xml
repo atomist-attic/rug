@@ -368,9 +368,10 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install --save-dev typescript@2.1.6 typedoc gulp gulp-typedoc</arguments>
+                                    <!-- Pin versions to things we know are working. TS things tend to break! -->
+                                    <arguments>install --save-dev typescript@2.1.6 @types/node@7.0.5 typedoc@0.5.7 gulp@3.9.1 gulp-typedoc@2.0.2</arguments>
                                 </configuration>
-                                <phase>process-test-resources</phase>
+                            <phase>process-test-resources</phase>
                             </execution>
                             <execution>
                                 <id>gulp typedoc</id>

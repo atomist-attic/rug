@@ -19,8 +19,9 @@ private[gherkin] class ProjectManipulationFeature(
                                                    definition: FeatureDefinition,
                                                    definitions: Definitions,
                                                    rugArchive: ArtifactSource,
-                                                   rugs: Option[Rugs] = None)
-  extends AbstractExecutableFeature[ProjectMutableView](definition, definitions) {
+                                                   rugs: Option[Rugs] = None,
+                                                   listeners: Seq[GherkinExecutionListener] = Nil)
+  extends AbstractExecutableFeature[ProjectMutableView](definition, definitions, listeners) {
 
   override protected def createFixture = new ProjectMutableView(rugAs = rugArchive, originalBackingObject = EmptyArtifactSource())
 

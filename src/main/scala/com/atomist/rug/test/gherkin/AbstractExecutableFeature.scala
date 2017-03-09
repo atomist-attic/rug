@@ -14,7 +14,8 @@ import scala.collection.JavaConverters._
   */
 abstract class AbstractExecutableFeature[T <: GraphNode](
                                           val definition: FeatureDefinition,
-                                          val definitions: Definitions)
+                                          val definitions: Definitions,
+                                          listeners: Seq[GherkinExecutionListener] = Nil)
   extends LazyLogging {
 
   def execute(): FeatureResult = {
@@ -33,8 +34,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
   protected def createWorldForScenario(target: T): ScenarioWorld = new ScenarioWorld(definitions)
 
   private def executeScenario(scenario: ScenarioDefinition): ScenarioResult = {
-    // TODO until we have proper event handling we need the println for the CLI
-    println(s"\tExecuting test scenario ${scenario.getName}")
+    listeners.foreach(_.scenarioStarting(scenario))
     val fixture = createFixture
     val world = createWorldForScenario(fixture)
     val assertionResults: Seq[AssertionResult] =
@@ -55,8 +55,7 @@ abstract class AbstractExecutableFeature[T <: GraphNode](
         }
       })
     val sr = ScenarioResult(scenario, assertionResults, "")
-    println(s"\tCompleted test scenario ${scenario.getName}")
-    //println(sr)
+    listeners.foreach(_.scenarioCompleted(scenario, sr))
     sr
   }
 

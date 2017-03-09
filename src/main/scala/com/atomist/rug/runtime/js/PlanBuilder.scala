@@ -4,6 +4,7 @@ import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
+import com.atomist.tree.TreeNode
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.Undefined
@@ -67,10 +68,23 @@ class PlanBuilder {
       case c: String => Some(c)
       case _ => None
     }
+
+    val correlationId = jsMessage.getMember("correlationId") match {
+      case c: String => Some(c)
+      case _ => None
+    }
+
+    val treeNode = jsMessage.getMember("treeNode") match {
+      case t: TreeNode => Some(t)
+      case _ => None
+    }
+
     Message(
       messageBody,
       instructions,
-      channelId
+      channelId,
+      correlationId,
+      treeNode
     )
   }
 

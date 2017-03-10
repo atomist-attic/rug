@@ -7,24 +7,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.12.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.13.0...HEAD
+
+[0.13.0]: https://github.com/atomist/rug/compare/0.12.0...0.13.0
+
+Unlucky release
 
 ### Added
 
--   Added annotations and helper class for implementing RugFunctions
--   Added new BDD test framework for Rug archives, based on Gherkin and TypeScript/JavaScript
--   Added support for replacing tokens with secrets in RugFunction parameters
--   Added support for resolving secrets during Plan execution
--   Added support for MappedParameters to pull config from other systems
--   Added support for Secrets in RugCommands
--   Added support for Command, Event and Response Handlers. All return Plans
--   Added support for RugFunctions - parameterized JVM functions for Handlers
+-   Annotations and helper class for implementing RugFunctions
+-   New BDD test framework for Rug archives, based on Gherkin and TypeScript/JavaScript
+-   Support for replacing tokens with secrets in RugFunction parameters
+-   Support for resolving secrets during Plan execution
+-   Support for MappedParameters to pull config from other systems
+-   Support for Secrets in RugCommands
+-   Support for Command, Event and Response Handlers. All return Plans
+-   Support for RugFunctions - parameterized JVM functions for Handlers
+-   Directory extension now public #409
 
 ### Fixed
 
--   Fixed referencing of editors in other archives in JS archives
--   Fixed bug in LinkedJsonTreeDeserializer where it threw NPE on empty result set from neo4j-ingester
-    e.g. where the PE didn't match. Now returns EmptyLinkableContainerTreeNode
+-   Referencing of editors in other archives in JS archives
+-   Bug in LinkedJsonTreeDeserializer where it threw NPE on empty
+    result set from neo4j-ingester e.g. where the PE didn't match. Now
+    returns EmptyLinkableContainerTreeNode
 
 ### Changed
 

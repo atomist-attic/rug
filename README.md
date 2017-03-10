@@ -8,11 +8,11 @@ The Rug runtime: Support for Atomist **project operations** and **handlers** (ak
 Key areas of functionality of this project:
 
 
-|  Area |  Purpose | Base Package/Path |  Remarks | 
+|  Area |  Purpose | Base Package/Path |  Remarks |
 |---|---|---|---|---|
-|  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions  
+|  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions
 | Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in TypeScript, JavaScript or any language that compiles to JavaScript.
-|  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |  
+|  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |
 | JavaScript/TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | Uses Nashorn
 | Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Incomplete, but an important part of the ultimate vision
 | TypeScript library |A `node` module to simplify authoring TypeScript rugs  | `src/main/typescript`| See [architectural overview](https://github.com/atomist/rug/blob/master/docs/TypeScriptLibrary.md). Will eventually be moved into a separate project.
@@ -94,7 +94,7 @@ You can build, test, and install the project locally with [maven][].
 
 [maven]: https://maven.apache.org/
 
-```sh
+```
 $ mvn install
 ```
 
@@ -102,7 +102,7 @@ To create a new release of the project, simply push a tag of the form
 `M.N.P` where `M`, `N`, and `P` are integers that form the next
 appropriate [semantic version][semver] for release.  For example:
 
-```sh
+```
 $ git tag -a 1.2.3
 ```
 
@@ -114,8 +114,12 @@ artifacts.
 
 [semver]: http://semver.org
 
-The Rug type documentation is created as part of running a Maven build 
-with the `npm-release` profile.
+The Rug extension documentation is created as part of running the
+Maven lifecycle `test` phase under the `npm-release` profile.
+
+```
+$ mvn -P npm-release test
+```
 
 The documentation for all of the Rug types will be in a directory
 named `target/.atomist/node_modules/@atomist/rug/typedoc`.

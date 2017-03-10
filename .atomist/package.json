@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@atomist/rug": "0.12.0"
+    "@atomist/rug": "0.13.0"
   }
 }

@@ -97,6 +97,23 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     assert(el.sResult.passed)
   }
 
+  it should "not run a feature based on filter" in {
+    val el = new TestExecutionListener
+    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+      SimpleFileBasedArtifactSource(
+        SimpleFeatureFile,
+        EditorWithParametersTsFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val run = grt.execute((fd: FeatureDefinition) => {!fd.feature.getName.equals("Australian political history")})
+    assert(run.testCount == 0)
+    assert(run.result === Passed)
+    assert(el.fsCount == 0)
+    assert(el.fcCount == 0)
+    assert(el.ssCount == 0)
+    assert(el.scCount == 0)
+  }
+
   it should "test a reviewer" in {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(

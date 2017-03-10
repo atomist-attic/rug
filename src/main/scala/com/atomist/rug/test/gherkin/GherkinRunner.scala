@@ -10,6 +10,8 @@ import gherkin.ast.{ScenarioDefinition, Step}
   * Combine Gherkin DSL BDD definitions with JavaScript backing code
   * and provide the ability to execute the tests
   * @param jsc JavaScript backed by a Rug archive
+  * @param rugs other Rugs from the achive
+  * @param listeners optional execution listeners
   */
 class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None, listeners: Seq[GherkinExecutionListener] = Nil)
   extends LazyLogging {
@@ -37,11 +39,12 @@ class GherkinRunner(jsc: JavaScriptContext, rugs: Option[Rugs] = None, listeners
     featureFactory.executableFeatureFor(f, definitions, jsc.rugAs, rugs, listeners))
 
   /**
-    * Execute all the tests in this archive
+    * Execute all the tests in this archive that pass provided filter
+    * @param filter callback to filter features that should execute
     */
-  def execute(): ArchiveTestResult = {
+  def execute(filter: (FeatureDefinition) => Boolean = (fd) => true): ArchiveTestResult = {
     logger.info(s"Execute on $this")
-    ArchiveTestResult(executableFeatures.map(ef => jsc.withEnhancedExceptions {
+    ArchiveTestResult(executableFeatures.filter(pmf => filter.apply(pmf.definition)).map(ef => jsc.withEnhancedExceptions {
       listeners.foreach(_.featureStarting(ef.definition))
       val result = ef.execute()
       listeners.foreach(_.featureCompleted(ef.definition, result))
@@ -115,7 +118,7 @@ trait GherkinExecutionListener {
 
 /**
   * Simple no-op GherkinExecutionListener allowing clients to overwrite just certain
-  * methods of interest
+  * methods of interest.
   */
 class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 

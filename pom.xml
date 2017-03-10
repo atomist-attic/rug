@@ -381,7 +381,7 @@
                                 <configuration>
                                     <arguments>typedoc --gulpfile .atomist/node_modules/@atomist/rug/gulpfile.js</arguments>
                                 </configuration>
-                                <phase>process-test-resources</phase>
+                                <phase>site</phase>
                             </execution>
                         </executions>
                         <configuration>
@@ -416,9 +416,9 @@
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="target/.atomist"/>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -428,11 +428,11 @@
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <copy todir="target/.atomist">
                                             <fileset dir="src/main/typescript"/>
                                         </copy>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
@@ -442,9 +442,9 @@
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <mkdir dir="target/.atomist/node_modules/@atomist/rug/model"/>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -469,6 +469,30 @@
                             </execution>
                         </executions>
                     </plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-site-plugin</artifactId>
+						<version>3.3</version>
+						<configuration>
+							<reportPlugins>
+								<plugin>
+									<artifactId>maven-project-info-reports-plugin</artifactId>
+									<version>2.7</version>
+								</plugin>
+								<plugin>
+									<groupId>net.alchim31.maven</groupId>
+									<artifactId>scala-maven-plugin</artifactId>
+									<version>3.2.2</version>
+									<configuration>
+										<jvmArgs>
+											<jvmArg>-Xms64m</jvmArg>
+											<jvmArg>-Xmx1024m</jvmArg>
+										</jvmArgs>
+									</configuration>
+								</plugin>
+							</reportPlugins>
+						</configuration>
+					</plugin>
                 </plugins>
             </build>
         </profile>

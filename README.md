@@ -121,5 +121,5 @@ Maven lifecycle `test` phase under the `npm-release` profile.
 $ mvn -P npm-release test
 ```
 
-The documentation for all of the Rug types will be in a directory
+The documentation for all of the Rug extensions will be in a directory
 named `target/.atomist/node_modules/@atomist/rug/typedoc`.

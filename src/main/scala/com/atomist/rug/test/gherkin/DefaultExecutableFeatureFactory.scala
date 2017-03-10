@@ -21,7 +21,7 @@ object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
     if (f.definition.path.contains("project"))
       new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners)
     else {
-      throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or ${atomistConfig.testsDirectory}/handlers]")
+      throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or [${atomistConfig.testsDirectory}/handlers]")
     }
   }
 }

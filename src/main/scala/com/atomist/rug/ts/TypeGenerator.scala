@@ -1,21 +1,31 @@
 package com.atomist.rug.ts
 
-import com.atomist.rug.spi.{TypeOperation, Typed}
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import java.util.Objects
+
+import com.atomist.param.SimpleParameterValues
+import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, Typed}
+import com.atomist.source.ArtifactSource
+import com.atomist.util.lang.JavaHelpers
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-
-// TODO idea of also generating classes: In Interface generator
-
 
 /**
   * Take endpoints reported in JSON from a materializer service and generate types
   * from which we can in turn generate TypeScript interfaces.
+  * There's little error checking, as this isn't intended as production code.
   */
 class TypeGenerator {
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
+
+  def toTypeScript(json: String): ArtifactSource = {
+    val types = extract(json)
+    val tig = new TypeScriptInterfaceGenerator(typeRegistry =
+      new SimpleTypeRegistry(types))
+    tig.generate("types", SimpleParameterValues("output_path", "Types.ts"))
+  }
 
   /**
     * Extract the types described in this document
@@ -25,10 +35,9 @@ class TypeGenerator {
 
     val propertyNodes: Traversable[PropertyNode] =
       doc("nodes").map(node => {
-        //println(s"Found node $node")
         val n = node.asInstanceOf[Map[String, _]]
         val props = n("properties") match {
-          case l : List[List[String]]@unchecked if l.head.isInstanceOf[Seq[_]] =>
+          case l: List[List[String]]@unchecked if l.head.isInstanceOf[Seq[_]] =>
             l.map(l => Prop(l(0), l(1)))
           case l: List[String]@unchecked =>
             Seq(Prop(l(0), l(1)))
@@ -41,18 +50,35 @@ class TypeGenerator {
         pn
       })
 
+    // These are normally a - b - b
     val relationships: Traversable[Relationship] =
-      doc("relationships").map(rel => {
-        val relList = rel.asInstanceOf[List[List[String]]].flatten
-        val r = Relationship(relList(0), relList(1), relList(2))
-        //println(s"Found relationship $r")
-        r
-      })
+      doc("relationships") flatMap {
+        case relList: List[_]@unchecked if relList.size == 3 =>
 
-    propertyNodes.map(pn => new SimpleTyped(pn,
-      relationships.filter(_.a == pn.labels.head))
+          val relName = toTypeScriptName(relList(1) match {
+            case s: String => s
+            case l: List[_] => Objects.toString(l.head)
+          })
+          val a = relList(0) match {
+            case s: String => List(s)
+            case l: List[_] => l.map(Objects.toString)
+          }
+          val b = relList(2) match {
+            case s: String => List(s)
+            case l: List[_] => l.map(Objects.toString)
+          }
+          val r = Relationship(a.toSet, relName, b.toSet)
+          Seq(r)
+        case _ => ???
+      }
+
+    propertyNodes.map(pn => new JsonBackedTyped(pn,
+      relationships.filter(_.as.contains(pn.labels.head)))
     ).toSet
   }
+
+  private def toTypeScriptName(name: String): String =
+    JavaHelpers.toCamelizedPropertyName(name.toLowerCase)
 
 }
 
@@ -60,14 +86,14 @@ private case class Prop(name: String, typ: String)
 
 private case class PropertyNode(labels: Set[String], properties: Seq[Prop])
 
-private case class Relationship(a: String, rel: String, b: String)
+private case class Relationship(as: Set[String], rel: String, bs: Set[String])
 
 // TODO do we need to have multiple labels in Typed?
 
-private class SimpleTyped(
-                           properties: PropertyNode,
-                           relationships: Traversable[Relationship]
-                         ) extends Typed {
+private class JsonBackedTyped(
+                               properties: PropertyNode,
+                               relationships: Traversable[Relationship]
+                             ) extends Typed {
 
   override val name: String = properties.labels.head
 
@@ -90,10 +116,10 @@ private class SimpleTyped(
     val relOps: Seq[TypeOperation] =
       relationships.map(rel => TypeOperation(
         name = rel.rel,
-        description = s"$name - ${rel.rel} -> ${rel.b}",
+        description = s"$name - ${rel.as.head} -> ${rel.bs}",
         readOnly = false,
         parameters = Nil,
-        returnType = rel.b,
+        returnType = rel.bs.head,
         definedOn = null,
         example = None
       )).toSeq

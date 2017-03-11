@@ -1,6 +1,7 @@
 package com.atomist.util.lang
 
 import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.spi.TypeRegistry
 
 /**
   * Useful helps for generating TypeScript
@@ -20,7 +21,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
        |*/""".stripMargin
   }
 
-  def javaTypeToTypeScriptType(jt: String): String = {
+  def javaTypeToTypeScriptType(jt: String, tr: TypeRegistry): String = {
     val pathExpressionEngineClassName = "class " + classOf[jsPathExpressionEngine].getName
     jt match {
       case "String" => "string"
@@ -54,6 +55,7 @@ class TypeScriptGenerationHelper(indent: String = "    ")
         val cname = className.dropRight(11)
         //println(s"Returning [$cname]")
         cname
+      case x if tr.findByName(x).isDefined => x
       case x => throw new UnsupportedOperationException(s"Unsupported type [$jt]. Did you export a function with this in its type signature?")
     }
   }

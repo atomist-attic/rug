@@ -17,13 +17,19 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     assert(types.nonEmpty)
   }
 
-  it should "return types with operatons" in {
+  it should "return types with operations" in {
     val types = typeGen.extract(theJson)
     println(types)
     types.foreach(t => {
       println(t)
       assert(t.operations.nonEmpty, s"Type ${t.name} should have operations")
     })
+  }
+
+  it should "generate interfaces" in {
+    val as = typeGen.toTypeScript(theJson)
+    as.allFiles.foreach(f =>
+      println(s"${f.path}\n${f.content}\n\n"))
   }
 
 }

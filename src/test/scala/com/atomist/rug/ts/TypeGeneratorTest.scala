@@ -1,6 +1,7 @@
 package com.atomist.rug.ts
 
 import com.atomist.rug.TestUtils
+import com.atomist.source.ArtifactSourceUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeGeneratorTest extends FlatSpec with Matchers {
@@ -26,10 +27,12 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     })
   }
 
-  it should "generate interfaces" in {
-    val as = typeGen.toTypeScript(theJson)
-    as.allFiles.foreach(f =>
-      println(s"${f.path}\n${f.content}\n\n"))
+  it should "generate node module" in {
+    val as = typeGen.toNodeModule(theJson)
+    println(ArtifactSourceUtils.prettyListFiles(as))
+    as
+//    as.allFiles.foreach(f =>
+//      println(s"${f.path}\n${f.content}\n\n"))
   }
 
 }

@@ -4,11 +4,13 @@ import java.util.Objects
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, Typed}
-import com.atomist.source.ArtifactSource
+import com.atomist.source.{ArtifactSource, StringFileArtifact}
 import com.atomist.util.lang.JavaHelpers
+import com.atomist.util.misc.ResourceLoading
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import com.atomist.util.misc.ResourceLoading._
 
 /**
   * Take endpoints reported in JSON from a materializer service and generate types
@@ -20,7 +22,7 @@ class TypeGenerator {
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
-  def toTypeScript(json: String): ArtifactSource = {
+  private def toTypeScriptFiles(json: String): ArtifactSource = {
     val types = extract(json)
     val tig = new TypeScriptInterfaceGenerator(typeRegistry =
       new SimpleTypeRegistry(types))
@@ -28,7 +30,16 @@ class TypeGenerator {
   }
 
   /**
-    * Extract the types described in this document
+    * Return a valid node module with these files in it
+    * @return
+    */
+  def toNodeModule(json: String): ArtifactSource = {
+    toTypeScriptFiles(json).withPathAbove("model") +
+      resourcesInPackage(classToPath(this) + "/gen")
+  }
+
+  /**
+    * Extract the types described in this document and output a valid node module
     */
   def extract(json: String): Set[Typed] = {
     val doc: Map[String, List[_]] = mapper.readValue(json, classOf[Map[String, List[_]]])
@@ -130,4 +141,17 @@ private class JsonBackedTyped(
   override def toString: String =
     s"$name: ops=[${operations.mkString(",")}]"
 
+}
+
+object TypeGenerator {
+
+  val PackageJson =
+    """
+      |{
+      |  "dependencies": {
+      |    "@atomist/rug": "0.12.0"
+      |  }
+      |}
+      |
+    """.stripMargin
 }

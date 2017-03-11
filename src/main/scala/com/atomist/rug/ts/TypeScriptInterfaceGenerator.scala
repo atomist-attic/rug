@@ -39,7 +39,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                    override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
     with ProjectEditor
-    with RugSupport{
+    with RugSupport {
 
   val DefaultTemplateName = "ts.vm"
 

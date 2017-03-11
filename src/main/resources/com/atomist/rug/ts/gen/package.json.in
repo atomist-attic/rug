@@ -1,0 +1,23 @@
+{
+  "name": "@atomist/rug",
+  "version": "REPLACE_ME",
+  "description": "TypeScript model for Atomist editors, generators etc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atomist/rug.git"
+  },
+  "keywords": [
+    "Atomist",
+    "Rug"
+  ],
+  "author": "Atomist, Inc",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/atomist/rug/issues"
+  },
+  "homepage": "https://github.com/atomist/rug#readme",
+  "atomist": {
+    "group": "com.atomist",
+    "artifact": "rug"
+  }
+}

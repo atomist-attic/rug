@@ -175,9 +175,9 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       val params =
         for (p <- op.parameters)
           yield
-            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType), p.description)
+            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
-      methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType), Some(op.description))
+      methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
     }
     methods
   }

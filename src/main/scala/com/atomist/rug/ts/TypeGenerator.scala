@@ -15,7 +15,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
   * from which we can in turn generate TypeScript interfaces.
   * There's little error checking, as this isn't intended as production code.
   */
-class TypeGenerator {
+class TypeGenerator(basePackage: String = "ext_model") {
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
@@ -28,11 +28,11 @@ class TypeGenerator {
   }
 
   /**
-    * Return a valid node module with these files in it
+    * Return a valid node module with these files in it, under base package
     * @return
     */
   def toNodeModule(json: String): ArtifactSource = {
-    toTypeScriptFiles(json).withPathAbove("ext_model")
+    toTypeScriptFiles(json).withPathAbove(basePackage)
   }
 
   /**
@@ -140,15 +140,3 @@ private class JsonBackedTyped(
 
 }
 
-object TypeGenerator {
-
-  val PackageJson =
-    """
-      |{
-      |  "dependencies": {
-      |    "@atomist/rug": "0.12.0"
-      |  }
-      |}
-      |
-    """.stripMargin
-}

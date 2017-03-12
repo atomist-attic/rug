@@ -11,7 +11,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
   lazy val theJson: String =
     TestUtils.resourcesInPackage(this).allFiles
       .filter(_.name == "extra_types.json")
-        .head.content
+      .head.content
 
   "Type generation" should "find some types" in {
     val types = typeGen.extract(theJson)
@@ -36,8 +36,8 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
       as
     )))
     println(ArtifactSourceUtils.prettyListFiles(cas))
-//    cas.allFiles.foreach(f =>
-//      println(s"${f.path}\n${f.content}\n\n"))
+    //    cas.allFiles.foreach(f =>
+    //      println(s"${f.path}\n${f.content}\n\n"))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.ts")))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.js")))
   }
@@ -54,11 +54,13 @@ object TypeGeneratorTest {
       .filter(_.name == "extra_types.json")
       .head.content
 
-  val as = typeGen.toNodeModule(theJson)
-    .withPathAbove(".atomist/rug")
+  val fullModel: ArtifactSource = {
+    val as = typeGen.toNodeModule(theJson)
+      .withPathAbove(".atomist/rug")
+    TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
+      TypeScriptBuilder.coreSource,
+      as
+    )))
+  }
 
-  val fullModel: ArtifactSource = TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
-    TypeScriptBuilder.coreSource,
-    as
-  )))
 }

@@ -36,7 +36,7 @@ object TypeScriptInterfaceGenerator extends App {
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
-                                   generateClasses: Boolean = false,
+                                   generateClasses: Boolean = true,
                                    override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
     with ProjectEditor
@@ -107,20 +107,17 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
           val fieldName = s"_$name"
           // TODO shouldn't be any in the setter:
           // Need to pass in owning type
-          s"""
-             |private $fieldName: $returnType = null
+          s"""${indent}private $fieldName: $returnType = null
              |
-             |with${JavaHelpers.upperize(name)}(x: $returnType): any {
-             | this.$fieldName = x
-             | return this
-             |}
+             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
+             |${indent}${indent}this.$fieldName = x
+             |${indent}${indent}return this
+             |${indent}}
              |
              |$comment$indent$name(${params.mkString(", ")}): $returnType {
-             |  return this.$fieldName
-             |}
-         """.stripMargin
-      }
-      else
+             |${indent}${indent}return this.$fieldName
+             |${indent}} """.stripMargin
+      } else
         s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 

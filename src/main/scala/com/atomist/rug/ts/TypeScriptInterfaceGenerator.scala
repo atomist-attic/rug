@@ -36,7 +36,7 @@ object TypeScriptInterfaceGenerator extends App {
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
-                                   generateClasses: Boolean = true,
+                                   generateClasses: Boolean = false,
                                    override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
     with ProjectEditor
@@ -68,9 +68,9 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       if (generateClasses) {
         val deriveKeyword = if (parent == "TreeNode") "implements" else "extends"
         output ++= s"\nclass $name $deriveKeyword $parent {${config.separator}"
-      }
-      else
+      } else
         output ++= s"\ninterface $name extends $parent {${config.separator}"
+
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
@@ -116,7 +116,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
              |
              |$comment$indent$name(${params.mkString(", ")}): $returnType {
              |${indent}${indent}return this.$fieldName
-             |${indent}} """.stripMargin
+             |${indent}}""".stripMargin
       } else
         s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
@@ -147,7 +147,6 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     .setRequired(false)
     .setDisplayName("Path for created doc")
     .setDefaultValue(DefaultFilename))
-
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {

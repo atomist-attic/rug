@@ -1,7 +1,6 @@
 package com.atomist.rug.ts
 
 import com.atomist.rug.TestUtils
-import com.atomist.rug.rugdoc.TypeScriptInterfaceGeneratorTest
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils}
 import org.scalatest.{FlatSpec, Matchers}
 

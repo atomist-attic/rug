@@ -7,13 +7,13 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.{AddressableRug, RugSupport}
+import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
 import com.atomist.util.Utils
-import com.atomist.util.lang.TypeScriptGenerationHelper
+import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
 import org.apache.commons.lang3.{ClassUtils, StringUtils}
 
 import scala.collection.JavaConverters._
@@ -25,7 +25,7 @@ object TypeScriptInterfaceGenerator extends App {
 
   val generator = new TypeScriptInterfaceGenerator
 
-  val output = generator.generate("", SimpleParameterValues( Map(generator.OutputPathParam -> target)))
+  val output = generator.generate("", SimpleParameterValues(Map(generator.OutputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
 
@@ -36,6 +36,7 @@ object TypeScriptInterfaceGenerator extends App {
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
                                    config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
+                                   generateClasses: Boolean = false,
                                    override val tags: Seq[Tag] = Nil)
   extends ProjectGenerator
     with ProjectEditor
@@ -55,12 +56,21 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   private val indent = "    "
 
-  private case class InterfaceType(name: String, description: String, methods: Seq[MethodInfo], parent: String = root) {
+  /**
+    * Either an interface or a test class, depending on
+    * whether we're generated test classes
+    */
+  private case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: String = root) {
 
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
-      output ++= s"\ninterface $name extends $parent {${config.separator}"
+      if (generateClasses) {
+        val deriveKeyword = if (parent == "TreeNode") "implements" else "extends"
+        output ++= s"\nclass $name $deriveKeyword $parent {${config.separator}"
+      }
+      else
+        output ++= s"\ninterface $name extends $parent {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
@@ -86,7 +96,32 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       builder.toString
     }
 
-    override def toString = s"$comment$indent$name(${params.mkString(", ")}): $returnType"
+    override def toString =
+      if (generateClasses) returnType match {
+        case "void" =>
+          s"""
+             |$comment$indent$name(${params.mkString(", ")}): $returnType {}
+         """.stripMargin
+        case _ =>
+          // It has a return. So let's create a field
+          val fieldName = s"_$name"
+          // TODO shouldn't be any in the setter:
+          // Need to pass in owning type
+          s"""
+             |private $fieldName: $returnType = null
+             |
+             |with${JavaHelpers.upperize(name)}(x: $returnType): any {
+             | this.$fieldName = x
+             | return this
+             |}
+             |
+             |$comment$indent$name(${params.mkString(", ")}): $returnType {
+             |  return this.$fieldName
+             |}
+         """.stripMargin
+      }
+      else
+        s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
   private class MethodParam(val name: String, val paramType: String, val description: Option[String]) {
@@ -133,8 +168,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
        | */""".stripMargin
   }
 
-  private def allInterfaceTypes(allTypes: Seq[Typed]): Seq[InterfaceType] = {
-    val interfaceTypes = new ListBuffer[InterfaceType]
+  private def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] = {
+    val generatedTypes = new ListBuffer[GeneratedType]
 
     allTypes.foreach(t => {
       t.operations.foreach(op => {
@@ -149,16 +184,16 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
           val ops = exportedOperations(superclasses(i))
           val parent = if (i == superclasses.size - 1) root else Typed.typeToTypeName(superclasses(i + 1))
           val name = Typed.typeToTypeName(superclasses(i))
-          interfaceTypes += InterfaceType(name, name, allMethods(ops), parent)
+          generatedTypes += GeneratedType(name, name, allMethods(ops), parent)
         }
 
         // Add leaf class
         val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses.head)
-        interfaceTypes += InterfaceType(t.name, t.description, allMethods(t), parent)
+        generatedTypes += GeneratedType(t.name, t.description, allMethods(t), parent)
       })
     })
 
-    (interfaceTypes.groupBy(it => it.name) map {
+    (generatedTypes.groupBy(it => it.name) map {
       case (_, l) => l.head
     }).toSeq
   }
@@ -184,8 +219,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   private def emitInterfaces(poa: ParameterValues): Seq[FileArtifact] = {
     val tsInterfaces = ListBuffer.empty[StringFileArtifact]
-    val alreadyGenerated = ListBuffer.empty[InterfaceType]
-    val interfaceTypes = allInterfaceTypes(typeRegistry.types.sortWith(typeSort))
+    val alreadyGenerated = ListBuffer.empty[GeneratedType]
+    val interfaceTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
     val pathParam = poa.stringParamValue(OutputPathParam)
     val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
 
@@ -215,7 +250,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     tsInterfaces
   }
 
-  private def getImports(interfaceTypes: Seq[InterfaceType], currentType: InterfaceType) = {
+  private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
     val imports = interfaceTypes.flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
       .filter(currentType.name != t.name && _ == t.name)).toList
     (currentType.parent :: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")

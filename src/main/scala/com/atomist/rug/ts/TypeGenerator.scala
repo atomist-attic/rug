@@ -4,13 +4,12 @@ import java.util.Objects
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, Typed}
-import com.atomist.source.{ArtifactSource, StringFileArtifact}
+import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.JavaHelpers
-import com.atomist.util.misc.ResourceLoading
+import com.atomist.util.misc.ResourceLoading._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import com.atomist.util.misc.ResourceLoading._
 
 /**
   * Take endpoints reported in JSON from a materializer service and generate types
@@ -34,7 +33,7 @@ class TypeGenerator {
     * @return
     */
   def toNodeModule(json: String): ArtifactSource = {
-    toTypeScriptFiles(json).withPathAbove("model") +
+    toTypeScriptFiles(json).withPathAbove("ext_model") +
       resourcesInPackage(classToPath(this) + "/gen")
   }
 

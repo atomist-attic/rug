@@ -1,8 +1,6 @@
 import {Project,File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-import {Match} from '@atomist/rug/tree/PathExpression'
 import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpressionEngine'
 import * as scala from '@atomist/rug/ast/scala/Types'
 
@@ -30,18 +28,18 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
                 TermName:[be]
                 Lit:[2]
       */
-      let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`
+      let oldAssertion = `/src/test/scala//ScalaFile()//termApplyInfix[/termName[@value='should']][termSelect]`;
 
       eng.with<scala.TermApplyInfix>(project, oldAssertion, shouldTerm => {
         //console.log(`ShouldTerm=${shouldTerm}`)
 
-        let termSelect = shouldTerm.termSelect()
-        let termApply = shouldTerm.termApply()
+        let termSelect = shouldTerm.termSelect();
+        let termApply = shouldTerm.termApply();
 
         if (termSelect == null)
           throw new Error(`termSelect should be navigable and non-null`)
 
-        shouldTerm.reverseShould()
+        shouldTerm.reverseShould();
 
         // console.log ("About to new absquatulate")
         // shouldTerm.absquatulate()

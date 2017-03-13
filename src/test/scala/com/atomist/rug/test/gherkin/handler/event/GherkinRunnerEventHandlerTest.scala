@@ -19,7 +19,6 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   val nodesFile: FileArtifact = requiredFileInPackage(this, "Nodes.ts", ".atomist/handlers/event")
 
-
   "event handler testing" should "verify no plan steps without any path match" in {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,

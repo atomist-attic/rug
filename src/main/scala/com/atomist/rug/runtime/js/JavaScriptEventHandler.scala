@@ -73,16 +73,6 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   }
 }
 
-case class SimpleContainerGraphNode(nodeName: String, child: GraphNode) extends GraphNode {
-
-  override def relatedNodes: Seq[GraphNode] = Seq(child)
-
-  override def relatedNodeNames: Set[String] = Set(child.nodeName)
-
-  override def relatedNodeTypes: Set[String] = child.nodeTags
-
-  override def relatedNodesNamed(key: String): Seq[GraphNode] = relatedNodes.filter(n => n.nodeName == key)
-}
 
 /**
   * Represents an event that drives a handler.

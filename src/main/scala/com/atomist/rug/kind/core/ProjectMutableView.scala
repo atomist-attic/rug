@@ -6,12 +6,12 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.{EditorNotFoundException, MissingRugException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
 import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
+import com.atomist.rug.{EditorNotFoundException, RugRuntimeException}
 import com.atomist.source._
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
@@ -36,9 +36,9 @@ object ProjectMutableView {
   * Operations on a project. Backed by an immutable ArtifactSource,
   * using copy on write.
   *
-  * @param rugAs                 backing store of the editor
+  * @param rugAs backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig         Atomist configuration used to determine where we look for files.
+  * @param atomistConfig Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
@@ -186,8 +186,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter      file filter
-    * @param regexp      regexp
+    * @param filter file filter
+    * @param regexp regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -288,19 +288,13 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file from the editor's backing archive to the same path in project being edited. Fail the editor if it isn't found or if the destination already exists")
-  def copyEditorBackingFileOrFail(@ExportFunctionParameterDescription(name = "sourcePath",
-    description = "Source path")
-                                  sourcePath: String): Unit =
-    copyEditorBackingFileOrFail(sourcePath, sourcePath)
+  def copyEditorBackingFileOrFail(@ExportFunctionParameterDescription(name = "sourcePath", description = "Source path") sourcePath: String): Unit =
+    copyEditorBackingFileOrFailToDestination(sourcePath, sourcePath)
 
   @ExportFunction(readOnly = false,
     description = "Copy the given file from the editor's backing archive. Fail the editor if it isn't found or if the destination already exists")
-  def copyEditorBackingFileOrFail(@ExportFunctionParameterDescription(name = "sourcePath",
-    description = "Source path")
-                                  sourcePath: String,
-                                  @ExportFunctionParameterDescription(name = "destinationPath",
-                                    description = "Destination path")
-                                  destinationPath: String): Unit = {
+  def copyEditorBackingFileOrFailToDestination(@ExportFunctionParameterDescription(name = "sourcePath", description = "Source path") sourcePath: String,
+                                               @ExportFunctionParameterDescription(name = "destinationPath", description = "Destination path") destinationPath: String): Unit = {
     if (fileExists(destinationPath))
       fail(s"Attempt to copy file [$sourcePath] to existing path [$destinationPath]")
     val sourceFileO = rugAs.findFile(sourcePath)
@@ -372,8 +366,8 @@ class ProjectMutableView(
   private def mapToUse(arg: Any): Map[String, Object] = arg match {
     case som: ScriptObjectMirror =>
       NashornUtils.extractProperties(som)
-    case m: Map[String,Object]@unchecked => m
-    case m: java.util.Map[String,Object]@unchecked =>
+    case m: Map[String, Object]@unchecked => m
+    case m: java.util.Map[String, Object]@unchecked =>
       import scala.collection.JavaConverters._
       m.asScala.toMap
     case null => Map()
@@ -413,7 +407,7 @@ class ProjectMutableView(
     * map of string arguments.
     *
     * @param editorName name of editor to use
-    * @param params     parameters to pass to the editor
+    * @param params parameters to pass to the editor
     * @return
     */
   protected def editWith(editorName: String,
@@ -423,16 +417,16 @@ class ProjectMutableView(
       case Some(rug) => rug.findRug(editorName) match {
         case Some(ed: ProjectEditor) =>
           ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
-          case sm: SuccessfulModification =>
-            updateTo(sm.result)
-          case _: NoModificationNeeded => currentBackingObject
-          case wtf =>
-            throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
-        }
+            case sm: SuccessfulModification =>
+              updateTo(sm.result)
+            case _: NoModificationNeeded => currentBackingObject
+            case wtf =>
+              throw new RugRuntimeException(ed.name, s"Unexpected editor failure: $wtf", null)
+          }
         case None =>
-          if(editorName.contains(":")){
+          if (editorName.contains(":")) {
             val shortName = StringUtils.substringAfterLast(editorName, ":")
-            if(rug.findRug(shortName).nonEmpty){
+            if (rug.findRug(shortName).nonEmpty) {
               throw new EditorNotFoundException(s"Could not find editor: $editorName. Did you mean: $shortName?")
             }
           }
@@ -446,12 +440,12 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = false, description = "Edit with the given editor")
   def editWith(
-                          @ExportFunctionParameterDescription(name = "editorName",
-                            description = "Name of the editor to invoke")
-                          editorName: String,
-                          @ExportFunctionParameterDescription(name = "params",
-                            description = "Parameters to pass to the editor")
-                          params: Any): Unit = {
+                @ExportFunctionParameterDescription(name = "editorName",
+                  description = "Name of the editor to invoke")
+                editorName: String,
+                @ExportFunctionParameterDescription(name = "params",
+                  description = "Parameters to pass to the editor")
+                params: Any): Unit = {
     val m: Map[String, Object] = params match {
       case som: ScriptObjectMirror =>
         // The user has created a new JavaScript object, as in { foo: "bar" },

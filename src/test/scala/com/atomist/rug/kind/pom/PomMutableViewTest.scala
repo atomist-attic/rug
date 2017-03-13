@@ -353,7 +353,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
 
-    validPomUut.addOrReplaceDependency(dependencyGroupId, dependencyArtifactId, dependencyScope)
+    validPomUut.addOrReplaceDependencyOfScope(dependencyGroupId, dependencyArtifactId, dependencyScope)
 
     assert(validPomUut.dirty === true)
 
@@ -370,7 +370,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomUut.isDependencyPresent(dependencyGroupId, dependencyArtifactId) should be(false)
 
-    validPomUut.addOrReplaceDependencyOfVersion(dependencyGroupId, dependencyArtifactId, dependencyVersion, dependencyScope)
+    validPomUut.addOrReplaceDependencyOfVersionAndScope(dependencyGroupId, dependencyArtifactId, dependencyVersion, dependencyScope)
 
     assert(validPomUut.dirty === true)
 

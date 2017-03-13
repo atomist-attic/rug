@@ -9,57 +9,31 @@ import com.atomist.source.FileArtifact
 object PomMutableView {
 
   val project = "project"
-
   val projectBaseXPath = s"/$project"
-
   val mavenGroupId = "groupId"
-
   val mavenArtifactId = "artifactId"
-
   val groupIdXPath = s"$projectBaseXPath/$mavenGroupId"
-
   val artifactIdXPath = s"$projectBaseXPath/$mavenArtifactId"
-
   val version = "version"
-
   val versionXPath = s"$projectBaseXPath/$version"
-
   val scope = "scope"
-
   val packagingXPath = s"$projectBaseXPath/packaging"
-
   val name = "name"
-
   val nameXPath = s"$projectBaseXPath/$name"
-
   val descriptionXPath = s"$projectBaseXPath/description"
-
   val parent = "parent"
-
   val parentBaseXPath = s"$projectBaseXPath/$parent"
-
   val parentGroupIdXPath = s"$parentBaseXPath/$mavenGroupId"
-
   val parentArtifactIdXPath = s"$parentBaseXPath/$mavenArtifactId"
-
   val parentVersionXPath = s"$parentBaseXPath/version"
-
   val projectPropertyBaseXPath = s"$projectBaseXPath/properties"
-
   val dependency = "dependency"
-
   val dependencies = "dependencies"
-
   val dependenciesBaseXPath = s"$projectBaseXPath/$dependencies"
-
   val dependencyBaseXPath = s"$projectBaseXPath/$dependencies/$dependency"
-
   val plugin = "plugin"
-
   val buildPluginsBaseXPath = s"$projectBaseXPath/build/plugins"
-
   val dependencyManagement = "dependencyManagement"
-
   val dependencyManagementBaseXPath = s"$projectBaseXPath/$dependencyManagement"
 }
 
@@ -248,13 +222,13 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId></dependency>""")
 
   @ExportFunction(readOnly = false, description = "Add or replace a dependency")
-  def addOrReplaceDependency(@ExportFunctionParameterDescription(name = "groupId",
+  def addOrReplaceDependencyOfScope(@ExportFunctionParameterDescription(name = "groupId",
     description = "The value of the dependency's groupId")
                              groupId: String,
-                             @ExportFunctionParameterDescription(name = "artifactId",
+                                    @ExportFunctionParameterDescription(name = "artifactId",
                                description = "The value of the dependency's artifactId")
                              artifactId: String,
-                             @ExportFunctionParameterDescription(name = "scope",
+                                    @ExportFunctionParameterDescription(name = "scope",
                                description = "The value of the dependency's scope")
                              scope: String): Unit =
     addOrReplaceNode(dependenciesBaseXPath,
@@ -278,16 +252,16 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>$version</version></dependency>""")
 
   @ExportFunction(readOnly = false, description = "Add or replace a dependency, providing version and scope")
-  def addOrReplaceDependencyOfVersion(@ExportFunctionParameterDescription(name = "groupId",
+  def addOrReplaceDependencyOfVersionAndScope(@ExportFunctionParameterDescription(name = "groupId",
     description = "The value of the dependency's groupId")
                                       groupId: String,
-                                      @ExportFunctionParameterDescription(name = "artifactId",
+                                              @ExportFunctionParameterDescription(name = "artifactId",
                                         description = "The value of the dependency's artifactId")
                                       artifactId: String,
-                                      @ExportFunctionParameterDescription(name = "newVersion",
+                                              @ExportFunctionParameterDescription(name = "newVersion",
                                         description = "The value of the dependency's version to be set")
                                       version: String,
-                                      @ExportFunctionParameterDescription(name = "scope",
+                                              @ExportFunctionParameterDescription(name = "scope",
                                         description = "The value of the dependency's scope to be set")
                                       scope: String): Unit =
     addOrReplaceNode(dependenciesBaseXPath,

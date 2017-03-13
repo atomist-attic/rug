@@ -22,9 +22,7 @@ import scala.collection.mutable.ListBuffer
 object TypeScriptInterfaceGenerator extends App {
 
   val target = if (args.length < 1) "target/Core.ts" else args.head
-
   val generator = new TypeScriptInterfaceGenerator
-
   val output = generator.generate("", SimpleParameterValues(Map(generator.OutputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
@@ -43,17 +41,12 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     with RugSupport {
 
   val DefaultTemplateName = "ts.vm"
-
   val DefaultFilename = "model/Core.ts"
-
   val OutputPathParam = "output_path"
 
   private val helper = new TypeScriptGenerationHelper()
-
   private val root = "TreeNode"
-
   private val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
-
   private val indent = "    "
 
   /**
@@ -77,7 +70,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     }
   }
 
-  private case class MethodInfo(name: String, params: Seq[MethodParam], returnType: String, description: Option[String]) {
+  private class MethodInfo(val name: String, val params: Seq[MethodParam], val returnType: String, val description: Option[String]) {
 
     private val comment = {
       val builder = new StringBuilder(s"$indent/**\n")
@@ -96,11 +89,22 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       builder.toString
     }
 
+    def canEqual(a: Any) = a.isInstanceOf[MethodInfo]
+
+    override def equals(that: Any) =
+      that match {
+        case that: MethodInfo => that.canEqual(this) && this.name.hashCode == that.name.hashCode &&
+          this.params.hashCode == that.params.hashCode && this.returnType.hashCode == that.returnType.hashCode
+        case _ => false
+      }
+
+    override def hashCode() =
+      Seq(name, params, returnType).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+
     override def toString =
       if (generateClasses) returnType match {
         case "void" =>
-          s"""
-             |$comment$indent$name(${params.mkString(", ")}): $returnType {}
+          s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
          """.stripMargin
         case _ =>
           // It has a return. So let's create a field
@@ -166,36 +170,31 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   private def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
-
     allTypes.foreach(t => {
       t.operations.foreach(op => {
         val superclasses = ClassUtils.hierarchy(op.definedOn, ClassUtils.Interfaces.INCLUDE).asScala
           .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
           .filterNot(c => classOf[TreeNode] == c) // Ignore TreeNode as it's already present in TS file
-          .drop(1) // Drop leaf class
           .toList
 
-        // Add superclasses
-        for (i <- superclasses.indices) {
-          val ops = exportedOperations(superclasses(i))
-          val parent = if (i == superclasses.size - 1) root else Typed.typeToTypeName(superclasses(i + 1))
-          val name = Typed.typeToTypeName(superclasses(i))
-          generatedTypes += GeneratedType(name, name, allMethods(ops), parent)
+        // Add class hierarchy
+        val alreadyAddedMethods = new ListBuffer[MethodInfo]
+        for (i <- superclasses.size to 1 by -1) {
+          val ops = exportedOperations(superclasses(i - 1))
+          val parent = if (i == superclasses.size) root else Typed.typeToTypeName(superclasses(i))
+          val name = Typed.typeToTypeName(superclasses(i - 1))
+          val description = if (i == 1) t.description else name
+          val methods = allMethods(ops).filterNot(alreadyAddedMethods.contains(_))
+          generatedTypes += GeneratedType(name, description, methods, parent)
+          alreadyAddedMethods ++= methods
         }
-
-        // Add leaf class
-        val parent = if (superclasses.isEmpty) root else Typed.typeToTypeName(superclasses.head)
-        generatedTypes += GeneratedType(t.name, t.description, allMethods(t), parent)
       })
     })
 
     (generatedTypes.groupBy(it => it.name) map {
       case (_, l) => l.head
-    }).toSeq
+    }).toSeq.sortBy(_.name)
   }
-
-  private def allMethods(t: Typed): Seq[MethodInfo] =
-    allMethods(t.allOperations)
 
   private def allMethods(ops: Seq[TypeOperation]): Seq[MethodInfo] = {
     val methods = new ListBuffer[MethodInfo]
@@ -208,9 +207,9 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
           yield
             MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
-      methods += MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+      methods += new MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
     }
-    methods
+    methods.sortBy(_.name)
   }
 
   private def emitInterfaces(poa: ParameterValues): Seq[FileArtifact] = {

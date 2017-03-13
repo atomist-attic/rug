@@ -9,7 +9,9 @@ import com.atomist.source.ArtifactSource
 /**
   * Default implementation of ExecutableFeatureFactory, which
   * knows about project features and handler features (coming soon), which it identifies
-  * by their respective subdirectories under .atomist/test
+  * by their respective subdirectories under .atomist/test.
+  * Using location to determine type avoids the need to make the user
+  * provide additional metadata in their test definitions.
   */
 object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
 
@@ -20,11 +22,12 @@ object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
                                     rugAs: ArtifactSource,
                                     rugs: Option[Rugs],
                                     listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_] = {
-    if (f.definition.path.contains("project"))
+    // TODO clean up name of test directory
+    if (f.definition.path.contains(s"test/project"))
       new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners)
-    else if (f.definition.path.contains("handlers/command"))
+    else if (f.definition.path.contains(s"test/${atomistConfig.handlersDirectory}/command"))
       new CommandHandlerFeature(f, definitions, rugAs, rugs, listeners)
-    else if (f.definition.path.contains("handlers/event"))
+    else if (f.definition.path.contains(s"test/${atomistConfig.handlersDirectory}/event"))
       new EventHandlerFeature(f, definitions, rugAs, rugs, listeners)
     else {
       throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or ${atomistConfig.testsDirectory}/handlers]")

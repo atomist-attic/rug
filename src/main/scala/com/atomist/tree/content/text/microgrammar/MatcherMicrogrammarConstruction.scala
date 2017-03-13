@@ -22,7 +22,7 @@ object MatcherMicrogrammarConstruction {
     // I have no idea why the array comes in as a map of indices to values but it does
     val components = componentProperty match {
       case m: Map[_, _] => m.values.map(interpretMatcher(_))
-      case _ => throw new RuntimeException("I expected an array of 'or' components to get to me as a map")
+      case _ => throw new RuntimeException("expected an array of 'or' components, as a Map[Number, Any]")
     }
     components.reduce(_.alternate(_))
   }

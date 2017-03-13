@@ -2,16 +2,17 @@ package com.atomist.rug.kind.core
 
 import java.util.{Collections, Objects}
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
-import com.atomist.rug.{EditorNotFoundException, MissingRugException, RugRuntimeException}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop._
 import com.atomist.rug.runtime.js.{LocalRugContext, RugContext}
 import com.atomist.rug.spi.{ExportFunctionParameterDescription, _}
+import com.atomist.rug.{EditorNotFoundException, RugRuntimeException}
 import com.atomist.source._
 import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTreeNode}
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
@@ -529,6 +530,8 @@ class ProjectMutableView(
   */
 class ProjectContext(ctx: RugContext) extends RugContext {
 
+  override def typeRegistry: TypeRegistry = DefaultTypeRegistry
+
   override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
 
   /**
@@ -540,4 +543,6 @@ class ProjectContext(ctx: RugContext) extends RugContext {
     * Used to hydrate nodes before running a path expression
     */
   override def treeMaterializer: TreeMaterializer = ctx.treeMaterializer
+
+  override def contextRoot(): GraphNode = ctx.contextRoot()
 }

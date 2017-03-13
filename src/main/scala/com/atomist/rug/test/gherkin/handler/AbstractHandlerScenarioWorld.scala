@@ -1,10 +1,13 @@
 package com.atomist.rug.test.gherkin.handler
 
+import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.RugContext
-import com.atomist.rug.spi.Handlers.{Message, Plan}
+import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
+import com.atomist.rug.spi.Handlers.Plan
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
 import com.atomist.tree.TreeMaterializer
 
@@ -17,7 +20,9 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   private var planOption: Option[Plan] = None
 
   protected def createRugContext(tm: TreeMaterializer): RugContext =
-    new FakeRugContext("team_id", typeRegistry, tm)
+    new FakeRugContext("team_id", tm)
+
+  private var rootContext: SimpleContainerGraphNode = new SimpleContainerGraphNode("root")
 
   /**
     * Return the editor with the given name or throw an exception
@@ -32,6 +37,16 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
         }
       case _ => throw new RugNotFoundException("No context provided")
     }
+  }
+
+  /**
+    * Add a node to the root context
+    */
+  def addToRootContext(n: AnyRef): Unit = {
+    val gn = NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
+      throw new IllegalArgumentException(s"$n is not a valid GraphNode")
+    )
+    rootContext = rootContext.addRelatedNode(gn)
   }
 
   protected def recordPlan(plan: Option[Plan]): Unit = {
@@ -54,22 +69,16 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     planOption.map(new jsPlan(_)).orNull
   }
 
-}
+  private class FakeRugContext(val teamId: String, _treeMaterializer: TreeMaterializer) extends RugContext {
 
-import scala.collection.JavaConverters._
+    override def typeRegistry: TypeRegistry = AbstractHandlerScenarioWorld.this.typeRegistry
 
-/**
-  * JavaScript-friendly version of Plan structure, without Scala collections and using null instead of Option
-  */
-class jsPlan(plan: Plan) {
+    override val pathExpressionEngine = new jsPathExpressionEngine(this, typeRegistry = typeRegistry)
 
-  def messages: java.util.List[jsMessage] =
-    plan.messages.map(new jsMessage(_)).asJava
+    override def treeMaterializer: TreeMaterializer = _treeMaterializer
 
-}
+    override def contextRoot(): GraphNode = rootContext
 
-class jsMessage(message: Message) {
-
-  def body = message.body
+  }
 
 }

@@ -1,11 +1,13 @@
 package com.atomist.rug.test.gherkin.handler.command
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
+import com.atomist.rug.TestUtils
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
+import com.atomist.rug.test.gherkin.handler.event.EventHandlerTestTargets
 import com.atomist.rug.test.gherkin.{GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
@@ -14,30 +16,17 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
 
+  val nodesFile: FileArtifact = requiredFileInPackage(EventHandlerTestTargets, "Nodes.ts",
+    ".atomist/handlers/command")
+
   "command handler testing" should "verify no plan steps" in {
     val passingFeature1Steps =
-      """
-        |import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/Core"
-        |
-        |Given("a sleepy country", f => {
-        | console.log("Given invoked for handler")
-        |})
-        |When("a visionary leader enters", (rugContext, world) => {
-        |   let handler = world.commandHandler("ReturnsEmptyPlanCommandHandler")
-        |   world.invokeHandler(handler, {})
-        |})
-        |Then("excitement ensues", (p,world) => {
-        |    return world.plan().messages().length == 0
-        |})
-      """.stripMargin
-    val passingFeature1StepsFile = StringFileArtifact(
-      ".atomist/test/handlers/command/PassingFeature1Step.ts",
-      passingFeature1Steps
-    )
+      TestUtils.requiredFileInPackage(this, "NoMessagesFeature1Steps.ts")
+          .withPath(".atomist/test/handlers/command/NoMessagesFeature1Steps.ts")
 
     val handlerName = "ReturnsEmptyPlanCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
-    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile)
+    val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1Steps, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
@@ -51,29 +40,34 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
 
   it should "verify single returned message" in {
     val passingFeature1Steps =
-      """
-        |import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/Core"
-        |
-        |Given("a sleepy country", f => {
-        | console.log("Given invoked for handler")
-        |})
-        |When("a visionary leader enters", (rugContext, world) => {
-        |   let handler = world.commandHandler("ReturnsOneMessageCommandHandler")
-        |   world.invokeHandler(handler, {})
-        |})
-        |Then("excitement ensues", (p,world) => {
-        |   console.log("The plan message were " + world.plan().messages())
-        |    return world.plan().messages().length == 1
-        |})
-      """.stripMargin
-    val passingFeature1StepsFile = StringFileArtifact(
-      ".atomist/test/handlers/PassingFeature1Step.ts",
-      passingFeature1Steps
-    )
+      TestUtils.requiredFileInPackage(this, "SingleMessageFeature1Steps.ts")
+    val passingFeature1StepsFile = passingFeature1Steps.withPath(
+      ".atomist/test/handlers/PassingFeature1Step.ts")
 
     val handlerName = "ReturnsOneMessageCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
-    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile)
+    val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1StepsFile, handlerFile)
+
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    //println(new TestReport(run))
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "verify execution of a path expression without match" in {
+    val stepsFile = "SingleMessageFeature1StepsWithPathExpression.ts"
+    val passingFeature1Steps =
+      TestUtils.requiredFileInPackage(this, stepsFile)
+    val passingFeature1StepsFile = passingFeature1Steps.withPath(
+      s".atomist/test/handlers/$stepsFile")
+
+    val handlerName = "RunsPathExpressionCommandHandler.ts"
+    val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
+    val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))

@@ -7,7 +7,7 @@ import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.test.gherkin.Definitions
-import com.atomist.rug.test.gherkin.handler.{AbstractHandlerScenarioWorld, FakeRugContext}
+import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
 import com.atomist.tree.TreeMaterializer
 import com.atomist.tree.pathexpression.PathExpression
 
@@ -50,7 +50,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
         override def rootNodeFor(e: SystemEvent, pe: PathExpression) = gn
         override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
       }
-      val rugContext: RugContext = new FakeRugContext("team_id", typeRegistry, tm)
+      val rugContext: RugContext = createRugContext(tm)
       //println("About to handle event")
       recordPlan(h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1)))
     }

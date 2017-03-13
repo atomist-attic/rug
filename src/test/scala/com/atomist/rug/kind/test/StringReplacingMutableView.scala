@@ -24,8 +24,8 @@ class StringReplacingMutableView(originalBackingObject: FileArtifact, parent: Pr
   }
 
   @ExportFunction(readOnly = false, description = "Overloaded")
-  def overloaded(@ExportFunctionParameterDescription(name = "p1", description = "1st parameter") p1: String,
-                 @ExportFunctionParameterDescription(name = "p2", description = "2nd parameer") p2: String) {
+  def overloadedWithTwoParams(@ExportFunctionParameterDescription(name = "p1", description = "1st parameter") p1: String,
+                              @ExportFunctionParameterDescription(name = "p2", description = "2nd parameer") p2: String) {
     _content = p1 + p2
   }
 

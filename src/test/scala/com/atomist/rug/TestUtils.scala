@@ -5,7 +5,6 @@ import com.atomist.project.archive._
 import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime.{AddressableRug, RugSupport}
-import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -61,16 +60,16 @@ object TestUtils extends Matchers {
   /**
     * Compile the named TypeScript file in the package of the caller.
     */
-  def editorInSideFile(caller: Object, name: String): ProjectEditor =
+  def editorInSideFile(caller: AnyRef, name: String): ProjectEditor =
     rugsInSideFile(caller, name).editors.head
 
-  def reviewerInSideFile(caller: Object, name: String): ProjectReviewer =
+  def reviewerInSideFile(caller: AnyRef, name: String): ProjectReviewer =
     rugsInSideFile(caller, name).reviewers.head
 
   /**
     * Return all resources in this package as an ArtifactSource.
     */
-  def resourcesInPackage(caller: Object): ArtifactSource = {
+  def resourcesInPackage(caller: AnyRef): ArtifactSource = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
     //println(s"Using resourcePath [$resourcePath] for $caller")
     val raw = ClassPathArtifactSource.toArtifactSource(resourcePath)
@@ -80,12 +79,23 @@ object TestUtils extends Matchers {
     raw
   }
 
-  def rugsInSideFile(caller: Object, names: String*): Rugs = {
+  /**
+    * Return a specific file from the classpath (usually, src/test/resources)
+    * in the package of the caller
+    */
+  def fileInPackage(caller: AnyRef, name: String, pathAbove: String = ""): Option[FileArtifact] = {
+    resourcesInPackage(caller).allFiles.find(_.name == name).map(_.withPath(pathAbove + "/" + name))
+  }
+
+  def requiredFileInPackage(caller: AnyRef, name: String, pathAbove: String = ""): FileArtifact =
+    fileInPackage(caller, name, pathAbove).getOrElse(throw new IllegalArgumentException(s"Cannot find file [$name] in [${caller.getClass.getPackage.getName}]"))
+
+  def rugsInSideFile(caller: AnyRef, names: String*): Rugs = {
     val as = rugsInSideFileAsArtifactSource(caller, names:_*)
     RugArchiveReader.find(as)
   }
 
-  def rugsInSideFileAsArtifactSource(caller: Object, names: String*): ArtifactSource = {
+  def rugsInSideFileAsArtifactSource(caller: AnyRef, names: String*): ArtifactSource = {
     val raw = resourcesInPackage(caller)
     val tsAs = raw.filter(_ => true, f => names.contains(f.name))
     if (tsAs.empty) {

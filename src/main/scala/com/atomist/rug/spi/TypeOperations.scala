@@ -46,6 +46,11 @@ case class TypeOperation(
   def hasExample: Boolean = example.isDefined
 
   /**
+    * Does this type support reflective invocation on a node?
+    */
+  def invocable: Boolean = definedOn != null
+
+  /**
     * Convenient way of invoking the method using arguments
     * passed directly from Javascript.
     */
@@ -60,7 +65,8 @@ case class TypeOperation(
     if (methods.size != 1)
       throw new IllegalArgumentException(
         s"Operation [$name] cannot be invoked on [${target.getClass.getName}]: Found ${methods.size} definitions with ${parameters.size}, required exactly 1: " +
-          methods.mkString(","))
+          s"Known methods=[${methods.mkString(",")}]"
+      )
 
     try {
       methods.head.invoke(target, args: _*)

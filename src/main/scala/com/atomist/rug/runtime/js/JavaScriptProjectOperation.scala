@@ -4,6 +4,7 @@ import javax.script.{ScriptContext, SimpleBindings}
 
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.ProjectOperation
+import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
 import com.atomist.rug.runtime.{AddressableRug, RugSupport}
@@ -224,6 +225,6 @@ abstract class JavaScriptProjectOperation(
     * @return proxy TypeScript callers can use
     */
   protected def wrapProject(pmv: ProjectMutableView): jsSafeCommittingProxy = {
-    new jsSafeCommittingProxy(pmv)
+    new jsSafeCommittingProxy(pmv, DefaultTypeRegistry)
   }
 }

@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
 
@@ -9,6 +10,8 @@ import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
   * Editors or Executors or Handlers etc.
   */
 trait RugContext {
+
+  def typeRegistry: TypeRegistry = pathExpressionEngine.typeRegistry
 
   def pathExpressionEngine: jsPathExpressionEngine
 

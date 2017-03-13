@@ -12,7 +12,7 @@ trait ExecutableFeatureFactory {
                            definitions: Definitions,
                            rugAs: ArtifactSource,
                            rugs: Option[Rugs],
-                           listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_,_]
+                           listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_]
 }
 
 

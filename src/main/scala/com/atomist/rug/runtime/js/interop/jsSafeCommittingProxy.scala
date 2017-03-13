@@ -2,7 +2,6 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.tree._
 import com.atomist.tree.utils.NodeUtils
@@ -19,7 +18,7 @@ import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
   */
 class jsSafeCommittingProxy(
                              val node: GraphNode,
-                             typeRegistry: TypeRegistry = DefaultTypeRegistry)
+                             typeRegistry: TypeRegistry)
   extends AbstractJSObject
     with TreeNode {
 
@@ -56,6 +55,8 @@ class jsSafeCommittingProxy(
 
   override def relatedNodesNamed(key: String): Seq[TreeNode] =
     node.relatedNodesNamed(key).map(wrapOne)
+
+  private def wrapOne(n: GraphNode) = jsSafeCommittingProxy.wrapOne(n, typeRegistry)
 
   /**
     * A user is adding a named member e.g.
@@ -94,11 +95,11 @@ class jsSafeCommittingProxy(
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val st = typ
-    val possibleOps = st.allOperations.filter(op => name.equals(op.name))
-    if (possibleOps.isEmpty)
-      invokeGivenNoMatchingOperationInTypeInformation(name, st)
-    else
+    val possibleOps = st.allOperations.filter(op => name == op.name)
+    if (possibleOps.nonEmpty && possibleOps.head.invocable)
       new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+    else
+      invokeGivenNoMatchingOperationInTypeInformation(name, st)
   }
 
   private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
@@ -107,7 +108,8 @@ class jsSafeCommittingProxy(
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
         throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
-    } else node match {
+    }
+    else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
@@ -142,8 +144,8 @@ class jsSafeCommittingProxy(
           // The returned type needs to be wrapped if it's a collection
           import scala.collection.JavaConverters._
           returned match {
-            case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala))
-            case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s))
+            case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
+            case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s, typeRegistry))
             case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
             case _ => returned
           }
@@ -169,9 +171,8 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
 
-      val r: GraphNode = node match {
-        case ctn: ContainerTreeNode =>
-          val nodesAccessedThroughThisFunctionCall: Seq[TreeNode] = ctn.childrenNamed(name)
+      val r: GraphNode = {
+          val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
           nodesAccessedThroughThisFunctionCall.toList match {
             case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
             case null :: Nil => null
@@ -179,12 +180,11 @@ class jsSafeCommittingProxy(
             case more => more.head
             // throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
           }
-        case _ => node
       }
       // For terminal nodes we want the wrapped value
       r match {
         case ttn: TerminalTreeNode => ttn.value
-        case _ => jsSafeCommittingProxy.wrapOne(r)
+        case _ => wrapOne(r)
       }
     }
   }
@@ -207,19 +207,19 @@ object jsSafeCommittingProxy {
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[GraphNode]): java.util.List[jsSafeCommittingProxy] =
-    new JavaScriptArray(nodes.map(wrapOne).asJava)
+  def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[jsSafeCommittingProxy] =
+    new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 
-  def wrapIfNecessary(nodes: Seq[_]): java.util.List[Object] = {
+  def wrapIfNecessary(nodes: Seq[_], typeRegistry: TypeRegistry): java.util.List[Object] = {
     val wrapped = nodes map {
-      case n: GraphNode => wrapOne(n)
+      case n: GraphNode => wrapOne(n, typeRegistry)
       case x => x
     }
     wrapped.map(_.asInstanceOf[Object]).asJava
   }
 
-  def wrapOne(n: GraphNode): jsSafeCommittingProxy =
-    new jsSafeCommittingProxy(n)
+  def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): jsSafeCommittingProxy =
+    new jsSafeCommittingProxy(n, typeRegistry)
 }
 
 

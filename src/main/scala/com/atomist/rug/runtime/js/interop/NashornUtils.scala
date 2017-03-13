@@ -14,7 +14,34 @@ object NashornUtils {
   import scala.collection.JavaConverters._
 
   def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
-    som.entrySet().asScala.map(me => me.getKey -> me.getValue).toMap
+    som.entrySet().asScala
+      .map(me => me.getKey -> me.getValue)
+      .filter(_._2 match {
+        case som: ScriptObjectMirror if som.isFunction => false
+        case _ => true
+      })
+      .toMap
+
+  /**
+    * Return the current state of no-arg methods on this object
+    */
+  def extractNoArgFunctions(som: ScriptObjectMirror): Map[String, Object] = {
+    som.entrySet().asScala
+      .map(me => me.getKey -> me.getValue)
+      .collect {
+        case (key, f: ScriptObjectMirror) if isNoArgFunction(f) =>
+          (key, som.callMember(key))
+      }.toMap
+  }
+
+  // TODO this is fragile but can't find a Nashorn method to do it
+  private def isNoArgFunction(f: ScriptObjectMirror): Boolean = {
+    f.isFunction && {
+      val s = f.toString
+      //println(s)
+      s.startsWith("function ()")
+    }
+  }
 
   def toJavaType(nashornReturn: Object): Object = nashornReturn match {
     case s: ConsString => s.toString
@@ -68,3 +95,4 @@ object NashornUtils {
   def hasDefinedProperties(som: ScriptObjectMirror, properties: String*): Boolean =
     properties.forall(p => som.get(p) != null)
 }
+

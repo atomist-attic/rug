@@ -28,7 +28,7 @@ class PlanBuilder {
       // we are allowed to return a Message directly from handlers
       Plan(Seq(constructMessage(jsPlan)),Nil)
     } else {
-      val jsMessages = jsPlan.getMember("messages") match {
+      val jsMessages = jsPlan.getMember("_messages") match {
         case o: ScriptObjectMirror => o.values().toArray.toList
         case _ => Nil
       }
@@ -36,7 +36,7 @@ class PlanBuilder {
         val m = message.asInstanceOf[ScriptObjectMirror]
         constructMessage(m)
       }
-      val instructions = jsPlan.getMember("instructions") match {
+      val instructions = jsPlan.getMember("_instructions") match {
         case u: Undefined => Nil
         case jsInstructions: ScriptObjectMirror =>
           jsInstructions.values().toArray.toList.map { respondable =>

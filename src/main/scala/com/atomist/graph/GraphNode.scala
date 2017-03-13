@@ -55,6 +55,7 @@ trait GraphNode extends Visitable {
     */
   def followEdge(name: String): Seq[GraphNode] = {
     NodeUtils.invokeMethodIfPresent[Seq[GraphNode]](this, name) match {
+      case null => Nil
       case Some(l) => l
       case None =>
         NodeUtils.invokeMethodIfPresent[GraphNode](this, name)

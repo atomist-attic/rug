@@ -48,19 +48,19 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   override val rootNodeName: String = pathExpression.locationSteps.head.test match {
     case nnt: NamedNodeTest => nnt.name
     case nwt: NodesWithTag => nwt.tag
-    case x => throw new IllegalArgumentException(s"Cannot start path expression without root node")
+    case _ => throw new IllegalArgumentException(s"Cannot start path expression without root node")
   }
 
   override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
     val root = SimpleContainerGraphNode("root", targetNode)
-    ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, DefaultTypeRegistry, None) match {
+    ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx.typeRegistry, None) match {
       case Right(Nil) => None
       case Right(matches) =>
         val cm = jsContextMatch(
-          jsSafeCommittingProxy.wrapOne(targetNode),
-          jsSafeCommittingProxy.wrap(matches),
+          jsSafeCommittingProxy.wrapOne(targetNode, ctx.typeRegistry),
+          jsSafeCommittingProxy.wrap(matches, ctx.typeRegistry),
           teamId = e.teamId)
         invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
           case plan: ScriptObjectMirror => ConstructPlan(plan)
@@ -94,4 +94,6 @@ private case class jsMatch(cm: jsContextMatch) {
   def root(): Object = cm.root
 
   def matches(): java.util.List[jsSafeCommittingProxy] = cm.matches
+
+  override def toString: String = cm.toString
 }

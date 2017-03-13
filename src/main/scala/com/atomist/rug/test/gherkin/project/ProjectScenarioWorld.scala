@@ -10,16 +10,22 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.JavaScriptProjectOperation
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.test.gherkin._
+import com.atomist.source.EmptyArtifactSource
 
 /**
   * Convenient methods for working with projects
   */
-class ProjectScenarioWorld( definitions: Definitions,
-                            project: ProjectMutableView,
+class ProjectScenarioWorld(
+                            definitions: Definitions,
                             rugs: Option[Rugs] = None)
   extends ScenarioWorld(definitions, rugs) {
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
+
+
+  val project = new ProjectMutableView(rugAs = definitions.jsc.rugAs, originalBackingObject = EmptyArtifactSource())
+
+  override def target: AnyRef = project
 
   /**
     * Return the editor with the given name or throw an exception

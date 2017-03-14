@@ -38,7 +38,7 @@ object TypeScriptInterfaceGeneratorTest {
 class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
 
   it should "generate compilable typescript interfaces" in {
-    val td = new TypeScriptInterfaceGenerator(generateClasses = false)
+    val td = new TypeScriptInterfaceGenerator
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))

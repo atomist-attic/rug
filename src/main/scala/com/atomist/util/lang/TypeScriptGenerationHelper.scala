@@ -4,7 +4,7 @@ import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.rug.spi.TypeRegistry
 
 /**
-  * Useful helps for generating TypeScript
+  * Useful helps for generating TypeScript.
   *
   * @param indent one indent: E.g. a number of spaces or tabs
   */

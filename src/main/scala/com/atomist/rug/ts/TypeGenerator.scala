@@ -61,7 +61,6 @@ class TypeGenerator(basePackage: String = "ext_model") {
     val relationships: Traversable[Relationship] =
       doc("relationships") flatMap {
         case relList: List[_]@unchecked if relList.size == 3 =>
-
           val relName = toTypeScriptName(relList(1) match {
             case s: String => s
             case l: List[_] => Objects.toString(l.head)
@@ -86,7 +85,6 @@ class TypeGenerator(basePackage: String = "ext_model") {
 
   private def toTypeScriptName(name: String): String =
     JavaHelpers.toCamelizedPropertyName(name.toLowerCase)
-
 }
 
 private case class Prop(name: String, typ: String)
@@ -136,6 +134,5 @@ private class JsonBackedTyped(
 
   override def toString: String =
     s"$name: ops=[${operations.mkString(",")}]"
-
 }
 

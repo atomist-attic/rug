@@ -10,6 +10,6 @@ When("a visionary leader enters", world => {
     )
    world.sendEvent(c)
 })
-Then("excitement ensues", (p,world) => {
+Then("excitement ensues", world => {
     return world.plan() != null
 })

@@ -3,10 +3,10 @@ import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/C
 Given("a sleepy country", f => {
     //console.log("Given invoked for handler")
 })
-When("a visionary leader enters", (rugContext, world) => {
+When("a visionary leader enters", world => {
    let handler = world.commandHandler("ReturnsEmptyPlanCommandHandler")
    world.invokeHandler(handler, {})
 })
-Then("excitement ensues", (p,world) => {
+Then("excitement ensues", world => {
     return world.plan().messages().length == 0
 })

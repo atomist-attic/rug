@@ -12,7 +12,7 @@ class EventHandlerFeature(
                       listeners: Seq[GherkinExecutionListener])
   extends AbstractExecutableFeature[EventHandlerScenarioWorld](definition, definitions, rugs, listeners) {
 
-  override protected def createWorldForScenario: EventHandlerScenarioWorld = {
+  override protected def createWorldForScenario(): EventHandlerScenarioWorld = {
     new EventHandlerScenarioWorld(definitions, rugs)
   }
 }

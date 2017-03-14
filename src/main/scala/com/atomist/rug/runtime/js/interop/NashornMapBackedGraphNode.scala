@@ -11,8 +11,7 @@ import scala.collection.JavaConverters._
 object NashornMapBackedGraphNode {
 
   /**
-    * Convert this object returned from Nashorn to a GraphNode if possible. Only take
-    * account of properties
+    * Convert this object returned from Nashorn to a GraphNode if possible.
     */
   def toGraphNode(nashornReturn: Object): Option[GraphNode] = nashornReturn match {
     case som: ScriptObjectMirror =>
@@ -65,6 +64,11 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
   val nodeId: Option[String] = relevantPropertiesAndValues.get(NodeIdField).map(id => "" + id)
   nodeRegistry.register(this)
 
+  private val traversableEdges: Map[String,Seq[GraphNode]] =
+    relevantPropertiesAndValues.keys
+      .map(key => (key, toNode(key)))
+      .toMap
+
   override def nodeName: String = relevantPropertiesAndValues.get(NodeNameField) match {
     case None => ""
     case Some(s: String) => s
@@ -80,7 +84,9 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
   }
 
   override lazy val relatedNodes: Seq[GraphNode] =
-    relevantPropertiesAndValues.keySet.filter(!Set(NodeNameField, NodeTagsField, NodeIdField).contains(_)).flatMap(toNode).toSeq
+    relevantPropertiesAndValues.keySet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
+      .flatMap(toNode)
+      .toSeq
 
   override lazy val relatedNodeNames: Set[String] = relatedNodes.map(_.nodeName).toSet
 
@@ -90,7 +96,7 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
     relatedNodes.filter(_.nodeName == name)
 
   override def followEdge(name: String): Seq[GraphNode] =
-    toNode(name)
+    traversableEdges.getOrElse(name, Nil)
 
   private def toNode(key: String): Seq[GraphNode] = {
     def nodify(som: ScriptObjectMirror): GraphNode = {
@@ -122,6 +128,6 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
     }
   }
 
-  override def toString: String = s"${getClass.getSimpleName}: name=[$nodeName],id=$nodeId"
+  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName],id=$nodeId"
 
 }

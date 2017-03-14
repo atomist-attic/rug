@@ -159,6 +159,8 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
 
   def addOrReplaceNode(xpathToParent: String, xpathToNode: String, newNode: String, nodeContent: String): Unit
 
+  def addNodeIfNotPresent(xpathToParent: String, xpathToNode: String, newNode: String, nodeContent: String): Unit
+
   def deleteNode(xpath: String): Unit
 
   @ExportFunction(readOnly = false, description = "Set the content of the groupId element")
@@ -387,7 +389,7 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
   }
 
   private def addDependencyManagementSectionIfNotPresent(): Unit = {
-    addOrReplaceNode(projectBaseXPath,
+    addNodeIfNotPresent(projectBaseXPath,
       dependencyManagementBaseXPath,
       dependencyManagement,
       s"<$dependencyManagement><$dependencies></$dependencies></$dependencyManagement>")

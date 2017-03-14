@@ -610,6 +610,24 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
   }
+
+  it should "not replace a dependency management section if it already exists" in {
+    val groupId = "org.springframework.cloud"
+    val artifactId = "spring-cloud-dependencies-other"
+    val originalArtifactId = "spring-cloud-dependencies"
+    val dependencyContent =
+      s"""<dependency><groupId>$groupId</groupId><artifactId>$artifactId</artifactId><version>Brixton.SR4</version><type>pom</type><scope>import</scope></dependency>""".stripMargin
+
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(false)
+
+    validPomWithDependencyManagement.addOrReplaceDependencyManagementDependency(groupId, artifactId, dependencyContent)
+
+    assert(validPomWithDependencyManagement.dirty === true)
+
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) should be(true)
+    validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+  }
 }
 
 object PomMutableViewTestSupport {

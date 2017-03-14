@@ -139,6 +139,29 @@ class XmlMutableView(
     }
   }
 
+  @ExportFunction(readOnly = false, description = "Adds a node if it does not exist")
+  def addNodeIfNotPresent(@ExportFunctionParameterDescription(name = "parentNodeXPath",
+    description = "The XPath selector for the parent node")
+                       xpathOfParent: String,
+                       @ExportFunctionParameterDescription(name = "xPathOfNodeToPlace",
+                         description = "The XPath selector for the node to be placed")
+                       xPathOfNodeToPlace: String,
+                       @ExportFunctionParameterDescription(name = "newNode",
+                         description = "The name of the node being placed")
+                       newNode: String,
+                       @ExportFunctionParameterDescription(name = "nodeContent",
+                         description = "The content of the node being placed")
+                       nodeContent: String): Unit = {
+
+    val xmlDocument = stringToDocument(currentContent)
+
+    val nodeToAdd: Node = prepareContentForInsertion(nodeContent, xmlDocument)
+
+    if (!this.contains(xPathOfNodeToPlace)) {
+      addChildNode(xpathOfParent, newNode, nodeContent)
+    }
+  }
+
   @ExportFunction(readOnly = true, description = "Tests whether a node matching the given xpath expression is present")
   def contains(@ExportFunctionParameterDescription(name = "xpath",
     description = "The XPath to test against for the presence of a node")

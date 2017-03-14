@@ -8,6 +8,6 @@ When("a visionary leader enters", world => {
    let c = new node.Commit().withMadeBy(new node.Person("Ebony"))
    world.sendEvent(c)
 })
-Then("excitement ensues", (p,world) => {
+Then("excitement ensues", world => {
     return world.plan().messages().length == 0
 })

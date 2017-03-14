@@ -46,6 +46,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     val gn = NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
       throw new IllegalArgumentException(s"$n is not a valid GraphNode")
     )
+    println(s"Adding to root context: $gn")
     rootContext = rootContext.addRelatedNode(gn)
   }
 

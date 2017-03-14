@@ -24,7 +24,7 @@ class jsSafeCommittingProxy(
 
   import jsSafeCommittingProxy._
 
-  override def toString: String = s"SafeCommittingProxy around $node"
+  override def toString: String = s"SafeCommittingProxy#$hashCode around $node"
 
   private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
@@ -88,7 +88,7 @@ class jsSafeCommittingProxy(
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
       case None if name == "toString" =>
-        new AlwaysReturns(s"${getClass.getSimpleName} wrapping [$node]")
+        new AlwaysReturns(toString)
       case _ => invokeConsideringTypeInformation(name)
     }
   }

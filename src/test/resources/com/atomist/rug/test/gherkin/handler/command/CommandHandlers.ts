@@ -58,3 +58,23 @@ class RunsPathExpressionCommandHandler implements HandleCommand {
 }
 
 export let command3 = new RunsPathExpressionCommandHandler();
+
+
+@CommandHandler("RunsMatchingPathExpressionCommandHandler","Returns one message")
+@Tags("path_expression")
+class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
+
+  handle(ctx: HandlerContext) : Plan {
+    let result = new Plan()
+    const eng = ctx.pathExpressionEngine()
+
+    const findPerson = "/Commit/Person()[@name='Ebony']"
+    eng.with<node.Person>(ctx.contextRoot(), findPerson, peep => {
+      console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
+      result.add(new Message(peep.name()).withCorrelationId("dude"))
+    })
+    console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
+    return result;
+  }
+}
+export const command4 = new RunsMatchingPathExpressionCommandHandler();

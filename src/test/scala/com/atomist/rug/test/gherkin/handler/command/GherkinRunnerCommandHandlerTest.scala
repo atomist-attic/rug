@@ -42,7 +42,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, "SingleMessageFeature1Steps.ts")
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      ".atomist/test/handlers/PassingFeature1Step.ts")
+      ".atomist/test/handlers/command/PassingFeature1Step.ts")
 
     val handlerName = "ReturnsOneMessageCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
@@ -63,11 +63,35 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, stepsFile)
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      s".atomist/test/handlers/$stepsFile")
+      s".atomist/test/handlers/command/$stepsFile")
 
     val handlerName = "RunsPathExpressionCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
     val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1StepsFile, handlerFile)
+
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    //println(new TestReport(run))
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "verify execution of a path expression with match" in {
+    val stepsFile = "SingleMessageFeature1StepsWithMatchingPathExpression.ts"
+    val passingFeature1Steps =
+      TestUtils.requiredFileInPackage(this, stepsFile)
+    val passingFeature1StepsFile = passingFeature1Steps.withPath(
+      s".atomist/test/handlers/command/$stepsFile")
+
+    val handlerName = "RunsMatchingPathExpressionCommandHandler.ts"
+    val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
+    val as = SimpleFileBasedArtifactSource(
+      nodesFile,
+      Feature1File,
+      passingFeature1StepsFile, handlerFile)
 
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))

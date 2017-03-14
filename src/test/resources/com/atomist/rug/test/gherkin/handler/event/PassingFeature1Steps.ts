@@ -7,6 +7,6 @@ When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandler")
    world.sendEvent(new node.Commit)
 })
-Then("excitement ensues", (p,world) => {
+Then("excitement ensues", world => {
     return world.plan().messages().length == 0
 })

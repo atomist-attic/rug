@@ -2,6 +2,7 @@ package com.atomist.rug.ts
 
 import java.io.PrintWriter
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.{Parameter, ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
@@ -14,7 +15,8 @@ import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.util.Utils
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
-import org.apache.commons.lang3.{ClassUtils, StringUtils}
+import org.apache.commons.lang3.ClassUtils.{getAllInterfaces, getAllSuperclasses}
+import org.apache.commons.lang3.StringUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -172,22 +174,30 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     val generatedTypes = new ListBuffer[GeneratedType]
     allTypes.foreach(t => {
       t.operations.foreach(op => {
-        val superclasses = ClassUtils.hierarchy(op.definedOn, ClassUtils.Interfaces.INCLUDE).asScala
+        val superTypes = (getAllSuperclasses(op.definedOn).asScala ++ getAllInterfaces(op.definedOn).asScala)
           .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
-          .filterNot(c => classOf[TreeNode] == c) // Ignore TreeNode as it's already present in TS file
+          .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
+//          .filterNot(c => classOf[TreeNode] == c)
           .toList
+
+          println(s"processing ${t.name}: hierarchy: ${superTypes.map(_.getSimpleName).mkString(",")}")
 
         // Add class hierarchy
         val alreadyAddedMethods = new ListBuffer[MethodInfo]
-        for (i <- superclasses.size to 1 by -1) {
-          val ops = exportedOperations(superclasses(i - 1))
-          val parent = if (i == superclasses.size) root else Typed.typeToTypeName(superclasses(i))
-          val name = Typed.typeToTypeName(superclasses(i - 1))
+        for (i <- superTypes.size to 1 by -1) {
+          val ops = exportedOperations(superTypes(i - 1))
+          val parent = if (i == superTypes.size) root else Typed.typeToTypeName(superTypes(i))
+          val name = Typed.typeToTypeName(superTypes(i - 1))
           val description = if (i == 1) t.description else name
           val methods = allMethods(ops).filterNot(alreadyAddedMethods.contains(_))
           generatedTypes += GeneratedType(name, description, methods, parent)
           alreadyAddedMethods ++= methods
         }
+
+        // Add leaf class
+        val parent = if (superTypes.isEmpty) root else Typed.typeToTypeName(superTypes.head)
+        val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
+        generatedTypes += GeneratedType(t.name, t.description, methods, parent)
       })
     })
 
@@ -246,8 +256,10 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   }
 
   private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
-    val imports = interfaceTypes.flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
-      .filter(currentType.name != t.name && _ == t.name)).toList
+    val imports = interfaceTypes
+      .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
+        .filter(currentType.name != t.name && _ == t.name))
+      .toList
     (currentType.parent :: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 

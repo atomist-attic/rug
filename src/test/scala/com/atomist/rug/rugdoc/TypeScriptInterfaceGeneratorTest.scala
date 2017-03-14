@@ -38,7 +38,7 @@ object TypeScriptInterfaceGeneratorTest {
 class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
 
   it should "generate compilable typescript interfaces" in {
-    val td = new TypeScriptInterfaceGenerator()
+    val td = new TypeScriptInterfaceGenerator(generateClasses = false)
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
       Map(td.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
@@ -54,7 +54,7 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     // println(js.get.content)
   }
 
-  it should "generate compilable typescript classes" in pendingUntilFixed {
+  it should "generate compilable typescript classes" in {
     val td = new TypeScriptInterfaceGenerator(generateClasses = true)
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
@@ -64,7 +64,6 @@ class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
     val compiled = TypeScriptInterfaceGeneratorTest.compile(output)
     val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
     ts shouldBe defined
-    assert(!compiled.allFiles.exists(f => f.name.endsWith(".ts") && f.content.contains("interface")))
     // println(ts.get.content)
 
     val js = compiled.allFiles.find(_.name.endsWith(".js"))

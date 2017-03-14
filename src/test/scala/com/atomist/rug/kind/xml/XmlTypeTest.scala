@@ -25,6 +25,15 @@ class XmlTypeTest extends FlatSpec with Matchers {
       case Some(xs) => assert(xs.size === 1)
       case x => fail(s"no XML, found $x")
     }
+  }
 
+  it should "not find XML in a .sh file" in {
+    val xmlFile = StringFileArtifact("src/resources/royalty.sh", "#!/bin/sh\necho Prince Rogers Nelson\n")
+    val fmv = new FileMutableView(xmlFile, null)
+    val xt = new XmlType
+    xt.findAllIn(fmv) match {
+      case None =>
+      case x => fail(s"found XML $x when it should not have")
+    }
   }
 }

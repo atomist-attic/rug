@@ -8,28 +8,12 @@ import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.OutOfDateNodeException
 
 /**
-  * Parameter to a Rug type.
-  */
-case class TypeParameter(
-                          name: String,
-                          parameterType: String,
-                          description: Option[String]
-                        ) {
-
-  def getDescription: String = description.getOrElse("")
-
-  override def toString: String =
-    s"$name : $parameterType : ${description.getOrElse("No Description")}"
-}
-
-/**
-  * Operation on an exported Rug type. Typically annotated with an
-  * [[ExportFunction]] annotation.
+  * Operation on an exported Rug type. Typically annotated with an [[ExportFunction]] annotation.
   *
-  * @param name        name of the type
+  * @param name name of the type
   * @param description description of the type. May be used in generated code
-  * @param example     optional example of usage of the operation
-  * @param definedOn  type we are defined on. May be an abstract superclass.
+  * @param example optional example of usage of the operation
+  * @param definedOn type we are defined on. May be an abstract superclass.
   * @see ExportFunction
   */
 case class TypeOperation(
@@ -87,8 +71,11 @@ object TypeOperation {
 
   val TreeNodeType = new Typed {
     override val name = "TreeNode"
+
     override def description: String = "TreeNode operations"
+
     override def allOperations = TreeNodeAllTypeOperations
+
     override def operations = TreeNodeTypeOperations
   }
 

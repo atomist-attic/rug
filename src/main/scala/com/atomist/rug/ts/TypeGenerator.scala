@@ -29,7 +29,6 @@ class TypeGenerator(basePackage: String = "ext_model") {
 
   /**
     * Return a valid node module with these files in it, under base package
-    * @return
     */
   def toNodeModule(json: String): ArtifactSource = {
     toTypeScriptFiles(json).withPathAbove(basePackage)

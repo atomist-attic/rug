@@ -22,7 +22,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     val types = typeGen.extract(theJson)
     println(types)
     types.foreach(t => {
-      //println(t)
+      // println(t)
       assert(t.operations.nonEmpty, s"Type ${t.name} should have operations")
     })
   }
@@ -30,12 +30,12 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
   it should "generate compiling node module" in {
     val as = typeGen.toNodeModule(theJson)
       .withPathAbove(".atomist/rug")
-    //println(ArtifactSourceUtils.prettyListFiles(as))
+    // println(ArtifactSourceUtils.prettyListFiles(as))
     val cas = TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,
       as
     )))
-    println(ArtifactSourceUtils.prettyListFiles(cas))
+    // println(ArtifactSourceUtils.prettyListFiles(cas))
     //    cas.allFiles.foreach(f =>
     //      println(s"${f.path}\n${f.content}\n\n"))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.ts")))

@@ -55,16 +55,20 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     * Either an interface or a test class, depending on
     * whether we're generated test classes
     */
-  private case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: String = root) {
+  private case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: Seq[String] = Seq(root)) {
 
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
       if (generateClasses) {
         val deriveKeyword = if (parent == "TreeNode") "implements" else "extends"
-        output ++= s"\nclass $name $deriveKeyword $parent {${config.separator}"
-      } else
-        output ++= s"\ninterface $name extends $parent {${config.separator}"
+        output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
+      } else {
+        if (parent.isEmpty)
+          output ++= s"\ninterface $name {${config.separator}"
+        else
+          output ++= s"\ninterface $name extends ${parent.mkString(", ")} {${config.separator}"
+      }
 
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
@@ -174,28 +178,44 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     val generatedTypes = new ListBuffer[GeneratedType]
     allTypes.foreach(t => {
       t.operations.foreach(op => {
-        val superTypes = (getAllSuperclasses(op.definedOn).asScala ++ getAllInterfaces(op.definedOn).asScala)
-          .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
-          .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
-//          .filterNot(c => classOf[TreeNode] == c)
-          .toList
+        // Add super classes
+        val superClasses =
+          if (op.definedOn == null) Nil
+          else
+            getAllSuperclasses(op.definedOn).asScala
+              .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
+              .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
+              .toList
 
-          println(s"processing ${t.name}: hierarchy: ${superTypes.map(_.getSimpleName).mkString(",")}")
-
-        // Add class hierarchy
         val alreadyAddedMethods = new ListBuffer[MethodInfo]
-        for (i <- superTypes.size to 1 by -1) {
-          val ops = exportedOperations(superTypes(i - 1))
-          val parent = if (i == superTypes.size) root else Typed.typeToTypeName(superTypes(i))
-          val name = Typed.typeToTypeName(superTypes(i - 1))
-          val description = if (i == 1) t.description else name
-          val methods = allMethods(ops).filterNot(alreadyAddedMethods.contains(_))
+        for (i <- superClasses.indices) {
+          val name = Typed.typeToTypeName(superClasses(i))
+          val ops = exportedOperations(superClasses(i))
+          val methods = allMethods(ops)
+          val parent = if (i == superClasses.size - 1) Seq(root) else Seq(Typed.typeToTypeName(superClasses(i + 1)))
           generatedTypes += GeneratedType(name, description, methods, parent)
           alreadyAddedMethods ++= methods
         }
 
+        // Add super interfaces
+        val superInterfaces =
+          if (op.definedOn == null) Nil
+          else
+            getAllInterfaces(op.definedOn).asScala
+              .filterNot(c => allMethods(exportedOperations(c)).isEmpty)
+              .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
+              .toList
+
+        for (i <- superInterfaces.size to 1 by -1) {
+          val ops = exportedOperations(superInterfaces(i - 1))
+          val name = Typed.typeToTypeName(superInterfaces(i - 1))
+          val methods = allMethods(ops)
+          generatedTypes += GeneratedType(name, name, methods, Seq())
+          alreadyAddedMethods ++= methods
+        }
+
         // Add leaf class
-        val parent = if (superTypes.isEmpty) root else Typed.typeToTypeName(superTypes.head)
+        val parent = if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(root) else Seq(Typed.typeToTypeName(superClasses.head)) ++ superInterfaces.map(i => Typed.typeToTypeName(i))
         val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
         generatedTypes += GeneratedType(t.name, t.description, methods, parent)
       })
@@ -257,10 +277,9 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
     val imports = interfaceTypes
-      .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
-        .filter(currentType.name != t.name && _ == t.name))
+      .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]")).filter(currentType.name != t.name && _ == t.name))
       .toList
-    (currentType.parent :: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
+    (currentType.parent.toList ::: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 
   override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {

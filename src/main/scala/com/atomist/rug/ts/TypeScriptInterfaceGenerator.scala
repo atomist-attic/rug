@@ -61,7 +61,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       val output = new StringBuilder
       output ++= emitDocComment(description)
       if (generateClasses) {
-        val deriveKeyword = if (parent == "TreeNode") "implements" else "extends"
+        val deriveKeyword = if (parent.last == "TreeNode") "implements" else "extends"
         output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
       } else {
         if (parent.isEmpty)
@@ -120,13 +120,13 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
           s"""${indent}private $fieldName: $returnType = null
              |
              |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
-             |${indent}${indent}this.$fieldName = x
-             |${indent}${indent}return this
-             |${indent}}
+             |$indent${indent}this.$fieldName = x
+             |$indent${indent}return this
+             |$indent}
              |
              |$comment$indent$name(${params.mkString(", ")}): $returnType {
-             |${indent}${indent}return this.$fieldName
-             |${indent}}""".stripMargin
+             |$indent${indent}return this.$fieldName
+             |$indent}""".stripMargin
       } else
         s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }

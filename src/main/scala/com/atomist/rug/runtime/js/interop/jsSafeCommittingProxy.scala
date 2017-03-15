@@ -113,10 +113,11 @@ class jsSafeCommittingProxy(
       case sobtn: ScriptObjectBackedTreeNode =>
         // This object is wholly defined in JavaScript
         sobtn.invoke(name)
-      case _ => throw new RugRuntimeException(null,
-        s"Attempt to invoke method [$name] on type [${typ.description}]: " +
-          s"Wrapping node named ${node.nodeName}; " +
-          s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
+      case _ =>
+        throw new RugRuntimeException(null,
+          s"Attempt to invoke method [$name] on type [${typ.description}]: " +
+            s"Wrapping node named ${node.nodeName}; " +
+            s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
     }
   }
 
@@ -170,21 +171,12 @@ class jsSafeCommittingProxy(
 
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
-
-      val r: GraphNode = {
-          val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
-          nodesAccessedThroughThisFunctionCall.toList match {
-            case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
-            case null :: Nil => null
-            case head :: Nil => head
-            case more => more.head
-            // throw new IllegalStateException(s"Illegal list content (${nodesAccessedThroughThisFunctionCall.size}): $nodesAccessedThroughThisFunctionCall")
-          }
-      }
-      // For terminal nodes we want the wrapped value
-      r match {
-        case ttn: TerminalTreeNode => ttn.value
-        case _ => wrapOne(r)
+      val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
+      nodesAccessedThroughThisFunctionCall.toList match {
+        case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
+        case null :: Nil => null
+        case head :: Nil => wrapOne(head) // do we sometimes (TerminalTreeNode) need to pull out the value instead?
+        case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
       }
     }
   }

@@ -22,7 +22,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
   "command handler testing" should "verify no plan steps" in {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, "NoMessagesFeature1Steps.ts")
-          .withPath(".atomist/test/handlers/command/NoMessagesFeature1Steps.ts")
+          .withPath(".atomist/tests/handlers/command/NoMessagesFeature1Steps.ts")
 
     val handlerName = "ReturnsEmptyPlanCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
@@ -42,7 +42,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, "SingleMessageFeature1Steps.ts")
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      ".atomist/test/handlers/command/PassingFeature1Step.ts")
+      ".atomist/tests/handlers/command/PassingFeature1Step.ts")
 
     val handlerName = "ReturnsOneMessageCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
@@ -63,7 +63,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, stepsFile)
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      s".atomist/test/handlers/command/$stepsFile")
+      s".atomist/tests/handlers/command/$stepsFile")
 
     val handlerName = "RunsPathExpressionCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)

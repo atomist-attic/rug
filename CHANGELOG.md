@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.13.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.14.0...HEAD
+
+## [0.14.0] - 2017-03-15
+
+[0.14.0]: https://github.com/atomist/rug/compare/0.13.0...0.14.0
+
+Ides of March release
+
+### Changes
+
+-   TypeDoc, ScalaDoc, and scoverage reports are now published
+    automatically
+-   Xml extension can now derive itself from a file
+
+### Added
+
+-   Command and event handler testing
+-   TypeScript "it should fail" test step via @justinedelson #429
+-   Xml `addNodeIfNotPresent` via @justinedelson #423
+
+### Fixed
+
+-   TypeScript interface and class generation #427
 
 ## [0.13.0] - 2017-03-10
 

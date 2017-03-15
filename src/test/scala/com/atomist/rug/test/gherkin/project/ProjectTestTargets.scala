@@ -111,7 +111,7 @@ object ProjectTestTargets {
     """.stripMargin
 
   val CorruptionFeatureFile = StringFileArtifact(
-    ".atomist/test/project/Corruption.feature",
+    ".atomist/tests/project/Corruption.feature",
     CorruptionFeature)
 
   val CorruptionTest =
@@ -157,7 +157,7 @@ object ProjectTestTargets {
     """.stripMargin
 
   val GenerationFeatureFile = StringFileArtifact(
-    ".atomist/test/project/Generation.feature",
+    ".atomist/tests/project/Generation.feature",
     GenerationFeature)
 
   /**

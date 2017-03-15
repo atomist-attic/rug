@@ -118,7 +118,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/test/project/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/tests/project/CorruptionSteps.ts", CorruptionTest)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
@@ -136,7 +136,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/project/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts", generationTest("SimpleGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
@@ -159,7 +159,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/project/GenerationSteps.ts",
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
             generationTest("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is God`")))
         )
 
@@ -176,7 +176,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(StringFileArtifact(
-          ".atomist/test/project/Simple.feature",
+          ".atomist/tests/project/Simple.feature",
           """
             |Feature: Generate a new project
             | This is a test
@@ -188,7 +188,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
             | When run simple generator
             | Then parameters were invalid
           """.stripMargin),
-          StringFileArtifact(".atomist/test/project/GenerationSteps.ts",
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
             generateWithInvalidParameters("SimpleGeneratorWithParams", Map("text" -> "`Anders Hjelsberg is 1God`")))
         )
 
@@ -209,7 +209,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/test/project/GenerationSteps.ts", generationTest("FailingGenerator", Map()))
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts", generationTest("FailingGenerator", Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
@@ -224,7 +224,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
       SimpleFileBasedArtifactSource(
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/test/project/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/tests/project/CorruptionSteps.ts", CorruptionTest)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt1 = new GherkinRunner(new JavaScriptContext(cas))

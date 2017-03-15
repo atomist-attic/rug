@@ -24,7 +24,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
       "PassingFeature1Steps.ts",
-      ".atomist/test/handlers/event"
+      ".atomist/tests/handlers/event"
     )
 
     val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
@@ -55,7 +55,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
       stepsFile,
-      ".atomist/test/handler/event"
+      ".atomist/tests/handler/event"
     )
     val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
     val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile, nodesFile)
@@ -72,7 +72,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
       "PassingFeature1Steps3.ts",
-      ".atomist/test/handler/event"
+      ".atomist/tests/handler/event"
     )
 
     val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")

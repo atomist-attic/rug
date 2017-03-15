@@ -18,7 +18,7 @@ object EventHandlerTestTargets {
     """.stripMargin
 
   val Feature1File = StringFileArtifact(
-    ".atomist/test/handlers/event/Feature1.feature",
+    ".atomist/tests/handlers/event/Feature1.feature",
     Feature1
   )
 

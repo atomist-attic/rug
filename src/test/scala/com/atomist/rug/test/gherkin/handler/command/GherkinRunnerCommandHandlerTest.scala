@@ -31,7 +31,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
         |})
       """.stripMargin
     val passingFeature1StepsFile = StringFileArtifact(
-      ".atomist/test/handlers/command/PassingFeature1Step.ts",
+      ".atomist/tests/handlers/command/PassingFeature1Step.ts",
       passingFeature1Steps
     )
 
@@ -67,7 +67,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
         |})
       """.stripMargin
     val passingFeature1StepsFile = StringFileArtifact(
-      ".atomist/test/handlers/PassingFeature1Step.ts",
+      ".atomist/tests/handlers/PassingFeature1Step.ts",
       passingFeature1Steps
     )
 

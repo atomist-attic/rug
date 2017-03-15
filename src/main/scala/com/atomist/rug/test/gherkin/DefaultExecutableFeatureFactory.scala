@@ -23,11 +23,11 @@ object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
                                     rugs: Option[Rugs],
                                     listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_] = {
     // TODO clean up name of test directory
-    if (f.definition.path.contains(s"test/project"))
+    if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/project"))
       new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners)
-    else if (f.definition.path.contains(s"test/${atomistConfig.handlersDirectory}/command"))
+    else if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/${atomistConfig.handlersDirectory}/command"))
       new CommandHandlerFeature(f, definitions, rugAs, rugs, listeners)
-    else if (f.definition.path.contains(s"test/${atomistConfig.handlersDirectory}/event"))
+    else if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/${atomistConfig.handlersDirectory}/event"))
       new EventHandlerFeature(f, definitions, rugAs, rugs, listeners)
     else {
       throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or [${atomistConfig.testsDirectory}/handlers]")

@@ -70,8 +70,8 @@ object GherkinReaderTest {
       | Then everything's done
     """.stripMargin
 
-  val SimpleFeatureFile = StringFileArtifact(".atomist/test/project/Simple.feature", Simple)
+  val SimpleFeatureFile = StringFileArtifact(".atomist/tests/project/Simple.feature", Simple)
 
-  val TwoScenarioFeatureFile = StringFileArtifact(".atomist/test/project/Two.feature", TwoScenarios)
+  val TwoScenarioFeatureFile = StringFileArtifact(".atomist/tests/project/Two.feature", TwoScenarios)
 
 }

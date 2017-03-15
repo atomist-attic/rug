@@ -163,7 +163,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     SuccessfulModification(r)
   }
 
-  protected def getSuperInterfaces(op: TypeOperation) = {
+  protected def getSuperInterfaces(op: TypeOperation) =
     if (op.definedOn == null) Nil
     else
       ClassUtils.getAllInterfaces(op.definedOn).asScala
@@ -171,9 +171,8 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
         .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
         .filterNot(_.exportedMethods.isEmpty)
         .toList
-  }
 
-  protected def getSuperClasses(op: TypeOperation) = {
+  protected def getSuperClasses(op: TypeOperation) =
     if (op.definedOn == null) Nil
     else
       ClassUtils.getAllSuperclasses(op.definedOn).asScala
@@ -181,7 +180,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
         .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
         .filterNot(_.exportedMethods.isEmpty)
         .toList
-  }
 
   protected def allMethods(ops: Seq[TypeOperation]): Seq[MethodInfo] = {
     val methods = new ListBuffer[MethodInfo]

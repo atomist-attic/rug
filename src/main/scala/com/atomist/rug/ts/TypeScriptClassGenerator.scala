@@ -18,7 +18,7 @@ object TypeScriptClassGenerator extends App {
 }
 
 /**
-  * Generate stub class for testing.
+  * Generate stub classes for testing.
   *
   * @param typeRegistry registry of known Rug Types.
   */
@@ -29,41 +29,35 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
 
   import AbstractTypeScriptGenerator._
 
-  protected def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] = {
+  override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
-    allTypes.foreach(t => {
-      t.operations.foreach(op => {
-        val alreadyAddedMethods = new ListBuffer[MethodInfo]
+    val alreadyAddedMethods = new ListBuffer[MethodInfo]
 
-        // Get super classes
-        val superClasses = getSuperClasses(op)
-        for (i <- superClasses.indices) {
-          val name = Typed.typeToTypeName(superClasses(i).parent)
-          val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
-          val methods = superClasses(i).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
-          generatedTypes += GeneratedType(name, description, methods, parent)
-          alreadyAddedMethods ++= methods
-        }
+    // Get super classes
+    val superClasses = getSuperClasses(op)
+    for (i <- superClasses.indices) {
+      val name = Typed.typeToTypeName(superClasses(i).parent)
+      val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
+      val methods = superClasses(i).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
+      generatedTypes += GeneratedType(name, description, methods, parent)
+      alreadyAddedMethods ++= methods
+    }
 
-        // Get super interfaces
-        val superInterfaces = getSuperInterfaces(op)
+    // Get super interfaces
+    val superInterfaces = getSuperInterfaces(op)
 
-        // Add leaf class
-        val leafClassMethods = new ListBuffer[MethodInfo]
-        for (i <- superInterfaces.size to 1 by -1) {
-          val methods = superInterfaces(i - 1).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
-          leafClassMethods ++= methods
-          alreadyAddedMethods ++= methods
-        }
+    // Add leaf class
+    val leafClassMethods = new ListBuffer[MethodInfo]
+    for (i <- superInterfaces.size to 1 by -1) {
+      val methods = superInterfaces(i - 1).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
+      leafClassMethods ++= methods
+      alreadyAddedMethods ++= methods
+    }
 
-        leafClassMethods ++= allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
-        val parent = if (superClasses.isEmpty) Seq(Root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
-        generatedTypes += GeneratedType(t.name, t.description, leafClassMethods, parent)
-      })
-    })
+    leafClassMethods ++= allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
+    val parent = if (superClasses.isEmpty) Seq(Root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
+    generatedTypes += GeneratedType(t.name, t.description, leafClassMethods, parent)
 
-    (generatedTypes.groupBy(_.name) map {
-      case (_, l) => l.head
-    }).toSeq.sortBy(_.name)
+    generatedTypes
   }
 }

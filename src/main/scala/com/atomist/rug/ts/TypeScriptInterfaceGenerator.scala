@@ -29,43 +29,37 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   import AbstractTypeScriptGenerator._
 
-  protected def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] = {
+  override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
-    allTypes.foreach(t => {
-      t.operations.foreach(op => {
-        val alreadyAddedMethods = new ListBuffer[MethodInfo]
+    val alreadyAddedMethods = new ListBuffer[MethodInfo]
 
-        // Get super classes
-        val superClasses = getSuperClasses(op)
-        for (i <- superClasses.indices) {
-          val name = Typed.typeToTypeName(superClasses(i).parent)
-          val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
-          val methods = superClasses(i).exportedMethods
-          generatedTypes += GeneratedType(name, description, methods, parent)
-          alreadyAddedMethods ++= methods
-        }
+    // Get super classes
+    val superClasses = getSuperClasses(op)
+    for (i <- superClasses.indices) {
+      val name = Typed.typeToTypeName(superClasses(i).parent)
+      val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
+      val methods = superClasses(i).exportedMethods
+      generatedTypes += GeneratedType(name, description, methods, parent)
+      alreadyAddedMethods ++= methods
+    }
 
-        // Get super interfaces
-        val superInterfaces = getSuperInterfaces(op)
-        for (i <- superInterfaces.size to 1 by -1) {
-          val name = Typed.typeToTypeName(superInterfaces(i - 1).parent)
-          val methods = superInterfaces(i - 1).exportedMethods
-          generatedTypes += GeneratedType(name, name, methods, Seq())
-          alreadyAddedMethods ++= methods
-        }
+    // Get super interfaces
+    val superInterfaces = getSuperInterfaces(op)
+    for (i <- superInterfaces.size to 1 by -1) {
+      val name = Typed.typeToTypeName(superInterfaces(i - 1).parent)
+      val methods = superInterfaces(i - 1).exportedMethods
+      generatedTypes += GeneratedType(name, name, methods, Seq())
+      alreadyAddedMethods ++= methods
+    }
 
-        // Add leaf class
-        val parent =
-          if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(Root)
-          else Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i => Typed.typeToTypeName(i.parent))
+    // Add leaf class
+    val parent =
+      if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(Root)
+      else Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i => Typed.typeToTypeName(i.parent))
 
-        val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
-        generatedTypes += GeneratedType(t.name, t.description, methods, parent)
-      })
-    })
+    val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
+    generatedTypes += GeneratedType(t.name, t.description, methods, parent)
 
-    (generatedTypes.groupBy(_.name) map {
-      case (_, l) => l.head
-    }).toSeq.sortBy(_.name)
+    generatedTypes
   }
 }

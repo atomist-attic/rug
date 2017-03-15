@@ -12,6 +12,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
 import org.apache.commons.lang3.{ClassUtils, StringUtils}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
@@ -88,19 +89,19 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       builder.toString
     }
 
-    def canEqual(a: Any) = a.isInstanceOf[MethodInfo]
+    def canEqual(a: Any): Boolean = a.isInstanceOf[MethodInfo]
 
-    override def equals(that: Any) =
+    override def equals(that: Any): Boolean =
       that match {
         case that: MethodInfo => that.canEqual(this) && this.name.hashCode == that.name.hashCode &&
           this.params.hashCode == that.params.hashCode && this.returnType.hashCode == that.returnType.hashCode
         case _ => false
       }
 
-    override def hashCode() =
+    override def hashCode(): Int =
       Seq(name, params, returnType).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
 
-    override def toString =
+    override def toString: String =
       if (generateClasses) returnType match {
         case "void" =>
           s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
@@ -163,7 +164,15 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     SuccessfulModification(r)
   }
 
-  protected def getSuperInterfaces(op: TypeOperation) =
+  override def applicability(as: ArtifactSource): Applicability = Applicability.OK
+
+  override def description: String = "Generate core Rug type info"
+
+  override def name: String = "TypedDoc"
+
+  protected def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType]
+
+  protected def getSuperInterfaces(op: TypeOperation): List[ParentClassHolder] =
     if (op.definedOn == null) Nil
     else
       ClassUtils.getAllInterfaces(op.definedOn).asScala
@@ -172,7 +181,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
         .filterNot(_.exportedMethods.isEmpty)
         .toList
 
-  protected def getSuperClasses(op: TypeOperation) =
+  protected def getSuperClasses(op: TypeOperation): List[ParentClassHolder] =
     if (op.definedOn == null) Nil
     else
       ClassUtils.getAllSuperclasses(op.definedOn).asScala
@@ -240,7 +249,10 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     tsClassOrInterfaces
   }
 
-  protected def allGeneratedTypes(types: Seq[Typed]): Seq[GeneratedType]
+  private def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] =
+    (allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op))).groupBy(_.name) map {
+      case (_, l) => l.head
+    }).toSeq.sortBy(_.name)
 
   private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
     val imports = interfaceTypes
@@ -248,12 +260,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       .toList
     (currentType.parent.toList ::: imports).distinct.filter(_ != Root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
-
-  override def applicability(as: ArtifactSource): Applicability = Applicability.OK
-
-  override def description: String = "Generate core Rug type info"
-
-  override def name: String = "TypedDoc"
 }
 
 case class InterfaceGenerationConfig(

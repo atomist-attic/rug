@@ -6,6 +6,7 @@ import com.atomist.param.{SimpleParameterValues, Tag}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.util.Utils
+import com.atomist.util.lang.JavaHelpers
 
 import scala.collection.mutable.ListBuffer
 
@@ -29,6 +30,55 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
 
   import AbstractTypeScriptGenerator._
 
+  private case class ClassGeneratedType(name: String,
+                                        description: String,
+                                        methods: Seq[MethodInfo],
+                                        parent: Seq[String] = Seq(Root))
+    extends GeneratedType {
+
+    override def toString: String = {
+      val output = new StringBuilder
+      output ++= emitDocComment(description)
+      val deriveKeyword = if (parent.head == Root) "implements" else "extends"
+      output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
+      output ++= methods.map(_.toString).mkString(config.separator)
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
+      output.toString
+    }
+  }
+
+  private case class ClassMethodInfo(name: String,
+                                     params: Seq[MethodParam],
+                                     returnType: String,
+                                     description: Option[String])
+    extends MethodInfo {
+
+    override def toString: String =
+      returnType match {
+        case "void" =>
+          s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
+             """.stripMargin
+        case _ =>
+          // It has a return. So let's create a field
+          val fieldName = s"_$name"
+          // TODO shouldn't be any in the setter:
+          // Need to pass in owning type
+          s"""${indent}private $fieldName: $returnType = null
+             |
+             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
+             |$indent${indent}this.$fieldName = x
+             |$indent${indent}return this
+             |$indent}
+             |
+             |$comment$indent$name(${params.mkString(", ")}): $returnType {
+             |$indent${indent}return this.$fieldName
+             |$indent}""".stripMargin
+      }
+  }
+
+  override protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
+    ClassMethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
     val alreadyAddedMethods = new ListBuffer[MethodInfo]
@@ -39,7 +89,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
       val name = Typed.typeToTypeName(superClasses(i).parent)
       val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
       val methods = superClasses(i).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
-      generatedTypes += GeneratedType(name, description, methods, parent)
+      generatedTypes += ClassGeneratedType(name, name, methods, parent)
       alreadyAddedMethods ++= methods
     }
 
@@ -56,7 +106,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
 
     leafClassMethods ++= allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
     val parent = if (superClasses.isEmpty) Seq(Root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
-    generatedTypes += GeneratedType(t.name, t.description, leafClassMethods, parent)
+    generatedTypes += ClassGeneratedType(t.name, t.description, leafClassMethods, parent)
 
     generatedTypes
   }

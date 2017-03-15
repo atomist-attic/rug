@@ -29,6 +29,39 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   import AbstractTypeScriptGenerator._
 
+  private case class InterfaceGeneratedType(name: String,
+                                            description: String,
+                                            methods: Seq[MethodInfo],
+                                            parent: Seq[String] = Seq(Root))
+    extends GeneratedType {
+
+    override def toString: String = {
+      val output = new StringBuilder
+      output ++= emitDocComment(description)
+      if (parent.isEmpty)
+        output ++= s"\ninterface $name {${config.separator}"
+      else
+        output ++= s"\ninterface $name extends ${parent.mkString(", ")} {${config.separator}"
+
+      output ++= methods.map(_.toString).mkString(config.separator)
+      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
+      output.toString
+    }
+  }
+
+  private case class InterfaceMethodInfo(name: String,
+                                         params: Seq[MethodParam],
+                                         returnType: String,
+                                         description: Option[String])
+    extends MethodInfo {
+
+    override def toString: String =
+      s"$comment$indent$name(${params.mkString(", ")}): $returnType"
+  }
+
+  protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
+    InterfaceMethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
     val alreadyAddedMethods = new ListBuffer[MethodInfo]
@@ -39,7 +72,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       val name = Typed.typeToTypeName(superClasses(i).parent)
       val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
       val methods = superClasses(i).exportedMethods
-      generatedTypes += GeneratedType(name, description, methods, parent)
+      generatedTypes += InterfaceGeneratedType(name, name, methods, parent)
       alreadyAddedMethods ++= methods
     }
 
@@ -48,7 +81,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     for (i <- superInterfaces.size to 1 by -1) {
       val name = Typed.typeToTypeName(superInterfaces(i - 1).parent)
       val methods = superInterfaces(i - 1).exportedMethods
-      generatedTypes += GeneratedType(name, name, methods, Seq())
+      generatedTypes += InterfaceGeneratedType(name, name, methods, Seq())
       alreadyAddedMethods ++= methods
     }
 
@@ -58,7 +91,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       else Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i => Typed.typeToTypeName(i.parent))
 
     val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
-    generatedTypes += GeneratedType(t.name, t.description, methods, parent)
+    generatedTypes += InterfaceGeneratedType(t.name, t.description, methods, parent)
 
     generatedTypes
   }

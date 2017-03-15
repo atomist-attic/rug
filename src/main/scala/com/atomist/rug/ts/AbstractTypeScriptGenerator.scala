@@ -10,7 +10,7 @@ import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
-import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
+import com.atomist.util.lang.TypeScriptGenerationHelper
 import org.apache.commons.lang3.{ClassUtils, StringUtils}
 
 import scala.collection.JavaConverters._
@@ -40,39 +40,38 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   val outputPathParam = "output_path"
 
-  private val helper = new TypeScriptGenerationHelper()
-  private val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
-  private val indent = "    "
+  protected val indent = "    "
+  protected val helper = new TypeScriptGenerationHelper()
 
   protected case class ParentClassHolder(parent: Class[_], exportedMethods: Seq[MethodInfo])
+
+  private val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   /**
     * Either an interface or a test class, depending on whether we're generated test classes
     */
-  protected case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: Seq[String] = Seq(Root)) {
+  trait GeneratedType {
 
-    override def toString: String = {
-      val output = new StringBuilder
-      output ++= emitDocComment(description)
-      if (generateClasses) {
-        val deriveKeyword = if (parent.head == Root) "implements" else "extends"
-        output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
-      } else {
-        if (parent.isEmpty)
-          output ++= s"\ninterface $name {${config.separator}"
-        else
-          output ++= s"\ninterface $name extends ${parent.mkString(", ")} {${config.separator}"
-      }
+    def name: String
 
-      output ++= methods.map(_.toString).mkString(config.separator)
-      output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
-      output.toString
-    }
+    def description: String
+
+    def methods: Seq[MethodInfo]
+
+    def parent: Seq[String]
   }
 
-  protected class MethodInfo(val name: String, val params: Seq[MethodParam], val returnType: String, val description: Option[String]) {
+  trait MethodInfo {
 
-    private val comment = {
+    def name: String
+
+    def params: Seq[MethodParam]
+
+    def returnType: String
+
+    def description: Option[String]
+
+    def comment: String = {
       val builder = new StringBuilder(s"$indent/**\n")
       builder ++= s"$indent  * ${description.getOrElse("")}\n"
       builder ++= s"$indent  *\n"
@@ -100,29 +99,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     override def hashCode(): Int =
       Seq(name, params, returnType).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-
-    override def toString: String =
-      if (generateClasses) returnType match {
-        case "void" =>
-          s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
-         """.stripMargin
-        case _ =>
-          // It has a return. So let's create a field
-          val fieldName = s"_$name"
-          // TODO shouldn't be any in the setter:
-          // Need to pass in owning type
-          s"""${indent}private $fieldName: $returnType = null
-             |
-             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
-             |$indent${indent}this.$fieldName = x
-             |$indent${indent}return this
-             |$indent}
-             |
-             |$comment$indent$name(${params.mkString(", ")}): $returnType {
-             |$indent${indent}return this.$fieldName
-             |$indent}""".stripMargin
-      } else
-        s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
   protected class MethodParam(val name: String, val paramType: String, val description: Option[String]) {
@@ -201,15 +177,17 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
           yield
             MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
-      methods += new MethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+      methods += getMethodInfo(op, params)
     }
     methods.sortBy(_.name)
   }
 
+  protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo
+
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
 
-  private def emitDocComment(description: String): String = {
+  protected def emitDocComment(description: String): String = {
     s"""
        |/*
        | * $description

@@ -1,16 +1,26 @@
 package com.atomist.rug.ts
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.runtime.RugSupport
+import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.TreeNode
 import com.atomist.util.lang.{JavaHelpers, TypeScriptGenerationHelper}
-import org.apache.commons.lang3.StringUtils
-
+import org.apache.commons.lang3.{ClassUtils, StringUtils}
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+
+object AbstractTypeScriptGenerator {
+
+  val DefaultTemplateName = "ts.vm"
+  val DefaultFilename = "model/Core.ts"
+  val Root = "TreeNode"
+}
 
 /**
   * Generate types for documents.
@@ -25,26 +35,26 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     with ProjectEditor
     with RugSupport {
 
-  val DefaultTemplateName = "ts.vm"
-  val DefaultFilename = "model/Core.ts"
-  val OutputPathParam = "output_path"
-  val root = "TreeNode"
-  val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
+  import AbstractTypeScriptGenerator._
+
+  val outputPathParam = "output_path"
 
   private val helper = new TypeScriptGenerationHelper()
+  private val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
   private val indent = "    "
 
+  protected case class ParentClassHolder(parent: Class[_], exportedMethods: Seq[MethodInfo])
+
   /**
-    * Either an interface or a test class, depending on
-    * whether we're generated test classes
+    * Either an interface or a test class, depending on whether we're generated test classes
     */
-  protected case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: Seq[String] = Seq(root)) {
+  protected case class GeneratedType(name: String, description: String, methods: Seq[MethodInfo], parent: Seq[String] = Seq(Root)) {
 
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
       if (generateClasses) {
-        val deriveKeyword = if (parent.last == "TreeNode") "implements" else "extends"
+        val deriveKeyword = if (parent.head == Root) "implements" else "extends"
         output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
       } else {
         if (parent.isEmpty)
@@ -136,7 +146,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def apply(name: String, paramType: String, description: Option[String]) = new MethodParam(name, paramType, description)
   }
 
-  override def parameters: Seq[Parameter] = Seq(Parameter(OutputPathParam, ".*")
+  override def parameters: Seq[Parameter] = Seq(Parameter(outputPathParam, ".*")
     .setRequired(false)
     .setDisplayName("Path for created doc")
     .setDefaultValue(DefaultFilename))
@@ -153,14 +163,24 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     SuccessfulModification(r)
   }
 
-  private def shouldEmit(top: TypeOperation) =
-    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
+  protected def getSuperInterfaces(op: TypeOperation) = {
+    if (op.definedOn == null) Nil
+    else
+      ClassUtils.getAllInterfaces(op.definedOn).asScala
+        .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
+        .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
+        .filterNot(_.exportedMethods.isEmpty)
+        .toList
+  }
 
-  private def emitDocComment(description: String): String = {
-    s"""
-       |/*
-       | * $description
-       | */""".stripMargin
+  protected def getSuperClasses(op: TypeOperation) = {
+    if (op.definedOn == null) Nil
+    else
+      ClassUtils.getAllSuperclasses(op.definedOn).asScala
+        .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
+        .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
+        .filterNot(_.exportedMethods.isEmpty)
+        .toList
   }
 
   protected def allMethods(ops: Seq[TypeOperation]): Seq[MethodInfo] = {
@@ -179,11 +199,21 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     methods.sortBy(_.name)
   }
 
+  private def shouldEmit(top: TypeOperation) =
+    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
+
+  private def emitDocComment(description: String): String = {
+    s"""
+       |/*
+       | * $description
+       | */""".stripMargin
+  }
+
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
-    val pathParam = poa.stringParamValue(OutputPathParam)
+    val pathParam = poa.stringParamValue(outputPathParam)
     val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
 
     for {
@@ -214,11 +244,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   protected def allGeneratedTypes(types: Seq[Typed]): Seq[GeneratedType]
 
-  protected def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
+  private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
     val imports = interfaceTypes
       .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]")).filter(currentType.name != t.name && _ == t.name))
       .toList
-    (currentType.parent.toList ::: imports).distinct.filter(_ != root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
+    (currentType.parent.toList ::: imports).distinct.filter(_ != Root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 
   override def applicability(as: ArtifactSource): Applicability = Applicability.OK

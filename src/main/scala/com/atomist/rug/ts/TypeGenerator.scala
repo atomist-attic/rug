@@ -45,9 +45,9 @@ class TypeGenerator(basePackage: String = "ext_model") {
         val n = node.asInstanceOf[Map[String, _]]
         val props = n("properties") match {
           case l: List[List[String]]@unchecked if l.head.isInstanceOf[Seq[_]] =>
-            l.map(l => Prop(l(0), l(1)))
+            l.map(l => Prop(l.head, l(1)))
           case l: List[String]@unchecked =>
-            Seq(Prop(l(0), l(1)))
+            Seq(Prop(l.head, l(1)))
         }
 
         val pn = PropertyNode(
@@ -65,7 +65,7 @@ class TypeGenerator(basePackage: String = "ext_model") {
             case s: String => s
             case l: List[_] => Objects.toString(l.head)
           })
-          val a = relList(0) match {
+          val a = relList.head match {
             case s: String => List(s)
             case l: List[_] => l.map(Objects.toString)
           }

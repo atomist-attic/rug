@@ -1,11 +1,11 @@
 package com.atomist.rug.rugdoc
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptBuilder, TypeScriptInterfaceGenerator}
+import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptBuilder, TypeScriptClassGenerator}
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 
-object TypeScriptInterfaceGeneratorTest {
+object TypeScriptClassGeneratorTest {
 
   val tsc = TypeScriptBuilder.compiler
 
@@ -30,15 +30,15 @@ object TypeScriptInterfaceGeneratorTest {
     }
 
   def compile(output: ArtifactSource): ArtifactSource = {
-    val withoutImport = TypeScriptInterfaceGeneratorTest.withoutImports(output)
+    val withoutImport = TypeScriptClassGeneratorTest.withoutImports(output)
     tsc.compile(withoutImport)
   }
 }
 
-class TypeScriptInterfaceGeneratorTest extends FlatSpec with Matchers {
+class TypeScriptClassGeneratorTest extends FlatSpec with Matchers {
 
-  it should "generate compilable typescript interfaces" in {
-    val td = new TypeScriptInterfaceGenerator
+  it should "generate compilable typescript classes" in {
+    val td = new TypeScriptClassGenerator
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
       Map(td.outputPathParam -> ".atomist/editors/Interfaces.ts")))

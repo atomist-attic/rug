@@ -19,17 +19,24 @@ object TypeScriptBuilder {
   val compiler = new TypeScriptCompiler(CompilerFactory.cachingCompiler(CompilerFactory.create(),
     new File(".", "target" + File.separator + ".jscache").getAbsolutePath))
 
-  val userModel: ArtifactSource = {
-    val generator = new TypeScriptInterfaceGenerator
-    val output = generator.generate("stuff", SimpleParameterValues(Map(generator.OutputPathParam -> "Core.ts")))
+  def compileUserModel(sources: Seq[ArtifactSource]): ArtifactSource = {
     val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/main/typescript")), new ArtifactFilter {
       override def apply(s: String) =
         !s.endsWith(".js")
     })
     // THIS ONLY WORKS IN TESTS NOT IN PRODUCTION BY DESIGN
-    val compiled = compiler.compile(src.underPath("node_modules/@atomist").withPathAbove(".atomist") + output.withPathAbove(".atomist/rug/model"))
+    val compiled = compiler.compile(src.underPath("node_modules/@atomist").withPathAbove(".atomist")
+      + sources.reduce((a, b) => a + b))
     compiled.underPath(".atomist").withPathAbove(".atomist/node_modules/@atomist")
   }
+
+  val coreSource: ArtifactSource = {
+    val generator = new TypeScriptInterfaceGenerator
+    generator.generate("stuff", SimpleParameterValues(Map(generator.outputPathParam -> "Core.ts")))
+      .withPathAbove(".atomist/rug/model")
+  }
+
+  val userModel: ArtifactSource = compileUserModel(Seq(coreSource))
 
   /**
     * Compile the given archive contents along with our generated TypeScript model

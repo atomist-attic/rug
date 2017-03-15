@@ -22,10 +22,9 @@ object JavaHelpers {
     capitalizeTokens(tokes)
   }
 
-  private def toJavaIdentifierPart(c: Char): Char = {
+  private def toJavaIdentifierPart(c: Char): Char =
     if (Character.isJavaIdentifierPart(c)) c
     else '_'
-  }
 
   /**
     * Convert a string such as big_thing to a Java variable/field/method name like bigThing.
@@ -70,25 +69,21 @@ object JavaHelpers {
   }
 
   // Run them together with capitalization. So git-service becomes GitService
-  private def capitalizeTokens(tokens: Seq[String]) = {
+  private def capitalizeTokens(tokens: Seq[String]) =
     tokens.map(toke => upperize(toke)).mkString
-  }
 
-  def getterNameToPropertyName(name: String): String = {
+  def getterNameToPropertyName(name: String): String =
     if (name.startsWith("get")) lowerize(name.substring(3))
     else if (name.startsWith("is")) lowerize(name.substring(2))
     else name
-  }
 
-  def propertyNameToGetterName(name: String): String = {
+  def propertyNameToGetterName(name: String): String =
     if (!name.startsWith("get")) "get" + upperize(name)
     else name
-  }
 
-  def propertyNameToSetterName(name: String): String = {
+  def propertyNameToSetterName(name: String): String =
     if (!name.startsWith("get")) "set" + upperize(name)
     else name
-  }
 
   def stripSuffixIfPresent(name: String, suffix: String): String = name stripSuffix suffix
 
@@ -106,17 +101,14 @@ object JavaHelpers {
 
   def packageNameToPath(pkg: String): String = pkg.replace("/", ".")
 
-  def packageFor(classFqn: String): String = {
+  def packageFor(classFqn: String): String =
     classFqn.split("\\.").dropRight(1).mkString(".")
-  }
 
-  def isValidPackageName(fqn: String): Boolean = {
+  def isValidPackageName(fqn: String): Boolean =
     fqn matches ParameterValidationPatterns.JavaPackage
-  }
 
-  def isValidJavaIdentifier(n: String): Boolean = {
+  def isValidJavaIdentifier(n: String): Boolean =
     n matches ParameterValidationPatterns.JavaIdentifier
-  }
 }
 
 object JavaConstants {

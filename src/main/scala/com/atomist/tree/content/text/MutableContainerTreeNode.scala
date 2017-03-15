@@ -51,7 +51,7 @@ trait MutableContainerTreeNode
         .map(_.value).mkString("")
       val leftPoint = FormatInfo.contextInfo(stringToLeft)
       val rightPoint = FormatInfo.contextInfo(stringToLeft + descendant.value)
-      //println(s"Found $fi from left string [$stringToLeft] with start=$start")
+      // println(s"Found $fi from left string [$stringToLeft] with start=$start")
       Some(FormatInfo(leftPoint, rightPoint))
     }
   }

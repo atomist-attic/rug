@@ -175,7 +175,10 @@ class jsSafeCommittingProxy(
       nodesAccessedThroughThisFunctionCall.toList match {
         case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
         case null :: Nil => null
-        case head :: Nil => wrapOne(head) // do we sometimes (TerminalTreeNode) need to pull out the value instead?
+        case (ttn: TerminalTreeNode) :: Nil =>
+          // Pull out the value
+          ttn.value
+        case head :: Nil => wrapOne(head)
         case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
       }
     }

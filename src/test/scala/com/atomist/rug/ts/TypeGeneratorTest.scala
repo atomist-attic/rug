@@ -6,20 +6,17 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class TypeGeneratorTest extends FlatSpec with Matchers {
 
+  import TypeGeneratorTest._
+
   private val typeGen = new TypeGenerator
 
-  lazy val theJson: String =
-    TestUtils.resourcesInPackage(this).allFiles
-      .filter(_.name == "extra_types.json")
-      .head.content
-
   "Type generation" should "find some types" in {
-    val types = typeGen.extract(theJson)
+    val types = typeGen.extract(CortexJson)
     assert(types.nonEmpty)
   }
 
   it should "return types with operations" in {
-    val types = typeGen.extract(theJson)
+    val types = typeGen.extract(CortexJson)
     println(types)
     types.foreach(t => {
       // println(t)
@@ -28,7 +25,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
   }
 
   it should "generate compiling node module" in {
-    val as = typeGen.toNodeModule(theJson)
+    val as = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
     // println(ArtifactSourceUtils.prettyListFiles(as))
     val cas = TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
@@ -49,13 +46,13 @@ object TypeGeneratorTest {
 
   private val typeGen = new TypeGenerator
 
-  lazy val theJson: String =
+  lazy val CortexJson: String =
     TestUtils.resourcesInPackage(this).allFiles
       .filter(_.name == "extra_types.json")
       .head.content
 
   val fullModel: ArtifactSource = {
-    val as = typeGen.toNodeModule(theJson)
+    val as = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
     TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,

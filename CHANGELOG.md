@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.14.0...HEAD
 
-### Changes
+### Changed
 
 -   **BREAKING** Python Requirements old type has been removed (#434) as it was
     not matching the current programming model. It will be moved to its own
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 Ides of March release
 
-### Changes
+### Changed
 
 -   TypeDoc, ScalaDoc, and scoverage reports are now published
     automatically

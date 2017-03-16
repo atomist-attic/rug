@@ -13,7 +13,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
 
-  it should "Let me write the microgrammar this pretty way" in {
+  it should "let me write the microgrammar this pretty way" in {
     val stringRegex =
       s"""${MatcherDefinitionParser.RegexpOpenToken}"[^"]*"${MatcherDefinitionParser.RegexpOpenToken}""" // this is not complete. valid Java string
 
@@ -58,7 +58,7 @@ class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
 
     result.size should be(2)
     val m = result.head
-    withClue(println(TreeNodeUtils.toShortString(m))) {
+    withClue(TreeNodeUtils.toShortString(m)) {
       m.value should be("""MyFunction("iAmTheName","regex")""")
       m.childNodes.size should be(2)
       val nameArgNode = m.childNodes.head

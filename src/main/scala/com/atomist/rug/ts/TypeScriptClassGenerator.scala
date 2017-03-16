@@ -74,7 +74,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
              |
              |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
              |$indent${indent}this.$fieldName = x
-             |$indent${indent}x.setAddress(this.address() + '/' + '$name')
+             |$indent${indent}x.navigatedFrom(this, '/' + '$name')
              |$indent${indent}return this
              |$indent}
              |""".stripMargin

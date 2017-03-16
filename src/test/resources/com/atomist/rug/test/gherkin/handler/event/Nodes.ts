@@ -18,7 +18,7 @@ export class Commit extends AddressedNodeSupport implements GraphNode {
 
     withMadeBy(p: Person): Commit {
         this._madeBy = p 
-        p.setAddress(this.address() + "/" + "madeBy")
+        p.navigatedFrom(this, "/madeBy")
         return this
     }
 
@@ -42,7 +42,7 @@ export class Person extends AddressedNodeSupport implements GraphNode {
 
     withGitHubId(g: GitHubId): Person {
         this._gitHubId = g
-        g.setAddress(this.address() + "/" + "gitHubId")
+        g.navigatedFrom(this, "/gitHubId")
         return this
     }
 

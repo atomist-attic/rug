@@ -20,6 +20,8 @@ Ides of March release
 -   TypeDoc, ScalaDoc, and scoverage reports are now published
     automatically
 -   Xml extension can now derive itself from a file
+-   `RugContext` now exposes a `contextRoot` to allow handlers to execute
+arbitrary path expressions
 
 ### Added
 

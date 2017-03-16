@@ -27,17 +27,25 @@ object TypeScriptClassGeneratorTest {
           |interface PathExpressionEngine {}
           |interface TreeNode {}
           |interface FormatInfo {}
-          |interface Addressed {}
+          |interface Addressed {
+          |   address(): string
+          |}
           |abstract class AddressedNodeSupport implements Addressed {
           |
-          |    private _address: string = null
+          |    private _navigatedFrom: Addressed = null
+          |    private step: string
           |
-          |    address() { return this._address }
-          |
-          |    setAddress(addr: string) {
-          |        this._address = addr
+          |    address() {
+          |        return this._navigatedFrom ?
+          |            this._navigatedFrom.address() + this.step :
+          |            ""
           |    }
-          |
+          |    navigatedFrom(navigatedFrom: Addressed, step: string) {
+          |        if (navigatedFrom == this)
+          |            throw new Error(`Illegal cycle at ${this}`)
+          |        this._navigatedFrom = navigatedFrom
+          |        this.step = step
+          |    }
           |}
         """.stripMargin))
     }

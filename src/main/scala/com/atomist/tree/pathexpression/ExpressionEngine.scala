@@ -4,29 +4,6 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
-/**
-  * Result type and utility methods of a node navigation.
-  */
-object ExecutionResult {
-
-  type ExecutionResult = Either[String, Seq[GraphNode]]
-
-  def apply(nodes: Seq[GraphNode]): ExecutionResult =
-    Right(nodes.distinct)
-
-  val empty: ExecutionResult = Right(Nil)
-
-  def show(er: ExecutionResult): String = er match {
-    case Right(nodes) => s"\t${nodes.map(show).mkString("\n\t")}"
-    case Left(err) => s"[$err]"
-  }
-
-  def show(n: GraphNode): String = {
-    s"${n.nodeName}:${n.nodeTags}"
-  }
-
-}
-
 object ExpressionEngine {
 
   type NodePreparer = GraphNode => GraphNode

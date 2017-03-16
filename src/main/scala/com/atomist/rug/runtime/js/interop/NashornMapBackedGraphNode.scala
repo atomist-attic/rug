@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js.interop
 
 import java.util.Objects
 
-import com.atomist.graph.GraphNode
+import com.atomist.graph.{AddressableGraphNode, GraphNode}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -22,6 +22,7 @@ object NashornMapBackedGraphNode {
 
   private val NodeIdField = "nodeId"
   private val NodeNameField = "nodeName"
+  private val NodeAddressField = "address"
   private val NodeTagsField = "nodeTag"
   private val NodeRefField = "nodeRef"
 
@@ -51,7 +52,8 @@ private[interop] class NodeRegistry {
   * Handles cycles if references are provided.
   */
 private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
-                                        nodeRegistry: NodeRegistry) extends GraphNode {
+                                        nodeRegistry: NodeRegistry)
+  extends AddressableGraphNode {
 
   import NashornMapBackedGraphNode._
 
@@ -71,6 +73,12 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
 
   override def nodeName: String = relevantPropertiesAndValues.get(NodeNameField) match {
     case None => ""
+    case Some(s: String) => s
+    case x => Objects.toString(x)
+  }
+
+  override def address: String = relevantPropertiesAndValues.get(NodeAddressField) match {
+    case None => null
     case Some(s: String) => s
     case x => Objects.toString(x)
   }
@@ -128,6 +136,6 @@ private class NashornMapBackedGraphNode(som: ScriptObjectMirror,
     }
   }
 
-  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName],id=$nodeId"
+  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName];id=$nodeId; address=[$address]"
 
 }

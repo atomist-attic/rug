@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     handlers to run path expressions as needed.  This change impacts
     runtime as well as testing, but is necessary to support our
     programming model.
+-   Gherkin testing "the archive root" Given
+-   TypeScript test documentation to generated TypeDoc
 
 ### Changed
 

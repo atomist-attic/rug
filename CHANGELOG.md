@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.14.0...HEAD
 
-## [0.14.0] - 2017-03-15
-
 ### Changes
 
 -   **BREAKING** Python Requirements old type has been removed (#434) as it was
     not matching the current programming model. It will be moved to its own
     project
+
+## [0.14.0] - 2017-03-15
 
 [0.14.0]: https://github.com/atomist/rug/compare/0.13.0...0.14.0
 

@@ -3,21 +3,11 @@
  * These are NOT realistic, and do not represent our actual domain model.
  */
 
-import {GraphNode, Addressed} from "@atomist/rug/tree/PathExpression"
+import {GraphNode} from "@atomist/rug/tree/PathExpression"
+import {AddressedNodeSupport} from "@atomist/rug/tree/TreeHelper"
 
-export abstract class AddressedNode implements Addressed {
 
-    private _address: string = ""
-
-    address() { return this._address }
-
-    setAddress(addr: string) {
-        this._address = addr
-    }
-    
-}
-
-export class Commit extends AddressedNode implements GraphNode {
+export class Commit extends AddressedNodeSupport implements GraphNode {
 
     private _madeBy: Person = null
 
@@ -36,7 +26,7 @@ export class Commit extends AddressedNode implements GraphNode {
 
 }
 
-export class Person extends AddressedNode implements GraphNode {
+export class Person extends AddressedNodeSupport implements GraphNode {
 
     private _gitHubId: GitHubId = null
 
@@ -58,7 +48,7 @@ export class Person extends AddressedNode implements GraphNode {
 
 }
 
-export class GitHubId extends AddressedNode implements GraphNode {
+export class GitHubId extends AddressedNodeSupport implements GraphNode {
 
     constructor(private _id: string) { super() }
 

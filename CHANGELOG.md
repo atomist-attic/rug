@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Improve duplicate removal in expression engine
 -   Make TypeScript test stubs addressable (to help with deduping)
 -   Correct some usages of TreeNode where GraphNode could be used
+-   **BREAKING** The `generateWith` method used in testing has an
+    additional `projectName` parameter between the generator and its
+    parameters.
 
 ## [0.14.0] - 2017-03-15
 
@@ -37,8 +40,10 @@ Ides of March release
 -   TypeDoc, ScalaDoc, and scoverage reports are now published
     automatically
 -   Xml extension can now derive itself from a file
--   `RugContext` now exposes a `contextRoot` to allow handlers to execute
-arbitrary path expressions
+-   `RugContext` now exposes a `contextRoot` to allow handlers to
+     execute arbitrary path expressions
+-   Generators should now be under `.atomist/generators` but are still
+    found under `.atomist/editors`
 
 ### Added
 

@@ -62,8 +62,8 @@ class ProjectScenarioWorld(
     * Edit a project with the given editor, passed in from JavaScript.
     * We expect the JavaScript op to have been populated.
     */
-  def generateWith(generator: ProjectGenerator, params: Any): Unit = {
-    val resultAs = generator.generate("project_name", parameters(params))
+  def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
+    val resultAs = generator.generate(projectName, parameters(params))
     project.updateTo(resultAs)
   }
 

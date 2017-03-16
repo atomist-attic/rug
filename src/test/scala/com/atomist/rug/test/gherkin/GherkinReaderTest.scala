@@ -39,35 +39,37 @@ object GherkinReaderTest {
   val Simple =
     """
       |Feature: Australian political history
-      | This is a test
-      | to demonstrate that the Gherkin DSL
-      | is a good fit for Rug BDD testing
+      |  This is a test
+      |  to demonstrate that the Gherkin DSL
+      |  is a good fit for Rug BDD testing
       |
-      |Scenario: Australian politics, 1972-1991
-      | Given an empty project
-      | Given a visionary leader
-      | When politics takes its course
-      | Then changes were made
-      | Then one edit was made
-      | Then the rage is maintained
+      |  Scenario: Australian politics, 1972-1991
+      |    Given an empty project
+      |    Given a visionary leader
+      |    When politics takes its course
+      |    Then changes were made
+      |    Then one edit was made
+      |    Then the rage is maintained
+      |    Then the rage has a name
     """.stripMargin
 
   val TwoScenarios =
     """
       |Feature: Do anything at all
-      | This is a test
-      | to see if
-      | Gherkin is a good option
+      |  This is a test
+      |  to see if
+      |  Gherkin is a good option
       |
-      |Scenario: I want to parse a file
-      | Given a file
-      | When politics takes its course
-      | Then the rage is maintained
+      |  Scenario: I want to parse a file
+      |    Given a file
+      |    When politics takes its course
+      |    Then the rage is maintained
+      |    Then the rage has a name
       |
-      |Scenario: I want to go home early
-      | Given a file
-      | When politics takes its course
-      | Then everything's done
+      |  Scenario: I want to go home early
+      |    Given a file
+      |    When politics takes its course
+      |    Then everything's done
     """.stripMargin
 
   val SimpleFeatureFile = StringFileArtifact(".atomist/tests/project/Simple.feature", Simple)

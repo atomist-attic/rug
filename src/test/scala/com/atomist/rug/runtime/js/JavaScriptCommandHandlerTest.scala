@@ -3,11 +3,10 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.project.common.MissingParametersException
-import com.atomist.rug.MissingSecretException
-import com.atomist.rug.runtime.{AddressableRug, CommandHandler, ResponseHandler, RugSupport}
 import com.atomist.rug.runtime.plans._
+import com.atomist.rug.runtime.{AddressableRug, ResponseHandler, RugSupport}
 import com.atomist.rug.spi.Handlers._
-import com.atomist.rug.spi.{Handlers, Secret}
+import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -17,183 +16,30 @@ import scala.concurrent.duration._
 
 class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
+  import com.atomist.rug.TestUtils._
+
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
 
   val kitties = "ShowMeTheKitties"
   val kittyDesc = "Search Youtube for kitty videos and post results to slack"
   val simpleCommandHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    """
-      |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
-      |import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-      |
-      |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-      |@Tags("kitty", "youtube", "slack")
-      |@Intent("show me kitties","cats please")
-      |class KittieFetcher implements HandleCommand{
-      |
-      |  @Parameter({description: "his dudeness", pattern: "^.*$"})
-      |  name: string
-      |
-      |  handle(ctx: HandlerContext) : Plan {
-      |    let pxe = ctx.pathExpressionEngine()
-      |
-      |    if(this.name != "el duderino") {
-      |      throw new Error("This will not stand");
-      |    }
-      |    let result = new Plan()
-      |    result.add({ instruction: {
-      |                 kind: "execute",
-      |                 name: "HTTP",
-      |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
-      |               },
-      |               onSuccess: {kind: "respond", name: "Kitties"},
-      |               onError: {body: "No kitties for you today!"}})
-      |    return result;
-      |  }
-      |}
-      |
-      |export let command = new KittieFetcher();
-      |
-    """.stripMargin)
+    contentOf(this, "KittieFetcher.ts"))
 
   val simpleCommandHandlerWithMappedParams = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    """
-      |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
-      |import {CommandHandler, Parameter, MappedParameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-      |
-      |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-      |@Tags("kitty", "youtube", "slack")
-      |@Intent("show me kitties","cats please")
-      |class KittieFetcher implements HandleCommand{
-      |
-      |  @MappedParameter("atomist/repo")
-      |  name: string
-      |
-      |  handle(ctx: HandlerContext) : Plan {
-      |
-      |    if(this.name != "el duderino") {
-      |      throw new Error("This will not stand");
-      |    }
-      |    let result = new Plan()
-      |    return result;
-      |  }
-      |}
-      |
-      |export let command = new KittieFetcher();
-      |
-      """.stripMargin)
-
+    contentOf(this, "KittieFetcherWithMappedParams.ts"))
 
   val simpleCommandHandlerHandlerWithSecrets = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    """
-       |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
-       |import {CommandHandler, Secrets, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-       |
-       |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-       |@Tags("kitty", "youtube", "slack")
-       |@Intent("show me kitties","cats please")
-       |@Secrets("atomist/user_token", "atomist/showmethemoney")
-       |class KittieFetcher implements HandleCommand{
-       |
-       |  handle(ctx: HandlerContext) : Plan {
+    contentOf(this, "KittieFetcherWithSecrets.ts"))
 
-       |    let result = new Plan()
-       |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}}})
-       |    return result;
-       |  }
-       |}
-       |
-       |export let command = new KittieFetcher();
-       |
-    """.stripMargin)
-
-  val simpleCommandHandlerWitPresentable = StringFileArtifact(atomistConfig.
-    handlersRoot + "/Handler.ts",
-    """
-      |import {HandleCommand, MappedParameters, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
-      |import {CommandHandler, Parameter, MappedParameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-      |
-      |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-      |@Tags("kitty", "youtube", "slack")
-      |@Intent("show me kitties","cats please")
-      |class KittieFetcher implements HandleCommand{
-      |
-      |  @Parameter({description: "his dudeness", pattern: "^.*$"})
-      |  name: string
-      |
-      |  @MappedParameter(MappedParameters.REPO_OWNER)
-      |  owner: string
-      |
-      |  handle(ctx: HandlerContext) : Plan {
-      |    let pxe = ctx.pathExpressionEngine()
-      |
-      |    if(this.name != "el duderino") {
-      |      throw new Error("This will not stand");
-      |    }
-      |    let result = new Plan()
-      |    let message = new Message("KittieFetcher");
-      |    message.addAction({ instruction: {
-      |                 kind: "command",
-      |                 name: "GetKitties"},
-      |                 label: "Fetch'em"})
-      |    result.add(message);
-      |    return result;
-      |  }
-      |}
-      |
-      |export let command = new KittieFetcher();
-      |
-    """.stripMargin)
+  val simpleCommandHandlerWithPresentable = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandWithPresentable.ts"))
 
   val simpleCommandHandlerExecuteInstructionCallingRespondable =
     StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-      """
-        |import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
-        |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-        |
-        |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-        |@Tags("kitty", "youtube", "slack")
-        |@Intent("show me kitties","cats please")
-        |class KittieFetcher implements HandleCommand{
-        |
-        |  handle(ctx: HandlerContext) : Plan {
-        |
-        |    let result = new Plan()
-        |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}},
-        |                onSuccess: {name: "SimpleResponseHandler", kind: "respond"} });
-        |    return result;
-        |  }
-        |}
-        |
-        |@ResponseHandler("SimpleResponseHandler", "Checks response is equal to passed in parameter")
-        |class Responder implements HandleResponse<String> {
-        |  handle(response: Response<string>) : Plan {
-        |    return new Plan();
-        |  }
-        |}
-        |
-        |export let respond = new Responder();
-        |
-        |export let command = new KittieFetcher();
-        |
-    """.stripMargin)
+      contentOf(this, "SimpleCommandHandlerExecuteInstructionCallingRespondable.ts"))
 
   val simpleCommandHandlerReturningMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    """
-      |import {HandleCommand, Instruction, Response, HandlerContext, Plan, Message} from '@atomist/rug/operations/Handlers'
-      |import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
-      |
-      |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
-      |class KittieFetcher implements HandleCommand{
-      |
-      |  handle(ctx: HandlerContext) : Message {
-      |    return new Message("Up and at 'em!");
-      |  }
-      |}
-      |
-      |export let command = new KittieFetcher();
-      |
-    """.stripMargin)
+    contentOf(this, "SimpleCommandHandlerReturningMessage.ts"))
 
   it should "allow us to return a message directly from a handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningMessage))
@@ -237,7 +83,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   }
 
   it should "parse messages containing Presentables" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWitPresentable))
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithPresentable))
     val finder = new JavaScriptCommandHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)

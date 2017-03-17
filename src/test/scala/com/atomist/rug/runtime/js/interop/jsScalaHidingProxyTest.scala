@@ -31,7 +31,7 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     val proxy = jsScalaHidingProxy(fido)
     val engine = createEngine
     engine.put("proxy", proxy)
-    val r = engine.eval("proxy.absquatulate == undefined")
+    val r = engine.eval("!proxy.absquatulate")
     assert(r === false)
   }
 

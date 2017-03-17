@@ -61,7 +61,7 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
     // TODO do this for each doc
     val root = new ParsedMutableContainerTreeNode(f.name)
     root.startPosition = OffsetInputPosition(0)
-    root.endPosition = OffsetInputPosition(f.contentLength)
+    root.endPosition = OffsetInputPosition(f.contentLength.toInt)
     nodeStack.push(root)
 
     val reader = new InputStreamReader(f.inputStream())

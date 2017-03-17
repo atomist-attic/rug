@@ -9,7 +9,7 @@ Given("a visionary leader", p => {
 })
 When("politics takes its course", (p, w) => {
     let world = w as ProjectScenarioWorld;
-    world.editWith(world.editor("AlpEditor"), {});
+    world.editWith(world.editor("AlpEditorWithParameters"), {heir: "Paul"});
 });
 Then("one edit was made", (p, world) => {
     return world.editorsRun() == 1;
@@ -18,5 +18,6 @@ Then("the rage is maintained", p => {
     return p.fileExists("Paul");
 });
 Then("the rage has a name", p => {
-    return p.name != null && p.name() != "" && p.name().length > 0;
+    let name = p.name();
+    return name != null && name != "" && name.length > 0;
 });

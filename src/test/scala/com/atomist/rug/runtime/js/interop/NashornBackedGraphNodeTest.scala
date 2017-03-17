@@ -2,15 +2,12 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.AddressableGraphNode
 import com.atomist.tree.TreeNode
-import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
+import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.scalatest.{FlatSpec, Matchers}
 
 class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
 
-  val engine: NashornScriptEngine =
-    new NashornScriptEngineFactory()
-      .getScriptEngine("--optimistic-types", "--language=es6", "--no-java")
-      .asInstanceOf[NashornScriptEngine]
+  def engine: NashornScriptEngine = NashornUtilsTest.createEngine
 
   import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
 

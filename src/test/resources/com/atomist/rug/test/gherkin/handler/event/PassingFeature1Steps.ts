@@ -8,5 +8,5 @@ When("a visionary leader enters", world => {
    world.sendEvent(new node.Commit)
 })
 Then("excitement ensues", world => {
-    return world.plan().messages().length == 0
+    return world.plan().messages.length == 0
 })

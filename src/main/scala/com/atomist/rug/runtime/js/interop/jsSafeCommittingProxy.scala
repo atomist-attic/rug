@@ -154,13 +154,6 @@ class jsSafeCommittingProxy(
     }
   }
 
-  private class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
-
-    override def isFunction: Boolean = true
-
-    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
-  }
-
   /**
     * Nashorn proxy for a method invocation that use navigation methods on TreeNode.
     */

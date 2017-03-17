@@ -1,9 +1,6 @@
 import {Project,File} from '@atomist/rug/model/Core'
 import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
-import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-import {Match} from '@atomist/rug/tree/PathExpression'
-import {TreeHelper} from '@atomist/rug/tree/TreeHelper'
+import {PathExpression,PathExpressionEngine,TextTreeNode} from '@atomist/rug/tree/PathExpression'
 
 /**
  * Upgrade Scala use of Java-style "a.equals(b)" to
@@ -56,4 +53,4 @@ class EqualsToSymbol implements ProjectEditor {
 
 }
 
-export let editor = new EqualsToSymbol()
+export const editor = new EqualsToSymbol()

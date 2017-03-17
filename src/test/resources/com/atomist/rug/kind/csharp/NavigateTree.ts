@@ -3,7 +3,7 @@ import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
-import {TreeHelper} from '@atomist/rug/tree/TreeHelper'
+import * as treeHelper from '@atomist/rug/tree/TreeHelper'
 import {Parameter} from '@atomist/rug/operations/Decorators'
 
 class NavigateTree implements ProjectEditor {
@@ -31,16 +31,14 @@ class NavigateTree implements ProjectEditor {
         if (classType.parent().value() != cc.value())
           throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
 
-        let th = new TreeHelper()
-
-        let inFile: File = th.findAncestorWithTag<File>(classType, "File")
+        let inFile: File = treeHelper.findAncestorWithTag<File>(classType, "File")
         if (inFile != null) {
             if (inFile.name() != "exception.cs")
                 throw new Error(`File has wrong name: ${inFile.name()}`)
             count++
         }
-         let inFile1: File = th.findAncestorWithTag<File>(c2, "File")
-         let inFile2: File = th.findAncestorWithTag<File>(cc, "File")
+         let inFile1: File = treeHelper.findAncestorWithTag<File>(c2, "File")
+         let inFile2: File = treeHelper.findAncestorWithTag<File>(cc, "File")
       })
 
       if (count == 0)

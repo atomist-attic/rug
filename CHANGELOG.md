@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Removed `TreeHelper` class. This module now contains only
+    functions, as a class was not necessary.
 -   **BREAKING** Python Requirements old type has been removed as it
     was not matching the current programming model.  It will be moved
     to its own project.  [#434][434]

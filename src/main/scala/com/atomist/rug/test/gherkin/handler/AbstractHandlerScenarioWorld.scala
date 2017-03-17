@@ -6,6 +6,7 @@ import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
+import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate, Review}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
@@ -67,6 +68,29 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     */
   def plan: jsScalaHidingProxy = {
     planOption.map(jsScalaHidingProxy.apply(_)).orNull
+  }
+
+  /**
+    * Is the plan internally valid? Do the referenced handlers and other operations exist?
+    */
+  def planIsInternallyValid(): Boolean = {
+    val p = planOption.getOrElse(throw new IllegalArgumentException("No plan was recorded"))
+    !p.instructions.map(_.instruction).exists {
+      case Edit(detail) =>
+        val knownEditors: Seq[String] = rugs.map(_.editorNames).getOrElse(Nil)
+        !knownEditors.contains(detail.name)
+      case Generate(detail) =>
+        val knownGenerators: Seq[String] = rugs.map(_.generatorNames).getOrElse(Nil)
+        !knownGenerators.contains(detail.name)
+      case Review(detail) =>
+        val knownReviewers: Seq[String] = rugs.map(_.reviewerNames).getOrElse(Nil)
+        !knownReviewers.contains(detail.name)
+      case Command(detail) =>
+        val knownCommandHandlers: Seq[String] = rugs.map(_.commandHandlerNames).getOrElse(Nil)
+        !knownCommandHandlers.contains(detail.name)
+        // TODO there are probably more cases here
+      case _ => false
+    }
   }
 
   private class FakeRugContext(val teamId: String, _treeMaterializer: TreeMaterializer) extends RugContext {

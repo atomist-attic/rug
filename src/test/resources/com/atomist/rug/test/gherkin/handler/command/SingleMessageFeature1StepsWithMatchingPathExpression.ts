@@ -10,5 +10,5 @@ When("a visionary leader enters", (rugContext, world) => {
     world.invokeHandler(handler, {});
 });
 Then("excitement ensues", world => {
-    return world.plan().messages.length == 1;
+    return world.planIsInternallyValid() && world.plan().messages.length == 1;
 });

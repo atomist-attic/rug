@@ -21,10 +21,8 @@ class DockerUpgrade3 implements ProjectEditor {
         let exposePort = "8181"
     
             eng.with<DockerFile>(project, '//DockerFile()', d => {
-                if (true) {
-                    d.addOrUpdateExpose(exposePort)
-                    d.addOrUpdateFrom("java:8-jre")
-                }
+                d.addOrUpdateExpose(exposePort)
+                d.addOrUpdateFrom("java:8-jre")
             })
     
     }

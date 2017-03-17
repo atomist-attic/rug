@@ -17,10 +17,8 @@ class DockerUpgrade implements ProjectEditor {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
 
             eng.with<DockerFile>(project, '//DockerFile()', d => {
-                if (true) {
-                    d.addExpose("8081")
-                    d.addOrUpdateFrom("java:8-jre")
-                }
+                d.addExpose("8081")
+                d.addOrUpdateFrom("java:8-jre")
             })
 
     }

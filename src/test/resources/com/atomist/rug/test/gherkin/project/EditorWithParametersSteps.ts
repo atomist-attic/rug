@@ -1,0 +1,22 @@
+import { Project } from "@atomist/rug/model/Core"
+import { ProjectEditor } from "@atomist/rug/operations/ProjectEditor"
+import { Given, When, Then, ProjectScenarioWorld } from "@atomist/rug/test/project/Core"
+
+import { AlpEditor } from "../../editors/AlpEditors"
+
+Given("a visionary leader", p => {
+    p.addFile("Gough", "Maintain the rage");
+})
+When("politics takes its course", (p, w) => {
+    let world = w as ProjectScenarioWorld;
+    world.editWith(world.editor("AlpEditor"), {});
+});
+Then("one edit was made", (p, world) => {
+    return world.editorsRun() == 1;
+});
+Then("the rage is maintained", p => {
+    return p.fileExists("Paul");
+});
+Then("the rage has a name", p => {
+    return p.name != null && p.name() != "" && p.name().length > 0;
+});

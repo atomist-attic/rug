@@ -15,6 +15,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
+  private lazy val alpEditorsFile = TestUtils.requiredFileInPackage(this, "AlpEditors.ts").withPath(".atomist/editors/AlpEditors.ts")
+
   import GherkinReaderTest._
   import ProjectTestTargets._
 
@@ -49,24 +51,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   }
 
   it should "run an editor without parameters" in {
-    val alpEditor =
-      """
-        |import {Project} from '@atomist/rug/model/Core'
-        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
-        |
-        |export class AlpEditor implements ProjectEditor {
-        |    name: string = "AlpEditor";
-        |    description: string = "ALP history";
-        |
-        |    edit(project: Project) {
-        |        project.addFile("Paul", "Can a souffle rise twice?");
-        |    }
-        |}
-        |
-        |export const xx_editor = new AlpEditor();
-        |""".stripMargin
     val as = SimpleFileBasedArtifactSource(
-      StringFileArtifact(".atomist/editors/AlpEditor.ts", alpEditor),
+      alpEditorsFile,
       SimpleFeatureFile,
       EditorWithoutParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
@@ -77,10 +63,11 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   it should "run an editor with parameters" in {
     val el = new TestExecutionListener
-    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+    val as =
       SimpleFileBasedArtifactSource(
+        alpEditorsFile,
         SimpleFeatureFile,
-        EditorWithParametersTsFile)
+        EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
     val run = grt.execute()
@@ -96,10 +83,11 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
   it should "not run a feature based on filter" in {
     val el = new TestExecutionListener
-    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+    val as =
       SimpleFileBasedArtifactSource(
+        alpEditorsFile,
         SimpleFeatureFile,
-        EditorWithParametersTsFile)
+        EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
     val run = grt.execute((fd: FeatureDefinition) => {!fd.feature.getName.equals("Australian political history")})
@@ -112,10 +100,11 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   }
 
   it should "test a reviewer" in {
-    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
+    val as =
       SimpleFileBasedArtifactSource(
+        TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts", TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
@@ -206,9 +195,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   it should "test a generator failing with deliberate exception" in {
     val projectName = "generator-fail-test"
     val atomistStuff: ArtifactSource =
-      TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name.contains("Failing"))
-        .withPathAbove(".atomist/generators") +
         SimpleFileBasedArtifactSource(
+          TestUtils.requiredFileInPackage(this, "FailingGenerator.ts").withPath(".atomist/generators/FailingGenerator.ts"),
           GenerationFeatureFile,
           StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
             generationTest("FailingGenerator", projectName, Map()))
@@ -223,10 +211,10 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
   }
 
   it should "run two sets of tests without side effect" in {
-    val as = TestUtils.resourcesInPackage(this).withPathAbove(".atomist/editors") +
-      SimpleFileBasedArtifactSource(
+      val as = SimpleFileBasedArtifactSource(
+        TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionSteps.ts", CorruptionTest)
+        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts", TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt1 = new GherkinRunner(new JavaScriptContext(cas))

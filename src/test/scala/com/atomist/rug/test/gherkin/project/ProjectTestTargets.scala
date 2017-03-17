@@ -1,106 +1,21 @@
 package com.atomist.rug.test.gherkin.project
 
-import com.atomist.source.StringFileArtifact
+import com.atomist.rug.TestUtils
+import com.atomist.source.{FileArtifact, StringFileArtifact}
 
 object ProjectTestTargets {
 
-  val FailingSimpleTs =
-    """
-      |import { Project } from "@atomist/rug/model/Core"
-      |import { ProjectEditor } from "@atomist/rug/operations/ProjectEditor"
-      |import { Given, When, Then } from "@atomist/rug/test/project/Core"
-      |
-      |Given("a visionary leader", p => {
-      |    p.addFile("Gough", "Maintain the rage");
-      |})
-      |When("politics takes its course", p => {
-      |    p.addFile("Malcolm", "Life wasn't meant to be easy");
-      |    p.deleteFile("Gough");
-      |})
-      |Then("the rage is maintained", p => p.fileExists("Gough"));
-      |""".stripMargin
+  val PassingSimpleTsFile: FileArtifact =
+    TestUtils.requiredFileInPackage(this, "PassingSimple.ts").withPath(".atomist/test/project/Simple_definitions.ts")
 
-  val PassingSimpleTs =
-    s"""
-       |import { Project } from "@atomist/rug/model/Core"
-       |import { ProjectEditor } from "@atomist/rug/operations/ProjectEditor"
-       |import { Given, When, Then } from "@atomist/rug/test/project/Core"
-       |
-       |Given("a visionary leader", p => {
-       |    p.addFile("Gough", "Maintain the rage");
-       |});
-       |When("politics takes its course", (p, world) => {
-       |    // console.log(`The world is $${world}`);
-       |});
-       |Then("changes were made", p => true); // Override this one for this test
-       |Then("one edit was made", p => true);
-       |Then("the rage is maintained", p => p.fileExists("Gough"));
-       |Then("the rage has a name", p => p.name != null && p.name() != "" && p.name().length > 0);
-       |""".stripMargin
-
-  val EditorWithoutParametersTs =
-    """
-      |import { Project } from "@atomist/rug/model/Core"
-      |import { ProjectEditor } from "@atomist/rug/operations/ProjectEditor"
-      |import { Given, When, Then, ProjectScenarioWorld } from "@atomist/rug/test/project/Core"
-      |
-      |import { AlpEditor } from "../../editors/AlpEditor"
-      |
-      |Given("a visionary leader", p => {
-      |    p.addFile("Gough", "Maintain the rage");
-      |})
-      |When("politics takes its course", (p, w) => {
-      |    let world = w as ProjectScenarioWorld;
-      |    world.editWith(world.editor("AlpEditor"), {});
-      |});
-      |Then("one edit was made", (p, world) => {
-      |    return world.editorsRun() == 1;
-      |});
-      |Then("the rage is maintained", p => {
-      |    return p.fileExists("Paul");
-      |});
-      |Then("the rage has a name", p => {
-      |    return p.name != null && p.name() != "" && p.name().length > 0;
-      |});
-      |""".stripMargin
-
-  val EditorWithParametersTs =
-    """
-      |import { Project } from "@atomist/rug/model/Core"
-      |import { ProjectEditor } from "@atomist/rug/operations/ProjectEditor"
-      |import { Given, When, Then, ProjectScenarioWorld } from "@atomist/rug/test/project/Core"
-      |
-      |import {AlpEditor} from "../../editors/AlpEditor"
-      |
-      |Given("a visionary leader", p => {
-      |    p.addFile("Gough", "Maintain the rage");
-      |});
-      |When("politics takes its course", (p, w) => {
-      |    let world = w as ProjectScenarioWorld;
-      |    world.editWith(world.editor("AlpEditor"), {heir: "Paul"});
-      |});
-      |Then("one edit was made", (p, world) => {
-      |    return world.editorsRun() == 1;
-      |});
-      |Then("the rage is maintained", p => {
-      |    return p.fileExists("Paul");
-      |});
-      |Then("the rage has a name", p => {
-      |    return p.name != null && p.name() != "" && p.name().length > 0;
-      |});
-      |""".stripMargin
-
-
-  val PassingSimpleTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
-    PassingSimpleTs)
-
-  val FailingSimpleTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
-    FailingSimpleTs)
+  val FailingSimpleTsFile: FileArtifact =
+    TestUtils.requiredFileInPackage(this, "FailingSimple.ts").withPath(".atomist/test/project/Simple_definitions.ts")
 
   val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
-    EditorWithoutParametersTs)
+    TestUtils.requiredFileInPackage(this, "EditorWithoutParametersSteps.ts").content)
 
-  val EditorWithParametersTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts", EditorWithParametersTs)
+  val EditorWithParametersStepsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+    TestUtils.requiredFileInPackage(this, "EditorWithParametersSteps.ts").content)
 
   val CorruptionFeature =
     """
@@ -118,33 +33,6 @@ object ProjectTestTargets {
   val CorruptionFeatureFile = StringFileArtifact(
     ".atomist/tests/project/Corruption.feature",
     CorruptionFeature)
-
-  val CorruptionTest =
-    """
-      |import { Project } from "@atomist/rug/model/Core"
-      |import { ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-      |import { Given, When, Then } from "@atomist/rug/test/project/Core"
-      |import * as helpers from "@atomist/rug/test/project/Helpers"
-      |
-      |import {FindCorruption} from "../../editors/FindCorruption"
-      |
-      |Given("a number of files", p => {
-      |    p.addFile("NSW", "Wran");
-      |    p.addFile("Victoria", "Cain");
-      |    p.addFile("WA", "Brian Burke and WA Inc");
-      |});
-      |When("run corruption reviewer", (p, world) => {
-      |    let r = new FindCorruption();
-      |    let rr = r.review(p);
-      |    world.put("review", rr);
-      |});
-      |Then("we have comments", (p, world) => {
-      |    if (helpers.prettyListFiles(p).indexOf("NSW") == -1) throw new Error("Bad pretty list");
-      |    if (helpers.dump(p, "NSW").indexOf("Wran") == -1)  throw new Error("Bad dump");
-      |    let rr = world.get("review");
-      |    return rr.comments.length == 1;
-      |});
-      |""".stripMargin
 
   val GenerationFeature =
     """

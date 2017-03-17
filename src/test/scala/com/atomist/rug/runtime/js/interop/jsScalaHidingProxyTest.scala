@@ -26,6 +26,15 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     assert(engine.eval("proxy.age") === 6)
   }
 
+  it should "return undefined for unknown property" in {
+    val fido = Animal("Fido", 6)
+    val proxy = jsScalaHidingProxy(fido)
+    val engine = createEngine
+    engine.put("proxy", proxy)
+    val r = engine.eval("proxy.absquatulate == undefined")
+    assert(r === false)
+  }
+
   it should "allow toString" in {
     val fido = Animal("Fido", 6)
     val proxy = jsScalaHidingProxy(fido)

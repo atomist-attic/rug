@@ -42,11 +42,16 @@ class jsScalaHidingProxy private(
       case _ if jsSafeCommittingProxy.MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
       case _ =>
-        val m = target.getClass.getMethod(name)
-        if (methodValidator(m))
-          m.invoke(target)
-        else
-          ScriptRuntime.UNDEFINED
+        try {
+          val m = target.getClass.getMethod(name)
+          if (methodValidator(m))
+            m.invoke(target)
+          else
+            ScriptRuntime.UNDEFINED
+        }
+        catch {
+          case _: NoSuchMethodException => ScriptRuntime.UNDEFINED
+        }
     }
     //println(s"Raw result for $name=[$r]")
     (r match {

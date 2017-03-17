@@ -17,15 +17,11 @@ class EveryPomEdit implements ProjectEditor {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         
             let p = project
-                if (true) {
-                        eng.with<EveryPom>(p, '//EveryPom()', o => {
-                            if (true) {
-                                o.setGroupId("mygroup")
-                            }
-                        })
-                }
-    
+            eng.with<EveryPom>(p, '//EveryPom()', o => {
+                o.setGroupId("mygroup")
+            })
+
     }
 
 }
-export let editor_everyPomEdit = new EveryPomEdit();
+export const editor_everyPomEdit = new EveryPomEdit();

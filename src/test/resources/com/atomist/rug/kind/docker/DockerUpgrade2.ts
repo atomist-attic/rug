@@ -17,12 +17,10 @@ class DockerUpgrade2 implements ProjectEditor {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         
         eng.with<DockerFile>(project, '//DockerFile()', d => {
-                if (true) {
-                    d.addOrUpdateExpose("8081")
-                    d.addOrUpdateFrom("java:8-jre")
-                    d.addOrUpdateHealthcheck("--interval=5s --timeout=3s CMD curl --fail http://localhost:8080/ || exit 1")
-                }
-            })
+            d.addOrUpdateExpose("8081")
+            d.addOrUpdateFrom("java:8-jre")
+            d.addOrUpdateHealthcheck("--interval=5s --timeout=3s CMD curl --fail http://localhost:8080/ || exit 1")
+        })
     
     }
 

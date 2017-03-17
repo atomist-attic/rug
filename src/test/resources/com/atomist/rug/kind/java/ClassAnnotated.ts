@@ -16,12 +16,10 @@ class ClassAnnotated implements ProjectEditor {
     
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         
-            eng.with<SpringBootProject>(project, '//SpringBootProject()', p => {
-                if (true) {
-                    p.annotateBootApplication("com.someone", "Foobar")
-                }
-            })
+        eng.with<SpringBootProject>(project, '//SpringBootProject()', p => {
+            p.annotateBootApplication("com.someone", "Foobar")
+        })
     
     }
 }
-export let editor_classAnnotated = new ClassAnnotated();
+export const editor_classAnnotated = new ClassAnnotated();

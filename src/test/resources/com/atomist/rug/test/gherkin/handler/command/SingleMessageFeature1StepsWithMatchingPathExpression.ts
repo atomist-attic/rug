@@ -10,7 +10,5 @@ When("a visionary leader enters", (rugContext, world) => {
     world.invokeHandler(handler, {});
 });
 Then("excitement ensues", world => {
-    // console.log("The plan messages were " + world.plan().messages().length);
-    // TODO we are seeing 2. This is wrong
-    return world.plan().messages().length == 1;
+    return world.plan().messages.length == 1;
 });

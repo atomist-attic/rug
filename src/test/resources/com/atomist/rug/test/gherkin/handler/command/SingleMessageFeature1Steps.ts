@@ -8,6 +8,9 @@ When("a visionary leader enters", world => {
     world.invokeHandler(handler, {});
 });
 Then("excitement ensues", world => {
-    // console.log("The plan message were " + world.plan().messages())
-    return world.plan().messages().length == 1;
+    //console.log(`World plan is ${world.plan()}, first message body is ${world.plan().messages[0].body.value}`)
+    let drillDown = world.plan().messages[0].body.value
+    if (drillDown != "woot")
+        throw new Error(`Unexpected drill-down value [${drillDown}]`)
+    return world.plan().messages.length == 1;
 });

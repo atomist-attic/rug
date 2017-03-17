@@ -57,7 +57,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan or throw an exception if none was recorded
     */
-  def requiredPlan: AnyRef = {
+  def requiredPlan: jsScalaHidingProxy = {
     //println(s"Contents of recorded plan: $planOption")
     planOption.map(jsScalaHidingProxy.apply(_)).getOrElse(throw new IllegalArgumentException("No plan was recorded"))
   }
@@ -65,7 +65,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan or null if none was recorded
     */
-  def plan: AnyRef = {
+  def plan: jsScalaHidingProxy = {
     planOption.map(jsScalaHidingProxy.apply(_)).orNull
   }
 

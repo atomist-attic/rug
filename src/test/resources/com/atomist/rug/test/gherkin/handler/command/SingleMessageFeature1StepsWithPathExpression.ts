@@ -7,5 +7,5 @@ When("a visionary leader enters", world => {
    world.invokeHandler(handler, {})
 })
 Then("excitement ensues", world => {
-    return world.plan().messages().length == 1
+    return world.plan().messages.length == 1
 })

@@ -31,7 +31,6 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
     val run = grt.execute()
-    //println(new TestReport(run))
     run.result match {
       case Passed =>
       case wtf => fail(s"Unexpected: $wtf")
@@ -51,7 +50,6 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
     val run = grt.execute()
-    //println(new TestReport(run))
     run.result match {
       case Passed =>
       case wtf => fail(s"Unexpected: $wtf")

@@ -41,9 +41,9 @@ class jsScalaHidingProxyTest extends FlatSpec with Matchers {
     engine.put("proxy", proxy)
     assert(engine.eval("proxy.mate") === null)
     engine.eval("proxy.friends") match {
-      case friends: JavaScriptArray[Animal]@unchecked =>
+      case friends: JavaScriptArray[_]@unchecked =>
         assert(friends.size() === 1)
-        assert(friends.get(0).name === "Rover")
+        assert(friends.get(0).asInstanceOf[jsScalaHidingProxy].getMember("name") === "Rover")
       case x => fail(s"Unexpected: $x")
     }
   }

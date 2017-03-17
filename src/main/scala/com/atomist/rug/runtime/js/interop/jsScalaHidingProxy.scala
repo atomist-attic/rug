@@ -50,7 +50,9 @@ class jsScalaHidingProxy private(
     }
     //println(s"Raw result for $name=[$r]")
     (r match {
-      case seq: Seq[_] => new JavaScriptArray(seq.asJava)
+      case seq: Seq[_] => new JavaScriptArray(
+        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator))
+          .asJava)
       case opt: Option[AnyRef]@unchecked => opt.orNull
       case x => x
     }) match {
@@ -71,11 +73,14 @@ object jsScalaHidingProxy {
 
   def apply(target: Any,
             methodsToHide: Set[String] = DefaultMethodsToHide,
-            methodValidator: MethodValidator = publicMethodsNotOnObject): jsScalaHidingProxy =
-    target match {
+            methodValidator: MethodValidator = publicMethodsNotOnObject): jsScalaHidingProxy = {
+    val r = target match {
       case null | None => null
       case x => new jsScalaHidingProxy(x, methodsToHide, methodValidator)
     }
+    //println(s"Result for $target is $r")
+    r
+  }
 
   val DefaultMethodsToHide: Set[String] = Set("getClass")
 

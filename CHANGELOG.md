@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.14.0...HEAD
 
+### Added
+
+-   Next phase of handler testing support
+-   Adds the concept of a contextRoot node to RugContext to enable
+    handlers to run path expressions as needed.  This change impacts
+    runtime as well as testing, but is necessary to support our
+    programming model.
+
 ### Changed
 
 -   **BREAKING** Python Requirements old type has been removed as it was
     not matching the current programming model. It will be moved to its own
     project. https://github.com/atomist/rug/pull/434
+-   Improve duplicate removal in expression engine
+-   Make TypeScript test stubs addressable (to help with deduping)
+-   Correct some usages of TreeNode where GraphNode could be used
 
 ## [0.14.0] - 2017-03-15
 

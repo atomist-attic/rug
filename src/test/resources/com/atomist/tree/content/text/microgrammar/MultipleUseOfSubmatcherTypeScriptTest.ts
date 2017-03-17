@@ -14,10 +14,8 @@ class MultipleUseOfSubmatcherTypeScriptTest {
 
         eng.with<any>(project, `/File()[@name="targetFile"]/things()`, things => {
 
-            console.log("here we go");
             let somethings = things.something();
-
-          //  console.log(`the whole thing is ${things} and the somethings are ${somethings}`);
+            // console.log(`the whole thing is ${things} and the somethings are ${somethings}`);
 
             somethings[0].update("(1) " + somethings[0].value());
             somethings[1].update("(2) " + somethings[1].value());
@@ -27,4 +25,4 @@ class MultipleUseOfSubmatcherTypeScriptTest {
 
     }
 }
-export let editor = new MultipleUseOfSubmatcherTypeScriptTest();
+export const editor = new MultipleUseOfSubmatcherTypeScriptTest();

@@ -19,12 +19,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
--   **BREAKING** Python Requirements old type has been removed as it was
-    not matching the current programming model. It will be moved to its own
-    project. https://github.com/atomist/rug/pull/434
+-   **BREAKING** Python Requirements old type has been removed as it
+    was not matching the current programming model.  It will be moved
+    to its own project.  [#434][434]
 -   Improve duplicate removal in expression engine
 -   Make TypeScript test stubs addressable (to help with deduping)
 -   Correct some usages of TreeNode where GraphNode could be used
+-   **BREAKING** The `generateWith` method used in testing has an
+    additional `projectName` parameter between the generator and its
+    parameters.
+
+[434]: https://github.com/atomist/rug/pull/434
+
+### Fixed
+
+-   Editor test project objects have a name [#436][436]
+
+[436]: https://github.com/atomist/rug/issues/436
 
 ## [0.14.0] - 2017-03-15
 
@@ -37,8 +48,10 @@ Ides of March release
 -   TypeDoc, ScalaDoc, and scoverage reports are now published
     automatically
 -   Xml extension can now derive itself from a file
--   `RugContext` now exposes a `contextRoot` to allow handlers to execute
-arbitrary path expressions
+-   `RugContext` now exposes a `contextRoot` to allow handlers to
+     execute arbitrary path expressions
+-   Generators should now be under `.atomist/generators` but are still
+    found under `.atomist/editors`
 
 ### Added
 
@@ -114,18 +127,20 @@ Valentine release
 
 ### Fixed
 
--   Elm parser failed on files with two multiline comments
-    https://github.com/atomist/rug/issues/268
+-   Elm parser failed on files with two multiline comments [#268][268]
 -   Raise an `InvalidRugTestScenarioName` when a Rug test scenario is
     missing a name #71
 -   Implicit DLS parameters (from `uses`) are no longer duplicate if
     multiple editors declare the same parameter. The first one is
-    chosen.  https://github.com/atomist/rug/issues/258
+    chosen [#258][258]
 -   Ensure TS parameters are required by default, and ensure defaults
-    are applied before validation:
-    https://github.com/atomist/rug/issues/224
+    are applied before validation [#224][224]
 -   Changed how descendants were found and processed in tree
     expressions which fixed two pendingUntilFixed tests
+
+[268]: https://github.com/atomist/rug/issues/268
+[258]: https://github.com/atomist/rug/issues/258
+[224]: https://github.com/atomist/rug/issues/224
 
 ### Changed
 
@@ -152,14 +167,18 @@ Valentine release
     maintain the Json is was generated from
 -   Add correlationId to Message, allows handler to define
     how Messages are correlated
--   Support for @parameter TS class field decorators as per
-     https://github.com/atomist/rug/issues/229
--   Support for a new TS (JS) Handler programming model as per
-    https://github.com/atomist/rug/issues/105
+-   Support for @parameter TS class field decorators as
+    per [#229][229]
+-   Support for a new TS (JS) Handler programming model as
+    per [#105][105]
 -   Support for Type extensions/TreeNode written in TypeScript as
-    per https://github.com/atomist/rug/issues/214
+    per [#214][214]
 -   Generators are now declared with the `generator` keyword
 -   Optional predicates in tree expressions
+
+[229]: https://github.com/atomist/rug/issues/229
+[105]: https://github.com/atomist/rug/issues/105
+[214]: https://github.com/atomist/rug/issues/214
 
 ### Fixed
 
@@ -168,23 +187,22 @@ Valentine release
     is updated
 -   TS generators are now passed project name as second argument as
     per TS contract
--   Retain all changes from an editor
-    https://github.com/atomist/rug/issues/199
+-   Retain all changes from an editor [#199][199]
 -   Yml type can now be instantiated from ProjectMutableView,
-    DirectoryMutableView, and FileMutableView,
-    https://github.com/atomist/rug/issues/250
+    DirectoryMutableView, and FileMutableView [#250][250]
 -   Handle YAML files with multiple documents, but only first is
     parsed and addressable.
+
+[199]: https://github.com/atomist/rug/issues/199
+[250]: https://github.com/atomist/rug/issues/250
 
 ### Changed
 
 -   **BREAKING** `TreeNode.nodeType` renamed to `TreeNode.nodeTags`
--   We now create a new JS rug for each thread for safety.
-    https://github.com/atomist/rug/issues/78
+-   We now create a new JS rug for each thread for safety [#78][78]
 -   **BREAKING** all JS based Rugs must export (a la Common-JS) vars implementing
     the associated interfaces. Previously we scanned for all top level vars.
--   **BREAKING** Remove Executor support from Rug DSL as per:
-    https://github.com/atomist/rug/issues/206
+-   **BREAKING** Remove Executor support from Rug DSL as per [#206][206]
 -   TypeScript editors now return void. Use the new
     `ProjectMutableView` `describeChange` method to add any comments
     about the working of your editor.
@@ -200,6 +218,9 @@ Valentine release
 -   Scala compiler warnings are now fatal by default, use `-P
     allow-warnings` profile to have the old behavior.  The Travis CI
     build uses the allow-warnings profile.
+
+[78]: https://github.com/atomist/rug/issues/78
+[206]: https://github.com/atomist/rug/issues/206
 
 ### Deprecated
 
@@ -227,17 +248,19 @@ Valentine release
 
 -   Comments are removed from JS files as they are 'required', and
     relative imports now work correctly when 'export' is used from TS
-    or vars are added to the global exports var
-    https://github.com/atomist/rug/issues/156
+    or vars are added to the global exports var [#156][156]
 -   Generation of Rug types documentation
--   minLength and maxLength now default to -1 as per Rug DSL
-    https://github.com/atomist/rug/issues/169
--   Allow Java annotations with properties
-    https://github.com/atomist/rug/issues/164
--   Default parameter values are now validated
-    https://github.com/atomist/rug/issues/168
--   Output parameter name when pattern fails to validate
-    https://github.com/atomist/rug/issues/58
+-   minLength and maxLength now default to -1 as per Rug
+    DSL [#169][169]
+-   Allow Java annotations with properties [#164][164]
+-   Default parameter values are now validated [#168][168]
+-   Output parameter name when pattern fails to validate [#58][58]
+
+[156]: https://github.com/atomist/rug/issues/156
+[169]: https://github.com/atomist/rug/issues/169
+[164]: https://github.com/atomist/rug/issues/164
+[168]: https://github.com/atomist/rug/issues/168
+[58]: https://github.com/atomist/rug/issues/58
 
 ### Removed
 
@@ -256,11 +279,13 @@ TypeScripting release
 
 ### Fixed
 
--   TS parameter tags were not being extracted
-    https://github.com/atomist/rug/issues/151
--   Parameters for TS editors/generators were defaulting to displayable=false.
-    They now default to displayable=true.
-    https://github.com/atomist/rug/issues/148
+-   TS parameter tags were not being extracted [#151][151]
+-   Parameters for TS editors/generators were defaulting to
+    displayable=false.  They now default to
+    displayable=true.  [#148][148]
+
+[151]: https://github.com/atomist/rug/issues/151
+[148]: https://github.com/atomist/rug/issues/148
 
 ## [0.8.0] - 2017-01-04
 
@@ -292,7 +317,9 @@ Breaking release
 -   Double-quoted strings in Rug DSL are now interpreted similarly to
     Java double-quoted strings
 -   LABEL section in files parsed by Dockerfile type did not handle
-    multi-line strings correctly as per https://github.com/atomist/rug/issues/140
+    multi-line strings correctly as per [#140][140]
+
+[140]: https://github.com/atomist/rug/issues/140
 
 ## [0.7.1] - 2016-12-19
 

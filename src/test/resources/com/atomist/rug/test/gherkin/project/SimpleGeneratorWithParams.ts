@@ -6,10 +6,10 @@ import {Parameter} from '@atomist/rug/operations/Decorators'
 export class SimpleGeneratorWithParams {
 
     @Parameter({description: "text", pattern: "^[a-zA-Z ]*$"})
-    text: string
+    text: string;
 
-     populate(project: Project) {
+    populate(project: Project) {
         project.addFile("src/from/typescript", this.text);
     }
 }
-export let gen = new SimpleGeneratorWithParams()
+export const gen = new SimpleGeneratorWithParams();

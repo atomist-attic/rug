@@ -17,9 +17,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
 
   it should "return types with operations" in {
     val types = typeGen.extract(CortexJson)
-    println(types)
     types.foreach(t => {
-      // println(t)
       assert(t.operations.nonEmpty, s"Type ${t.name} should have operations")
     })
   }

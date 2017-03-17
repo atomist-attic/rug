@@ -20,7 +20,7 @@ object TypeScriptInterfaceGeneratorTest {
       // Note: We need to pretend we have imports that will be available
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
-      f.withContent(f.content.replace(InterfaceGenerationConfig().imports,
+      f.withContent(f.content.replace(InterfaceGenerationConfig.DefaultImports,
         """
           |interface ProjectContext {}
           |interface PathExpressionEngine {}

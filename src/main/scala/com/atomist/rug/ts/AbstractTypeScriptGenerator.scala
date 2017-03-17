@@ -242,14 +242,10 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
 case class InterfaceGenerationConfig(
                                       indent: String = "    ",
-                                      separator: String = "\n\n"
+                                      separator: String = "\n\n",
+                                      imports: String = InterfaceGenerationConfig.DefaultImports
                                     )
   extends TypeScriptGenerationConfig {
-
-  val imports: String =
-    """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
-       |import {ProjectContext} from '../operations/ProjectEditor'
-       |""".stripMargin
 
   val licenseHeader: String =
     """|/*
@@ -267,4 +263,19 @@ case class InterfaceGenerationConfig(
        | * See the License for the specific language governing permissions and
        | * limitations under the License.
        | */""".stripMargin
+}
+
+
+object InterfaceGenerationConfig {
+
+  val DefaultImports: String =
+    """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
+       |import {ProjectContext} from '../operations/ProjectEditor'
+       |""".stripMargin
+
+  val TestStubImports: String =
+    DefaultImports +
+      """
+        |import {AddressedNodeSupport} from '../tree/TreeHelper'
+        |""".stripMargin
 }

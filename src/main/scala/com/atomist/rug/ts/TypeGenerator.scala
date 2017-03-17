@@ -73,7 +73,9 @@ class TypeGenerator(basePackage: String = "ext_model") {
             case s: String => List(s)
             case l: List[_] => l.map(Objects.toString)
           }
-          val r = Relationship(a.toSet, relName, b.toSet)
+          // TODO note we're just taking the first one of the bs: This is wrong, but otherwise
+          // We'd need to disambiguate relationship names
+          val r = Relationship(a.toSet, relName, Set(b.head))
           Seq(r)
         case _ => ???
       }

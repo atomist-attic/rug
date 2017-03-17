@@ -27,10 +27,10 @@ case class NamedNodeTest(name: String)
   override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = axis match {
     case Child =>
       val kids: List[GraphNode] = findUnder(tn)
-      Right(kids)
+      ExecutionResult(kids)
     case Descendant =>
       val possibleMatches: List[GraphNode] = Descendant.selfAndAllDescendants(tn).flatMap(n => findUnder(n)).toList
-      Right(NodeTest.dedupe(possibleMatches))
+      ExecutionResult(possibleMatches)
     case Attribute =>
       // If the property is not published, don't permit it
       val typed = Typed.typeFor(tn, typeRegistry)

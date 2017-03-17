@@ -34,9 +34,6 @@ class JavaScriptCommandHandlerFinder
 
   /**
     * Extract intent from a var
-    *
-    * @param someVar
-    * @return
     */
   protected def intent(someVar: ScriptObjectMirror): Seq[String] = {
     someVar.getMember("__intent") match {
@@ -53,8 +50,6 @@ class JavaScriptCommandHandlerFinder
     * Look for mapped parameters (i.e. defined by the bot).
     *
     * See MappedParameters in Handlers.ts for examples.
-    *
-    * @return
     */
   protected def mappedParameters(someVar: ScriptObjectMirror): Seq[MappedParameter] = {
     getMember(someVar, Seq("__mappedParameters")) match {
@@ -70,8 +65,6 @@ class JavaScriptCommandHandlerFinder
   }
   /**
     * Fetch any secrets decorated on the handler
-    * @param someVar
-    * @return
     */
   protected def secrets(someVar: ScriptObjectMirror) : Seq[Secret] = {
     someVar.getMember("__secrets") match {
@@ -86,13 +79,6 @@ class JavaScriptCommandHandlerFinder
 
 /**
   * Runs a CommandHandler in Nashorn
-  *
-  * @param handler
-  * @param name
-  * @param description
-  * @param parameters
-  * @param tags
-  * @param intent
   */
 class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                handler: ScriptObjectMirror,
@@ -111,16 +97,15 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
 
   /**
     * We expect all mapped parameters to also be passed in with the normal params
-    * @param ctx
-    * @param params
-    * @return
     */
   override def handle(ctx: RugContext, params: ParameterValues): Option[Plan] = {
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     invokeMemberFunction(jsc, handler, "handle", ctx, validated) match {
-      case plan: ScriptObjectMirror => ConstructPlan(plan)
-      case other => throw new InvalidHandlerResultException(s"$name CommandHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
+      case plan: ScriptObjectMirror =>
+        ConstructPlan(plan)
+      case other =>
+        throw new InvalidHandlerResultException(s"$name CommandHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }
   }
 }

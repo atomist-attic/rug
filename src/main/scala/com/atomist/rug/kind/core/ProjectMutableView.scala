@@ -2,6 +2,7 @@ package com.atomist.rug.kind.core
 
 import java.util.{Collections, Objects}
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.template._
@@ -523,6 +524,8 @@ class ProjectMutableView(
   */
 class ProjectContext(ctx: RugContext) extends RugContext {
 
+  override def typeRegistry: TypeRegistry = DefaultTypeRegistry
+
   override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
 
   /**
@@ -534,4 +537,6 @@ class ProjectContext(ctx: RugContext) extends RugContext {
     * Used to hydrate nodes before running a path expression
     */
   override def treeMaterializer: TreeMaterializer = ctx.treeMaterializer
+
+  override def contextRoot(): GraphNode = ctx.contextRoot()
 }

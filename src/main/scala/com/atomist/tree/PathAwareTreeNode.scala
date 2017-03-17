@@ -1,12 +1,8 @@
 package com.atomist.tree
 
-/**
-  * Node that knows its address in hierarchy
-  */
-trait AddressableTreeNode extends TreeNode {
+import com.atomist.graph.AddressableGraphNode
 
-  def address: String
-}
+trait AddressableTreeNode extends AddressableGraphNode with TreeNode
 
 trait ParentAwareTreeNode extends TreeNode {
 

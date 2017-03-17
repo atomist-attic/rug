@@ -20,7 +20,7 @@ case class LocationStep(axis: AxisSpecifier,
 
   def follow(tn: GraphNode, ee: ExpressionEngine, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
     test.follow(tn, axis, ee, typeRegistry) match {
-      case Right(nodes) => Right(
+      case Right(nodes) => ExecutionResult(
         nodes
           .map(nodePreparer)
           .filter(tn => predicateToEvaluate.evaluate(tn, nodes, ee, typeRegistry, Some(nodePreparer)))

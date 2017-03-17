@@ -10,7 +10,6 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi._
-import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
@@ -25,7 +24,7 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class jsMatch(root: TreeNode, matches: _root_.java.util.List[jsSafeCommittingProxy])
+case class jsMatch(root: GraphNode, matches: _root_.java.util.List[jsSafeCommittingProxy])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -91,10 +90,10 @@ class jsPathExpressionEngine(
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: TreeNode, pe: Object): jsMatch =
+  def evaluate(root: GraphNode, pe: Object): jsMatch =
     evaluateParsed(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
 
-  private def evaluateParsed(root: TreeNode, parsed: PathExpression) = {
+  private def evaluateParsed(root: GraphNode, parsed: PathExpression) = {
     val hydrated = rugContext.treeMaterializer.hydrate(rugContext.teamId, toUnderlyingTreeNode(root), parsed)
     ee.evaluate(hydrated, parsed, typeRegistry) match {
       case Right(nodes) =>
@@ -119,7 +118,7 @@ class jsPathExpressionEngine(
     * @param pexpr path expression (compiled or string)
     * @param f     function to apply to each path expression
     */
-  def `with`(root: TreeNode, pexpr: Object, f: Object): Unit = f match {
+  def `with`(root: GraphNode, pexpr: Object, f: Object): Unit = f match {
     case som: ScriptObjectMirror =>
       val r = evaluate(root, pexpr)
       r.matches.asScala.foreach(m => {
@@ -137,7 +136,7 @@ class jsPathExpressionEngine(
     * @param root root of Tree. SafeCommittingProxy wrapping a TreeNode
     * @param pe   path expression of object
     */
-  def scalar(root: TreeNode, pe: Object): jsSafeCommittingProxy = {
+  def scalar(root: GraphNode, pe: Object): jsSafeCommittingProxy = {
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
@@ -148,7 +147,7 @@ class jsPathExpressionEngine(
     }
   }
 
-  private def matchReport(root: TreeNode, pe: Object) = {
+  private def matchReport(root: GraphNode, pe: Object) = {
     val pathExpression = jsPathExpressionEngine.pathExpressionFromObject(pe)
 
     def inner(report: Seq[String], lastEmptySteps: Option[PathExpression], steps: PathExpression): Seq[String] = {
@@ -173,13 +172,13 @@ class jsPathExpressionEngine(
     * Convenience method to avoid overloading in TypeScript,
     * which can cause problems with inheritance.
     */
-  def scalarStr(root: TreeNode, pe: String): jsSafeCommittingProxy =
+  def scalarStr(root: GraphNode, pe: String): jsSafeCommittingProxy =
     scalar(root, pe)
 
   /**
     * Try to cast the given node to the required type.
     */
-  def as(root: TreeNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")
+  def as(root: GraphNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")
 
   /**
     * Find the children of the current node of the named type.
@@ -187,7 +186,7 @@ class jsPathExpressionEngine(
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
     */
-  def children(parent: TreeNode, name: String): util.List[jsSafeCommittingProxy] = {
+  def children(parent: GraphNode, name: String): util.List[jsSafeCommittingProxy] = {
     val rootTn = toUnderlyingTreeNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(
       throw new IllegalArgumentException(s"Unknown type")
@@ -203,14 +202,14 @@ class jsPathExpressionEngine(
 
 class PathExpressionException(msg: String) extends RuntimeException(msg) {
 
-  def this(root: TreeNode, pe: Object, problem: String, details: String = "") = {
+  def this(root: GraphNode, pe: Object, problem: String, details: String = "") = {
     this(PathExpressionException.formatMessage(root, pe, problem, details))
   }
 }
 
 object PathExpressionException {
 
-  def formatMessage(root: TreeNode, pe: Object, problem: String, details: String): String = {
+  def formatMessage(root: GraphNode, pe: Object, problem: String, details: String): String = {
     val pePrint = jsPathExpressionEngine.pathExpressionFromObject(pe)
     val rootString = root.toString
     val detailString = if (details.isEmpty) "" else s"\n$details"

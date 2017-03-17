@@ -1,7 +1,8 @@
 package com.atomist.rug.rugdoc
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptBuilder, TypeScriptClassGenerator}
+import com.atomist.rug.spi.SimpleTypeRegistry
+import com.atomist.rug.ts._
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -20,37 +21,73 @@ object TypeScriptClassGeneratorTest {
       // Note: We need to pretend we have imports that will be available
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
-      f.withContent(f.content.replace(InterfaceGenerationConfig().imports,
+      f.withContent(f.content.replace(InterfaceGenerationConfig.TestStubImports,
         """
           |interface ProjectContext {}
           |interface PathExpressionEngine {}
           |interface TreeNode {}
           |interface FormatInfo {}
+          |interface Addressed {
+          |   address(): string
+          |}
+          |abstract class AddressedNodeSupport implements Addressed {
+          |
+          |    private _navigatedFrom: Addressed = null
+          |    private step: string
+          |
+          |    address() {
+          |        return this._navigatedFrom ?
+          |            this._navigatedFrom.address() + this.step :
+          |            ""
+          |    }
+          |    navigatedFrom(navigatedFrom: Addressed, step: string) {
+          |        if (navigatedFrom == this)
+          |            throw new Error(`Illegal cycle at ${this}`)
+          |        this._navigatedFrom = navigatedFrom
+          |        this.step = step
+          |    }
+          |}
         """.stripMargin))
     }
 
   def compile(output: ArtifactSource): ArtifactSource = {
     val withoutImport = TypeScriptClassGeneratorTest.withoutImports(output)
+//    for {
+//      f <- withoutImport.allFiles
+//      if f.name.endsWith(".ts")
+//    } {
+//      println(f.path)
+//      println(f.content)
+//    }
     tsc.compile(withoutImport)
   }
 }
 
 class TypeScriptClassGeneratorTest extends FlatSpec with Matchers {
 
+  // Note, only external model is relevant.
+  // We don't need to test against project types like File
   it should "generate compilable typescript classes" in {
-    val td = new TypeScriptClassGenerator
+
+    val types = new TypeGenerator().extract(TypeGeneratorTest.CortexJson)
+    val tr = new SimpleTypeRegistry(types)
+
+    val td = new TypeScriptClassGenerator(tr)
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
       Map(td.outputPathParam -> ".atomist/editors/Interfaces.ts")))
     assert(output.allFiles.size > 1)
 
-    val compiled = TypeScriptInterfaceGeneratorTest.compile(output)
+    val compiled = TypeScriptClassGeneratorTest.compile(output)
     val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
     ts shouldBe defined
     // println(ts.get.content)
 
     val js = compiled.allFiles.find(_.name.endsWith(".js"))
     js shouldBe defined
+
+    val js2 = compiled.allFiles.find(_.content.contains("withResolvedBy"))
+    js2 shouldBe defined
     // println(js.get.content)
   }
 }

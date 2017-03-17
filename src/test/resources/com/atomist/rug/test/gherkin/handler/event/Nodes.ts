@@ -1,7 +1,13 @@
+/**
+ * Test nodes for use in handler tests. 
+ * These are NOT realistic, and do not represent our actual domain model.
+ */
 
 import {GraphNode} from "@atomist/rug/tree/PathExpression"
+import {AddressedNodeSupport} from "@atomist/rug/tree/TreeHelper"
 
-export class Commit implements GraphNode {
+
+export class Commit extends AddressedNodeSupport implements GraphNode {
 
     private _madeBy: Person = null
 
@@ -12,6 +18,7 @@ export class Commit implements GraphNode {
 
     withMadeBy(p: Person): Commit {
         this._madeBy = p 
+        p.navigatedFrom(this, "/madeBy")
         return this
     }
 
@@ -19,11 +26,11 @@ export class Commit implements GraphNode {
 
 }
 
-export class Person implements GraphNode {
+export class Person extends AddressedNodeSupport implements GraphNode {
 
     private _gitHubId: GitHubId = null
 
-    constructor(private _name: string) {}
+    constructor(private _name: string) { super() }
 
     nodeName(): string {  return this._name }
 
@@ -35,14 +42,15 @@ export class Person implements GraphNode {
 
     withGitHubId(g: GitHubId): Person {
         this._gitHubId = g
+        g.navigatedFrom(this, "/gitHubId")
         return this
     }
 
 }
 
-export class GitHubId implements GraphNode {
+export class GitHubId extends AddressedNodeSupport implements GraphNode {
 
-    constructor(private _id: string) {}
+    constructor(private _id: string) { super() }
 
     nodeName(): string {  return this._id }
 

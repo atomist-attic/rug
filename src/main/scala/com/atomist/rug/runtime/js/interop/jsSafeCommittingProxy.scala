@@ -24,7 +24,7 @@ class jsSafeCommittingProxy(
 
   import jsSafeCommittingProxy._
 
-  override def toString: String = s"SafeCommittingProxy around $node"
+  override def toString: String = s"SafeCommittingProxy#$hashCode around $node"
 
   private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
@@ -88,7 +88,7 @@ class jsSafeCommittingProxy(
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
       case None if name == "toString" =>
-        new AlwaysReturns(s"${getClass.getSimpleName} wrapping [$node]")
+        new AlwaysReturns(toString)
       case _ => invokeConsideringTypeInformation(name)
     }
   }
@@ -175,7 +175,10 @@ class jsSafeCommittingProxy(
       nodesAccessedThroughThisFunctionCall.toList match {
         case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
         case null :: Nil => null
-        case head :: Nil => wrapOne(head) // do we sometimes (TerminalTreeNode) need to pull out the value instead?
+        case (ttn: TerminalTreeNode) :: Nil =>
+          // Pull out the value
+          ttn.value
+        case head :: Nil => wrapOne(head)
         case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
       }
     }

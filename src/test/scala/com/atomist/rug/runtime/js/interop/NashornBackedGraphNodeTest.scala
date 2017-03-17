@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js.interop
 
+import com.atomist.graph.AddressableGraphNode
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
@@ -14,11 +15,11 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
   import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
 
   "toGraphNode" should "fail to convert null without error" in {
-    toGraphNode(null, "test") shouldBe empty
+    toGraphNode(null) shouldBe empty
   }
 
   it should "fail to convert non Nashorn return without error" in {
-    toGraphNode(new Object(), "test") shouldBe empty
+    toGraphNode(new Object()) shouldBe empty
   }
 
   it should "get name and properties from simple node" in {
@@ -50,6 +51,24 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     )
     val gn = toGraphNode(n).get
     assert(gn.nodeTags === Set("tag1", "tag2"))
+    assert(!gn.isInstanceOf[AddressableGraphNode])
+  }
+
+  it should "implement AddressableGraphNode if address provided" in {
+    val n = engine.eval(
+      """
+        |{
+        |   var x = { address: "addr", nodeName: 'Gangster', forename: 'Johnny', surname: 'Caspar', nodeTags: ["tag1", "tag2"]};
+        |   x
+        |}
+      """.stripMargin
+    )
+    val gn = toGraphNode(n).get
+    assert(gn.nodeTags === Set("tag1", "tag2"))
+    gn match {
+      case atn: AddressableGraphNode => assert(atn.address === "addr")
+      case x => fail(s"Unexpected: $x")
+    }
   }
 
   it should "get name and properties from nested node" in {
@@ -196,7 +215,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
         |    Commit.prototype.nodeTags = function () { return ["Commit", "GithubThing"]; };
         |    Commit.prototype.forename = function () { return "Johnny"; };
         |    Commit.prototype.surname = function () { return this._surname; };
-        |    Commit.prototype.setSurname = function (s) { this._surname = s; print("Set surname to " + s) };
+        |    Commit.prototype.setSurname = function (s) { this._surname = s; };
         |    return Commit;
         |}());
         |var c = new Commit()

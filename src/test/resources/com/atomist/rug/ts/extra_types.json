@@ -18,7 +18,7 @@
     ["timestamp", "string"]]},
   {"labels":["Push"],
    "properties":
-   [["before", "string"], ["after", "string"], ["timestamp", "ts"],
+   [["timestamp", "ts"],
     ["branch", "string"]]},
   {"labels":["Build"],
    "properties":
@@ -90,7 +90,7 @@
   [["Comment"], ["ON"], ["Issue"]],
   [["Comment"], ["BY"], ["GitHubId"]], [["Build"], ["ON"], ["Repo"]],
   [["Build"], ["TRIGGERED_BY"], ["Push"]],
-  [["Build"], ["TRIGGERED_BY"], ["PullRequest"]],
+  [["Build"], ["TRIGGERED_BY_PR"], ["PullRequest"]],
   [["Commit"], ["HAS"], ["Build"]], [["Commit"], ["ON"], ["Repo"]],
   [["Commit"], ["AUTHOR"], ["GitHubId"]],
   [["Commit"], ["COMMITTER"], ["GitHubId"]],
@@ -111,7 +111,7 @@
   [["ChatId", "SlackId"], ["MEMBER_OF"],
    ["ChatChannel", "SlackChannel"]],
   [["ChatTeam"], ["HAS_CHANNEL"], ["ChatChannel", "SlackChannel"]],
-  [["ChatId", "SlackId"], ["MEMBER_OF"], ["ChatTeam"]],
+  [["ChatId", "SlackId"], ["MEMBER_OF_2"], ["ChatTeam"]],
   [["Person"], ["HAS_GITHUB_IDENTITY"], ["GitHubId"]],
   [["Person"], ["HAS_CHAT_IDENTITY"], ["ChatId", "SlackId"]],
   [["Container"], ["IS_TAGGED"], ["Tag"]],

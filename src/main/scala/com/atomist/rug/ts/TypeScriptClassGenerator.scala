@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 object TypeScriptClassGenerator extends App {
 
   val target = if (args.length < 1) "target/Core.ts" else args.head
-  val generator = new TypeScriptClassGenerator
+  val generator = new TypeScriptClassGenerator(DefaultTypeRegistry)
   val output = generator.generate("", SimpleParameterValues(Map(generator.outputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
@@ -23,8 +23,8 @@ object TypeScriptClassGenerator extends App {
   *
   * @param typeRegistry registry of known Rug Types.
   */
-class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
-                               config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
+class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
+                               config: InterfaceGenerationConfig = InterfaceGenerationConfig(imports = InterfaceGenerationConfig.TestStubImports),
                                override val tags: Seq[Tag] = Nil)
   extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
 
@@ -39,7 +39,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
-      val deriveKeyword = if (parent.head == Root) "implements" else "extends"
+      val deriveKeyword = if (parent.head == Root) "extends AddressedNodeSupport implements" else "extends"
       output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
@@ -63,17 +63,29 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
           val fieldName = s"_$name"
           // TODO shouldn't be any in the setter:
           // Need to pass in owning type
+          val core =
           s"""${indent}private $fieldName: $returnType = null
-             |
-             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
-             |$indent${indent}this.$fieldName = x
-             |$indent${indent}return this
-             |$indent}
              |
              |$comment$indent$name(${params.mkString(", ")}): $returnType {
              |$indent${indent}return this.$fieldName
              |$indent}""".stripMargin
+          val builderMethod =
+            s"""
+             |
+             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
+             |$indent${indent}this.$fieldName = x
+             |$indent${indent}x.navigatedFrom(this, '/' + '$name')
+             |$indent${indent}return this
+             |$indent}
+             |""".stripMargin
+          core + (if (shouldEmitAddressing(returnType)) builderMethod else "")
       }
+
+    private def shouldEmitAddressing(t: String) = t match {
+      case "string" | "number" | "boolean" => false
+      case x if x.contains("[") => false
+      case _ => true
+    }
   }
 
   override protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo =

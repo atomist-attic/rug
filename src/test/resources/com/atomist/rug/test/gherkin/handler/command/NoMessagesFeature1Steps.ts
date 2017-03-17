@@ -8,5 +8,6 @@ When("a visionary leader enters", world => {
    world.invokeHandler(handler, {})
 })
 Then("excitement ensues", world => {
-    return world.plan().messages().length == 0
+    console.log(`World plan is ${world.plan()}`)
+    return world.plan().messages.length == 0
 })

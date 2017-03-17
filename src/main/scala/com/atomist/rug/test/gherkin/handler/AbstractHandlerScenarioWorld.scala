@@ -4,7 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine}
+import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
@@ -57,16 +57,16 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan or throw an exception if none was recorded
     */
-  def requiredPlan: jsPlan = {
+  def requiredPlan: AnyRef = {
     //println(s"Contents of recorded plan: $planOption")
-    planOption.map(new jsPlan(_)).getOrElse(throw new IllegalArgumentException("No plan was recorded"))
+    planOption.map(jsScalaHidingProxy.apply(_)).getOrElse(throw new IllegalArgumentException("No plan was recorded"))
   }
 
   /**
     * Return the plan or null if none was recorded
     */
-  def plan: jsPlan = {
-    planOption.map(new jsPlan(_)).orNull
+  def plan: AnyRef = {
+    planOption.map(jsScalaHidingProxy.apply(_)).orNull
   }
 
   private class FakeRugContext(val teamId: String, _treeMaterializer: TreeMaterializer) extends RugContext {

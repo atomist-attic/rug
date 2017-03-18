@@ -17,14 +17,14 @@ export const alpEditor = new AlpEditor();
 
 export class AlpEditorWithParameters implements ProjectEditor {
     name: string = "AlpEditorWithParameters"
-    description: string = "ALP history"
+    description: string = "ALP history";
 
     @Parameter({description: "Bold PM", pattern: "^.*$"})
-    heir: string
+    heir: string;
 
     edit(project: Project) {
-     project.addFile(this.heir, "Can a souffle rise twice?")
+        project.addFile(this.heir, "Can a souffle rise twice?");
     }
 }
 
-export let alpEditorWithParameters = new AlpEditorWithParameters()
+export const alpEditorWithParameters = new AlpEditorWithParameters();

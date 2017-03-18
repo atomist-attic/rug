@@ -19,7 +19,7 @@ export class AlpEditorWithParameters implements ProjectEditor {
     name: string = "AlpEditorWithParameters"
     description: string = "ALP history";
 
-    @Parameter({description: "Bold PM", pattern: "^.*$"})
+    @Parameter({description: "Bold PM", pattern: "^[A-Za-z]*$"})
     heir: string;
 
     edit(project: Project) {

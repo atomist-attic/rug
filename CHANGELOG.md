@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.15.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.16.0...HEAD
+
+## [0.16.0] - 2017-03-19
+
+[0.16.0]: https://github.com/atomist/rug/compare/0.15.1...0.16.0
+
+Test good parameters release
+
+### Added
+
+-   Testing well-known step "parameter were valid"
 
 ## [0.15.1] - 2017-03-19
 

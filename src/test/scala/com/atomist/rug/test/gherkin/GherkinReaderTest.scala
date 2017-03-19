@@ -47,6 +47,7 @@ object GherkinReaderTest {
       |    Given an empty project
       |    Given a visionary leader
       |    When politics takes its course
+      |    Then parameters were valid
       |    Then changes were made
       |    Then one edit was made
       |    Then the rage is maintained

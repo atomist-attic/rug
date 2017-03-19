@@ -82,7 +82,7 @@ class ProjectScenarioWorld(
       case Right(_) =>
       // We've already logged it. Do nothing
       case Left(ipe: InvalidParametersException) =>
-        ???
+        throw ipe
       case Left(unknown) =>
         throw unknown
     }

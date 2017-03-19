@@ -17,6 +17,9 @@ object ProjectTestTargets {
   val EditorWithParametersStepsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
     TestUtils.requiredFileInPackage(this, "EditorWithParametersSteps.ts").content)
 
+  val EditorWithBadParametersStepsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+    TestUtils.requiredFileInPackage(this, "EditorWithBadParametersSteps.ts").content)
+
   val CorruptionFeature =
     """
       |Feature: Look for corrupt politicians
@@ -81,6 +84,24 @@ object ProjectTestTargets {
        |});
        |""".stripMargin
 
+  val GenerationBadParameterFeature =
+    """
+      |Feature: Generate a new project
+      |  This is a test
+      |  to see whether
+      |  we can test project generators
+      |
+      |  Scenario: New project should have content from template
+      |    Given an empty project
+      |    When run simple generator
+      |    Then parameters were invalid
+      |""".stripMargin
+
+  val GenerationBadParameterFeatureFile = StringFileArtifact(
+    ".atomist/tests/project/GenerationBadParam.feature",
+    GenerationBadParameterFeature
+  )
+
   def generateWithInvalidParameters(gen: String, projectName: String, params: Map[String,String]): String =
     s"""
        |import { Project } from "@atomist/rug/model/Core"
@@ -93,5 +114,23 @@ object ProjectTestTargets {
        |    world.generateWith(g, "${projectName}", {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}});
        |});
        |""".stripMargin
+
+  val EditorBadParameterFeature =
+    """
+      |Feature: Australian political history
+      |  This is a test
+      |  to demonstrate that the Gherkin DSL
+      |  is a good fit for Rug BDD testing
+      |
+      |  Scenario: Australian politics, 1972-1991
+      |    Given an empty project
+      |    Given a visionary leader
+      |    When politics takes its course
+      |    Then parameters were invalid
+      |    Then the rage has a name
+    """.stripMargin
+
+  val EditorBadParameterFeatureFile =
+    StringFileArtifact(".atomist/tests/project/BadParameter.feature", EditorBadParameterFeature)
 
 }

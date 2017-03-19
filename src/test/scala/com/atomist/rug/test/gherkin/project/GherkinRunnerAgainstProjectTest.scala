@@ -99,6 +99,20 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     assert(el.scCount == 0)
   }
 
+  it should "handle an editor test checking for an invalid parameter" in {
+    val el = new TestExecutionListener
+    val as = SimpleFileBasedArtifactSource(
+      alpEditorsFile,
+      EditorBadParameterFeatureFile,
+      EditorWithBadParametersStepsFile
+    )
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    assert(run.result === Passed)
+  }
+
   it should "test a reviewer" in {
     val as =
       SimpleFileBasedArtifactSource(
@@ -164,19 +178,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val atomistStuff: ArtifactSource =
       TestUtils.resourcesInPackage(this).filter(_ => true, f => f.name == "SimpleGeneratorWithParams.ts")
         .withPathAbove(".atomist/editors") +
-        SimpleFileBasedArtifactSource(StringFileArtifact(
-          ".atomist/tests/project/Simple.feature",
-          """
-            |Feature: Generate a new project
-            |  This is a test
-            |  to see whether
-            |  we can test project generators
-            |
-            |  Scenario: New project should have content from template
-            |    Given an empty project
-            |    When run simple generator
-            |    Then parameters were invalid
-            |""".stripMargin),
+        SimpleFileBasedArtifactSource(
+          GenerationBadParameterFeatureFile,
           StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
             generateWithInvalidParameters("SimpleGeneratorWithParams", projectName, Map("text" -> "`Anders Hjelsberg is 1God`")))
         )

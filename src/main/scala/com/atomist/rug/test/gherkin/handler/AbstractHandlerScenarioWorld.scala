@@ -23,7 +23,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   protected def createRugContext(tm: TreeMaterializer): RugContext =
     new FakeRugContext("team_id", tm)
 
-  private var rootContext: SimpleContainerGraphNode = new SimpleContainerGraphNode("root")
+  private var rootContext: SimpleContainerGraphNode = SimpleContainerGraphNode("root")
 
   /**
     * Return the editor with the given name or throw an exception

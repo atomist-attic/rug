@@ -1,13 +1,17 @@
 package com.atomist.rug.runtime.js.interop
 
 import com.atomist.graph.AddressableGraphNode
+import com.atomist.rug.runtime.js.SimpleContainerGraphNode
 import com.atomist.tree.TreeNode
+import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.scalatest.{FlatSpec, Matchers}
 
 class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
 
   def engine: NashornScriptEngine = NashornUtilsTest.createEngine
+
+  val pe = new PathExpressionEngine
 
   import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
 
@@ -120,6 +124,45 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(assoc.nodeName === "Leo")
     assert(assoc.nodeTags.contains("Irish"))
     assert(assoc.relatedNodesNamed("forename").head.asInstanceOf[TreeNode].value === "Leo")
+  }
+
+  it should "run simple type path expression against nested node" in
+    runPathExpressionAgainstNestedNode("/tag1()")
+
+  it should "run predicate path expression against nested node" in
+    runPathExpressionAgainstNestedNode("/tag1()[@forename='Johnny']")
+
+  it should "run predicate path expression against nested node with type" in
+    runPathExpressionAgainstNestedNode("/tag1()[@forename='Johnny']/Irish()")
+
+  it should "run predicate path expression against nested node with navigation and type" in
+    runPathExpressionAgainstNestedNode("/tag1()[@forename='Johnny']/bodyGuard::Danish()[@forename='The']")
+
+  private def runPathExpressionAgainstNestedNode(expr: String) {
+    val rootName = "Gangster"
+    val n = engine.eval(
+      s"""
+         |{
+         |   var x = { nodeName: '$rootName', forename: 'Johnny', surname: 'Caspar',
+         |     associates: [
+         |      { nodeName: 'Leo', forename: 'Leo', nodeTags: ["Irish"]},
+         |      { nodeName: 'Tom', forename: 'Tom', nodeTags: ["Irish"]}
+         |     ],
+         |     bodyGuard: { nodeName: 'Dane', forename: 'The', nodeTags: ["Danish"]},
+         |     nodeTags: ["tag1", "tag2"]};
+         |   x
+         |}
+      """.stripMargin
+    )
+    import com.atomist.tree.pathexpression.PathExpressionParser._
+    val caspar = toGraphNode(n).get
+    val root = SimpleContainerGraphNode("root", caspar)
+    val pexpr: PathExpression = expr
+    //println(pexpr)
+    pe.evaluate(root, pexpr) match {
+      case Right(nodes) if nodes.nonEmpty =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
   }
 
   it should "handle cycle expressed via scalar" in {

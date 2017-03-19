@@ -39,29 +39,33 @@ case class NodesWithTag(tag: String)
   private val eligibleNode: GraphNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
 
   // Attempt to find nodes of the require type under the given node
-  private def findMeUnder(tn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
-    tn.relatedNodes.filter(eligibleNode) match {
+  private def findMeUnder(gn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
+    gn.relatedNodes.filter(eligibleNode) match {
       case Nil =>
         childResolver(typeRegistry) match {
-          case Some(cr) => cr.findAllIn(tn).getOrElse(Nil)
+          case Some(cr) => cr.findAllIn(gn).getOrElse(Nil)
           case None =>
             Nil
         }
       case kids => kids
     }
 
-  override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
+  override def follow(gn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
     try {
       axis match {
         case NavigationAxis(propertyName) =>
-          val nodes = tn.relatedNodesNamed(propertyName).filter(eligibleNode)
-          ExecutionResult(nodes)
+          // Follow edge or look for nodes with the name
+          val nodes = gn.followEdge(propertyName).filter(eligibleNode)
+          if (nodes.nonEmpty)
+            ExecutionResult(nodes)
+          else
+            ExecutionResult(gn.relatedNodesNamed(propertyName).filter(eligibleNode))
         case Self =>
-          ExecutionResult(List(tn).filter(eligibleNode))
+          ExecutionResult(List(gn).filter(eligibleNode))
         case Child =>
-          ExecutionResult(findMeUnder(tn, typeRegistry))
+          ExecutionResult(findMeUnder(gn, typeRegistry))
         case Descendant =>
-          val allDescendants = Descendant.selfAndAllDescendants(tn)
+          val allDescendants = Descendant.selfAndAllDescendants(gn)
           val found: Seq[GraphNode] = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
           ExecutionResult(found)
         case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")

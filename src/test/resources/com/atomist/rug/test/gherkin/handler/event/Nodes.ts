@@ -4,8 +4,7 @@
  */
 
 import {GraphNode} from "@atomist/rug/tree/PathExpression"
-import {AddressedNodeSupport} from "@atomist/rug/tree/TreeHelper"
-
+import {AddressedNodeSupport} from "@atomist/rug/tree/AddressedNodeSupport"
 
 export class Commit extends AddressedNodeSupport implements GraphNode {
 

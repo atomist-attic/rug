@@ -276,6 +276,6 @@ object InterfaceGenerationConfig {
   val TestStubImports: String =
     DefaultImports +
       """
-        |import {AddressedNodeSupport} from '../tree/TreeHelper'
+        |import {AddressedNodeSupport} from '../tree/AddressedNodeSupport'
         |""".stripMargin
 }

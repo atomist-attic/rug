@@ -135,7 +135,6 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case t => t
     }
     val args = Seq(target, world) ++ sm.args
-    //println(s"Calling with args = ${args.mkString(",")}")
     allCatch.either(sm.jsVar.call("apply",
       args:_*
     ))

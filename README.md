@@ -9,7 +9,7 @@ Key areas of functionality of this project:
 
 
 |  Area |  Purpose | Base Package/Path |  Remarks |
-|---|---|---|---|---|
+|---|---|---|---|
 |  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions
 | Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in TypeScript, JavaScript or any language that compiles to JavaScript.
 |  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |

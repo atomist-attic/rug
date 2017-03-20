@@ -4,6 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.runtime.js.interop.{NashornUtils, jsSafeCommittingProxy}
+import com.atomist.util.lang.JavaScriptArray
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -14,10 +15,10 @@ import scala.collection.JavaConverters._
   * Superclass for all features, regardless of what they act on
   */
 abstract class AbstractExecutableFeature[W <: ScenarioWorld](
-                                          val definition: FeatureDefinition,
-                                          val definitions: Definitions,
-                                          val rugs: Option[Rugs],
-                                          listeners: Seq[GherkinExecutionListener] = Nil)
+                                                              val definition: FeatureDefinition,
+                                                              val definitions: Definitions,
+                                                              val rugs: Option[Rugs],
+                                                              listeners: Seq[GherkinExecutionListener] = Nil)
   extends LazyLogging {
 
   def execute(): FeatureResult = {
@@ -65,11 +66,11 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
     val somo = definitions.thenFor(step.getText)
     logger.debug(s"Then for [${step.getText}]=$somo")
     somo match {
-      case Some(som) =>
-        val r = callFunction(som, world)
+      case Some(stepMatch) =>
+        val r = callFunction(stepMatch, world)
         r match {
           case Right(b: java.lang.Boolean) =>
-            AssertionResult(step.getText, Result(b, som.toString))
+            AssertionResult(step.getText, Result(b, stepMatch.jsVar.toString))
           case Right(rsom: ScriptObjectMirror) =>
             val result = NashornUtils.stringProperty(rsom, "result", "false") == "true"
             AssertionResult(step.getText, Result(result, NashornUtils.stringProperty(rsom, "message", "Detailed information unavailable")))
@@ -101,14 +102,14 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             logger.error(t.getMessage, t)
             world.abort()
           case _ =>
-            // Do nothing
+          // Do nothing
         }
       case None =>
         logger.info(s"When [${step.getText}] not yet implemented")
     }
   }
 
-  private def runGiven(world: ScenarioWorld, step: Step):Unit = {
+  private def runGiven(world: ScenarioWorld, step: Step): Unit = {
     val somo = definitions.givenFor(step.getText)
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
@@ -118,8 +119,8 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             world.abort()
-            case _ =>
-            // OK
+          case _ =>
+          // OK
         }
       case None =>
         logger.info(s"Given [${step.getText}] not yet implemented")
@@ -127,15 +128,17 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
   }
 
   // Call a ScriptObjectMirror function with appropriate error handling
-  private def callFunction(som: ScriptObjectMirror, world: ScenarioWorld): Either[Throwable,Object] = {
+  private def callFunction(sm: StepMatch, world: ScenarioWorld): Either[Throwable, Object] = {
     import scala.util.control.Exception._
-    allCatch.either(som.call("apply",
-      world.target match {
-        case gn: GraphNode => new jsSafeCommittingProxy(gn, world.typeRegistry)
-        case target => target
-      },
-      world)
-    )
+    val target = world.target match {
+      case gn: GraphNode => new jsSafeCommittingProxy(gn, world.typeRegistry)
+      case t => t
+    }
+    val args = Seq(target, world) ++ sm.args
+    //println(s"Calling with args = ${args.mkString(",")}")
+    allCatch.either(sm.jsVar.call("apply",
+      args:_*
+    ))
   }
 
 }

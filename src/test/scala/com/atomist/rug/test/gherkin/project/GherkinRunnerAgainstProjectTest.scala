@@ -113,6 +113,21 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     assert(run.result === Passed)
   }
 
+  it should "support parameterized steps" in {
+    val el = new TestExecutionListener
+    val as = SimpleFileBasedArtifactSource(
+      ParameterizedFeatureFile,
+      StringFileArtifact(
+        ".atomist/tests/project/ParameterizedFeatureSteps.ts",
+        TestUtils.contentOf(this, "ParameterizedFeatureSteps.ts"))
+    )
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    assert(run.result === Passed)
+  }
+
   it should "test a reviewer" in {
     val as =
       SimpleFileBasedArtifactSource(
@@ -217,7 +232,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       val as = SimpleFileBasedArtifactSource(
         TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts", TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
+        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts",
+          TestUtils.contentOf(this, "CorruptionTestSteps.ts"))
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt1 = new GherkinRunner(new JavaScriptContext(cas))

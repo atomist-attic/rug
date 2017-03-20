@@ -259,6 +259,16 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
     assert(second.line === Some(3))
   }
 
+  it should "combine review results" in {
+    val rf = StringFileArtifact(".atomist/reviewers/TwoReviewers.ts", TestUtils.contentOf(this, "TwoReviewers.ts"))
+    val cas = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(rf))
+    val reviewer = RugArchiveReader.find(cas).reviewers.find(_.name == "ReviewerC").get
+    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
+    val rr = reviewer.review(target, SimpleParameterValues( Map("content" -> ParameterContent)))
+    assert(rr.note === "ReviewerA,ReviewerB")
+    assert(rr.comments.size === 2)
+  }
+
   private  def reviewSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 

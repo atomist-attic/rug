@@ -74,7 +74,7 @@ class PlanBuilder {
       case _ => None
     }
 
-    val treeNode = jsMessage.getMember("treeNode") match {
+    val treeNode = jsMessage.getMember("node") match {
       case t: TreeNode => Some(t)
       case _ => None
     }

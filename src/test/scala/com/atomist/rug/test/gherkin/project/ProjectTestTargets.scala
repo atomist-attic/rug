@@ -133,4 +133,21 @@ object ProjectTestTargets {
   val EditorBadParameterFeatureFile =
     StringFileArtifact(".atomist/tests/project/BadParameter.feature", EditorBadParameterFeature)
 
+  val ParameterizedFeature =
+    """
+      |Feature: Australian political history
+      |  This is a test
+      |  to demonstrate that the Gherkin DSL
+      |  is a good fit for Rug BDD testing
+      |
+      |  Scenario: Australian politics, 1972-1991
+      |    Given a file named Gough
+      |    When do nothing
+      |    Then the project has 1 files
+      |    Then the project has a file named Gough
+    """.stripMargin
+
+  val ParameterizedFeatureFile =
+    StringFileArtifact(".atomist/tests/project/Parameterized.feature", ParameterizedFeature)
+
 }

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.16.0...HEAD
 
+### Added
+
+-   Added support for parameterized Gherkin steps, per #431
+
 ## [0.16.0] - 2017-03-19
 
 [0.16.0]: https://github.com/atomist/rug/compare/0.15.1...0.16.0

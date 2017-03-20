@@ -9,7 +9,7 @@ class KittieFetcher implements HandleCommand{
   @Parameter({description: "his dudeness", pattern: "^.*$"})
   name: string
 
-  @MappedParameter(MappedParameters.REPO_OWNER)
+  @MappedParameter(MappedParameters.GITHUB_REPO_OWNER)
   owner: string
 
   handle(ctx: HandlerContext) : Plan {

@@ -24,20 +24,20 @@ class QueryByExampleTest extends FlatSpec with Matchers {
     verifyPaths(
       """
         |var node = require("./Nodes");
-        |var QueryByExample_1 = require("@atomist/rug/tree/QueryByExample");
+        |var query = require("@atomist/rug/tree/QueryByExample");
         |createdObject = new node.Commit();
-        |pathExpression = QueryByExample_1.queryByExample(createdObject);
+        |pathExpression = query.byExample(createdObject);
       """.stripMargin)
 
   it should "work with one level of predicate" in
     verifyPaths(
       """
         |var node = require("./Nodes");
-        |var QueryByExample_1 = require("@atomist/rug/tree/QueryByExample");
+        |var query = require("@atomist/rug/tree/QueryByExample");
         |createdObject = new node.Commit().withMadeBy(
         | new node.Person("Ebony")
         |);
-        |pathExpression = QueryByExample_1.queryByExample(createdObject);
+        |pathExpression = query.byExample(createdObject);
       """.stripMargin,
       validator = s => s.contains("[@name='Ebony']]")
     )
@@ -45,13 +45,13 @@ class QueryByExampleTest extends FlatSpec with Matchers {
   it should "work with JSON and one level of predicate" in
     verifyPaths(
       """
-        |var QueryByExample_1 = require("@atomist/rug/tree/QueryByExample");
+        |var query = require("@atomist/rug/tree/QueryByExample");
         |createdObject = {
         | nodeTags: [ "Commit", "dynamic-" ],
         | nodeName: "Commit",
         | madeBy: { nodeTags: [ "Person", "dynamic-"], nodeName: "Ebony", name: "Ebony" }
         |};
-        |pathExpression = QueryByExample_1.queryByExample(createdObject);
+        |pathExpression = query.byExample(createdObject);
       """.stripMargin,
       validator = s => s.contains("[@name='Ebony']]")
     )
@@ -60,12 +60,12 @@ class QueryByExampleTest extends FlatSpec with Matchers {
     verifyPaths(
       """
         |var node = require("./Nodes");
-        |var QueryByExample_1 = require("@atomist/rug/tree/QueryByExample");
+        |var query = require("@atomist/rug/tree/QueryByExample");
         |createdObject = new node.Commit().withMadeBy(
         | new node.Person("Ebony")
         |   .withGitHubId(new node.GitHubId("gogirl"))
         |);
-        |pathExpression = QueryByExample_1.queryByExample(createdObject);
+        |pathExpression = query.byExample(createdObject);
       """.stripMargin,
       validator = _.contains("[@id='gogirl']"))
 
@@ -73,7 +73,7 @@ class QueryByExampleTest extends FlatSpec with Matchers {
     verifyPaths(
       """
         |var node = require("./Nodes");
-        |var QueryByExample_1 = require("@atomist/rug/tree/QueryByExample");
+        |var query = require("@atomist/rug/tree/QueryByExample");
         |
         |var ghid = new node.GitHubId("gogirl")
         |ghid._match = true
@@ -81,7 +81,7 @@ class QueryByExampleTest extends FlatSpec with Matchers {
         | new node.Person("Ebony")
         |   .withGitHubId(ghid)
         |);
-        |pathExpression = QueryByExample_1.queryByExample(createdObject);
+        |pathExpression = query.byExample(createdObject);
       """.stripMargin,
       validator = _.contains("[@id='gogirl']"),
       matchTestO = Some(n => n.nodeTags.contains("GitHubId")))

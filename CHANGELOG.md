@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** MappedParameter names changed to be more specific
 -   **BREAKING** changed `withTreeNode` to `withNode` in Message class in Handlers.ts
 
 ## [0.16.0] - 2017-03-19

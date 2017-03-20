@@ -4,9 +4,8 @@
  */
 
 import {GraphNode} from "@atomist/rug/tree/PathExpression"
-import {AddressedNodeSupport} from "@atomist/rug/tree/AddressedNodeSupport"
 
-export class Commit extends AddressedNodeSupport implements GraphNode {
+export class Commit implements GraphNode {
 
     private _madeBy: Person = null
 
@@ -17,7 +16,6 @@ export class Commit extends AddressedNodeSupport implements GraphNode {
 
     withMadeBy(p: Person): Commit {
         this._madeBy = p 
-        p.navigatedFrom(this, "/madeBy")
         return this
     }
 
@@ -25,11 +23,11 @@ export class Commit extends AddressedNodeSupport implements GraphNode {
 
 }
 
-export class Person extends AddressedNodeSupport implements GraphNode {
+export class Person implements GraphNode {
 
     private _gitHubId: GitHubId = null
 
-    constructor(private _name: string) { super() }
+    constructor(private _name: string) {} 
 
     nodeName(): string {  return this._name }
 
@@ -41,15 +39,14 @@ export class Person extends AddressedNodeSupport implements GraphNode {
 
     withGitHubId(g: GitHubId): Person {
         this._gitHubId = g
-        g.navigatedFrom(this, "/gitHubId")
         return this
     }
 
 }
 
-export class GitHubId extends AddressedNodeSupport implements GraphNode {
+export class GitHubId implements GraphNode {
 
-    constructor(private _id: string) { super() }
+    constructor(private _id: string) {}
 
     nodeName(): string {  return this._id }
 

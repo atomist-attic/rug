@@ -9,7 +9,8 @@ import com.atomist.source.{ArtifactSourceUtils, FileArtifact, SimpleFileBasedArt
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
-  * Files ending with "a" are identical in effect
+  * Files ending with "a," "b" etc are identical in effect from the point
+  * of view of these tests
   */
 class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
@@ -46,9 +47,14 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   it should "verify no plan steps with matching simple path match using named type" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2a.ts")
 
+  it should "verify no plan steps with matching simple path match using named type and root query by example" in
+    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2b.ts")
+
+  it should "verify no plan steps with matching simple path match using named type and leaf query by example" in
+    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2c.ts")
+
   it should "verify no plan steps with matching deeper path match" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")
-
 
   def verifyNoPlanStepsWithMatchingSimplePathMatch(stepsFile: String) {
     val passingFeature1StepsFile = requiredFileInPackage(

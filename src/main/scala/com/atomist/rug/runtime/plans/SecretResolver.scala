@@ -12,12 +12,6 @@ import com.atomist.rug.spi.Secret
   * @param rug - the com mand handler with declared secrets!
   */
 abstract class SecretResolver (rug: Option[Rug]) {
-
-  //basically things like `path/to/secret/with?param=this&other=that`
-  private val commonSecretRegExpStr = "([\\w]+(/[\\w]+)+)+((\\?[\\w]+\\=[\\w]+)+(\\&[\\w]+\\=[\\w]+)*)*"
-
-  private val secretPathRegExp = s"^$commonSecretRegExpStr$$".r
-  private val secretTokenPathRegExp = s"#\\{$commonSecretRegExpStr\\}".r
   /**
     * Replace things of the form #{secret_path} with secret values in supplied ParameterValues
     *
@@ -34,14 +28,7 @@ abstract class SecretResolver (rug: Option[Rug]) {
           param.getValue match {
             case s: String =>
               val replaced = handler.secrets.foldLeft[String](s) {(cur, secret) =>
-                if(secretPathRegExp.findFirstIn(secret.path).isEmpty){
-                  throw new InvalidSecretException(s"Secret path: ${secret.path} is invalid on Command Handler: ${handler.name}")
-                }
                 cur.replace(s"#{${secret.path}}", resolveSecret(secret).getValue.toString)
-              }
-              val unresolved = secretTokenPathRegExp.findAllMatchIn(replaced).toSeq
-              if(unresolved.nonEmpty){
-                throw new MissingSecretException(s"Found unresolved secrets in parameter: ${param.getName}: ${unresolved.mkString(",")}")
               }
               SimpleParameterValue(param.getName,replaced)
             case _ => param

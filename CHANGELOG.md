@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.17.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.17.1...HEAD
+
+## [0.17.1] - 2017-03-20
+
+[0.17.1]: https://github.com/atomist/rug/compare/0.17.0...0.17.1
+
+Relaxed release
+
+### Changed
+
+-   Removed validation of secret paths as this contract is owned by the bot
 
 ## [0.17.0] - 2017-03-20
 

@@ -29,20 +29,6 @@ class SecretResolverTest extends FlatSpec with Matchers {
     assert(replaced.head.getValue === "complicated string ${secret/path}")
   }
 
-  it should "not replace secrets for paths that aren't declared on the rug" in {
-    val resolver = new TestSecretResolver(handler)
-    assertThrows[MissingSecretException]{
-      resolver.replaceSecretTokens(Seq(SimpleParameterValue("paramName", "complicated string #{secret/otherpath}")))
-    }
-  }
-
-  it should "should not allow invalid secrets in  the handlers secrets in the first place" in {
-    val resolver = new TestSecretResolver(invalidSecretHandler)
-    assertThrows[InvalidSecretException]{
-      resolver.replaceSecretTokens(Seq(SimpleParameterValue("paramName", "complicated string #{secret/otherpath}")))
-    }
-  }
-
   it should "not worry about #{} patterns that span multiple lines or are clearly not tokens" in {
     val resolver = new TestSecretResolver(handler)
     resolver.replaceSecretTokens(Seq(SimpleParameterValue("paramName", "complicated string #{secret\n/otherpath}")))

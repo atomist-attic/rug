@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.17.1...HEAD
 
+### Changed
+
+-   Allow construction of Message without body
+
 ## [0.17.1] - 2017-03-20
 
 [0.17.1]: https://github.com/atomist/rug/compare/0.17.0...0.17.1

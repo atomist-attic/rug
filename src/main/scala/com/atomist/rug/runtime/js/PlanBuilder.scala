@@ -7,7 +7,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.tree.TreeNode
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import jdk.nashorn.internal.runtime.Undefined
+import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
 
 /**
   * Constructs plans from Nashorn response to a Handler/handle operation
@@ -60,6 +60,7 @@ class PlanBuilder {
         JsonBody(json.entrySet().toString)
       case text: String =>
         MessageText(text)
+      case ScriptRuntime.UNDEFINED => MessageText(null)
       case _ =>
         throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")}")
     }

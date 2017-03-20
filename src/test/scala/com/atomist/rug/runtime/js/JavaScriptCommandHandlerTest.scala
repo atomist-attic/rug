@@ -9,6 +9,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.util.JsonUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.Await
@@ -41,6 +42,18 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerReturningMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningMessage.ts"))
 
+  val simpleCommandHandlerReturningEmptyMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningEmptyMessage.ts"))
+
+  it should "allow us to return an empty message" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
+    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    assert(plan.messages.size === 1)
+    assert(plan.messages.head.body.value == null)
+    assert(JsonUtils.toJson(plan.messages.head) == """{"body":{},"instructions":[]}""")
+  }
   it should "allow us to return a message directly from a handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningMessage))
     val rugs = RugArchiveReader.find(rugArchive, Nil)

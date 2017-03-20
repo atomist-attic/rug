@@ -109,7 +109,7 @@ object JavaScriptEventHandlerTest {
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>): Message{
-       |     return new Message("woot").withCorrelationId("dude").withTreeNode(event.root());
+       |     return new Message("woot").withCorrelationId("dude").withNode(event.root());
        |  }
        |}
        |export let handler = new SimpleHandler();

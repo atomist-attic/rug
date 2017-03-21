@@ -114,6 +114,23 @@ object JavaScriptEventHandlerTest {
        |}
        |export let handler = new SimpleHandler();
       """.stripMargin)
+
+  val eventHandlerWithEmptyMatches =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    s"""
+       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
+       |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
+       |
+       |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/nomatch"))
+       |@Tags("github", "build")
+       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
+       |  handle(event: Match<TreeNode, TreeNode>): Message{
+       |     return new Message("woot").withCorrelationId("dude").withNode(event.root());
+       |  }
+       |}
+       |export let handler = new SimpleHandler();
+      """.stripMargin)
+
 }
 
 
@@ -220,6 +237,18 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val msg = actualPlan.get.messages.head
     assert(msg.treeNode.nonEmpty)
     assert(msg.correlationId.nonEmpty)
+  }
+
+  it should "it should not invoke the actual handler if there matches are empty" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithEmptyMatches))
+    val finder = new JavaScriptEventHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val handler = handlers.head
+    handler.rootNodeName should be("nomatch")
+    handler.pathExpression should not be null
+    val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
+    assert(actualPlan.isEmpty)
   }
 }
 

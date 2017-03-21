@@ -8,8 +8,8 @@ import com.atomist.rug.EditorNotFoundException
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.rug.runtime.{AddressableRug, ParameterizedRug, Rug}
 import com.atomist.rug.spi.InstantEditorFailureException
+import com.atomist.source._
 import com.atomist.source.file.FileSystemArtifactSource
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
@@ -82,7 +82,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(pmv.name === "demo")
   }
 
-
   it should "correctly calculate totalFileCount" in {
     val as = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(as)
@@ -107,7 +106,6 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     }
     assert(caught.getMessage === "Could not find editor: fully:qualified:EditorStub. Did you mean: EditorStub?")
   }
-
 
   it should "handle path and content replace" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
@@ -162,9 +160,9 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       StringFileArtifact(copyInputPath, "file content")
     )
     val pmv = new ProjectMutableView(backing, outputAs)
-//    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
-//      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
-//      FirstPoa, Nil)
+    //    val ic = SimpleFunctionInvocationContext[ProjectMutableView]("project", null, pmv, outputAs, null,
+    //      FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap,
+    //      FirstPoa, Nil)
     val ic = FirstPoa.parameterValues.map(pv => (pv.getName, pv.getValue)).toMap
     pmv.merge(templatePath, mergeOutputPath, ic)
     assert(pmv.currentBackingObject.totalFileCount === 1)
@@ -372,6 +370,22 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     backingPMV.countFilesInDirectory("xxx") should be(0)
   }
 
+  it should "make a file executable" in {
+    val src1 = StringFileArtifact(".atomist/package.json", "{}}")
+    val backingObject = SimpleFileBasedArtifactSource(src1)
+    val pmv = new ProjectMutableView(backingObject, EmptyArtifactSource(""))
+    pmv.countFilesInDirectory(".atomist") should be(0)
+    val backingPMV = pmv.backingArchiveProject
+    backingPMV.countFilesInDirectory(".atomist") should be(1)
+    val file0 = backingPMV.findFile(".atomist/package.json")
+    file0.currentBackingObject.mode should equal(FileArtifact.DefaultMode)
+    
+    backingPMV.makeExecutable(".atomist/package.json")
+    backingPMV.countFilesInDirectory(".atomist") should be(1)
+    val file1 = backingPMV.findFile(".atomist/package.json")
+    file1.currentBackingObject.mode should equal(FileArtifact.ExecutableMode)
+  }
+
   it should "return null on invalid file location request: no such type" in {
     val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
       StringFileArtifact("x", "wopeiruowieuoriu")))
@@ -420,7 +434,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(path.contains("classDeclaration"))
   }
 
-  private  def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
+  private def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val fmv = pmv.files.asScala.head
@@ -439,20 +453,30 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
 private object EditorStub extends ProjectEditor {
   override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = ???
+
   override def applicability(as: ArtifactSource): Applicability = ???
+
   override def name: String = "EditorStub"
+
   override def description: String = ???
+
   override def tags: Seq[Tag] = ???
+
   override def findRug(simpleOrFq: String): Option[Rug] = {
-    if(simpleOrFq == "EditorStub"){
+    if (simpleOrFq == "EditorStub") {
       Some(this)
-    }else{
+    } else {
       None
     }
   }
+
   override def findParameterizedRug(simpleOrFq: String): Option[ParameterizedRug] = ???
+
   override def allRugs: Seq[Rug] = Nil
+
   override def addToArchiveContext(rugs: Seq[Rug]): Unit = ???
+
   override def externalContext: Seq[AddressableRug] = ???
+
   override def archiveContext: Seq[Rug] = ???
 }

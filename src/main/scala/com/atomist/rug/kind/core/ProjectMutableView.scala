@@ -245,6 +245,20 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
+    description = "Makes a file executable")
+  def makeExecutable(@ExportFunctionParameterDescription(name = "path",
+    description = "The path to use")
+                 path: String): Unit = {
+    val file = currentBackingObject.findFile(path)
+    file match {
+      case Some(sourceFile) =>
+        val executableFile = sourceFile.withMode(FileArtifact.ExecutableMode)
+        updateTo(currentBackingObject.delete(path) + executableFile)
+      case None =>
+    }
+  }
+
+  @ExportFunction(readOnly = false,
     description = "Delete the given file from the project. Path can contain /s.")
   def deleteFile(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")

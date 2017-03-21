@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class XmlFileTypeUsageTest extends FlatSpec with Matchers {
 
-  it should "update group id with native Rug function" in {
+  "XmlFileType" should "update group id with native Rug function" in {
     val ed = TestUtils.editorInSideFile(this, "Xit.ts")
     ed.modify(JavaTypeUsageTest.NewSpringBootProject, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>

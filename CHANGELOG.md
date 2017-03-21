@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Allow type safe creation of plan instructions using instantiated operations
 -   Allow construction of Message without body
 -   Ensure Event Handlers are not invoked if there are no PE matches
     https://github.com/atomist/rug/issues/454

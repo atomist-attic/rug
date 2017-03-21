@@ -57,7 +57,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
     val root = SimpleContainerGraphNode("root", targetNode)
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx.typeRegistry, None) match {
       case Right(Nil) => None
-      case Right(matches) =>
+      case Right(matches) if matches.nonEmpty =>
         val cm = jsContextMatch(
           jsSafeCommittingProxy.wrapOne(targetNode, ctx.typeRegistry),
           jsSafeCommittingProxy.wrap(matches, ctx.typeRegistry),
@@ -66,6 +66,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           case plan: ScriptObjectMirror => ConstructPlan(plan)
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
         }
+      case Right(matches) if matches.isEmpty => None
       case Left(failure) =>
         throw new RugRuntimeException(pathExpressionStr,
           s"Error evaluating path expression $pathExpression: [$failure]")

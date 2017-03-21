@@ -39,8 +39,12 @@ export class UpgradeVersion implements EditProject {
     
     edit(project: Project) {
 
-        // console.log(JSON.stringify(editWith(project, this)))
-        // console.log(JSON.stringify(editWith("foobar", this)))
+        // TODO we should really test this with a pure JavaScript testing framework
+        let instruction = editWith(project, this) as any
+        if (instruction.name != "UpgradeVersion") throw new Error("Name is wrong")
+        if (instruction.kind != "edit") throw new Error("Kind is wrong")
+        if (!(instruction.parameters.group && instruction.parameters.artifact && instruction.parameters.desiredVersion))
+            throw new Error("Parameters wrong")
 
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         let search = versionOfDependency(this.group, this.artifact)

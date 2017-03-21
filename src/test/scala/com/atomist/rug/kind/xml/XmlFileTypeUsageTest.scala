@@ -31,7 +31,7 @@ class XmlFileTypeUsageTest extends FlatSpec with Matchers {
     match {
       case sm: SuccessfulModification =>
         val outputxml = sm.result.findFile("pom.xml").get
-        println(outputxml.content)
+        //println(outputxml.content)
         outputxml.content.contains(s"<version>$desiredVersion</version>") should be(true)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }

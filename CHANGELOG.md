@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Allow type safe creation of plan instructions using instantiated operations
 -   Allow construction of Message without body
 
 ## [0.17.1] - 2017-03-20

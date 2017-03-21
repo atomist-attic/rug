@@ -25,7 +25,6 @@ export function versionOfDependency(group: string, artifact: string) {
     )
 }
 
-
 @Editor("UpgradeVersion", "Find and upgrade POM version")
 export class UpgradeVersion implements EditProject {
 
@@ -39,11 +38,15 @@ export class UpgradeVersion implements EditProject {
     desiredVersion: string
     
     edit(project: Project) {
+
+        // console.log(JSON.stringify(editWith(project, this)))
+        // console.log(JSON.stringify(editWith("foobar", this)))
+
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         let search = versionOfDependency(this.group, this.artifact)
         eng.with<TextTreeNode>(project, search, version => {
             if (version.value() != this.desiredVersion) {
-                console.log(`Updated to desired version ${this.desiredVersion}`)
+                //console.log(`Updated to desired version ${this.desiredVersion}`)
                 version.update(this.desiredVersion)
             }
         })
@@ -51,19 +54,3 @@ export class UpgradeVersion implements EditProject {
 }
 
 export const uv = new UpgradeVersion();
-uv.group = "foobar"
-uv.artifact = "thingie"
-uv.desiredVersion = "1.0.0-M1"
-
-console.log(JSON.stringify(editWith(uv)))
-
-
-export class ArtifactRange {
-
-    constructor(public from: string, public to: string) {}
-
-    satisfies(s: string): boolean {
-        // TODO parse this properly using sem ver
-        return s == this.from || s == this.to
-    }
-}

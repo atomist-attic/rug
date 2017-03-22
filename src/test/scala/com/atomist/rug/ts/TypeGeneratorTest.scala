@@ -30,11 +30,15 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
       TypeScriptBuilder.coreSource,
       as
     )))
-    // println(ArtifactSourceUtils.prettyListFiles(cas))
-    //    cas.allFiles.foreach(f =>
-    //      println(s"${f.path}\n${f.content}\n\n"))
+    //println(ArtifactSourceUtils.prettyListFiles(cas))
+    cas.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
+      println(s"${f.path}\n${f.content}\n\n"))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.ts")))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.js")))
+    assert(!cas.allFiles.exists(_.content.contains("started_at")))
+    assert(cas.allFiles.exists(_.content.contains("startedAt")))
+    assert(cas.allFiles.exists(_.content.contains("Repo[]")))
+    assert(cas.allFiles.exists(_.content.contains("Issue[]")), "Must have back relationship from Repo to Issue")
   }
 
 }

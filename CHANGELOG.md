@@ -7,12 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.17.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.17.2...HEAD
 
-### Changed
+## [0.17.2] - 2017-03-22
+
+[0.17.2]: https://github.com/atomist/rug/compare/0.17.1...0.17.2
+
+Quiet release
+
+### Added
 
 -   Allow type safe creation of plan instructions using instantiated operations
 -   Allow construction of Message without body
+
+### Fixed
+
 -   Ensure Event Handlers are not invoked if there are no PE matches
     https://github.com/atomist/rug/issues/454
 

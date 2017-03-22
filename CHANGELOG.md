@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Ensure Event Handlers are not invoked if there are no PE matches
     https://github.com/atomist/rug/issues/454
 
+### Added
+
+-   A message method on `HandlerScenarioWorld` when an handler only returns a
+    message without a plan
+
 ## [0.17.1] - 2017-03-20
 
 [0.17.1]: https://github.com/atomist/rug/compare/0.17.0...0.17.1

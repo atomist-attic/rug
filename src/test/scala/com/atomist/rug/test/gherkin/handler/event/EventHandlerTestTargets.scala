@@ -22,4 +22,19 @@ object EventHandlerTestTargets {
     Feature1
   )
 
+  val Feature2 =
+    """
+      |Feature: World should return messages not just plans
+      |
+      |Scenario: Let me return a message for you
+      | When i call you
+      | Then you call me
+      | Then to greet me
+    """.stripMargin
+
+  val Feature2File = StringFileArtifact(
+    ".atomist/tests/handlers/event/Feature2.feature",
+    Feature2
+  )
+
 }

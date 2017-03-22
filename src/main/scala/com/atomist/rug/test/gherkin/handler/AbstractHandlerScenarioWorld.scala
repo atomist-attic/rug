@@ -71,6 +71,16 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   }
 
   /**
+    * Return the message or null if none was recorded
+    */
+  def message: jsScalaHidingProxy = {
+    planOption match {
+      case Some(p) => p.messages.map(jsScalaHidingProxy.apply(_)).head
+      case _ => null
+    }
+  }
+
+  /**
     * Is the plan internally valid? Do the referenced handlers and other operations exist?
     */
   def planIsInternallyValid(): Boolean = {

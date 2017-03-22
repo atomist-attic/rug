@@ -22,7 +22,6 @@ class ProjectScenarioWorld(
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
 
-
   val project = new ProjectMutableView(rugAs = definitions.jsc.rugAs, originalBackingObject = EmptyArtifactSource("project-scenario-world"))
 
   override def target: AnyRef = project

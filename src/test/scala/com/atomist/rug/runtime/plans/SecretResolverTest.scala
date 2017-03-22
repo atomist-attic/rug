@@ -10,7 +10,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class SecretResolverTest extends FlatSpec with Matchers {
 
-
   it should "replace secret tokens found in parameters" in {
     val resolver = new TestSecretResolver(handler)
     val replaced = resolver.replaceSecretTokens(Seq(SimpleParameterValue("paramName", "complicated string #{secret/path}")))

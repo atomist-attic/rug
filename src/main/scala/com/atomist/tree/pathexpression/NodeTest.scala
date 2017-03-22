@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
 trait NodeTest {
 
   /**
-    * Find nodes from the given node, observing the given AxisSpecifier
+    * Find nodes from the given node, observing the given AxisSpecifier.
     *
     * @param tn   node to drill down from
     * @param axis AxisSpecifier indicating the kind of navigation
@@ -22,5 +22,3 @@ trait NodeTest {
   def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult
 
 }
-
-

@@ -6,7 +6,6 @@ import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
-
 /**
   * Services available to all operations, whether
   * CommandHandlers, EventHandlers or project operations.
@@ -37,7 +36,6 @@ trait RugContext {
   def contextRoot(): GraphNode
 
 }
-
 
 object LocalRugContext extends RugContext {
 

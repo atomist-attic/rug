@@ -265,7 +265,6 @@ case class InterfaceGenerationConfig(
        | */""".stripMargin
 }
 
-
 object InterfaceGenerationConfig {
 
   val DefaultImports: String =

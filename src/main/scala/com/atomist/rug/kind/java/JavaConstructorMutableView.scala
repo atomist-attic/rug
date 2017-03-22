@@ -6,7 +6,6 @@ import com.github.javaparser.ast.body.ConstructorDeclaration
 
 import scala.collection.JavaConverters._
 
-
 class JavaConstructorTypeProvider extends TypeProvider(classOf[JavaConstructorMutableView]) {
 
   override def description: String = "Java constructor"

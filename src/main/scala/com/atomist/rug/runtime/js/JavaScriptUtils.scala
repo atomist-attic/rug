@@ -85,12 +85,8 @@ trait JavaScriptUtils {
     }
   }
 
-
   /**
-    * Fetch a member by name
-    * @param someVar
-    * @param names
-    * @return
+    * Fetch a member by name.
     */
   protected def getMember(someVar: ScriptObjectMirror, names: Seq[String]) : Option[AnyRef] = {
     names.find(someVar.hasMember) match {
@@ -113,8 +109,7 @@ trait JavaScriptUtils {
   }
 
   /**
-    * Either read the parameters field or look for annotated parameters
-    * @return
+    * Either read the parameters field or look for annotated parameters.
     */
   protected def parameters(someVar: ScriptObjectMirror, names: Seq[String] = Seq("parameters")): Seq[Parameter] = {
     getMember(someVar, names) match {

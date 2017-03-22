@@ -29,7 +29,6 @@ class ArchiveTest extends FlatSpec with Matchers {
     rugs.allRugs shouldBe (empty)
   }
 
-
   val prog1 = StringFileArtifact(atomistConfig.editorsRoot + "/Dude.rug",
     s"""
        |editor Dude

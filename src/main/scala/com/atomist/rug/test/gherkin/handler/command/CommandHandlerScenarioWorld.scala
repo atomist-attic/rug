@@ -15,4 +15,3 @@ class CommandHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] =
   }
 
 }
-

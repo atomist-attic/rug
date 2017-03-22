@@ -39,7 +39,6 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
 
 }
 
-
 object TypeGeneratorTest {
 
   private val typeGen = new TypeGenerator

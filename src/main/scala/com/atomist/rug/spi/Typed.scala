@@ -62,7 +62,6 @@ trait Typed {
   def operations: Seq[TypeOperation]
 }
 
-
 /**
   * Return a type that exposes all the operations on the given set of types.
   *

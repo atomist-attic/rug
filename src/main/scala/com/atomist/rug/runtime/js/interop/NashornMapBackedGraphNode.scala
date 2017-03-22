@@ -158,7 +158,6 @@ private class NashornMapBackedGraphNode(val som: ScriptObjectMirror,
 
 }
 
-
 private class NashornMapBackedAddressableGraphNode(
                                                     som: ScriptObjectMirror,
                                                     nodeRegistry: NodeRegistry,

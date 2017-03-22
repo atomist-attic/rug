@@ -16,7 +16,3 @@ class EventHandlerFeature(
     new EventHandlerScenarioWorld(definitions, rugs)
   }
 }
-
-
-
-

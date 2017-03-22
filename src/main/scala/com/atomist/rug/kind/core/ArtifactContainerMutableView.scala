@@ -40,7 +40,6 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
     description = "The total number of files in this project or directory")
   def totalFileCount: Int = currentBackingObject.totalFileCount
 
-
   @ExportFunction(readOnly = true, description = "Find file with the given path. Return null if not found.")
   def findFile(@ExportFunctionParameterDescription(name = "path",
     description = "Path of the file we want")

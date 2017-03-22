@@ -86,7 +86,6 @@ class QueryByExampleTest extends FlatSpec with Matchers {
       validator = _.contains("[@id='gogirl']"),
       matchTestO = Some(n => n.nodeTags.contains("GitHubId")))
 
-
   import com.atomist.tree.pathexpression.PathExpressionParser._
 
   // Scripts must create two references: pathExpression and createdObject
@@ -96,8 +95,6 @@ class QueryByExampleTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/editors/QueryByExample1.js",
         js)
     val jsc = new JavaScriptContext(as)
-
-
 
     val actualExpression = jsc.engine.eval("pathExpression.expression")
     val createdObject = jsc.engine.eval("createdObject")

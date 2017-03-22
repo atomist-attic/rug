@@ -14,5 +14,3 @@ trait ExecutableFeatureFactory {
                            rugs: Option[Rugs],
                            listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_]
 }
-
-

@@ -137,4 +137,3 @@ private class JsonBackedTyped(
   override def toString: String =
     s"$name: ops=[${operations.mkString(",")}]"
 }
-

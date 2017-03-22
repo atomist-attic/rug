@@ -136,5 +136,3 @@ class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 
   override def featureCompleted(feature: FeatureDefinition, result: FeatureResult): Unit = {}
 }
-
-

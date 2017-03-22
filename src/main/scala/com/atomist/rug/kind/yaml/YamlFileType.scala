@@ -176,5 +176,3 @@ object YamlFileType {
 
   val ScalarName = "value"
 }
-
-

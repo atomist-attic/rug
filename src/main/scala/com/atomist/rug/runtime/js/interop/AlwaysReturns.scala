@@ -12,4 +12,3 @@ private[interop] class AlwaysReturns(what: AnyRef) extends AbstractJSObject {
   override def call(thiz: scala.Any, args: AnyRef*): AnyRef = what
 
 }
-

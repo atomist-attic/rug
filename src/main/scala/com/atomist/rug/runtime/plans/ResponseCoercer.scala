@@ -9,7 +9,6 @@ trait ResponseCoercer {
   def coerce(response: Response): Response
 }
 
-
 /**
   * Does nothing to the response
   */

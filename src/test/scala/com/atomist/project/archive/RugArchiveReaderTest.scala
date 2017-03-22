@@ -11,7 +11,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class RugArchiveReaderTest extends FlatSpec with Matchers {
 
-
   it should "load handlers of different kinds from an archive" in {
     val ts = ClassPathArtifactSource.toArtifactSource("com/atomist/project/archive/MyHandlers.ts")
     val moved = ts.withPathAbove(".atomist/handlers")

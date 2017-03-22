@@ -61,4 +61,3 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
   }
 
 }
-

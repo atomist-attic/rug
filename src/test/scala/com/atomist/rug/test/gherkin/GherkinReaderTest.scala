@@ -33,7 +33,6 @@ class GherkinReaderTest extends FlatSpec with Matchers {
 
 }
 
-
 object GherkinReaderTest {
 
   val Simple =

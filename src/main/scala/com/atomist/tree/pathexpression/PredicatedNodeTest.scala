@@ -44,9 +44,8 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
   }
 }
 
-
 /**
-  * Return all nodes on the given axis
+  * Return all nodes on the given axis.
   */
 object All extends PredicatedNodeTest("All", TruePredicate) {
   override def toString = "*"

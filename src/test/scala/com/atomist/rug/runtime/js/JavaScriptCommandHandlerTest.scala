@@ -189,6 +189,3 @@ class TestResponseHandler(r: ResponseHandler) extends AddressableRug with Respon
     */
   override def parameters: Seq[Parameter] = ???
 }
-
-
-

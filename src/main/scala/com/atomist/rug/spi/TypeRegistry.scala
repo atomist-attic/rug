@@ -13,7 +13,6 @@ trait TypeRegistry {
   def types: Seq[Typed]
 }
 
-
 class SimpleTypeRegistry(pTypes: Traversable[Typed]) extends TypeRegistry {
 
   override def findByName(kind: String): Option[Typed] = pTypes.find(_.name == kind)

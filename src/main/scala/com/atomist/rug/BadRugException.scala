@@ -91,7 +91,6 @@ class EditorNotFoundException(msg: String)
   }
 }
 
-
 /**
   * Generate a an exception string containing all known editors.
   */

@@ -64,7 +64,6 @@ object PlanUtils {
         plan.messages.sortBy(_.toString).map(messageToTree))
   }
 
-
   private def awaitAndTreeLogEvents(name: String, events: Seq[PlanLogEvent]): BabyTree = {
     def logEventToTree(one: PlanLogEvent): BabyTree = {
       def nullSafeMessage(x: Throwable) = s"Error: ${Option(x).map(_.getMessage).getOrElse("null exception")}"

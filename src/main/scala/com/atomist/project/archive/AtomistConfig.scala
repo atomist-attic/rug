@@ -20,7 +20,6 @@ trait AtomistConfig {
     */
   def generatorsDirectory: String
 
-
   /**
     * Templates directory under Atomist root or root of archive.
     */

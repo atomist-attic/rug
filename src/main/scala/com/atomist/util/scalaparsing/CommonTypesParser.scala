@@ -126,4 +126,3 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
     parsed
   }
 }
-

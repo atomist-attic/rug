@@ -103,6 +103,4 @@ class PlanResultLoggerTest extends FunSpec with Matchers with DiagrammedAssertio
     verify(mockLogger).error("Error running plan.", errorInstructionResult.error)
     verifyNoMoreInteractions(mockLogger)
   }
-
-
 }

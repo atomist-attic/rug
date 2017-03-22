@@ -42,4 +42,3 @@ class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {
   }
 
 }
-

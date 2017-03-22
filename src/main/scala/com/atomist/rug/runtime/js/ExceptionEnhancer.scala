@@ -21,7 +21,6 @@ case class RuntimeErrorInfo(message: String,
 
 }
 
-
 /**
   * Enhances exceptions caught within a JavaScript context that
   * we have all sources for
@@ -84,7 +83,6 @@ object ExceptionEnhancer {
 
 }
 
-
 /**
   * Thrown when there's an exception in the JavaScript or TypeScript runtime
   */
@@ -99,7 +97,6 @@ class JavaScriptRuntimeException(
   // Supress stack trace
   override def fillInStackTrace(): Throwable = this
 }
-
 
 /**
   * Has information both about the underlying JavaScript error and the original one,

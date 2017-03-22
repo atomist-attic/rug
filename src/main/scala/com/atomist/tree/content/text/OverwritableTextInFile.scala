@@ -89,7 +89,6 @@ class OverwritableTextInFile(dynamicType: String,
   def formatInfoFromHere(stringsToLeft: Seq[String], childAsking : OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
     def valueBefore(child: OverwritableTextTreeNodeChild) = allKids.takeWhile(_ != childAsking).map(_.value).mkString
 
-
     val stringToLeft = (valueBefore(childAsking) +: stringsToLeft).mkString
     val leftPoint = FormatInfo.contextInfo(stringToLeft)
     val rightPoint = FormatInfo.contextInfo(stringToLeft + valueOfInterest)

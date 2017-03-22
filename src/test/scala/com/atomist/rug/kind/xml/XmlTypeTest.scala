@@ -5,7 +5,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 
-
 class XmlTypeTest extends FlatSpec with Matchers {
 
   it should "find all the XML files in a project" in {

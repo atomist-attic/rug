@@ -16,4 +16,3 @@ class CommandHandlerFeature(
     new CommandHandlerScenarioWorld(definitions, rugs)
   }
 }
-

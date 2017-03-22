@@ -133,7 +133,6 @@ object JavaScriptEventHandlerTest {
 
 }
 
-
 class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedAssertions {
 
   import JavaScriptEventHandlerTest._

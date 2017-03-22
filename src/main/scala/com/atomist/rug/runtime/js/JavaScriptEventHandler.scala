@@ -74,7 +74,6 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   }
 }
 
-
 /**
   * Represents an event that drives a handler.
   *

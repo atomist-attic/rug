@@ -209,5 +209,3 @@ object jsSafeCommittingProxy {
   def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): jsSafeCommittingProxy =
     new jsSafeCommittingProxy(n, typeRegistry)
 }
-
-

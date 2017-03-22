@@ -44,4 +44,3 @@ class ExampleRugFunction
   override def description: String = "Example function"
   override def tags: Seq[Tag] = Seq(Tag("example","example"))
 }
-

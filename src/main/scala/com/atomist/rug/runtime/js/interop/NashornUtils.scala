@@ -95,4 +95,3 @@ object NashornUtils {
   def hasDefinedProperties(som: ScriptObjectMirror, properties: String*): Boolean =
     properties.forall(p => som.get(p) != null)
 }
-

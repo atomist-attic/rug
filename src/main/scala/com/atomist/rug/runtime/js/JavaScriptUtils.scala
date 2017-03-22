@@ -171,7 +171,7 @@ trait JavaScriptUtils {
         parameter.setDefaultValue(x)
       case _ =>
     }
-    if(rug.hasMember(pName)){
+    if(rug.hasMember(pName) && rug.getMember(pName) != null){
       parameter.setDefaultValue(rug.getMember(pName).toString)
     }
     parameter

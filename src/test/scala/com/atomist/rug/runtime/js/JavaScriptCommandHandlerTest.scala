@@ -45,6 +45,9 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerReturningEmptyMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningEmptyMessage.ts"))
 
+  val simpleCommandHandlerWithNullDefault = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerWithNullDefault.ts"))
+
   it should "allow us to return an empty message" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
     val rugs = RugArchiveReader.find(rugArchive, Nil)
@@ -161,6 +164,13 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
         assert(i.response.status === Status.Success)
       case i => ???
     }
+  }
+
+  it should "Not fail if parameter has default value 'null' https://github.com/atomist/rug/issues/458" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullDefault))
+    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null,SimpleParameterValues.Empty).get
   }
 }
 

@@ -6,7 +6,6 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.MutableContainerTreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine, PathExpressionParser}
 import com.atomist.tree.utils.TreeNodeUtils
 import org.scalatest.{FlatSpec, Matchers}
@@ -44,8 +43,8 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
 
-      case x => //println(s"Was empty: $x")
-      //println(s"Was empty: $x")
+      case x => // println(s"Was empty: $x")
+      // println(s"Was empty: $x")
     }
   }
 
@@ -58,8 +57,8 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
 
-      case x => //println(s"Was empty: $x")
-      //println(s"Was empty: $x")
+      case x => // println(s"Was empty: $x")
+      // println(s"Was empty: $x")
     }
   }
 
@@ -74,7 +73,7 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
           inner(report, Some(steps), steps.dropLastStep)
         case nonEmpty => // something was found
           val dirtyDeets = if (nonEmpty.size > 1) "" else {
-            s" = ${nonEmpty(0)}"
+            s" = ${nonEmpty.head}"
           }
           val myReport = Seq(s"${steps} found ${nonEmpty.size}$dirtyDeets")
           val recentEmptyReport = lastEmptySteps.map(" " + _ + " found 0").toSeq

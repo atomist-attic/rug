@@ -25,7 +25,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
 
   private def doIt(prog: String) {
     updateWith(prog, JavaTypeUsageTest.NewSpringBootProject) match {
-      case nmn: SuccessfulModification => {
+      case nmn: SuccessfulModification =>
         nmn.result.findFile("newroot/src/main/java/com/atomist/test1/PingController.java").get.content.contains("nonsense") should be(true)
         nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Application.java").get.content.contains("nonsense") should be(true)
         nmn.result.findFile("newroot/src/main/java/com/atomist/test1/Test1Configuration.java").get.content.contains("nonsense") should be(true)
@@ -37,7 +37,6 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
         val badFileContent = nmn.result.findFile("newroot/src/test/java/com/atomist/test1/Test1WebIntegrationTests.java").get.content
         badFileContent.contains("nonsense") should be(true)
         nmn.result.findFile("newroot/src/test/java/com/atomist/test1/Test1WebIntegrationTests.java").get.content.contains("otherstuff") should be(true)
-      }
       case _ => ???
     }
   }
@@ -48,7 +47,7 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
 
   it should "change the contents of some clojure files" in {
     updateWith("ReplacerClj.ts", ClassPathArtifactSource.toArtifactSource("./lein_package_rename")) match {
-      case nmn: SuccessfulModification => {
+      case nmn: SuccessfulModification =>
         nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("com.atomist.wassom") should be(true)
         nmn.result.findFile("newroot/src/com/atomist/sample/core.clj").get.content.contains("otherstuff") should be(true)
         nmn.result.findFile("newroot/src/com/atomist/sample/blah.clj").get.content.contains("com.atomist.wassom") should be(true)
@@ -57,7 +56,6 @@ class ProjectMutableViewTestRunnerTest extends FlatSpec with Matchers {
         nmn.result.findFile("newroot/test/com/atomist/sample/t_core.clj").get.content.contains("com.atomist.wassom") should be(true)
         nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("otherstuff") should be(true)
         nmn.result.findFile("newroot/test/com/atomist/sample/t_zzz.clj").get.content.contains("com.atomist.wassom") should be(true)
-      }
       case _ => ???
     }
   }

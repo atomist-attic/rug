@@ -7,10 +7,11 @@ import com.atomist.rug.spi.Secret
 
 class TestSecretResolver(handler: CommandHandler)
   extends SecretResolver(Some(handler)) {
+
   /**
-    * Resolve a single secret
+    * Resolve a single secret.
     *
-    * @param secret
+    * @param secret the secret
     * @return a mapping from secret name (could be same as path) to actual secret value
     */
   override def resolveSecret(secret: Secret): ParameterValue = {

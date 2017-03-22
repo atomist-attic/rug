@@ -256,8 +256,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     var fcCount = 0
     var ssCount = 0
     var scCount = 0
-    var fResult: FeatureResult = null
-    var sResult: ScenarioResult = null
+    var fResult: FeatureResult = _
+    var sResult: ScenarioResult = _
 
     override def featureStarting(feature: FeatureDefinition): Unit = {
       fsCount = fsCount + 1

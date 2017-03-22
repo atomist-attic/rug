@@ -69,7 +69,7 @@ object ProjectTestTargets {
        |When("run simple generator", (p, w) => {
        |    let world = w as ProjectScenarioWorld;
        |    let g = world.generator("$gen");
-       |    world.generateWith(g, "${projectName}", {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}});
+       |    world.generateWith(g, "$projectName", {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}});
        |});
        |Then("parameters were valid", (p, world) => !world.invalidParameters())
        |Then("we have Anders", p => {
@@ -80,7 +80,7 @@ object ProjectTestTargets {
        |    return p.findFile("pom.xml") != null;
        |});
        |Then("the project name is correct", p => {
-       |    return p.name() == "${projectName}";
+       |    return p.name() == "$projectName";
        |});
        |""".stripMargin
 
@@ -111,7 +111,7 @@ object ProjectTestTargets {
        |When("run simple generator", (p, w) => {
        |    let world = w as ProjectScenarioWorld;
        |    let g = world.generator("$gen");
-       |    world.generateWith(g, "${projectName}", {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}});
+       |    world.generateWith(g, "$projectName", {${params.map(p => s"${p._1}: ${p._2}").mkString(", ")}});
        |});
        |""".stripMargin
 

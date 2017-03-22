@@ -44,7 +44,7 @@ class RepTest extends FlatSpec with Matchers {
   }
 
   it should "handle rep of regex with two instances" in {
-    val l1 = new Regex("thing", Some("t...g"))
+    val l1 = Regex("thing", Some("t...g"))
     val namedRep = Rep(l1, None)//"myReppyName")
     val input = "thingthing2"
     namedRep.matchPrefix(InputState(input)) match {

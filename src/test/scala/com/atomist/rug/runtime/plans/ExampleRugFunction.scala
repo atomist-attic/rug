@@ -26,11 +26,9 @@ class ExampleRugFunction
   }
 
   def clearSecrets = _secrets.clear()
+
   /**
-    * Run the function, return the Response
-    *
-    * @param parameters
-    * @return
+    * Run the function, return the Response.
     */
   override def run(parameters: ParameterValues): FunctionResponse = {
     validateParameters(parameters)

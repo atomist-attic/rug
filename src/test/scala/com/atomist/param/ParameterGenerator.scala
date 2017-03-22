@@ -14,13 +14,14 @@ object ParameterGenerator {
     */
   def validValueFor(p: Parameter): ParameterValue = validValueFor(p, 1)
 
-  def validValueFor(p: Parameter, minLength: Int): ParameterValue = p.hasDefaultValue match {
-    case true => SimpleParameterValue(p.getName, p.getDefaultValue)
-    case false =>
+  def validValueFor(p: Parameter, minLength: Int): ParameterValue =
+    if (p.hasDefaultValue)
+      SimpleParameterValue(p.getName, p.getDefaultValue)
+    else {
       val generex = new Generex(p.getPattern)
       val generated = generex.random(minLength)
       SimpleParameterValue(p.getName, generated)
-  }
+    }
 
   /**
     * Generate valid ParameterValues for this parameter.

@@ -51,7 +51,7 @@ class FormatInfoTest extends FlatSpec with Matchers {
         |${indent}int i;
         |
         |${indent}void doSomething() {
-        |${indent}${indent}doIt();""".stripMargin
+        |$indent${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
     assert(fi.columnNumberFrom1 === 2 * indent.length + 8)
     assert(fi.lineNumberFrom1 === 6)
@@ -73,7 +73,7 @@ class FormatInfoTest extends FlatSpec with Matchers {
          |${indent}int i;
          |
         |${indent}void doSomething() {
-         |${indent}${indent}doIt();""".stripMargin
+         |$indent${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
     assert(fi.indent === indent)
     assert(fi.indentDepth === 2)
@@ -95,7 +95,7 @@ class FormatInfoTest extends FlatSpec with Matchers {
          |${indent}int i;
          |
          |${indent}void doSomething() {
-         |${indent}${indent}doIt();""".stripMargin
+         |$indent${indent}doIt();""".stripMargin
     val fi = contextInfo(input)
     assert(fi.indent === indent)
     assert(fi.indentDepth === 2)

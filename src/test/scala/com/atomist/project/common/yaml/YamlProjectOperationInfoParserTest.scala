@@ -145,8 +145,8 @@ class YamlProjectOperationInfoParserTest extends FlatSpec with Matchers {
     assert(poi.name === "test1")
     assert(poi.description === "descr1")
     assert(poi.parameters.size === 2)
-    assert(poi.parameters(0).getName === "foo")
-    assert(poi.parameters(0).isRequired === true)
+    assert(poi.parameters.head.getName === "foo")
+    assert(poi.parameters.head.isRequired === true)
     assert(poi.parameters(1).getName === "bar")
     assert(poi.parameters(1).isRequired === false)
     assert(poi.parameters(1).getPattern === ParameterValidationPatterns.MatchAny)
@@ -163,8 +163,8 @@ class YamlProjectOperationInfoParserTest extends FlatSpec with Matchers {
   it should "respect tags" in {
     val poi = checkWithOverrides("name1", "description is good", required = true, ".+", "default_val", "You should've input something")
     assert(poi.tags.size === 2)
-    assert(poi.tags(0).name === "spring")
-    assert(poi.tags(0).description === "Spring Framework")
+    assert(poi.tags.head.name === "spring")
+    assert(poi.tags.head.description === "Spring Framework")
     assert(poi.tags(1).name === "spring-boot")
     assert(poi.tags(1).description === "Spring Boot")
   }

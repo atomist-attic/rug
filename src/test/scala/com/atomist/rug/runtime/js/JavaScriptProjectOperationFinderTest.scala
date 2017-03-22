@@ -65,7 +65,7 @@ class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
   it should "find an editor using annotated parameters" in {
     val eds = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleProjectEditorWithAnnotatedParameters))
     assert(eds.parameters.size === 3)
-    assert(eds.parameters(0).getDefaultValue === "Test String")
+    assert(eds.parameters.head.getDefaultValue === "Test String")
     assert(eds.parameters(1).getDefaultValue === "10")
     assert(eds.parameters(2).getDefaultValue === "")
 

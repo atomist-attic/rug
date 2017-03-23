@@ -4,13 +4,16 @@ import com.atomist.graph.GraphNode
 
 object SimpleContainerGraphNode {
 
-  def apply(nodeName: String, child: GraphNode, nodeTags: Set[String]): SimpleContainerGraphNode =
-    SimpleContainerGraphNode(nodeName, Seq(child), nodeTags)
+  def apply(nodeName: String, child: GraphNode, tags: String*): SimpleContainerGraphNode =
+    SimpleContainerGraphNode(nodeName, Seq(child), tags.toSet)
+
+  def empty(nodeName: String, tags: String*): SimpleContainerGraphNode =
+    SimpleContainerGraphNode(nodeName, Nil, tags.toSet)
 }
 
 case class SimpleContainerGraphNode(nodeName: String,
-                                    relatedNodes: Seq[GraphNode] = Nil,
-                                    override val nodeTags: Set[String] = Set.empty)
+                                    relatedNodes: Seq[GraphNode],
+                                    override val nodeTags: Set[String])
   extends GraphNode {
 
   override def relatedNodeNames: Set[String] = relatedNodes.map(_.nodeName).toSet
@@ -22,4 +25,6 @@ case class SimpleContainerGraphNode(nodeName: String,
 
   def addRelatedNode(relatedNode: GraphNode): SimpleContainerGraphNode =
     this.copy(relatedNodes = relatedNodes :+ relatedNode)
+
+  def withTag(tag: String): SimpleContainerGraphNode = copy(nodeTags = nodeTags ++ Set(tag))
 }

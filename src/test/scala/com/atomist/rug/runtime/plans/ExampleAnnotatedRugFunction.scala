@@ -14,6 +14,7 @@ class ExampleAnnotatedRugFunction
 
   @RugFunction(name = "example-function", description = "Description of function", tags = Array(new Tag(name = "tag content")))
   def invoke(@Parameter (name="number") number: Int,
+             @Parameter (name="blah", required = false) blah: String,
              @Secret(name = "user_token", path = "github/user_token=repo") user_token: String): FunctionResponse = {
     if(number == 100 && user_token == "woot"){
       FunctionResponse(Status.Success)

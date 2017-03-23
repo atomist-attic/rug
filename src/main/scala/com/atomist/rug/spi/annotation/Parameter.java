@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface Parameter {
     String name();
     String pattern() default "@any";
+    boolean required() default true;
 }

@@ -14,7 +14,7 @@ class AnnotatedRugFunctionTest extends FlatSpec with Matchers{
     assert(fn.secrets.size === 1)
     assert(fn.secrets.head.name === "user_token")
     assert(fn.secrets.head.path === ExampleAnnotatedRugFunction.theSecretPath)
-    assert(fn.parameters.size === 1)
+    assert(fn.parameters.size === 2)
     assert(fn.parameters.head.name === "number")
 
     val res = fn.run(SimpleParameterValues(SimpleParameterValue("number", "100"), SimpleParameterValue("user_token", "woot")))

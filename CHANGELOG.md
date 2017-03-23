@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Don't set default parameter values if they are null
     https://github.com/atomist/rug/issues/458
 
+-   Support optional parameters in AnnotatedRugFunctions
+    https://github.com/atomist/rug/issues/462
+
 ## [0.17.2] - 2017-03-22
 
 [0.17.2]: https://github.com/atomist/rug/compare/0.17.1...0.17.2

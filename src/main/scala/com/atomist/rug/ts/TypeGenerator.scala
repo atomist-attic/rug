@@ -1,7 +1,5 @@
 package com.atomist.rug.ts
 
-import java.util.Objects
-
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, Typed}
 import com.atomist.source.ArtifactSource
@@ -51,8 +49,17 @@ class TypeGenerator(basePackage: String = "ext_model") {
       Prop(propName, genTyp)
     }
 
+    /*
+    {"nodes":
+    {"labels":["Push"],
+    "properties":
+    [["before", "string"], ["after", "string"],
+    ["timestamp", "timestamp"], ["branch", "string"]],
+    "unique":["branch", "after"]},
+     */
     val propertyNodes: Traversable[PropertyNode] =
       doc("nodes").map(node => {
+        // A node is of form labels, properties, unique?
         val n = node.asInstanceOf[Map[String, _]]
         val props = n("properties") match {
           case l: List[List[String]]@unchecked if l.head.isInstanceOf[Seq[_]] =>
@@ -76,7 +83,7 @@ class TypeGenerator(basePackage: String = "ext_model") {
         val cardinality = Cardinality(card)
         val relName = toTypeScriptIdentifier(name)
         Seq(Relationship(left, relName, cardinality, right))
-      case List(left: String, List(name: String, card: String, List(backName:String, backCard: String)), right: String) =>
+      case List(left: String, List(name: String, card: String, List(backName: String, backCard: String)), right: String) =>
         val cardinality = Cardinality(card)
         val relName = toTypeScriptIdentifier(name)
         val backCardinality = Cardinality(backCard)
@@ -132,17 +139,6 @@ private class JsonBackedTyped(
   override def allOperations: Seq[TypeOperation] = operations
 
   override def operations: Seq[TypeOperation] = {
-    val propsOps: Seq[TypeOperation] =
-      properties.properties.map(prop =>
-        TypeOperation(
-          name = prop.name,
-          description = prop.typ,
-          readOnly = false,
-          parameters = Nil,
-          returnType = prop.typ,
-          definedOn = null,
-          example = None
-        ))
     val relOps: Seq[TypeOperation] =
       allRelationships
         .filter(_.left == name)
@@ -158,6 +154,20 @@ private class JsonBackedTyped(
           definedOn = null,
           example = None
         )).toSeq
+    val propsOps: Seq[TypeOperation] =
+      properties.properties
+        // Filter out properties that have the same name as a relationship, that takes precedence
+        .filterNot(p => relOps.exists(_.name == p.name))
+        .map(prop =>
+          TypeOperation(
+            name = prop.name,
+            description = prop.typ,
+            readOnly = false,
+            parameters = Nil,
+            returnType = prop.typ,
+            definedOn = null,
+            example = None
+          ))
 
     propsOps ++ relOps
   }

@@ -447,6 +447,18 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>mkdir_ext</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/ext_model"/>
+                                    </target>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -464,6 +476,19 @@
                                     <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
                                     <arguments>
                                         <argument>target/.atomist/node_modules/@atomist/rug/model/Core.ts</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-extended-model</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <mainClass>com.atomist.rug.ts.TypeGeneratorApp</mainClass>
+                                    <arguments>
+                                        <argument>target/.atomist/node_modules/@atomist/rug</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

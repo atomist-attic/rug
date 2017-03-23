@@ -96,8 +96,12 @@ class jsSafeCommittingProxy(
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val st = typ
     val possibleOps = st.allOperations.filter(op => name == op.name)
-    if (possibleOps.nonEmpty && possibleOps.head.invocable)
-      new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+    if (possibleOps.nonEmpty) {
+      if (possibleOps.head.invocable)
+        new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+      else
+        new FunctionProxyToNodeNavigationMethods(name, node)
+    }
     else
       invokeGivenNoMatchingOperationInTypeInformation(name, st)
   }
@@ -166,7 +170,9 @@ class jsSafeCommittingProxy(
       import scala.language.reflectiveCalls
       val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
       nodesAccessedThroughThisFunctionCall.toList match {
-        case Nil => throw new RugRuntimeException(name, s"No children or function found for property $name on $node")
+        case Nil =>
+          throw new RugRuntimeException(name,
+            s"No children or function found for property '$name' on $node")
         case null :: Nil => null
         case (ttn: TerminalTreeNode) :: Nil =>
           // Pull out the value

@@ -9,7 +9,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.marshal.EmptyLinkableContainerTreeNode
+import com.atomist.tree.marshal.{EmptyLinkableContainerTreeNode, JsonBackedContainerTreeNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
@@ -98,6 +98,23 @@ object JavaScriptEventHandlerTest {
        |}
        |export let handler = new SimpleHandler();
       """.stripMargin)
+
+  val nodesWithTagBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    s"""
+       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
+       |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
+       |
+       |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/Build()/on::Repo()"))
+       |@Tags("github", "build")
+       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
+       |  handle(event: Match<TreeNode, TreeNode>){
+       |    let issue = event.root
+       |    return new Plan();
+       |  }
+       |}
+       |export let handler = new SimpleHandler();
+     """.stripMargin)
 
   val eventHandlerWithTreeNode =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
@@ -209,6 +226,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
       case _ =>
     }
   }
+
   it should "handle empty tree nodes" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.noPlanBuildHandler))
     val finder = new JavaScriptEventHandlerFinder()
@@ -216,6 +234,19 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("build")
+    handler.pathExpression should not be null
+
+    val actualPlan = handler.handle(LocalRugContext(EmptyTreeMaterializer), SysEvent)
+    assert(actualPlan === None)
+  }
+
+  it should "allow initial element of path expression to be NodesWithTag when empty result set received" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.nodesWithTagBuildHandler))
+    val finder = new JavaScriptEventHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val handler = handlers.head
+    handler.rootNodeName should be("Build")
     handler.pathExpression should not be null
 
     val actualPlan = handler.handle(LocalRugContext(EmptyTreeMaterializer), SysEvent)
@@ -278,7 +309,10 @@ object TestTreeMaterializer extends TreeMaterializer {
 
 object EmptyTreeMaterializer extends TreeMaterializer {
 
-  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = new EmptyLinkableContainerTreeNode
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = new JsonBackedContainerTreeNode(
+    new EmptyLinkableContainerTreeNode(),
+    "[]",
+    "0.0.1" )
 
   override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression): GraphNode = rawRootNode
 }

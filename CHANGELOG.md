@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [Unreleased]: https://github.com/atomist/rug/compare/0.17.2...HEAD
 
 ### Fixed
+ 
+-   NodesWithTag allows dynamic nodes on `Child` axis to not match without error
 
 -   Don't set default parameter values if they are null
     https://github.com/atomist/rug/issues/458

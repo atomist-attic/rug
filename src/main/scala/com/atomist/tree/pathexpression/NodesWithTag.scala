@@ -3,6 +3,7 @@ package com.atomist.tree.pathexpression
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.spi.TypeRegistry
+import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 
@@ -20,7 +21,7 @@ case class NodesWithTag(tag: String)
 
   private object NoSuchTypeException extends Exception
 
-  private def childResolver(typeRegistry: TypeRegistry): Option[ChildResolver] =
+  private def childResolver(typeRegistry: TypeRegistry, gn: GraphNode): Option[ChildResolver] =
     typeRegistry.findByName(tag) match {
       case Some(cr: ChildResolver) =>
         Some(cr)
@@ -32,8 +33,14 @@ case class NodesWithTag(tag: String)
         // It might be a microgrammar reference.
         None
       case _ =>
-        // Type is unknown. This is an error
-        throw NoSuchTypeException
+        // With dynamic nodes we can't know this is invalid. A TreeMaterializer backed path expression
+        // that doesn't match and thus had no kids is a valid case and it won't be able to define types
+        if (gn.nodeTags.contains(TreeNode.Dynamic)) {
+          None
+        } else {
+          // Type is unknown. This is an error
+          throw NoSuchTypeException
+        }
     }
 
   private val eligibleNode: GraphNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
@@ -42,7 +49,7 @@ case class NodesWithTag(tag: String)
   private def findMeUnder(gn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
     gn.relatedNodes.filter(eligibleNode) match {
       case Nil =>
-        childResolver(typeRegistry) match {
+        childResolver(typeRegistry, gn) match {
           case Some(cr) => cr.findAllIn(gn).getOrElse(Nil)
           case None =>
             Nil

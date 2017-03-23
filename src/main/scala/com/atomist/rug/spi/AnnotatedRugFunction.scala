@@ -50,10 +50,12 @@ trait AnnotatedRugFunction extends RugFunction {
       val secretAnnotation = p.getAnnotation(classOf[com.atomist.rug.spi.annotation.Secret])
       if (parameterAnnotation == null && secretAnnotation != null) {
         convert(p, parameters.paramValue(secretAnnotation.name()))
-      } else if (parameterAnnotation != null && secretAnnotation == null) {
+      } else if (parameterAnnotation != null && secretAnnotation == null && parameterAnnotation.required()) {
         convert(p, parameters.paramValue(parameterAnnotation.name()))
-      } else {
+      }else if(parameterAnnotation == null && secretAnnotation == null){
         throw new IllegalArgumentException(s"Parameter ${p.getName} not annotated with either @Secret or @Parameter")
+      }else{
+        null
       }
     })
     method.invoke(this, args:_*).asInstanceOf[FunctionResponse]

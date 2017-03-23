@@ -10,7 +10,7 @@ import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate, Review
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
-import com.atomist.tree.TreeMaterializer
+import com.atomist.tree.{TreeMaterializer, TreeNode}
 
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
@@ -23,7 +23,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   protected def createRugContext(tm: TreeMaterializer): RugContext =
     new FakeRugContext("team_id", tm)
 
-  private var rootContext: SimpleContainerGraphNode = SimpleContainerGraphNode("root")
+  private var rootContext: SimpleContainerGraphNode = SimpleContainerGraphNode.empty("root", TreeNode.Dynamic)
 
   /**
     * Return the editor with the given name or throw an exception

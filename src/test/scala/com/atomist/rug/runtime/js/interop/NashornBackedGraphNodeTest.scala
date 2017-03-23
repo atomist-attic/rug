@@ -156,7 +156,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     )
     import com.atomist.tree.pathexpression.PathExpressionParser._
     val caspar = toGraphNode(n).get
-    val root = SimpleContainerGraphNode("root", caspar)
+    val root = SimpleContainerGraphNode("root", caspar, Set.empty[String])
     val pexpr: PathExpression = expr
     //println(pexpr)
     pe.evaluate(root, pexpr) match {

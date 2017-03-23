@@ -4,11 +4,13 @@ import com.atomist.graph.GraphNode
 
 object SimpleContainerGraphNode {
 
-  def apply(nodeName: String, child: GraphNode): SimpleContainerGraphNode =
-    SimpleContainerGraphNode(nodeName, Seq(child))
+  def apply(nodeName: String, child: GraphNode, nodeTags: Set[String]): SimpleContainerGraphNode =
+    SimpleContainerGraphNode(nodeName, Seq(child), nodeTags)
 }
 
-case class SimpleContainerGraphNode(nodeName: String, relatedNodes: Seq[GraphNode] = Nil)
+case class SimpleContainerGraphNode(nodeName: String,
+                                    relatedNodes: Seq[GraphNode] = Nil,
+                                    override val nodeTags: Set[String] = Set.empty)
   extends GraphNode {
 
   override def relatedNodeNames: Set[String] = relatedNodes.map(_.nodeName).toSet

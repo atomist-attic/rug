@@ -1,17 +1,43 @@
 package com.atomist.rug.ts
 
+import java.io.PrintWriter
+
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, Typed}
+import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, TypeRegistry, Typed}
+import com.atomist.rug.ts.TypeGeneratorApp.getClass
 import com.atomist.source.ArtifactSource
+import com.atomist.util.Utils
 import com.atomist.util.lang.JavaHelpers._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import org.apache.commons.io.IOUtils
+
+object TypeGenerator {
+
+  val CortexJsonLocation = "/com/atomist/rug/ts/extra_types.json"
+
+  lazy val CortexJson = IOUtils.toString(getClass.getResourceAsStream(CortexJsonLocation), "UTF-8")
+
+  lazy val ExtendedTypes: TypeRegistry = {
+    val types = new TypeGenerator().extract(CortexJson)
+    new SimpleTypeRegistry(types)
+  }
+}
+
+object TypeGeneratorApp extends App {
+
+  val target = args.head
+  val tsig = new TypeGenerator()
+  val output = tsig.toNodeModule(TypeGenerator.CortexJson)
+  println(s"Generated Type module")
+  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(target + "/" + f.path))(_.write(f.content)))
+}
 
 /**
   * Take endpoints reported in JSON from a materializer service and generate types
   */
-class TypeGenerator(basePackage: String = "ext_model") {
+class TypeGenerator(basePackage: String = "ext_model", baseClassPackage: String = "ext_model_stub") {
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
@@ -20,20 +46,24 @@ class TypeGenerator(basePackage: String = "ext_model") {
     val types = extract(json)
     val tig = new TypeScriptInterfaceGenerator(typeRegistry =
       new SimpleTypeRegistry(types))
-    tig.generate("types", SimpleParameterValues("output_path", "Types.ts"))
+    val tcg = new TypeScriptClassGenerator(typeRegistry =
+      new SimpleTypeRegistry(types))
+    tig.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(basePackage) +
+      tcg.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(baseClassPackage)
   }
 
   /**
     * Return a valid node module with these files in it, under base package
     */
   def toNodeModule(json: String): ArtifactSource = {
-    toTypeScriptFiles(json).withPathAbove(basePackage)
+    toTypeScriptFiles(json)
   }
 
   /**
     * Extract the types described in this document and output a valid node module
     */
   def extract(json: String): Set[Typed] = {
+    require(json != null)
     val doc: Map[String, List[_]] = mapper.readValue(json, classOf[Map[String, List[_]]])
 
     def defineProperty(rawName: String, typ: String): Prop = {

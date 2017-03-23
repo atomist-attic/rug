@@ -1,7 +1,7 @@
 package com.atomist.rug.rugdoc
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.ts.{InterfaceGenerationConfig, TypeScriptBuilder, TypeScriptInterfaceGenerator}
+import com.atomist.rug.ts.{TypeGenerationConfig, TypeScriptBuilder, TypeScriptInterfaceGenerator}
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -20,7 +20,7 @@ object TypeScriptInterfaceGeneratorTest {
       // Note: We need to pretend we have imports that will be available
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
-      f.withContent(f.content.replace(InterfaceGenerationConfig.DefaultImports,
+      f.withContent(f.content.replace(TypeGenerationConfig.DefaultImports,
         """
           |interface ProjectContext {}
           |interface PathExpressionEngine {}

@@ -4,8 +4,9 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.{NashornUtils, jsPathExpressionEngine}
-import com.atomist.rug.spi.{TypeOperation, TypeRegistry, Typed, UsageSpecificTypeRegistry}
+import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
+import com.atomist.rug.ts.TypeGenerator
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -20,24 +21,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
 
   private var ipe: InvalidParametersException = _
 
-  private var tr: TypeRegistry = new UsageSpecificTypeRegistry(DefaultTypeRegistry, Seq(
-    new Typed() {
-      override val name = "Person"
-      override def description: String = name
-      override def allOperations: Seq[TypeOperation] = Seq(
-        //new TypeOperation("name", "", true, Nil, "String", null, None)
-      )
-      override def operations: Seq[TypeOperation] = allOperations
-    },
-    new Typed() {
-      override val name = "GitHubId"
-      override def description: String = name
-      override def allOperations: Seq[TypeOperation] = Seq(
-        //new TypeOperation("id", "", true, Nil, "String", null, None)
-      )
-      override def operations: Seq[TypeOperation] = allOperations
-    }
-  ))
+  private var tr: TypeRegistry = DefaultTypeRegistry + TypeGenerator.ExtendedTypes
 
   def typeRegistry: TypeRegistry = tr
 

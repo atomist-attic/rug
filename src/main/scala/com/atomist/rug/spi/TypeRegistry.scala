@@ -11,6 +11,16 @@ trait TypeRegistry {
   def typeNames: Traversable[String]
 
   def types: Seq[Typed]
+
+  def add(that: TypeRegistry): TypeRegistry = {
+    val union = new SimpleTypeRegistry(this.types ++ that.types)
+    union
+  }
+
+  def +(that: TypeRegistry): TypeRegistry = this.add(that)
+
+  override def toString: String = s"${getClass.getSimpleName}: Types=${typeNames.mkString(",")}"
+
 }
 
 class SimpleTypeRegistry(pTypes: Traversable[Typed]) extends TypeRegistry {
@@ -20,4 +30,5 @@ class SimpleTypeRegistry(pTypes: Traversable[Typed]) extends TypeRegistry {
   override def typeNames: Traversable[String] = pTypes.map(_.name)
 
   override def types: Seq[Typed] = pTypes.toSeq
+
 }

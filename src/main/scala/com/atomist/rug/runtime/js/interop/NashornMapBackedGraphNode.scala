@@ -117,7 +117,7 @@ private class NashornMapBackedGraphNode(val som: ScriptObjectMirror,
   override def relatedNodeTypes: Set[String] = relatedNodes.flatMap(_.nodeTags).toSet
 
   override def relatedNodesNamed(name: String): Seq[GraphNode] =
-    relatedNodes.filter(_.nodeName == name)
+    (relatedNodes.filter(_.nodeName == name) ++ followEdge(name)).distinct
 
   override def followEdge(name: String): Seq[GraphNode] =
     traversableEdges.getOrElse(name, Nil)
@@ -154,7 +154,7 @@ private class NashornMapBackedGraphNode(val som: ScriptObjectMirror,
     }
   }
 
-  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName];id=$nodeId"
+  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName];id=$nodeId;props=${relevantPropertiesAndValues}"
 
 }
 

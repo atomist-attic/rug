@@ -5,6 +5,7 @@ import com.atomist.rug.spi.SimpleTypeRegistry
 import com.atomist.rug.ts._
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
+import TypeGenerator.CortexJson
 
 object TypeScriptClassGeneratorTest {
 
@@ -21,7 +22,7 @@ object TypeScriptClassGeneratorTest {
       // Note: We need to pretend we have imports that will be available
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
-      f.withContent(f.content.replace(InterfaceGenerationConfig.TestStubImports,
+      f.withContent(f.content.replace(TypeGenerationConfig.TestStubImports,
         """
           |interface ProjectContext {}
           |interface PathExpressionEngine {}
@@ -30,23 +31,7 @@ object TypeScriptClassGeneratorTest {
           |interface Addressed {
           |   address(): string
           |}
-          |abstract class AddressedNodeSupport implements Addressed {
-          |
-          |    private _navigatedFrom: Addressed = null
-          |    private step: string
-          |
-          |    address() {
-          |        return this._navigatedFrom ?
-          |            this._navigatedFrom.address() + this.step :
-          |            ""
-          |    }
-          |    navigatedFrom(navigatedFrom: Addressed, step: string) {
-          |        if (navigatedFrom == this)
-          |            throw new Error(`Illegal cycle at ${this}`)
-          |        this._navigatedFrom = navigatedFrom
-          |        this.step = step
-          |    }
-          |}
+          |interface GraphNode {}
         """.stripMargin))
     }
 
@@ -69,7 +54,7 @@ class TypeScriptClassGeneratorTest extends FlatSpec with Matchers {
   // We don't need to test against project types like File
   it should "generate compilable typescript classes" in {
 
-    val types = new TypeGenerator().extract(TypeGeneratorTest.CortexJson)
+    val types = new TypeGenerator().extract(CortexJson)
     val tr = new SimpleTypeRegistry(types)
 
     val td = new TypeScriptClassGenerator(tr)

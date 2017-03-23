@@ -36,11 +36,23 @@ object TypeScriptBuilder {
       .withPathAbove(".atomist/rug/model")
   }
 
+  val extendedModelSource: ArtifactSource = {
+    val tg = new TypeGenerator()
+    tg.toNodeModule(TypeGenerator.CortexJson)
+      .withPathAbove(".atomist/rug")
+  }
+
   val userModel: ArtifactSource = compileUserModel(Seq(coreSource))
+
+  val extendedModel: ArtifactSource = compileUserModel(Seq(coreSource, extendedModelSource))
 
   /**
     * Compile the given archive contents along with our generated TypeScript model
     */
   def compileWithModel(tsAs: ArtifactSource): ArtifactSource =
     compiler.compile(userModel + tsAs)
+
+  def compileWithExtendedModel(tsAs: ArtifactSource): ArtifactSource =
+    compiler.compile(userModel + extendedModel + tsAs)
+
 }

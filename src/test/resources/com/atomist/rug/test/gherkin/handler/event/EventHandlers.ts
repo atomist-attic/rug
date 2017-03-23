@@ -99,3 +99,15 @@ class ReturnsEmptyPlanEventHandler3 implements HandleEvent<node.Commit, node.Git
     }
 }
 export const handler3 = new ReturnsEmptyPlanEventHandler3();
+
+
+@EventHandler("ReturnsAMessage", "Returns a message on commit",
+    new PathExpression<GraphNode, GraphNode>(`/Commit`))
+@Tags("github", "issue")
+class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
+
+    handle(m: Match<GraphNode, GraphNode>) {
+        return new Message("Hello there!")
+    }
+}
+export const simpleMessageHandler = new ReturnsAMessage();

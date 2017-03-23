@@ -91,4 +91,22 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "return the message from the handler when no plan was explicitly returned" in {
+    val passingFeature1StepsFile = requiredFileInPackage(
+      this,
+      "PassingFeature2Steps.ts",
+      ".atomist/tests/handler/event"
+    )
+
+    val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
+    val as = SimpleFileBasedArtifactSource(Feature2File, passingFeature1StepsFile, handlerFile, nodesFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
 }

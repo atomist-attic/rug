@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.17.2...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.17.3...HEAD
+
+## [0.17.3] - 2017-03-24
+
+[0.17.3]: https://github.com/atomist/rug/compare/0.17.2...0.17.3
+
+Fixup before prod rollout release
 
 ### Fixed
 

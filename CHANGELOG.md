@@ -11,8 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Add placeholder npm module @atomist/native for pure TypeScript/JavaScript
+    helpers that have no reliance on JVM objects (to be split out later)
+
 -   Support for generation of TypeScript interfaces and stub classes for Atomist "cortex"
-    model around commits, builds etc.
+    model around commits, builds etc. Lives in @atommist/cortex module.
 
 ## [0.17.3] - 2017-03-24
 

@@ -13,14 +13,20 @@ function err() {
     msg "$*" 1>&2
 }
 
-function main() {
+function publish() {
     local module_version=$1
+    local mmodule_name=$2
     if [[ ! $module_version ]]; then
         err "first parameter must be the version number of the module to publish"
         return 10
     fi
 
-    local target="target/.atomist/node_modules/@atomist/rug"
+    if [[ ! $module_name ]]; then
+        err "second parameter must be the name of the module to publish"
+        return 10
+    fi
+
+    local target="target/.atomist/node_modules/@atomist/${module_name}}"
     local package="$target/package.json"
     if ! sed "/version/s/REPLACE_ME/$module_version/" "$package.in" > "$package"; then
         err "failed to set version in $package"

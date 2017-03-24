@@ -18,7 +18,9 @@ class JavaScriptCommandHandlerFinder
 
   override def kind = "command-handler"
 
-  override def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptCommandHandler] = {
+  override def extractHandler(jsc: JavaScriptContext,
+                              handler: ScriptObjectMirror,
+                              externalContext: Seq[AddressableRug]): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(
       jsc,
       handler,

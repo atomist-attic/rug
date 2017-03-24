@@ -54,7 +54,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
         val msg = s"Ran ${plannable.toDisplay} and then ${response.toDisplay}"
         logger.debug(msg)
         val callbackOption: Option[Callback] = plannable match {
-          case nr: Nonrespondable =>
+          case _: Nonrespondable =>
             response match {
               case Response(Success, _, _, Some(plan: Plan)) => Some(plan)
               case _ => None

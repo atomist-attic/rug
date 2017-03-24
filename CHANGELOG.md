@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [Unreleased]: https://github.com/atomist/rug/compare/0.17.2...HEAD
 
 ### Fixed
- 
+
+-   'null' and undefined are not serialized to JSON in instruction parameters
+    https://github.com/atomist/rug/issues/466
+
 -   NodesWithTag allows dynamic nodes on `Child` axis to not match without error
 
 -   Don't set default parameter values if they are null

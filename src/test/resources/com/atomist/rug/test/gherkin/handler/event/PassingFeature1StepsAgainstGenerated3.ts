@@ -1,7 +1,7 @@
 import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/Core"
 
-import {Build} from "@atomist/rug/ext_model_stub/Build"
-import {Repo} from "@atomist/rug/ext_model_stub/Repo"
+import {Build} from "@atomist/rug/cortex/stub/Build"
+import {Repo} from "@atomist/rug/cortex/stub/Repo"
  
 Given("a sleepy country", f => {
 })

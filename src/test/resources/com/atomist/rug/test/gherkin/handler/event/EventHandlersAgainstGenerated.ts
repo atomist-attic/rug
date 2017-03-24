@@ -4,11 +4,10 @@ import * as query from '@atomist/rug/tree/QueryByExample'
 
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
 
-import {Build} from "@atomist/rug/ext_model/Build"
-import * as buildstub from "@atomist/rug/ext_model_stub/Build"
-import * as repostub from "@atomist/rug/ext_model_stub/Repo"
-import * as ccstub from "@atomist/rug/ext_model_stub/ChatChannel"
-
+import {Build} from "@atomist/rug/cortex/Build"
+import * as buildstub from "@atomist/rug/cortex/stub/Build"
+import * as repostub from "@atomist/rug/cortex/stub/Repo"
+import * as ccstub from "@atomist/rug/cortex/stub/ChatChannel"
 
 /**
  * Works against generated model

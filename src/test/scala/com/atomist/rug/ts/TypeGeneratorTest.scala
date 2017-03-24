@@ -1,13 +1,13 @@
 package com.atomist.rug.ts
 
-import com.atomist.source.{ArtifactSource, ArtifactSourceUtils}
+import com.atomist.source.ArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeGeneratorTest extends FlatSpec with Matchers {
 
-  import TypeGenerator.CortexJson
+  import TypeGenerator._
 
-  private val typeGen = new TypeGenerator
+  private val typeGen = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
 
   "Type generation" should "find some types" in {
     val types = typeGen.extract(CortexJson)
@@ -47,7 +47,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
 
 object TypeGeneratorTest {
 
-  private val typeGen = new TypeGenerator
+  private val typeGen = new TypeGenerator(TypeGenerator.DefaultCortexDir, TypeGenerator.DefaultCortexStubDir)
 
   val fullModel: ArtifactSource = {
     val as = typeGen.toNodeModule(TypeGenerator.CortexJson)

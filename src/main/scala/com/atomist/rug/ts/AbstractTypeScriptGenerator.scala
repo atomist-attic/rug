@@ -269,14 +269,15 @@ case class TypeGenerationConfig(
 
 object TypeGenerationConfig {
 
+  // TODO it would be nice to use absolute paths, but this presently
+  // causes problems in test compilation
   val DefaultImports: String =
     """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
        |import {ProjectContext} from '../operations/ProjectEditor'
        |""".stripMargin
 
   val TestStubImports: String =
-    DefaultImports ++
       """
-        |import {GraphNode} from '../tree/PathExpression'
+        |import {GraphNode} from '../../tree/PathExpression'
       """.stripMargin
 }

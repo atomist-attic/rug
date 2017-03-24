@@ -448,26 +448,26 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>mkdir_ext</id>
+                                <id>mkdir_cortex</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/ext_model"/>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex"/>
                                     </target>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>mkdir_ext_stub</id>
+                                <id>mkdir_cortex_stub</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/ext_model_stub"/>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex/stub"/>
                                     </target>
                                 </configuration>
                             </execution>

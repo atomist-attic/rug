@@ -7,7 +7,7 @@ import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
 import TypeGenerator._
 
-object TypeScriptClassGeneratorTest {
+object TypeScriptStubClassGeneratorTest {
 
   val tsc = TypeScriptBuilder.compiler
 
@@ -22,41 +22,42 @@ object TypeScriptClassGeneratorTest {
       // Note: We need to pretend we have imports that will be available
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
-      f.withContent(f.content.replace(TypeGenerationConfig.TestStubImports,
-        """
-          |interface GraphNode {}
+      f.withContent(f.content
+        .replace(TypeGenerationConfig.DefaultImports,
+          TypeScriptInterfaceGeneratorTest.InterfaceTestImports)
+        .replace(TypeGenerationConfig.TestStubImports,
+          s"""
+             |interface GraphNode {}
         """.stripMargin))
     }
 
   def compile(output: ArtifactSource): ArtifactSource = {
-    val withoutImport = TypeScriptClassGeneratorTest.withoutImports(output)
-//    for {
-//      f <- withoutImport.allFiles
-//      if f.name.endsWith(".ts")
-//    } {
-//      println(f.path)
-//      println(f.content)
-//    }
+    val withoutImport = TypeScriptStubClassGeneratorTest.withoutImports(output)
     tsc.compile(withoutImport)
   }
 }
 
-class TypeScriptClassGeneratorTest extends FlatSpec with Matchers {
+class TypeScriptStubClassGeneratorTest extends FlatSpec with Matchers {
 
   // Note, only external model is relevant.
   // We don't need to test against project types like File
   it should "generate compilable typescript classes" in {
-
     val types = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir).extract(CortexJson)
     val tr = new SimpleTypeRegistry(types)
 
-    val td = new TypeScriptClassGenerator(tr)
+    // Classes won't compile without the interfaces they implement
+    val tid = new TypeScriptInterfaceGenerator(tr)
+    // Make it put the generated files where our compiler will look for them
+    val interfaces = tid.generate("", SimpleParameterValues(
+      Map(tid.outputPathParam -> ".atomist/editors/Interfaces.ts")))
+
+    val td = new TypeScriptStubClassGenerator(tr)
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
-      Map(td.outputPathParam -> ".atomist/editors/Interfaces.ts")))
+      Map(td.outputPathParam -> ".atomist/editors/stubs/Interfaces.ts")))
     assert(output.allFiles.size > 1)
 
-    val compiled = TypeScriptClassGeneratorTest.compile(output)
+    val compiled = TypeScriptStubClassGeneratorTest.compile(interfaces + output)
     val ts = compiled.allFiles.find(_.name.endsWith(".ts"))
     ts shouldBe defined
     // println(ts.get.content)

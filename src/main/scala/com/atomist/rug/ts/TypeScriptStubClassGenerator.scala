@@ -6,14 +6,14 @@ import com.atomist.param.{SimpleParameterValues, Tag}
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.spi._
 import com.atomist.util.Utils
-import com.atomist.util.lang.JavaHelpers
+import com.atomist.util.lang.JavaHelpers._
 
 import scala.collection.mutable.ListBuffer
 
-object TypeScriptClassGenerator extends App {
+object TypeScriptStubClassGenerator extends App {
 
   val target = if (args.length < 1) "target/Core.ts" else args.head
-  val generator = new TypeScriptClassGenerator(DefaultTypeRegistry)
+  val generator = new TypeScriptStubClassGenerator(DefaultTypeRegistry)
   val output = generator.generate("", SimpleParameterValues(Map(generator.outputPathParam -> target)))
   output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
 }
@@ -23,28 +23,35 @@ object TypeScriptClassGenerator extends App {
   *
   * @param typeRegistry registry of known Rug Types.
   */
-class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
-                               config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
-                               override val tags: Seq[Tag] = Nil)
+class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
+                                   config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
+                                   override val tags: Seq[Tag] = Nil,
+                                   val root: String = "GraphNode")
   extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
-
-  import AbstractTypeScriptGenerator._
 
   private case class ClassGeneratedType(name: String,
                                         description: String,
                                         methods: Seq[MethodInfo],
-                                        parent: Seq[String] = Seq(Root))
+                                        parent: Seq[String] = Seq(root))
     extends GeneratedType {
+
+    private val interfaceModuleImport = "intf"
+
+    override def root = TypeScriptStubClassGenerator.this.root
+
+    override def specificImports: String =
+      s"import * as $interfaceModuleImport from '../$name'\n"
 
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
       output ++= s"\nclass $name "
-      output ++= (if (parent.head == Root) {
-        "implements GraphNode"
+      val implementation = s"implements $interfaceModuleImport.$name"
+      output ++= (if (parent.head == root) {
+        implementation
       }
       else
-        s"extends ${parent.mkString(", ")}"
+        s"extends ${parent.mkString(", ")} $implementation"
         )
       output ++= s" {${config.separator}"
 
@@ -86,7 +93,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
           val builderMethod =
             s"""
                |
-               |${indent}with${JavaHelpers.upperize(name)}($name: $returnType): $typeName {
+               |${indent}with${upperize(name)}($name: $returnType): $typeName {
                |$indent${indent}this.$fieldName = $name
                |$indent${indent}return this
                |$indent}
@@ -107,7 +114,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
     val superClasses = getSuperClasses(op)
     for (i <- superClasses.indices) {
       val name = Typed.typeToTypeName(superClasses(i).parent)
-      val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
+      val parent = if (i == superClasses.size - 1) Seq(root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
       val methods = superClasses(i).exportedMethods.filterNot(alreadyAddedMethods.contains(_))
       generatedTypes += ClassGeneratedType(name, name, methods, parent)
       alreadyAddedMethods ++= methods
@@ -125,7 +132,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
     }
 
     leafClassMethods ++= allMethods(t.name, t.operations).filterNot(alreadyAddedMethods.contains(_))
-    val parent = if (superClasses.isEmpty) Seq(Root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
+    val parent = if (superClasses.isEmpty) Seq(root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
     generatedTypes += ClassGeneratedType(t.name, t.description, leafClassMethods, parent)
 
     generatedTypes

@@ -25,7 +25,7 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     val extendedModel = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
      //println(ArtifactSourceUtils.prettyListFiles(as))
-//    as.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
+//    extendedModel.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
 //      println(s"${f.path}\n${f.content}\n\n"))
     val cas = TypeScriptBuilder.compiler.compile(extendedModel + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,

@@ -52,8 +52,8 @@ class TypeGenerator(basePackage: String, baseClassPackage: String) {
     val types = extract(json)
     val typeRegistry = new SimpleTypeRegistry(types)
     //types.foreach(println(_))
-    val tig = new TypeScriptInterfaceGenerator(typeRegistry)
-    val tcg = new TypeScriptClassGenerator(typeRegistry)
+    val tig = new TypeScriptInterfaceGenerator(typeRegistry, root = "GraphNode")
+    val tcg = new TypeScriptStubClassGenerator(typeRegistry)
     tig.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(basePackage) +
       tcg.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(baseClassPackage)
   }

@@ -9,6 +9,14 @@ object TypeScriptInterfaceGeneratorTest {
 
   val tsc = TypeScriptBuilder.compiler
 
+  val InterfaceTestImports =
+    """
+      |interface ProjectContext {}
+      |interface PathExpressionEngine {}
+      |interface TreeNode {}
+      |interface FormatInfo {}
+    """.stripMargin
+
   /**
     * We need to get rid of the imports as they'll fail
     * when we try to compile the file on its own
@@ -21,12 +29,7 @@ object TypeScriptInterfaceGeneratorTest {
       // at runtime
       override def edit(f: FileArtifact): FileArtifact =
       f.withContent(f.content.replace(TypeGenerationConfig.DefaultImports,
-        """
-          |interface ProjectContext {}
-          |interface PathExpressionEngine {}
-          |interface TreeNode {}
-          |interface FormatInfo {}
-        """.stripMargin))
+        InterfaceTestImports))
     }
 
   def compile(output: ArtifactSource): ArtifactSource = {

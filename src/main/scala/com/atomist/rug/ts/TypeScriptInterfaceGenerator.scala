@@ -24,16 +24,17 @@ object TypeScriptInterfaceGenerator extends App {
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
                                    config: TypeGenerationConfig = TypeGenerationConfig(),
-                                   override val tags: Seq[Tag] = Nil)
+                                   override val tags: Seq[Tag] = Nil,
+                                   root: String = "TreeNode")
   extends AbstractTypeScriptGenerator(typeRegistry, config, false, tags) {
-
-  import AbstractTypeScriptGenerator._
 
   private case class InterfaceGeneratedType(name: String,
                                             description: String,
                                             methods: Seq[MethodInfo],
-                                            parent: Seq[String] = Seq(Root))
+                                            parent: Seq[String] = Seq(root))
     extends GeneratedType {
+
+    override def root = TypeScriptInterfaceGenerator.this.root
 
     override def toString: String = {
       val output = new StringBuilder
@@ -71,7 +72,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     val superClasses = getSuperClasses(op)
     for (i <- superClasses.indices) {
       val name = Typed.typeToTypeName(superClasses(i).parent)
-      val parent = if (i == superClasses.size - 1) Seq(Root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
+      val parent = if (i == superClasses.size - 1) Seq(root) else Seq(Typed.typeToTypeName(superClasses(i + 1).parent))
       val methods = superClasses(i).exportedMethods
       generatedTypes += InterfaceGeneratedType(name, name, methods, parent)
       alreadyAddedMethods ++= methods
@@ -88,7 +89,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
     // Add leaf class
     val parent =
-      if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(Root)
+      if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(root)
       else Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i => Typed.typeToTypeName(i.parent))
 
     val methods = allMethods(t.name, t.operations).filterNot(alreadyAddedMethods.contains(_))

@@ -19,8 +19,9 @@ import scala.collection.mutable.ListBuffer
 object AbstractTypeScriptGenerator {
 
   val DefaultTemplateName = "ts.vm"
+
   val DefaultFilename = "model/Core.ts"
-  val Root = "TreeNode"
+
 }
 
 /**
@@ -51,6 +52,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     * Either an interface or a test class, depending on whether we're generated test classes
     */
   trait GeneratedType {
+
+    def root: String
+
+    /** Custom, additional, imports on this type */
+    def specificImports: String = ""
 
     def name: String
 
@@ -210,6 +216,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       val output = new StringBuilder(config.licenseHeader)
       output ++= config.separator
       output ++= config.imports
+      output ++= t.specificImports
       output ++= getImports(generatedTypes, t)
       output ++= s"\nexport {${t.name}}\n"
       output ++= t.toString
@@ -238,7 +245,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val imports = interfaceTypes
       .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]")).filter(currentType.name != t.name && _ == t.name))
       .toList
-    (currentType.parent.toList ::: imports).distinct.filter(_ != Root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
+    (currentType.parent.toList ::: imports).distinct.filter(_ != currentType.root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
   }
 }
 
@@ -272,12 +279,13 @@ object TypeGenerationConfig {
   // TODO it would be nice to use absolute paths, but this presently
   // causes problems in test compilation
   val DefaultImports: String =
-    """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
+    """|import {TreeNode,GraphNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
        |import {ProjectContext} from '../operations/ProjectEditor'
        |""".stripMargin
 
   val TestStubImports: String =
-      """
-        |import {GraphNode} from '../../tree/PathExpression'
-      """.stripMargin
+    """
+      |import {GraphNode} from '../../tree/PathExpression'
+    """.stripMargin
+
 }

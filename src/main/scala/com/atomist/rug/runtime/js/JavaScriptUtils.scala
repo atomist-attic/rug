@@ -75,7 +75,7 @@ trait JavaScriptUtils {
       case _ => Set()
     }
     params.foreach {
-      case (k: String, v: AnyRef) =>
+      case (k: String, v) =>
         if(decoratedParamNames.contains(k)){
           clone.put(k,v)
         }

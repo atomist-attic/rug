@@ -129,7 +129,16 @@ class PlanBuilder {
       val parameters: Seq[ParameterValue] = jsInstruction.getMember("parameters") match {
         case u: Undefined => Nil
         case o: ScriptObjectMirror =>
-          o.keySet().toArray.toList.map { key =>
+          val filtered = o.keySet().toArray.filter( key => {
+            val name = key.asInstanceOf[String]
+            o.getMember(name) match {
+              case null => false
+              case ScriptRuntime.UNDEFINED => false
+              case _ => true
+            }
+          })
+
+          filtered.map { key =>
             val name = key.asInstanceOf[String]
             val value = o.getMember(name)
             SimpleParameterValue(name,

@@ -64,7 +64,7 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case Some(rug: ProjectEditor) =>
             doWithProjectName(instruction, (projectName: String) => {
               projectManagement.edit(rug,parameters, projectName) match {
-                case success: SuccessfulModification => Response(Success)
+                case _: SuccessfulModification => Response(Success)
                 case success: NoModificationNeeded => Response(Success,Some(success.comment))
                 case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
               }

@@ -369,7 +369,7 @@
                                 </goals>
                                 <configuration>
                                     <!-- Pin versions to things we know are working. TS things tend to break! -->
-                                    <arguments>install --save-dev typescript@2.1.6 @types/node@7.0.5 typedoc@0.5.7 gulp@3.9.1 gulp-typedoc@2.0.2 @types/lodash@4.14.56</arguments>
+                                    <arguments>install --save-dev typescript@2.1.6 @types/node@7.0.5 typedoc@0.5.7 gulp@3.9.1 gulp-typedoc@2.0.2  @types/lodash@4.14.56</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
@@ -447,6 +447,30 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>mkdir_cortex</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>mkdir_cortex_stub</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex/stub"/>
+                                    </target>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -464,6 +488,19 @@
                                     <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
                                     <arguments>
                                         <argument>target/.atomist/node_modules/@atomist/rug/model/Core.ts</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-extended-model</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <mainClass>com.atomist.rug.ts.TypeGeneratorApp</mainClass>
+                                    <arguments>
+                                        <argument>target/.atomist/node_modules/@atomist/rug</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

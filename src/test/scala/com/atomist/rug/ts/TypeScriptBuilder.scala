@@ -16,6 +16,8 @@ import com.atomist.source.filter.ArtifactFilter
   */
 object TypeScriptBuilder {
 
+  import TypeGenerator._
+
   val compiler = new TypeScriptCompiler(CompilerFactory.cachingCompiler(CompilerFactory.create(),
     new File(".", "target" + File.separator + ".jscache").getAbsolutePath))
 
@@ -36,11 +38,23 @@ object TypeScriptBuilder {
       .withPathAbove(".atomist/rug/model")
   }
 
+  val extendedModelSource: ArtifactSource = {
+    val tg = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
+    tg.toNodeModule(CortexJson)
+      .withPathAbove(".atomist/rug")
+  }
+
   val userModel: ArtifactSource = compileUserModel(Seq(coreSource))
+
+  val extendedModel: ArtifactSource = compileUserModel(Seq(coreSource, extendedModelSource))
 
   /**
     * Compile the given archive contents along with our generated TypeScript model
     */
   def compileWithModel(tsAs: ArtifactSource): ArtifactSource =
     compiler.compile(userModel + tsAs)
+
+  def compileWithExtendedModel(tsAs: ArtifactSource): ArtifactSource =
+    compiler.compile(userModel + extendedModel + tsAs)
+
 }

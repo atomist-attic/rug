@@ -5,7 +5,7 @@ import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.test.gherkin.{GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSourceUtils, FileArtifact, SimpleFileBasedArtifactSource}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -32,6 +32,39 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
     //println(ArtifactSourceUtils.prettyListFiles(as))
     val cas = TypeScriptBuilder.compileWithModel(as)
+
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "use generated model" in
+    useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
+
+  it should "use generated model with query by example" in
+    useGeneratedModel("PassingFeature1StepsAgainstGenerated2.ts")
+
+  it should "use generated model with deeper query by example" in
+    useGeneratedModel("PassingFeature1StepsAgainstGenerated3.ts")
+
+  it should "use generated model with still deeper query by example" in
+    useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
+
+  private def useGeneratedModel(stepsFile: String): Unit = {
+    val passingFeature1StepsFile = requiredFileInPackage(
+      this,
+      stepsFile,
+      ".atomist/tests/handlers/event"
+    )
+
+    val handlerFile = requiredFileInPackage(this, "EventHandlersAgainstGenerated.ts", atomistConfig.handlersRoot + "/event")
+    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile)
+
+    //println(ArtifactSourceUtils.prettyListFiles(as))
+    val cas = TypeScriptBuilder.compileWithExtendedModel(as)
 
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
     val run = grt.execute()

@@ -90,7 +90,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(caspar.relatedNodesNamed("surname").size === 1)
     val forename = caspar.relatedNodesNamed("surname").head
     assert(forename.asInstanceOf[TreeNode].value === "Caspar")
-    assert(caspar.relatedNodesNamed("associate").size === 0)
+    assert(caspar.relatedNodesNamed("associate").size === 1)
     val assoc = caspar.followEdge("associate").head
     assert(assoc.nodeName === "Leo")
     assert(assoc.nodeTags.contains("Irish"))
@@ -118,7 +118,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(caspar.relatedNodesNamed("surname").size === 1)
     val forename = caspar.relatedNodesNamed("surname").head
     assert(forename.asInstanceOf[TreeNode].value === "Caspar")
-    assert(caspar.relatedNodesNamed("associates").size === 0)
+    assert(caspar.relatedNodesNamed("associates").size === 2)
     caspar.followEdge("associates").size should be (2)
     val assoc = caspar.followEdge("associates").head
     assert(assoc.nodeName === "Leo")
@@ -156,7 +156,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     )
     import com.atomist.tree.pathexpression.PathExpressionParser._
     val caspar = toGraphNode(n).get
-    val root = SimpleContainerGraphNode("root", caspar, Set.empty[String])
+    val root = SimpleContainerGraphNode("root", caspar)
     val pexpr: PathExpression = expr
     //println(pexpr)
     pe.evaluate(root, pexpr) match {
@@ -186,7 +186,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(caspar.relatedNodesNamed("surname").size === 1)
     val forename = caspar.relatedNodesNamed("surname").head
     assert(forename.asInstanceOf[TreeNode].value === "Caspar")
-    assert(caspar.relatedNodesNamed("associates").size === 0)
+    assert(caspar.relatedNodesNamed("associates").size === 2)
     caspar.followEdge("associates").size should be (2)
     val assoc = caspar.followEdge("associates").head
     assert(assoc.nodeName === "Leo")
@@ -216,7 +216,7 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     assert(caspar.relatedNodesNamed("surname").size === 1)
     val forename = caspar.relatedNodesNamed("surname").head
     assert(forename.asInstanceOf[TreeNode].value === "Caspar")
-    assert(caspar.relatedNodesNamed("associates").size === 0)
+    assert(caspar.relatedNodesNamed("associates").size === 2)
     caspar.followEdge("associates").size should be (2)
     val assoc = caspar.followEdge("associates").head
     assert(assoc.nodeName === "Leo")

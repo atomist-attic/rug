@@ -23,7 +23,7 @@ object TypeScriptInterfaceGenerator extends App {
   * @param typeRegistry registry of known Rug Types.
   */
 class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegistry,
-                                   config: InterfaceGenerationConfig = InterfaceGenerationConfig(),
+                                   config: TypeGenerationConfig = TypeGenerationConfig(),
                                    override val tags: Seq[Tag] = Nil)
   extends AbstractTypeScriptGenerator(typeRegistry, config, false, tags) {
 
@@ -49,7 +49,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     }
   }
 
-  private case class InterfaceMethodInfo(name: String,
+  private case class InterfaceMethodInfo(typeName: String,
+                                         name: String,
                                          params: Seq[MethodParam],
                                          returnType: String,
                                          description: Option[String])
@@ -59,8 +60,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       s"$comment$indent$name(${params.mkString(", ")}): $returnType"
   }
 
-  protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    InterfaceMethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+  protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
+    InterfaceMethodInfo(typeName, op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
@@ -90,7 +91,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       if (superClasses.isEmpty && superInterfaces.isEmpty) Seq(Root)
       else Seq(Typed.typeToTypeName(superClasses.head.parent)) ++ superInterfaces.map(i => Typed.typeToTypeName(i.parent))
 
-    val methods = allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
+    val methods = allMethods(t.name, t.operations).filterNot(alreadyAddedMethods.contains(_))
     generatedTypes += InterfaceGeneratedType(t.name, t.description, methods, parent)
 
     generatedTypes

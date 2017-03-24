@@ -103,7 +103,7 @@ class QueryByExampleTest extends FlatSpec with Matchers {
         // Check that the path matches against the rootObject
         val gn: GraphNode = NashornMapBackedGraphNode.toGraphNode(createdObject)
           .getOrElse(throw new IllegalArgumentException(s"Not a valid graph node: $createdObject"))
-        val root = SimpleContainerGraphNode("root", gn, Set.empty[String])
+        val root = SimpleContainerGraphNode("root", gn)
         val matchTest: GraphNode => Boolean = matchTestO.getOrElse(_ == gn)
 
         //println(s"Evaluating [$expr] against [$gn]")

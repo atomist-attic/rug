@@ -55,7 +55,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
-    val root = SimpleContainerGraphNode("root", targetNode, Set(TreeNode.Dynamic))
+    val root = SimpleContainerGraphNode("root", targetNode, TreeNode.Dynamic)
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx.typeRegistry, None) match {
       case Right(Nil) => None
       case Right(matches) if matches.nonEmpty =>

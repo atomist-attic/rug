@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.17.3...HEAD
 
+### Added
+
+-   Support for generation of TypeScript interfaces and stub classes for Atomist "cortex"
+    model around commits, builds etc.
+
 ## [0.17.3] - 2017-03-24
 
 [0.17.3]: https://github.com/atomist/rug/compare/0.17.2...0.17.3

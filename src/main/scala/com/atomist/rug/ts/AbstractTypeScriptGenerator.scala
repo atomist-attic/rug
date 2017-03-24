@@ -29,7 +29,7 @@ object AbstractTypeScriptGenerator {
   * @param typeRegistry registry of known Rug Types.
   */
 abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
-                                           config: InterfaceGenerationConfig,
+                                           config: TypeGenerationConfig,
                                            generateClasses: Boolean,
                                            override val tags: Seq[Tag])
   extends ProjectGenerator
@@ -62,6 +62,8 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   }
 
   trait MethodInfo {
+
+    def typeName: String
 
     def name: String
 
@@ -153,7 +155,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     else
       ClassUtils.getAllInterfaces(op.definedOn).asScala
         .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
-        .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
+        .map(c => ParentClassHolder(c, allMethods(c.getName, exportedOperations(c))))
         .filterNot(_.exportedMethods.isEmpty)
         .toList
 
@@ -162,11 +164,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     else
       ClassUtils.getAllSuperclasses(op.definedOn).asScala
         .filterNot(c => classOf[TreeNode] == c || classOf[GraphNode] == c)
-        .map(c => ParentClassHolder(c, allMethods(exportedOperations(c))))
+        .map(c => ParentClassHolder(c, allMethods(c.getName, exportedOperations(c))))
         .filterNot(_.exportedMethods.isEmpty)
         .toList
 
-  protected def allMethods(ops: Seq[TypeOperation]): Seq[MethodInfo] = {
+  protected def allMethods(typeName: String, ops: Seq[TypeOperation]): Seq[MethodInfo] = {
     val methods = new ListBuffer[MethodInfo]
     for {
       op <- ops
@@ -177,12 +179,12 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
           yield
             MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
-      methods += getMethodInfo(op, params)
+      methods += getMethodInfo(typeName, op, params)
     }
     methods.sortBy(_.name)
   }
 
-  protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo
+  protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo
 
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
@@ -240,11 +242,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   }
 }
 
-case class InterfaceGenerationConfig(
-                                      indent: String = "    ",
-                                      separator: String = "\n\n",
-                                      imports: String = InterfaceGenerationConfig.DefaultImports
-                                    )
+case class TypeGenerationConfig(
+                                 indent: String = "    ",
+                                 separator: String = "\n\n",
+                                 imports: String = TypeGenerationConfig.DefaultImports
+                               )
   extends TypeScriptGenerationConfig {
 
   val licenseHeader: String =
@@ -265,13 +267,17 @@ case class InterfaceGenerationConfig(
        | */""".stripMargin
 }
 
-object InterfaceGenerationConfig {
+object TypeGenerationConfig {
 
+  // TODO it would be nice to use absolute paths, but this presently
+  // causes problems in test compilation
   val DefaultImports: String =
     """|import {TreeNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
        |import {ProjectContext} from '../operations/ProjectEditor'
        |""".stripMargin
 
   val TestStubImports: String =
-    DefaultImports
+      """
+        |import {GraphNode} from '../../tree/PathExpression'
+      """.stripMargin
 }

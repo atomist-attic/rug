@@ -24,7 +24,7 @@ object TypeScriptClassGenerator extends App {
   * @param typeRegistry registry of known Rug Types.
   */
 class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
-                               config: InterfaceGenerationConfig = InterfaceGenerationConfig(imports = InterfaceGenerationConfig.TestStubImports),
+                               config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
                                override val tags: Seq[Tag] = Nil)
   extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
 
@@ -39,15 +39,31 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
     override def toString: String = {
       val output = new StringBuilder
       output ++= emitDocComment(description)
-      val deriveKeyword = if (parent.head == Root) "extends AddressedNodeSupport implements" else "extends"
-      output ++= s"\nclass $name $deriveKeyword ${parent.mkString(", ")} {${config.separator}"
+      output ++= s"\nclass $name "
+      output ++= (if (parent.head == Root) {
+        "implements GraphNode"
+      }
+      else
+        s"extends ${parent.mkString(", ")}"
+        )
+      output ++= s" {${config.separator}"
+
+      output ++=
+        s"""
+          |      nodeName(): string {  return "$name" }
+          |
+          |      // Node we need -dynamic to allow dispatch in the proxy
+          |      nodeTags(): string[] { return [ "$name", "-dynamic" ] }
+        """.stripMargin
+
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
     }
   }
 
-  private case class ClassMethodInfo(name: String,
+  private case class ClassMethodInfo(typeName: String,
+                                     name: String,
                                      params: Seq[MethodParam],
                                      returnType: String,
                                      description: Option[String])
@@ -61,8 +77,6 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
         case _ =>
           // It has a return. So let's create a field
           val fieldName = s"_$name"
-          // TODO shouldn't be any in the setter:
-          // Need to pass in owning type
           val core =
           s"""${indent}private $fieldName: $returnType = null
              |
@@ -71,24 +85,19 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
              |$indent}""".stripMargin
           val builderMethod =
             s"""
-             |
-             |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): any {
-             |$indent${indent}this.$fieldName = x
-             |$indent${indent}return this
-             |$indent}
-             |""".stripMargin
-          core + (if (shouldEmitAddressing(returnType)) builderMethod else "")
+               |
+               |${indent}with${JavaHelpers.upperize(name)}($name: $returnType): $typeName {
+               |$indent${indent}this.$fieldName = $name
+               |$indent${indent}return this
+               |$indent}
+               |""".stripMargin
+          core + builderMethod
       }
 
-    private def shouldEmitAddressing(t: String) = t match {
-      case "string" | "number" | "boolean" => false
-      case x if x.contains("[") => false
-      case _ => true
-    }
   }
 
-  override protected def getMethodInfo(op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    ClassMethodInfo(op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+  override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
+    ClassMethodInfo(typeName, op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]
@@ -115,7 +124,7 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
       alreadyAddedMethods ++= methods
     }
 
-    leafClassMethods ++= allMethods(t.operations).filterNot(alreadyAddedMethods.contains(_))
+    leafClassMethods ++= allMethods(t.name, t.operations).filterNot(alreadyAddedMethods.contains(_))
     val parent = if (superClasses.isEmpty) Seq(Root) else Seq(Typed.typeToTypeName(superClasses.head.parent))
     generatedTypes += ClassGeneratedType(t.name, t.description, leafClassMethods, parent)
 

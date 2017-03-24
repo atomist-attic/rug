@@ -54,7 +54,7 @@ class ReturnsEmptyPlanEventHandler2b implements HandleEvent<GraphNode, GraphNode
 
     handle(m: Match<node.Commit, node.Commit>) {
         let r = m.matches()[0];
-        console.log(`Match ${m}: peep=${r}`);
+        //console.log(`Match ${m}: peep=${r}`);
         if (r.nodeTags().indexOf("Commit") == -1) 
             throw new Error("Should have returned root")
         return new Plan();
@@ -74,7 +74,7 @@ class ReturnsEmptyPlanEventHandler2c implements HandleEvent<GraphNode, GraphNode
 
     handle(m: Match<node.Commit, node.Person>) {
         let peep = m.matches()[0];
-        console.log(`Match ${m}: peep=${peep}`);
+        //console.log(`Match ${m}: peep=${peep}`);
         if (peep.nodeTags().indexOf("Person") == -1) 
             throw new Error("Should have matched Person")
         return new Plan();

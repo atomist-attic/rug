@@ -22,14 +22,14 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
   }
 
   it should "generate compiling node module" in {
-    val as = typeGen.toNodeModule(CortexJson)
+    val extendedModel = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
      //println(ArtifactSourceUtils.prettyListFiles(as))
-    as.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
-      println(s"${f.path}\n${f.content}\n\n"))
-    val cas = TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
+//    as.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
+//      println(s"${f.path}\n${f.content}\n\n"))
+    val cas = TypeScriptBuilder.compiler.compile(extendedModel + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,
-      as
+      extendedModel
     )))
     //println(ArtifactSourceUtils.prettyListFiles(cas))
 
@@ -38,6 +38,8 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     assert(!cas.allFiles.exists(_.content.contains("started_at")))
     assert(cas.allFiles.exists(_.content.contains("startedAt")))
     assert(cas.allFiles.exists(_.content.contains("Repo[]")))
+    assert(cas.allFiles.exists(_.content.contains("withOn(")), "Should be relationship on Build")
+    assert(cas.allFiles.exists(_.content.contains("withLogin")), "Should be simple property on GitHubId")
     assert(cas.allFiles.exists(_.content.contains("Issue[]")), "Must have back relationship from Repo to Issue")
   }
 

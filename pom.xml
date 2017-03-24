@@ -459,6 +459,18 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>mkdir_ext_stub</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/ext_model_stub"/>
+                                    </target>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>

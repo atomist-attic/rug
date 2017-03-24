@@ -77,8 +77,6 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
         case _ =>
           // It has a return. So let's create a field
           val fieldName = s"_$name"
-          // TODO shouldn't be any in the setter:
-          // Need to pass in owning type
           val core =
           s"""${indent}private $fieldName: $returnType = null
              |
@@ -88,19 +86,14 @@ class TypeScriptClassGenerator(typeRegistry: TypeRegistry,
           val builderMethod =
             s"""
                |
-               |${indent}with${JavaHelpers.upperize(name)}(x: $returnType): $typeName {
-               |$indent${indent}this.$fieldName = x
+               |${indent}with${JavaHelpers.upperize(name)}($name: $returnType): $typeName {
+               |$indent${indent}this.$fieldName = $name
                |$indent${indent}return this
                |$indent}
                |""".stripMargin
-          core + (if (shouldEmitAddressing(returnType)) builderMethod else "")
+          core + builderMethod
       }
 
-    private def shouldEmitAddressing(t: String) = t match {
-      case "string" | "number" | "boolean" => false
-      case x if x.contains("[") => false
-      case _ => true
-    }
   }
 
   override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =

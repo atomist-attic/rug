@@ -44,10 +44,10 @@ class TypeGenerator(basePackage: String = "ext_model", baseClassPackage: String 
 
   private def toTypeScriptFiles(json: String): ArtifactSource = {
     val types = extract(json)
-    val tig = new TypeScriptInterfaceGenerator(typeRegistry =
-      new SimpleTypeRegistry(types))
-    val tcg = new TypeScriptClassGenerator(typeRegistry =
-      new SimpleTypeRegistry(types))
+    val typeRegistry = new SimpleTypeRegistry(types)
+    //types.foreach(println(_))
+    val tig = new TypeScriptInterfaceGenerator(typeRegistry)
+    val tcg = new TypeScriptClassGenerator(typeRegistry)
     tig.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(basePackage) +
       tcg.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(baseClassPackage)
   }

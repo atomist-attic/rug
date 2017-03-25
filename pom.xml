@@ -455,7 +455,7 @@
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex"/>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/cortex"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -467,7 +467,7 @@
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/cortex/stub"/>
+                                        <mkdir dir="target/.atomist/node_modules/@atomist/cortex/stub"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -500,7 +500,7 @@
                                 <configuration>
                                     <mainClass>com.atomist.rug.ts.TypeGeneratorApp</mainClass>
                                     <arguments>
-                                        <argument>target/.atomist/node_modules/@atomist/rug</argument>
+                                        <argument>target/.atomist/node_modules/@atomist/</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

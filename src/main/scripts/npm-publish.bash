@@ -13,20 +13,23 @@ function err() {
     msg "$*" 1>&2
 }
 
+# publish node module, default MODULE=rug
+# usage: publish MODULE_VERSION [MODULE]
 function publish() {
     local module_version=$1
-    local mmodule_name=$2
     if [[ ! $module_version ]]; then
-        err "first parameter must be the version number of the module to publish"
+        err "publish: missing required parameter: MODULE_VERSION"
         return 10
     fi
-
+    shift
+    local module_name=$1
     if [[ ! $module_name ]]; then
-        err "second parameter must be the name of the module to publish"
-        return 10
+        module_name=rug
+    else
+        shift
     fi
 
-    local target="target/.atomist/node_modules/@atomist/${module_name}}"
+    local target="target/.atomist/node_modules/@atomist/$module_name"
     local package="$target/package.json"
     if ! sed "/version/s/REPLACE_ME/$module_version/" "$package.in" > "$package"; then
         err "failed to set version in $package"
@@ -52,6 +55,10 @@ function publish() {
         cat "$target/npm-debug.log"
         return 1
     fi
+}
+
+function main() {
+    publish "$@" || return 1
 }
 
 main "$@" || exit 1

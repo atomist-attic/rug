@@ -1,49 +1,30 @@
 package com.atomist.rug.ts
 
-import java.io.PrintWriter
-
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, TypeRegistry, Typed}
 import com.atomist.source.ArtifactSource
-import com.atomist.util.Utils
 import com.atomist.util.lang.JavaHelpers._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import org.apache.commons.io.IOUtils
 
-object TypeGenerator {
-
-  val CortexJsonLocation = "/com/atomist/rug/ts/cortex.json"
-
-  lazy val CortexJson = IOUtils.toString(getClass.getResourceAsStream(CortexJsonLocation), "UTF-8")
+object CortexTypeGenerator {
 
   val DefaultCortexDir = "cortex"
 
   val DefaultCortexStubDir = "cortex/stub"
 
-  lazy val ExtendedTypes: TypeRegistry = {
-    val types = new TypeGenerator(DefaultCortexDir, DefaultCortexDir).extract(CortexJson)
+  def extendedTypes(cortexJson: String): TypeRegistry = {
+    val types = new CortexTypeGenerator(DefaultCortexDir, DefaultCortexDir).extract(cortexJson)
     new SimpleTypeRegistry(types)
   }
 
 }
 
-object TypeGeneratorApp extends App {
-
-  import TypeGenerator._
-
-  val target = args.head
-  val tsig = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
-  val output = tsig.toNodeModule(TypeGenerator.CortexJson)
-  println(s"Generated Type module")
-  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(target + "/" + f.path))(_.write(f.content)))
-}
-
 /**
   * Take endpoints reported in JSON from a materializer service and generate types
   */
-class TypeGenerator(basePackage: String, baseClassPackage: String) {
+class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
 
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)

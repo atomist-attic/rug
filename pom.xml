@@ -498,7 +498,7 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <mainClass>com.atomist.rug.ts.TypeGeneratorApp</mainClass>
+                                    <mainClass>com.atomist.rug.ts.CortexTypeGeneratorApp</mainClass>
                                     <arguments>
                                         <argument>target/.atomist/node_modules/@atomist/</argument>
                                     </arguments>

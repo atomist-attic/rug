@@ -3,11 +3,13 @@ package com.atomist.rug.ts
 import com.atomist.source.ArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
-class TypeGeneratorTest extends FlatSpec with Matchers {
+class CortexTypeGeneratorTest extends FlatSpec with Matchers {
 
-  import TypeGenerator._
+  import DefaultTypeGeneratorConfig.CortexJson
 
-  private val typeGen = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
+  import CortexTypeGenerator._
+
+  private val typeGen = new CortexTypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
 
   "Type generation" should "find some types" in {
     val types = typeGen.extract(CortexJson)
@@ -25,8 +27,8 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
     val extendedModel = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
      //println(ArtifactSourceUtils.prettyListFiles(as))
-//    extendedModel.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
-//      println(s"${f.path}\n${f.content}\n\n"))
+    extendedModel.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
+      println(s"${f.path}\n${f.content}\n\n"))
     val cas = TypeScriptBuilder.compiler.compile(extendedModel + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,
       extendedModel
@@ -45,12 +47,12 @@ class TypeGeneratorTest extends FlatSpec with Matchers {
 
 }
 
-object TypeGeneratorTest {
+object CortexTypeGeneratorTest {
 
-  private val typeGen = new TypeGenerator(TypeGenerator.DefaultCortexDir, TypeGenerator.DefaultCortexStubDir)
+  private val typeGen = new CortexTypeGenerator(CortexTypeGenerator.DefaultCortexDir, CortexTypeGenerator.DefaultCortexStubDir)
 
   val fullModel: ArtifactSource = {
-    val as = typeGen.toNodeModule(TypeGenerator.CortexJson)
+    val as = typeGen.toNodeModule(DefaultTypeGeneratorConfig.CortexJson)
       .withPathAbove(".atomist/rug")
     TypeScriptBuilder.compiler.compile(as + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,

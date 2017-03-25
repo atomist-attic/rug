@@ -198,7 +198,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   protected def emitDocComment(description: String): String = {
     s"""
        |/*
-       | * $description
+       | * ${description.replace("\n", "\n * ")}
        | */""".stripMargin
   }
 
@@ -279,13 +279,12 @@ object TypeGenerationConfig {
   // TODO it would be nice to use absolute paths, but this presently
   // causes problems in test compilation
   val DefaultImports: String =
-    """|import {TreeNode,GraphNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
-       |import {ProjectContext} from '../operations/ProjectEditor'
-       |""".stripMargin
+  """|import {TreeNode,GraphNode,FormatInfo,PathExpressionEngine} from '../tree/PathExpression'
+     |import {ProjectContext} from '../operations/ProjectEditor'
+     |""".stripMargin
 
   val TestStubImports: String =
-    """
-      |import {GraphNode} from '../../tree/PathExpression'
-    """.stripMargin
+    """|import {GraphNode} from '../../tree/PathExpression'
+       |""".stripMargin
 
 }

@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     helpers that have no reliance on JVM objects (to be split out later)
 
 -   Support for generation of TypeScript interfaces and stub classes for Atomist "cortex"
-    model around commits, builds etc. Lives in @atommist/cortex module.
+    model around commits, builds etc. Lives in @atomist/cortex module.
 
 ## [0.17.3] - 2017-03-24
 

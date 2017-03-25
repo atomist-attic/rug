@@ -1,21 +1,17 @@
 package com.atomist.rug.ts
 
-import java.io.PrintWriter
-
-import com.atomist.param.{SimpleParameterValues, Tag}
-import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.param.Tag
 import com.atomist.rug.spi._
-import com.atomist.util.Utils
 import com.atomist.util.lang.JavaHelpers._
 
 import scala.collection.mutable.ListBuffer
 
-object TypeScriptStubClassGenerator extends App {
+private object TypeScriptStubClassGenerator {
 
-  val target = if (args.length < 1) "target/Core.ts" else args.head
-  val generator = new TypeScriptStubClassGenerator(DefaultTypeRegistry)
-  val output = generator.generate("", SimpleParameterValues(Map(generator.outputPathParam -> target)))
-  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
+  val DefaultTypedocBoilerplate: String =
+    """
+      |Generated class exposing Atomist Cortex.
+      |Fluent builder style class for use in testing and query by example.""".stripMargin
 }
 
 /**
@@ -37,14 +33,15 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
     private val interfaceModuleImport = "intf"
 
-    override def root = TypeScriptStubClassGenerator.this.root
+    override def root: String = TypeScriptStubClassGenerator.this.root
 
     override def specificImports: String =
       s"import * as $interfaceModuleImport from '../$name'\n"
 
     override def toString: String = {
       val output = new StringBuilder
-      output ++= emitDocComment(description)
+      output ++= emitDocComment(description + "\n" +
+        TypeScriptStubClassGenerator.DefaultTypedocBoilerplate)
       output ++= s"\nclass $name "
       val implementation = s"implements $interfaceModuleImport.$name"
       output ++= (if (parent.head == root) {
@@ -55,19 +52,28 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
         )
       output ++= s" {${config.separator}"
 
+      // Output private variables
+      output ++= methods
+        .map(mi =>
+          s"${indent}private ${toFieldName(mi)}: ${mi.returnType} = null")
+        .mkString("\n")
+      output ++= config.separator
+
+      // Emit methods from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
       output ++=
-        s"""
-          |      nodeName(): string {  return "$name" }
-          |
-          |      // Node we need -dynamic to allow dispatch in the proxy
-          |      nodeTags(): string[] { return [ "$name", "-dynamic" ] }
-        """.stripMargin
+        s"""|${indent}nodeName(): string {  return "$name" }
+            |
+            |${indent}nodeTags(): string[] { return [ "$name", "-dynamic" ] }
+            |
+            |""".stripMargin
 
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
     }
   }
+
+  private def toFieldName(m: MethodInfo): String = "_" + m.name
 
   private case class ClassMethodInfo(typeName: String,
                                      name: String,
@@ -83,21 +89,17 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
              """.stripMargin
         case _ =>
           // It has a return. So let's create a field
-          val fieldName = s"_$name"
           val core =
-          s"""${indent}private $fieldName: $returnType = null
-             |
-             |$comment$indent$name(${params.mkString(", ")}): $returnType {
-             |$indent${indent}return this.$fieldName
-             |$indent}""".stripMargin
+            s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
+                |$indent${indent}return this.${toFieldName(this)}
+                |$indent}""".stripMargin
           val builderMethod =
             s"""
                |
                |${indent}with${upperize(name)}($name: $returnType): $typeName {
-               |$indent${indent}this.$fieldName = $name
+               |$indent${indent}this.${toFieldName(this)} = $name
                |$indent${indent}return this
-               |$indent}
-               |""".stripMargin
+               |$indent}""".stripMargin
           core + builderMethod
       }
 

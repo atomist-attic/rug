@@ -5,7 +5,7 @@ import com.atomist.rug.spi.SimpleTypeRegistry
 import com.atomist.rug.ts._
 import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import org.scalatest.{FlatSpec, Matchers}
-import TypeGenerator._
+import CortexTypeGenerator._
 
 object TypeScriptStubClassGeneratorTest {
 
@@ -39,10 +39,12 @@ object TypeScriptStubClassGeneratorTest {
 
 class TypeScriptStubClassGeneratorTest extends FlatSpec with Matchers {
 
+  import DefaultTypeGeneratorConfig.CortexJson
+
   // Note, only external model is relevant.
   // We don't need to test against project types like File
   it should "generate compilable typescript classes" in {
-    val types = new TypeGenerator(DefaultCortexDir, DefaultCortexStubDir).extract(CortexJson)
+    val types = new CortexTypeGenerator(DefaultCortexDir, DefaultCortexStubDir).extract(CortexJson)
     val tr = new SimpleTypeRegistry(types)
 
     // Classes won't compile without the interfaces they implement

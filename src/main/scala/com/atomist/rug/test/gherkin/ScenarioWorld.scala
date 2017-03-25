@@ -6,8 +6,14 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
-import com.atomist.rug.ts.TypeGenerator
+import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
+
+object ScenarioWorld {
+
+  lazy val ExtendedTypes: TypeRegistry = CortexTypeGenerator.extendedTypes(DefaultTypeGeneratorConfig.CortexJson)
+
+}
 
 /**
   * Standard world for a scenario that lets us add bindings
@@ -21,7 +27,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
 
   private var ipe: InvalidParametersException = _
 
-  private var tr: TypeRegistry = DefaultTypeRegistry + TypeGenerator.ExtendedTypes
+  private var tr: TypeRegistry = DefaultTypeRegistry + ScenarioWorld.ExtendedTypes
 
   def typeRegistry: TypeRegistry = tr
 

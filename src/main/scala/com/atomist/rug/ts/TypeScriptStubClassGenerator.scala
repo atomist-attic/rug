@@ -36,7 +36,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
     override def root: String = TypeScriptStubClassGenerator.this.root
 
     override def specificImports: String =
-      s"import * as $interfaceModuleImport from '../$name'\n"
+      s"""import * as $interfaceModuleImport from "../$name";\n"""
 
     override def toString: String = {
       val output = new StringBuilder

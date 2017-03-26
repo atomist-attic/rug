@@ -218,7 +218,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.imports
       output ++= t.specificImports
       output ++= getImports(generatedTypes, t)
-      output ++= s"\nexport {${t.name}}\n"
+      output ++= s"\nexport { ${t.name} }\n"
       output ++= t.toString
       output ++= config.separator
       tsClassOrInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
@@ -228,9 +228,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     // Add Core.ts
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"""import {${t.name}} from "./${t.name}"""").mkString("\n")
+    output ++= alreadyGenerated.map(t => s"""import { ${t.name} } from "./${t.name}"""").mkString("\n")
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"export {${t.name}}").mkString("\n")
+    output ++= alreadyGenerated.map(t => s"export { ${t.name} }").mkString("\n")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())
 
     tsClassOrInterfaces
@@ -245,7 +245,10 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val imports = interfaceTypes
       .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]")).filter(currentType.name != t.name && _ == t.name))
       .toList
-    (currentType.parent.toList ::: imports).distinct.filter(_ != currentType.root).map(i => s"""import {$i} from "./$i"""").mkString("\n")
+    (currentType.parent.toList ::: imports)
+      .distinct
+      .filterNot(_ == currentType.root)
+      .map(i => s"""import { $i } from "./$i"""").mkString("\n")
   }
 }
 
@@ -277,12 +280,12 @@ case class TypeGenerationConfig(
 object TypeGenerationConfig {
 
   val DefaultImports: String =
-  """|import {TreeNode,GraphNode,FormatInfo,PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-     |import {ProjectContext} from '@atomist/rug/operations/ProjectEditor'
-     |""".stripMargin
+    """|import { TreeNode, GraphNode, FormatInfo, PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
+       |import { ProjectContext } from '@atomist/rug/operations/ProjectEditor'
+       |""".stripMargin
 
   val TestStubImports: String =
-    """|import {GraphNode} from '@atomist/rug/tree/PathExpression'
+    """|import { GraphNode } from '@atomist/rug/tree/PathExpression'
        |""".stripMargin
 
 }

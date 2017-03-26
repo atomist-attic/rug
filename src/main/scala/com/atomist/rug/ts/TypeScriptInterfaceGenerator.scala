@@ -34,7 +34,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                             parent: Seq[String] = Seq(root))
     extends GeneratedType {
 
-    override def root = TypeScriptInterfaceGenerator.this.root
+    override def root: String = TypeScriptInterfaceGenerator.this.root
 
     override def toString: String = {
       val output = new StringBuilder
@@ -58,7 +58,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     extends MethodInfo {
 
     override def toString: String =
-      s"$comment$indent$name(${params.mkString(", ")}): $returnType"
+      s"$comment$indent$name(${params.mkString(", ")}): $returnType;"
   }
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =

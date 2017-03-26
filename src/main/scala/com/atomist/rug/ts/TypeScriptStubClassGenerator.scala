@@ -55,15 +55,19 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       // Output private variables
       output ++= methods
         .map(mi =>
-          s"${indent}private ${toFieldName(mi)}: ${mi.returnType} = null")
+          s"${indent}private ${toFieldName(mi)}: ${mi.returnType};")
         .mkString("\n")
       output ++= config.separator
 
       // Emit methods from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
       output ++=
-        s"""|${indent}nodeName(): string {  return "$name" }
+        s"""|${indent}nodeName(): string {
+            |${indent}${indent}return "$name";
+            |$indent}
             |
-            |${indent}nodeTags(): string[] { return [ "$name", "-dynamic" ] }
+            |${indent}nodeTags(): string[] {
+            |${indent}${indent}return [ "$name", "-dynamic" ];
+            |$indent}
             |
             |""".stripMargin
 
@@ -91,14 +95,14 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           // It has a return. So let's create a field
           val core =
             s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
-                |$indent${indent}return this.${toFieldName(this)}
+                |$indent${indent}return this.${toFieldName(this)};
                 |$indent}""".stripMargin
           val builderMethod =
             s"""
                |
                |${indent}with${upperize(name)}($name: $returnType): $typeName {
-               |$indent${indent}this.${toFieldName(this)} = $name
-               |$indent${indent}return this
+               |$indent${indent}this.${toFieldName(this)} = $name;
+               |$indent${indent}return this;
                |$indent}""".stripMargin
           core + builderMethod
       }

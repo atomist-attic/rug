@@ -406,6 +406,14 @@
                                             <arg value="-p"/>
                                             <arg value="target/.atomist/node_modules/@atomist/rug"/>
                                         </exec>
+                                        <exec executable="target/node_modules/typescript/bin/tsc" failonerror="true">
+                                            <arg value="-p"/>
+                                            <arg value="target/.atomist/node_modules/@atomist/cortex"/>
+                                        </exec>
+                                        <!--exec executable="target/node_modules/typescript/bin/tsc" failonerror="true">
+                                            <arg value="-p"/>
+                                            <arg value="target/.atomist/node_modules/@atomist/native"/>
+                                        </exec-->
                                     </target>
                                 </configuration>
                             </execution>

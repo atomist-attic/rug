@@ -31,7 +31,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                         parent: Seq[String] = Seq(root))
     extends GeneratedType {
 
-    private val interfaceModuleImport = "intf"
+    private val interfaceModuleImport = "api"
 
     override def root: String = TypeScriptStubClassGenerator.this.root
 

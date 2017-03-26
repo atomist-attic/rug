@@ -5,7 +5,7 @@ import _root_.java.io.File
 import com.atomist.param.SimpleParameterValues
 import com.atomist.rug.compiler.typescript.TypeScriptCompiler
 import com.atomist.rug.compiler.typescript.compilation.CompilerFactory
-import com.atomist.source.ArtifactSource
+import com.atomist.source.{ArtifactSource, FileArtifact, FileEditor}
 import com.atomist.source.file.{FileSystemArtifactSource, FileSystemArtifactSourceIdentifier}
 import com.atomist.source.filter.ArtifactFilter
 
@@ -21,8 +21,26 @@ object TypeScriptBuilder {
   val compiler = new TypeScriptCompiler(CompilerFactory.cachingCompiler(CompilerFactory.create(),
     new File(".", "target" + File.separator + ".jscache").getAbsolutePath))
 
-  def compileUserModel(sources: Seq[ArtifactSource]): ArtifactSource = {
-    val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(new File("src/main/typescript")), new ArtifactFilter {
+  // We need to use relative imports in tests
+  private val testTimeUserModel = new FileEditor {
+    override def canAffect(f: FileArtifact) = true
+
+    override def edit(f: FileArtifact): FileArtifact = {
+      // TODO fragile, depends on hard-coded stub to decide on depth to back up
+      val extra = if (f.path.contains("stub")) "../" else ""
+      val newF = f.withContent(
+        f.content
+          .replace("@atomist/rug/tree", s"$extra../tree")
+          .replace("@atomist/rug/operations", s"$extra../operations")
+      )
+      newF
+    }
+  }
+
+  def compileUserModel(rawSources: Seq[ArtifactSource]): ArtifactSource = {
+    val sources = rawSources.map(_.edit(testTimeUserModel))
+    val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(
+      new File("src/main/typescript")), new ArtifactFilter {
       override def apply(s: String) =
         !s.endsWith(".js")
     })

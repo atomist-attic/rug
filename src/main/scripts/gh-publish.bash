@@ -50,10 +50,18 @@ function main() {
     fi
     local refspec=master:$branch
 
-    if ! mv target/.atomist/node_modules/@atomist/rug/typedoc target/site; then
-        err "failed to move TypeDoc to site directory"
+    if ! mkdir -p target/site/typedoc; then
+        err "failed to create typdoc directory"
         return 1
     fi
+
+    for module in rug cortex; do
+        if ! mv "target/.atomist/node_modules/@atomist/$module/typedoc" "target/site/typedoc/$module"; then
+            err "failed to move $module TypeDoc to site directory"
+            return 1
+        fi
+    done
+
     if ! cd target/site; then
         err "failed to change to site directory"
         return 1

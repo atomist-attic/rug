@@ -3,7 +3,7 @@
 set -o pipefail
 
 declare Pkg=npm-publish
-declare Version=0.1.0
+declare Version=0.2.0
 
 function msg() {
     echo "$Pkg: $*"

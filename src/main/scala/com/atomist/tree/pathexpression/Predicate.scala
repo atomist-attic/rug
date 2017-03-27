@@ -4,7 +4,6 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
-import com.atomist.tree.utils.NodeUtils
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
@@ -106,8 +105,6 @@ case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
   * Predicate that may or may not exist.  This is typically used with
   * NestedPathExpressionPredicates so they get materialized in the returned
   * node tree.
-  *
-  * @param optionalPredicate
   */
 case class OptionalPredicate(optionalPredicate: Predicate) extends Predicate {
   override def toString: String = optionalPredicate.name + "?"
@@ -115,12 +112,8 @@ case class OptionalPredicate(optionalPredicate: Predicate) extends Predicate {
   /**
     * Always returns true.
     *
-    * @param root
     * @param returnedNodes all nodes returned. This argument is
     *                      often ignored, but can be used to discern the index of the target node.
-    * @param ee
-    * @param typeRegistry
-    * @param nodePreparer
     * @return
     */
   override def evaluate(root: GraphNode,
@@ -149,37 +142,9 @@ case class IndexPredicate(i: Int) extends Predicate {
 
 }
 
-case class PropertyValuePredicate(property: String, expectedValue: String) extends Predicate {
-
-  override def toString: String = s"@$property=$expectedValue"
-
-  override def evaluate(n: GraphNode,
-                        returnedNodes: Seq[GraphNode],
-                        ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
-                        nodePreparer: Option[NodePreparer]): Boolean = {
-    if (property == "value") {
-      // Treat the value property specially
-      n match {
-        case tn: TreeNode => tn.value == expectedValue
-        case _ => false
-      }
-    }
-    else {
-      val extracted = n.relatedNodesNamed(property)
-      if (extracted.size == 1) {
-        val result = extracted.head match {
-          case tn: TreeNode => tn.value.equals(expectedValue)
-          case _ => false
-        }
-        //println(s"Comparing property [$property] of [${extracted.head.value}] against expected [$expectedValue] gave $result")
-        result
-      }
-      else NodeUtils.invokeMethodIfPresent[String](n, property).contains(expectedValue)
-    }
-  }
-}
-
+/**
+  * Match the node name or a name property
+  */
 case class NodeNamePredicate(expectedName: String) extends Predicate {
 
   override def toString: String = s"@name=$expectedName"
@@ -189,7 +154,11 @@ case class NodeNamePredicate(expectedName: String) extends Predicate {
                         ee: ExpressionEngine,
                         typeRegistry: TypeRegistry,
                         nodePreparer: Option[NodePreparer]): Boolean =
-    n.nodeName.equals(expectedName)
+    n.nodeName == expectedName || (
+      n.followEdge("name").toList match {
+        case List(oneElt: TreeNode) if oneElt.value == expectedName => true
+        case _ => false
+      })
 }
 
 case class NodeTypePredicate(expectedType: String) extends Predicate {

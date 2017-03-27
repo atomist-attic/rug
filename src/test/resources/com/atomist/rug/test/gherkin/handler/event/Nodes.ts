@@ -29,7 +29,8 @@ export class Person implements GraphNode {
 
     constructor(private _name: string) {} 
 
-    nodeName(): string {  return this._name }
+    // Intentionally make this different to the name, to test
+    nodeName(): string {  return "A person" }
 
     nodeTags(): string[] { return [ "Person", "-dynamic" ] }
 

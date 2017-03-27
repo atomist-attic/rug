@@ -7,15 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.17.3...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.18.0...HEAD
+
+## [0.18.0] - 2017-03-27
+
+[0.18.0]: https://github.com/atomist/rug/compare/0.17.3...0.18.0
+
+Cortex release
 
 ### Added
 
--   Add placeholder npm module @atomist/native for pure TypeScript/JavaScript
-    helpers that have no reliance on JVM objects (to be split out later)
+-   Add placeholder npm module @atomist/native for pure
+    TypeScript/JavaScript helpers that have no reliance on JVM objects
+    (to be split out later)
+-   Support for generation of TypeScript interfaces and stub classes
+    for Atomist "cortex" model around commits, builds etc. Lives in
+    @atomist/cortex module.
 
--   Support for generation of TypeScript interfaces and stub classes for Atomist "cortex"
-    model around commits, builds etc. Lives in @atomist/cortex module.
+### Changed
+
+-   Travis CI build always uses npm-release Maven profile
 
 ## [0.17.3] - 2017-03-24
 
@@ -25,16 +36,16 @@ Fixup before prod rollout release
 
 ### Fixed
 
--   'null' and undefined are not serialized to JSON in instruction parameters
-    https://github.com/atomist/rug/issues/466
+-   'null' and undefined are not serialized to JSON in instruction
+    parameters [#466][466]
+-   NodesWithTag allows dynamic nodes on `Child` axis to not match
+    without error
+-   Don't set default parameter values if they are null [#458][458]
+-   Support optional parameters in AnnotatedRugFunctions [#462][462]
 
--   NodesWithTag allows dynamic nodes on `Child` axis to not match without error
-
--   Don't set default parameter values if they are null
-    https://github.com/atomist/rug/issues/458
-
--   Support optional parameters in AnnotatedRugFunctions
-    https://github.com/atomist/rug/issues/462
+[466]: https://github.com/atomist/rug/issues/466
+[458]: https://github.com/atomist/rug/issues/458
+[462]: https://github.com/atomist/rug/issues/462
 
 ## [0.17.2] - 2017-03-22
 

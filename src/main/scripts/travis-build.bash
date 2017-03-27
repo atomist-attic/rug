@@ -17,7 +17,7 @@ function err() {
 function main() {
     msg "branch is ${TRAVIS_BRANCH}"
 
-    local mvn="mvn --settings .settings.xml -B -V -P allow-warnings"
+    local mvn="mvn --settings .settings.xml -B -V -P npm-release"
     local project_version
     if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         if ! $mvn build-helper:parse-version versions:set -DnewVersion="$TRAVIS_TAG" versions:commit; then
@@ -60,7 +60,7 @@ function main() {
             mvn_deploy_args=-DaltDeploymentRepository=public-atomist-dev::default::https://atomist.jfrog.io/atomist/libs-dev-local
         fi
 
-        if ! $mvn deploy site -DskipTests $mvn_deploy_args -P npm-release; then
+        if ! $mvn deploy site -DskipTests $mvn_deploy_args; then
             err "maven deploy failed"
             return 1
         fi

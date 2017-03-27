@@ -32,7 +32,11 @@ object PomMutableView {
   val dependenciesBaseXPath = s"$projectBaseXPath/$dependencies"
   val dependencyBaseXPath = s"$projectBaseXPath/$dependencies/$dependency"
   val plugin = "plugin"
-  val buildPluginsBaseXPath = s"$projectBaseXPath/build/plugins"
+  val pluginManagement = "pluginManagement"
+  val plugins = "plugins"
+  val buildBaseXPath = s"$projectBaseXPath/build"
+  val buildPluginManagementBaseXPath = s"$buildBaseXPath/$pluginManagement"
+  val buildPluginsBaseXPath = s"$buildBaseXPath/$plugins"
   val dependencyManagement = "dependencyManagement"
   val dependencyManagementBaseXPath = s"$projectBaseXPath/$dependencyManagement"
 }
@@ -113,6 +117,15 @@ trait PomMutableViewNonMutatingFunctions extends BuildViewNonMutatingFunctions {
     description = "The artifactId of the build plugin you are looking to test the presence of")
                            artifactId: String): Boolean =
     contains(s"$buildPluginsBaseXPath/$plugin/$mavenArtifactId [text() = '$artifactId' and ../$mavenGroupId [text() = '$groupId']]")
+
+  @ExportFunction(readOnly = true, description = "Return whether a build plugin management plugin is present as specified by artifactId and groupId")
+  def isBuildPluginManagementPresent(@ExportFunctionParameterDescription(name = "groupId",
+    description = "The groupId of the build plugin management plugin you are looking to test the presence of")
+                           groupId: String,
+                           @ExportFunctionParameterDescription(name = "artifactId",
+    description = "The artifactId of the build plugin management plugin you are looking to test the presence of")
+                           artifactId: String): Boolean =
+    contains(s"$buildPluginManagementBaseXPath/$plugins/$plugin/$mavenArtifactId [text() = '$artifactId' and ../$mavenGroupId [text() = '$groupId']]")
 
   @ExportFunction(readOnly = true, description = "Return whether a dependency management dependency is present as specified by artifactId and groupId")
   def isDependencyManagementDependencyPresent(@ExportFunctionParameterDescription(name = "groupId",
@@ -344,6 +357,24 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       plugin,
       pluginContent)
 
+  @ExportFunction(readOnly = false, description = "Adds or replaces a build plugin management plugin")
+  def addOrReplaceBuildPluginManagementPlugin(@ExportFunctionParameterDescription(name = "groupId",
+    description = "The value of the build plugin management plugins's groupId")
+                              groupId: String,
+                              @ExportFunctionParameterDescription(name = "artifactId",
+                                description = "The value of the build plugin management plugins's artifactId")
+                              artifactId: String,
+                              @ExportFunctionParameterDescription(name = "pluginContent",
+                                description = "The XML content for the plugin")
+                              pluginContent: String): Unit = {
+    addBuildPluginManagementSectionIfNotPresent()
+
+    addOrReplaceNode(buildPluginManagementBaseXPath + "/plugins",
+      s"/project/build/pluginManagement/plugins/plugin/artifactId [text()='$artifactId' and ../groupId [text() = '$groupId']]/..",
+      plugin,
+      pluginContent)
+  }
+
   @ExportFunction(readOnly = false, description = "Adds or replaces a dependency management dependency")
   def addOrReplaceDependencyManagementDependency(@ExportFunctionParameterDescription(name = "groupId",
     description = "The value of the dependency's groupId")
@@ -360,6 +391,13 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       s"/$dependencyManagementBaseXPath/$dependencies/$dependency/$mavenArtifactId [text()='$artifactId' and ../$mavenGroupId [text() = '$groupId']]/..",
       dependency,
       dependencyContent)
+  }
+
+  private def addBuildPluginManagementSectionIfNotPresent(): Unit = {
+    addNodeIfNotPresent(buildBaseXPath,
+      buildPluginManagementBaseXPath,
+      pluginManagement,
+      s"<$pluginManagement><$plugins></$plugins></$pluginManagement>")
   }
 
   private def addDependencyManagementSectionIfNotPresent(): Unit = {

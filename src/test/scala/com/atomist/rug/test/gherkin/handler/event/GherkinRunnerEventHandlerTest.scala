@@ -44,15 +44,6 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   it should "use generated model" in
     useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
 
-  it should "use generated model with query by example" in
-    useGeneratedModel("PassingFeature1StepsAgainstGenerated2.ts")
-
-  it should "use generated model with deeper query by example" in
-    useGeneratedModel("PassingFeature1StepsAgainstGenerated3.ts")
-
-  it should "use generated model with still deeper query by example" in
-    useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
-
   private def useGeneratedModel(stepsFile: String): Unit = {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
@@ -79,12 +70,6 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   it should "verify no plan steps with matching simple path match using named type" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2a.ts")
-
-  it should "verify no plan steps with matching simple path match using named type and root query by example" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2b.ts")
-
-  it should "verify no plan steps with matching simple path match using named type and leaf query by example" in
-    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2c.ts")
 
   it should "verify no plan steps with matching deeper path match" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")

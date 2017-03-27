@@ -7,13 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.18.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.18.2...HEAD
+
+## [0.18.2] - 2017-03-27
+
+[0.18.2]: https://github.com/atomist/rug/compare/0.18.1...0.18.2
+
+Re-Re-Cortex release
+
+### Fixed
+
+-   NPM publish of cortex
 
 ## [0.18.1] - 2017-03-27
 
 [0.18.1]: https://github.com/atomist/rug/compare/0.18.0...0.18.1
 
-Cortex release
+Re-Cortex release
 
 ### Fixed
 

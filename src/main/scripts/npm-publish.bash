@@ -31,7 +31,7 @@ function publish() {
 
     local target="target/.atomist/node_modules/@atomist/$module_name"
     local package="$target/package.json"
-    if ! sed "/version/s/REPLACE_ME/$module_version/" "$package.in" > "$package"; then
+    if ! sed "s/REPLACE_ME/$module_version/g" "$package.in" > "$package"; then
         err "failed to set version in $package"
         return 1
     fi

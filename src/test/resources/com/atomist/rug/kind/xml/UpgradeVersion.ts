@@ -3,7 +3,6 @@ import {Project, Xml} from '@atomist/rug/model/Core'
 import { Pattern, RugOperation } from '@atomist/rug/operations/RugOperation'
 import {PathExpression,PathExpressionEngine,TextTreeNode} from '@atomist/rug/tree/PathExpression'
 import { Editor, Tags, Parameter } from '@atomist/rug/operations/Decorators'
-import {editWith} from '@atomist/rug/operations/PlanUtils'
 
 /*
     Return a path expression to match the version of a particular dependency, if found
@@ -38,14 +37,6 @@ export class UpgradeVersion implements EditProject {
     desiredVersion: string
     
     edit(project: Project) {
-
-        // TODO we should really test this with a pure JavaScript testing framework
-        let instruction = editWith(project, this) as any
-        if (instruction.name != "UpgradeVersion") throw new Error("Name is wrong")
-        if (instruction.kind != "edit") throw new Error("Kind is wrong")
-        if (!(instruction.parameters.group && instruction.parameters.artifact && instruction.parameters.desiredVersion))
-            throw new Error("Parameters wrong")
-
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         let search = versionOfDependency(this.group, this.artifact)
         eng.with<TextTreeNode>(project, search, version => {

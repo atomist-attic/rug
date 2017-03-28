@@ -13,6 +13,7 @@ import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
   * Constructs plans from Nashorn response to a Handler/handle operation
   */
 object ConstructPlan {
+
   def apply(jsObj: Any): Option[Plan] = {
     jsObj match {
       case o: ScriptObjectMirror => Some(new PlanBuilder().constructPlan(o))
@@ -28,7 +29,7 @@ class PlanBuilder {
       // we are allowed to return a Message directly from handlers
       Plan(Seq(constructMessage(jsPlan)),Nil)
     } else {
-      val jsMessages = jsPlan.getMember("_messages") match {
+      val jsMessages = jsPlan.getMember("messages") match {
         case o: ScriptObjectMirror => o.values().toArray.toList
         case _ => Nil
       }
@@ -36,7 +37,7 @@ class PlanBuilder {
         val m = message.asInstanceOf[ScriptObjectMirror]
         constructMessage(m)
       }
-      val instructions = jsPlan.getMember("_instructions") match {
+      val instructions = jsPlan.getMember("instructions") match {
         case u: Undefined => Nil
         case jsInstructions: ScriptObjectMirror =>
           jsInstructions.values().toArray.toList.map { respondable =>

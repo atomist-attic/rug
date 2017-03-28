@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.19.0...HEAD
 
+
+### Changed
+
+-  TypeScript Plan class now exposes properties rather than functions
+
 ## [0.19.0] - 2017-03-28
 
 [0.19.0]: https://github.com/atomist/rug/compare/0.18.3...0.19.0

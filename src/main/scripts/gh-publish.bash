@@ -56,7 +56,7 @@ function main() {
     fi
 
     for module in rug cortex; do
-        if ! mv "target/.atomist/node_modules/@atomist/$module/typedoc" "target/site/typedoc/$module"; then
+        if ! mv "target/typedoc/$module" "target/site/typedoc/$module"; then
             err "failed to move $module TypeDoc to site directory"
             return 1
         fi

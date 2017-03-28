@@ -111,7 +111,10 @@ class jsSafeCommittingProxy(
       case navigation if node.relatedNodeNames.contains(navigation) =>
         new FunctionProxyToNodeNavigationMethods(navigation, node)
       case _ =>
-        throw new UnsupportedOperationException(s"Function [$name] not implemented on node with name [${node.nodeName}]")
+        throw new UnsupportedOperationException(
+          s"""Function [$name] cannot be evaluated on node with name [${node.nodeName}]
+             |Check that the function is defined on type [${node.nodeTags.headOption.getOrElse("???")}] and that the relationship is materialized
+             |""".stripMargin)
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>

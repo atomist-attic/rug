@@ -3,7 +3,8 @@ package com.atomist.rug.test.gherkin.handler.event
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.test.gherkin.{GherkinRunner, Passed}
+import com.atomist.rug.spi.Handlers.Status.Failure
+import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
@@ -37,6 +38,29 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "produce good message without a handler loaded" in {
+    val passingFeature1StepsFile = requiredFileInPackage(
+      this,
+      "FailingFeature1Steps.ts",
+      ".atomist/tests/handlers/event"
+    )
+
+    val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
+    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile, nodesFile)
+
+    //println(ArtifactSourceUtils.prettyListFiles(as))
+    val cas = TypeScriptBuilder.compileWithModel(as)
+
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Failed(msg) =>
+        println(s"Message is[$msg]")
+        assert(!msg.contains("null"))
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

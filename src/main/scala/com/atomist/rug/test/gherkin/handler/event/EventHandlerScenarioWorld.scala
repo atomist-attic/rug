@@ -16,7 +16,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
 
   //private var registeredHandlers: Set[EventHandler] = Set()
 
-  private var handler: Option[EventHandler] = _
+  private var handler: Option[EventHandler] = None
 
   def eventHandler(name: String): EventHandler = {
     rugs match {

@@ -59,8 +59,29 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Failed(msg) =>
-        println(s"Message is[$msg]")
         assert(!msg.contains("null"))
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "produce good message when a test fails with a void return and exception" in {
+    val passingFeature1StepsFile = requiredFileInPackage(
+      this,
+      "FailsDueToError.ts",
+      ".atomist/tests/handlers/event"
+    )
+
+    val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
+    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile, nodesFile)
+
+    //println(ArtifactSourceUtils.prettyListFiles(as))
+    val cas = TypeScriptBuilder.compileWithModel(as)
+
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Failed(msg) =>
+        assert(msg.contains("What in God's holy name are you blathering about"))
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -94,6 +115,9 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   it should "verify no plan steps with matching simple path match using named type" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2a.ts")
+
+  it should "verify no plan steps with matching simple path match with void return" in
+    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps2d.ts")
 
   it should "verify no plan steps with matching deeper path match" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")

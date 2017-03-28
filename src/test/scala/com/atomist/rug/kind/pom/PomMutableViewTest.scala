@@ -17,9 +17,13 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   lazy val pomWithDependencyManagement = JavaTypeUsageTest.NewSpringBootProject.findFile("pomWithDependencyManagement.xml").get
 
+  lazy val pomWithPluginManagement = JavaTypeUsageTest.NewSpringBootProject.findFile("pomWithPluginManagement.xml").get
+
   var validPomNoParent: PomMutableView = _
 
   var validPomWithDependencyManagement: PomMutableView = _
+
+  var validPomWithPluginManagement: PomMutableView = _
 
   private def testConditions(uut: PomMutableView, response: String, expectedResponse: String, dirty: Boolean = false) = {
     response should be(expectedResponse)
@@ -30,6 +34,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomUut = new PomMutableView(pom, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomNoParent = new PomMutableView(pomNoParent, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+    validPomWithPluginManagement = new PomMutableView(pomWithPluginManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
   }
 
@@ -627,6 +632,38 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
     validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, originalArtifactId) should be(true)
     validPomWithDependencyManagement.isDependencyManagementDependencyPresent(groupId, artifactId) should be(true)
+  }
+
+  it should "be able to test that a plugin management plugin is present when no plugin management section" in {
+    val groupId = "com.spotify"
+    val artifactId = "docker-maven-plugin"
+
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(false)
+
+    assert(validPomUut.dirty === false)
+  }
+
+  it should "be able to test that a plugin management plugin is present when it is" in {
+    val groupId = "com.spotify"
+    val artifactId = "docker-maven-plugin"
+
+    validPomWithPluginManagement.isBuildPluginManagementPresent(groupId, artifactId) should be(true)
+
+    assert(validPomWithPluginManagement.dirty === false)
+  }
+
+  it should "add a build plugin management plugin" in {
+    val groupId = "com.spotify"
+    val artifactId = "docker-maven-plugin"
+    val plugin = s"""<plugin><groupId>$groupId</groupId><artifactId>$artifactId</artifactId></plugin>"""
+
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(false)
+
+    validPomUut.addOrReplaceBuildPluginManagementPlugin(groupId, artifactId, plugin)
+
+    assert(validPomUut.dirty === true)
+
+    validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(true)
   }
 }
 

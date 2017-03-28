@@ -11,7 +11,7 @@ class XmlTypeTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject)
     val xt = new XmlType
     xt.findAllIn(pmv) match {
-      case Some(xs) => assert(xs.size === 4)
+      case Some(xs) => assert(xs.size === 5)
       case x => fail(s"no XMLs found, found $x instead")
     }
   }

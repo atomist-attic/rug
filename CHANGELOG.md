@@ -7,11 +7,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.18.3...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.19.0...HEAD
+
+## [0.19.0] - 2017-03-28
+
+[0.19.0]: https://github.com/atomist/rug/compare/0.18.3...0.19.0
+
+### Added
+
+- Added tag to commit back relationship
+- Added platform property on builds
+- Added new methods for pluginManagement
+
+### Changed
+
+- Better error message when failing to navigate property
+- Better error message when handler was not registered in a test
+- Building typedocs for cortex as well as rug
 
 ## [0.18.3] - 2017-03-27
 
-[0.18.2]: https://github.com/atomist/rug/compare/0.18.2...0.18.3
+[0.18.3]: https://github.com/atomist/rug/compare/0.18.2...0.18.3
 
 Minor path expression fix release
 

@@ -23,7 +23,7 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
 
   private var bindings: Map[String,Object] = Map()
 
-  private var _aborted = false
+  private var abortedBy: Option[String] = None
 
   private var ipe: InvalidParametersException = _
 
@@ -43,13 +43,15 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
   /**
     * Was the scenario run aborted?
     */
-  def aborted: Boolean = _aborted
+  def aborted: Boolean = abortedBy.isDefined
+
+  def abortMessage: String = abortedBy.getOrElse("NOT aborted")
 
   /**
     * Abort the scenario run, for example, because a given threw an exception.
     */
-  def abort(): Unit = {
-    _aborted = true
+  def abort(msg: String): Unit = {
+    abortedBy = Some(msg)
   }
 
   def put(key: String, value: Object): Unit = {

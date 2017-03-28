@@ -50,7 +50,8 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case "Then " if !world.aborted =>
             Some(runThen(world, step))
           case "Then " if world.aborted =>
-            Some(AssertionResult(step.getText, Failed("Scenario aborted: Could not evaluate")))
+            Some(AssertionResult(step.getText,
+              Failed(s"Scenario aborted: Could not evaluate: [${world.abortMessage}]")))
           case _ =>
             None
         }
@@ -100,7 +101,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
-            world.abort()
+            world.abort(t.getMessage)
           case _ =>
           // Do nothing
         }
@@ -118,7 +119,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
-            world.abort()
+            world.abort(t.getMessage)
           case _ =>
           // OK
         }

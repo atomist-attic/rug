@@ -5,7 +5,7 @@ import com.atomist.rug.TestUtils
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.test.gherkin.handler.event.EventHandlerTestTargets
-import com.atomist.rug.test.gherkin.{GherkinRunner, Passed}
+import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
@@ -33,6 +33,24 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "fail appropriately when going off materialized graph" in {
+    val passingFeature1Steps =
+      TestUtils.requiredFileInPackage(this, "GoesOffGraphSteps.ts")
+        .withPath(".atomist/tests/handlers/command/GoesOffGraphSteps.ts")
+
+    val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/Handlers.ts")
+    val as = SimpleFileBasedArtifactSource(nodesFile, Feature1File, passingFeature1Steps, handlerFile)
+
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Failed(msg) =>
+
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

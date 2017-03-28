@@ -77,3 +77,24 @@ class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
     }
 }
 export const command4 = new RunsMatchingPathExpressionCommandHandler();
+
+@CommandHandler("GoesOffGraph", "Goes off graph")
+@Tags("path_expression")
+class GoesOffGraph implements HandleCommand {
+
+    handle(ctx: HandlerContext): Plan {
+        let result = new Plan()
+        const eng = ctx.pathExpressionEngine()
+
+        const findPerson = "/Commit/Person()[@name='Ebony']"
+        eng.with<node.Person>(ctx.contextRoot(), findPerson, peep => {
+            // Deliberate error should throw exception
+            peep.gitHubId().id()
+            // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
+            result.add(new Message(peep.name()).withCorrelationId("dude"))
+        })
+        // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
+        return result;
+    }
+}
+export const command5 = new GoesOffGraph();

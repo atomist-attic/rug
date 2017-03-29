@@ -11,7 +11,17 @@ import scala.concurrent.Future
   */
 object Handlers {
 
-  case class Plan(messages: Seq[Message], instructions: Seq[Plannable]) extends Callback {
+  /**
+    * A plan in response to this event
+    * @param messages messages in the plan
+    * @param instructions instructions in the plan
+    * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
+    *                     if one is available
+    */
+  case class Plan(messages: Seq[Message],
+                  instructions: Seq[Plannable],
+                  nativeObject: Option[AnyRef] = None) extends Callback {
+
     override def toDisplay: String = {
       s"Plan[${(messages.map(_.toDisplay) ++ instructions.map(_.toDisplay)).mkString(", ")}]"
     }
@@ -22,6 +32,7 @@ object Handlers {
                      channelId: Option[String],
                      correlationId: Option[String] = None,
                      treeNode: Option[TreeNode] = None) extends Callback {
+
     override def toDisplay: String = {
       val channel = channelId match {
         case Some(c) => s"$c: "
@@ -46,7 +57,7 @@ object Handlers {
 
   sealed trait Plannable {
     def instruction: Instruction
-    def toDisplay = instruction.toDisplay
+    def toDisplay: String = instruction.toDisplay
   }
 
   case class Respondable(instruction: RespondableInstruction,

@@ -9,7 +9,7 @@ When("a visionary leader enters", world => {
 });
 Then("excitement ensues", world => {
     //console.log(`World plan is ${world.plan()}, first message body is ${world.plan().messages[0].body.value}`)
-    let drillDown = world.plan().messages[0].body.value
+    let drillDown = world.plan().messages[0].body;
     if (drillDown != "woot")
         throw new Error(`Unexpected drill-down value [${drillDown}]`)
     return world.plan().messages.length == 1;

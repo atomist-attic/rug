@@ -11,6 +11,7 @@ import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
 import com.atomist.tree.{TreeMaterializer, TreeNode}
+import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
@@ -52,20 +53,25 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = rootContext.addRelatedNode(gn)
   }
 
-  protected def recordPlan(handlerName: String, plan: Plan): Unit = {
-    //println(s"Recorded plan $plan")
-    recordedPlans = recordedPlans + (handlerName -> plan)
+  protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {
+    // TODO publish event indicating plan was recorded
+    case _ =>
+      recordedPlans = recordedPlans + (handlerName -> plan)
+  }
+
+  private def exposeToJavaScript(plan: Plan): AnyRef = plan.nativeObject match {
+    case Some(som: ScriptObjectMirror) => som
+    case _ => jsScalaHidingProxy(plan)
   }
 
   /**
     * Return a single plan or throw an exception if none was recorded
     */
-  def requiredPlan: jsScalaHidingProxy = recordedPlans.values.toList match {
+  def requiredPlan: AnyRef = recordedPlans.values.toList match {
     case Nil =>
       throw new IllegalArgumentException("No plan was recorded")
     case plan :: Nil =>
-      //println(s"Contents of recorded plan: $planOption")
-      jsScalaHidingProxy(plan)
+      exposeToJavaScript(plan)
     case _ =>
       throw new IllegalArgumentException(s"Expected exactly one plan but found ${recordedPlans.size}")
   }
@@ -73,8 +79,8 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   /**
     * Return the plan or null if none was recorded
     */
-  def plan: jsScalaHidingProxy =
-    recordedPlans.values.headOption.map(jsScalaHidingProxy.apply(_)).orNull
+  def plan: Any =
+    recordedPlans.values.headOption.map(exposeToJavaScript).orNull
 
   /**
     * Return the plan recorded for this named handler, or null if not found

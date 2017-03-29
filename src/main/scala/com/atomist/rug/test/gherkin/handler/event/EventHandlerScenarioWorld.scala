@@ -58,10 +58,10 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
         val rugContext: RugContext = createRugContext(tm)
         //println("About to handle event")
         val plan = h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1))
-        plan.map(recordPlan(h.name, _))
+        plan.foreach(recordPlan(h.name, _))
       }
       else {
-        // TODO should record the miss
+        // TODO should publish an event to record the miss
         println(s"Handler $h handles [${h.rootNodeName}], not ${gn.nodeTags}")
       }
     }

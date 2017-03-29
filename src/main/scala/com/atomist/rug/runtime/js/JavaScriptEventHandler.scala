@@ -33,7 +33,7 @@ class JavaScriptEventHandlerFinder
   * An invokable JS based handler for System Events
   */
 class JavaScriptEventHandler(jsc: JavaScriptContext,
-                             handler: ScriptObjectMirror,
+                             val handler: ScriptObjectMirror,
                              pathExpressionStr: String,
                              override val name: String,
                              override val description: String,

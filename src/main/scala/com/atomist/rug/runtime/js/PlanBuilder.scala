@@ -27,8 +27,9 @@ class PlanBuilder {
   def constructPlan(jsPlan: ScriptObjectMirror): Plan = {
     if (jsPlan.hasMember("body")) {
       // we are allowed to return a Message directly from handlers
-      Plan(Seq(constructMessage(jsPlan)),Nil)
-    } else {
+      Plan(Seq(constructMessage(jsPlan)), Nil, nativeObject = Some(jsPlan))
+    }
+    else {
       val jsMessages = jsPlan.getMember("messages") match {
         case o: ScriptObjectMirror => o.values().toArray.toList
         case _ => Nil
@@ -44,7 +45,7 @@ class PlanBuilder {
             constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
           }
       }
-      Plan(messages, instructions)
+      Plan(messages, instructions, nativeObject = Some(jsPlan))
     }
   }
 

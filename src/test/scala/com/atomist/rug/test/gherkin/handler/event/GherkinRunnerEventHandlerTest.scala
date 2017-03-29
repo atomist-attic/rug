@@ -42,7 +42,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "produce good message without a handler loaded" in {
+  it should "produce informative message without a handler loaded" in {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
       "FailingFeature1Steps.ts",
@@ -121,6 +121,9 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
   it should "verify no plan steps with matching deeper path match" in
     verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps4.ts")
+
+  it should "#480 verify no plan steps with more than one handler registered" in
+    verifyNoPlanStepsWithMatchingSimplePathMatch("PassingFeature1Steps5.ts")
 
   def verifyNoPlanStepsWithMatchingSimplePathMatch(stepsFile: String) {
     val passingFeature1StepsFile = requiredFileInPackage(

@@ -6,6 +6,13 @@ import java.util.Comparator
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 import jdk.nashorn.internal.runtime.ScriptFunction
 
+object JavaScriptArray {
+
+  import scala.collection.JavaConverters._
+
+  def fromSeq[T](l: Seq[T]) = new JavaScriptArray[T](l.asJava)
+}
+
 /**
   * Decorate a java.util.List instance with anything required to implement the JS array methods
   */

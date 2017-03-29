@@ -11,12 +11,16 @@ import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
 import com.atomist.tree.TreeMaterializer
 import com.atomist.tree.pathexpression.PathExpression
 
+import scala.collection.mutable.ListBuffer
+
+/**
+  * World implementation for testing event handlers. Allows us to pump in events
+  * and test the reaction
+  */
 class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None)
   extends AbstractHandlerScenarioWorld(definitions, rugs) {
 
-  //private var registeredHandlers: Set[EventHandler] = Set()
-
-  private var handler: Option[EventHandler] = None
+  private val registeredHandlers = ListBuffer.empty[EventHandler]
 
   def eventHandler(name: String): EventHandler = {
     rugs match {
@@ -32,7 +36,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
 
   def registerHandler(name: String): EventHandler = {
     val eh = eventHandler(name)
-    handler = Some(eh)
+    registeredHandlers.append(eh)
     eh
   }
 
@@ -40,23 +44,26 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     * It's hopefully a ScriptObjectMirror
     */
   def sendEvent(e: AnyRef): Unit = {
-    //println(s"Received event [$e]")
     val gn = NashornMapBackedGraphNode.toGraphNode(e).getOrElse(
       throw new IllegalArgumentException(s"Cannot make a GraphNode out of $e")
     )
-    val h = handler.getOrElse(throw new IllegalStateException("No handler is registered"))
-    if (gn.nodeTags.contains(h.rootNodeName)) {
-      val tm = new TreeMaterializer {
-        override def rootNodeFor(e: SystemEvent, pe: PathExpression) = gn
-        override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
+    if (registeredHandlers.isEmpty)
+      throw new IllegalStateException("No handler is registered")
+    for (h <- registeredHandlers) {
+      if (gn.nodeTags.contains(h.rootNodeName)) {
+        val tm = new TreeMaterializer {
+          override def rootNodeFor(e: SystemEvent, pe: PathExpression) = gn
+          override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
+        }
+        val rugContext: RugContext = createRugContext(tm)
+        //println("About to handle event")
+        val plan = h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1))
+        plan.map(recordPlan(h.name, _))
       }
-      val rugContext: RugContext = createRugContext(tm)
-      //println("About to handle event")
-      recordPlan(h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1)))
-    }
-    else {
-      // TODO should publish an event
-      println(s"Handler $h handles [${h.rootNodeName}], not ${gn.nodeTags}")
+      else {
+        // TODO should record the miss
+        println(s"Handler $h handles [${h.rootNodeName}], not ${gn.nodeTags}")
+      }
     }
   }
 

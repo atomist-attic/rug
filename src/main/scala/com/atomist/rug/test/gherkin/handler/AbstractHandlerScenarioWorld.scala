@@ -18,12 +18,14 @@ import com.atomist.tree.{TreeMaterializer, TreeNode}
 abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs])
   extends ScenarioWorld(definitions, rugs) {
 
-  private var planOption: Option[Plan] = None
+  // Handler name to plan
+  private var recordedPlans = Map[String, Plan]()
 
   protected def createRugContext(tm: TreeMaterializer): RugContext =
     new FakeRugContext("team_id", tm)
 
-  private var rootContext: SimpleContainerGraphNode = SimpleContainerGraphNode.empty("root", TreeNode.Dynamic)
+  private var rootContext: SimpleContainerGraphNode =
+    SimpleContainerGraphNode.empty("root", TreeNode.Dynamic)
 
   /**
     * Return the editor with the given name or throw an exception
@@ -50,32 +52,46 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = rootContext.addRelatedNode(gn)
   }
 
-  protected def recordPlan(plan: Option[Plan]): Unit = {
-    //println(s"Recorded plan option $plan")
-    this.planOption = plan
+  protected def recordPlan(handlerName: String, plan: Plan): Unit = {
+    //println(s"Recorded plan $plan")
+    recordedPlans = recordedPlans + (handlerName -> plan)
   }
 
   /**
-    * Return the plan or throw an exception if none was recorded
+    * Return a single plan or throw an exception if none was recorded
     */
-  def requiredPlan: jsScalaHidingProxy = {
-    //println(s"Contents of recorded plan: $planOption")
-    planOption.map(jsScalaHidingProxy.apply(_)).getOrElse(throw new IllegalArgumentException("No plan was recorded"))
+  def requiredPlan: jsScalaHidingProxy = recordedPlans.values.toList match {
+    case Nil =>
+      throw new IllegalArgumentException("No plan was recorded")
+    case plan :: Nil =>
+      //println(s"Contents of recorded plan: $planOption")
+      jsScalaHidingProxy(plan)
+    case _ =>
+      throw new IllegalArgumentException(s"Expected exactly one plan but found ${recordedPlans.size}")
   }
 
   /**
     * Return the plan or null if none was recorded
     */
-  def plan: jsScalaHidingProxy = {
-    planOption.map(jsScalaHidingProxy.apply(_)).orNull
-  }
+  def plan: jsScalaHidingProxy =
+    recordedPlans.values.headOption.map(jsScalaHidingProxy.apply(_)).orNull
+
+  /**
+    * Return the plan recorded for this named handler, or null if not found
+    */
+  def planFor(handlerName: String): jsScalaHidingProxy =
+    recordedPlans.get(handlerName)
+      .map(jsScalaHidingProxy.apply(_))
+      .orNull
+
+  def planCount: Int = recordedPlans.size
 
   /**
     * Return the message or null if none was recorded
     */
   def message: jsScalaHidingProxy = {
-    planOption match {
-      case Some(p) => p.messages.map(jsScalaHidingProxy.apply(_)).head
+    recordedPlans.values.toList match {
+      case List(p) => p.messages.map(jsScalaHidingProxy.apply(_)).head
       case _ => null
     }
   }
@@ -84,23 +100,26 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     * Is the plan internally valid? Do the referenced handlers and other operations exist?
     */
   def planIsInternallyValid(): Boolean = {
-    val p = planOption.getOrElse(throw new IllegalArgumentException("No plan was recorded"))
-    !p.instructions.map(_.instruction).exists {
-      case Edit(detail) =>
-        val knownEditors: Seq[String] = rugs.map(_.editorNames).getOrElse(Nil)
-        !knownEditors.contains(detail.name)
-      case Generate(detail) =>
-        val knownGenerators: Seq[String] = rugs.map(_.generatorNames).getOrElse(Nil)
-        !knownGenerators.contains(detail.name)
-      case Review(detail) =>
-        val knownReviewers: Seq[String] = rugs.map(_.reviewerNames).getOrElse(Nil)
-        !knownReviewers.contains(detail.name)
-      case Command(detail) =>
-        val knownCommandHandlers: Seq[String] = rugs.map(_.commandHandlerNames).getOrElse(Nil)
-        !knownCommandHandlers.contains(detail.name)
+    if (recordedPlans.isEmpty)
+      throw new IllegalArgumentException("No plan was recorded")
+    recordedPlans.values.forall(p => {
+      !p.instructions.map(_.instruction).exists {
+        case Edit(detail) =>
+          val knownEditors: Seq[String] = rugs.map(_.editorNames).getOrElse(Nil)
+          !knownEditors.contains(detail.name)
+        case Generate(detail) =>
+          val knownGenerators: Seq[String] = rugs.map(_.generatorNames).getOrElse(Nil)
+          !knownGenerators.contains(detail.name)
+        case Review(detail) =>
+          val knownReviewers: Seq[String] = rugs.map(_.reviewerNames).getOrElse(Nil)
+          !knownReviewers.contains(detail.name)
+        case Command(detail) =>
+          val knownCommandHandlers: Seq[String] = rugs.map(_.commandHandlerNames).getOrElse(Nil)
+          !knownCommandHandlers.contains(detail.name)
         // TODO there are probably more cases here
-      case _ => false
-    }
+        case _ => false
+      }
+    })
   }
 
   private class FakeRugContext(val teamId: String, _treeMaterializer: TreeMaterializer) extends RugContext {

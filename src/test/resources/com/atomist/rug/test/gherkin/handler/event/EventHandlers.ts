@@ -69,3 +69,16 @@ class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
     }
 }
 export const simpleMessageHandler = new ReturnsAMessage();
+
+
+// Handler that hates the world but will never get invoked
+@EventHandler("AngryHandler", "Hates the world",
+    new PathExpression<GraphNode, GraphNode>(`/Commit[@sha="666"]`))
+@Tags("github", "issue")
+class AngryHandler implements HandleEvent<node.Commit, node.GitHubId> {
+
+    handle(m: Match<GraphNode, GraphNode>) {
+        return new Message("Hello there!")
+    }
+}
+export const angry = new AngryHandler();

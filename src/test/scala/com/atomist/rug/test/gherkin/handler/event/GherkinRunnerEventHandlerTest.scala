@@ -191,9 +191,6 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "return the message from the handler when no plan was explicitly returned" in
-    feature2Steps("PassingFeature2Steps.ts")
-
   it should "return the message from the handler when no plan was explicitly returned and more than one event fired" in
     feature2Steps("PassingFeature2Steps1.ts")
 

@@ -29,11 +29,10 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
       |  @Parameter({description: "his dudeness", pattern: "^.*$$"})
       |  name: string = "dude"
       |
-      |  handle(response: Response<Object>) : Message {
-      |
+      |  handle(response: Response<Object>) {
       |    if(this.name != "his dudeness") throw new Error("Not on the rug, man!");
       |    let results = response.body as any;
-      |    return new Message("https://www.youtube.com/watch?v=fNodQpGVVyg")
+      |    return new Plan().add(new Message("https://www.youtube.com/watch?v=fNodQpGVVyg"));
       |  }
       |}
       |

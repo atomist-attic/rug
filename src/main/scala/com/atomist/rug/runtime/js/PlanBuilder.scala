@@ -25,28 +25,23 @@ object ConstructPlan {
 class PlanBuilder {
 
   def constructPlan(jsPlan: ScriptObjectMirror): Plan = {
-    if (jsPlan.hasMember("body")) {
-      // we are allowed to return a Message directly from handlers
-      Plan(Seq(constructMessage(jsPlan)), Nil, nativeObject = Some(jsPlan))
+
+    val jsMessages = jsPlan.getMember("messages") match {
+      case o: ScriptObjectMirror => o.values().toArray.toList
+      case _ => Nil
     }
-    else {
-      val jsMessages = jsPlan.getMember("messages") match {
-        case o: ScriptObjectMirror => o.values().toArray.toList
-        case _ => Nil
-      }
-      val messages: Seq[Message] = jsMessages.map { message =>
-        val m = message.asInstanceOf[ScriptObjectMirror]
-        constructMessage(m)
-      }
-      val instructions = jsPlan.getMember("instructions") match {
-        case u: Undefined => Nil
-        case jsInstructions: ScriptObjectMirror =>
-          jsInstructions.values().toArray.toList.map { respondable =>
-            constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
-          }
-      }
-      Plan(messages, instructions, nativeObject = Some(jsPlan))
+    val messages: Seq[Message] = jsMessages.map { message =>
+      val m = message.asInstanceOf[ScriptObjectMirror]
+      constructMessage(m)
     }
+    val instructions = jsPlan.getMember("instructions") match {
+      case u: Undefined => Nil
+      case jsInstructions: ScriptObjectMirror =>
+        jsInstructions.values().toArray.toList.map { respondable =>
+          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
+        }
+    }
+    Plan(messages, instructions, nativeObject = Some(jsPlan))
   }
 
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {
@@ -91,7 +86,7 @@ class PlanBuilder {
     )
   }
 
-  def constructPresentable(jsPresentable: ScriptObjectMirror) : Presentable = {
+  def constructPresentable(jsPresentable: ScriptObjectMirror): Presentable = {
     val instruction = jsPresentable.getMember("instruction") match {
       case o: ScriptObjectMirror => constructInstruction(o)
       case x => throw new InvalidHandlerResultException(s"A Message Presentable must contain an 'Instruction', actually $x")
@@ -100,7 +95,7 @@ class PlanBuilder {
       case x: String => Some(x)
       case _ => None
     }
-    Presentable(instruction,label)
+    Presentable(instruction, label)
   }
 
   def constructRespondable(jsRespondable: ScriptObjectMirror): Plannable = {
@@ -128,45 +123,45 @@ class PlanBuilder {
   }
 
   def constructInstructionDetail(jsInstruction: ScriptObjectMirror): Instruction.Detail = {
-      val parameters: Seq[ParameterValue] = jsInstruction.getMember("parameters") match {
-        case u: Undefined => Nil
-        case o: ScriptObjectMirror =>
-          val filtered = o.keySet().toArray.filter( key => {
-            val name = key.asInstanceOf[String]
-            o.getMember(name) match {
-              case null => false
-              case ScriptRuntime.UNDEFINED => false
-              case _ => true
-            }
-          })
-
-          filtered.map { key =>
-            val name = key.asInstanceOf[String]
-            val value = o.getMember(name)
-            SimpleParameterValue(name,
-              value match {
-                case s: String => s
-                case o => JsonUtils.toJson(o)
-              })
+    val parameters: Seq[ParameterValue] = jsInstruction.getMember("parameters") match {
+      case u: Undefined => Nil
+      case o: ScriptObjectMirror =>
+        val filtered = o.keySet().toArray.filter(key => {
+          val name = key.asInstanceOf[String]
+          o.getMember(name) match {
+            case null => false
+            case ScriptRuntime.UNDEFINED => false
+            case _ => true
           }
-      }
+        })
 
-      val (name, coordinates) = jsInstruction.getMember("name") match {
-        case name: String =>
-          (name, None)
-        case o: ScriptObjectMirror =>
-          val name = o.getMember("name").asInstanceOf[String]
-          val coordinates = MavenCoordinate(
-            o.getMember("group").asInstanceOf[String],
-            o.getMember("artifact").asInstanceOf[String])
-          (name, Some(coordinates))
-      }
+        filtered.map { key =>
+          val name = key.asInstanceOf[String]
+          val value = o.getMember(name)
+          SimpleParameterValue(name,
+            value match {
+              case s: String => s
+              case o => JsonUtils.toJson(o)
+            })
+        }
+    }
 
-      val project_name = jsInstruction.getMember("project") match {
-        case project_name: String => Some(project_name)
-        case _ => None
-      }
-    Instruction.Detail(name,coordinates,parameters,project_name)
+    val (name, coordinates) = jsInstruction.getMember("name") match {
+      case name: String =>
+        (name, None)
+      case o: ScriptObjectMirror =>
+        val name = o.getMember("name").asInstanceOf[String]
+        val coordinates = MavenCoordinate(
+          o.getMember("group").asInstanceOf[String],
+          o.getMember("artifact").asInstanceOf[String])
+        (name, Some(coordinates))
+    }
+
+    val project_name = jsInstruction.getMember("project") match {
+      case project_name: String => Some(project_name)
+      case _ => None
+    }
+    Instruction.Detail(name, coordinates, parameters, project_name)
   }
 
   def constructCallback(callback: Object): Option[Callback] = {
@@ -175,11 +170,14 @@ class PlanBuilder {
       case jsOnSuccess: ScriptObjectMirror =>
         val callback = if (jsOnSuccess.hasMember("body")) {
           constructMessage(jsOnSuccess)
-        } else if (jsOnSuccess.hasMember("kind")) {
+        }
+        else if (jsOnSuccess.hasMember("kind")) {
           Respond(constructInstructionDetail(jsOnSuccess))
-        } else if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
+        }
+        else if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
           constructPlan(jsOnSuccess)
-        } else {
+        }
+        else {
           throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
         }
         Option(callback)

@@ -125,8 +125,9 @@ object JavaScriptEventHandlerTest {
        |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/issue"))
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
-       |  handle(event: Match<TreeNode, TreeNode>): Message{
-       |     return new Message("woot").withCorrelationId("dude").withNode(event.root());
+       |
+       |  handle(event: Match<TreeNode, TreeNode>) {
+       |     return new Plan().add(new Message("woot").withCorrelationId("dude").withNode(event.root()));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -141,8 +142,8 @@ object JavaScriptEventHandlerTest {
        |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/nomatch"))
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
-       |  handle(event: Match<TreeNode, TreeNode>): Message{
-       |     return new Message("woot").withCorrelationId("dude").withNode(event.root());
+       |  handle(event: Match<TreeNode, TreeNode>){
+       |     return new Plan().add(new Message("woot").withCorrelationId("dude").withNode(event.root()));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -259,7 +260,8 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   }
 
   it should "allow a correlation id and treenode to be added to a message" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithTreeNode))
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithTreeNode))
     val finder = new JavaScriptEventHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)

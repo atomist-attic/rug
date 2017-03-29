@@ -49,20 +49,14 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     contentOf(this, "SimpleCommandHandlerWithNullDefault.ts"))
 
   it should "allow us to return an empty message" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
     val rugs = RugArchiveReader.find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     assert(plan.messages.size === 1)
     assert(plan.messages.head.body.value == null)
     assert(JsonUtils.toJson(plan.messages.head) == """{"body":{},"instructions":[]}""")
-  }
-  it should "allow us to return a message directly from a handler" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerReturningMessage))
-    val rugs = RugArchiveReader.find(rugArchive, Nil)
-    val com = rugs.commandHandlers.head
-    val plan = com.handle(null,SimpleParameterValues.Empty).get
-    assert(plan.messages.size === 1)
   }
 
   it should "be able to schedule an Execution and handle its response" in {
@@ -167,7 +161,8 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   }
 
   it should "Not fail if parameter has default value 'null' https://github.com/atomist/rug/issues/458" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullDefault))
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullDefault))
     val rugs = RugArchiveReader.find(rugArchive, Nil)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get

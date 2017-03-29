@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.19.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.20.0...HEAD
+
+## [0.20.0] - 2017-03-29
+
+Handler testing improvement release
 
 ### Added
 
@@ -15,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Publishing events on path expression evaluations in handler tests
+-   Now pass back JavaScript Plan to Gherkin steps
 -   Can now record more than one plan in Gherkin handler tests. Fixes #480
 -   TypeScript Plan class now exposes properties rather than functions
 -   Do not include TypeDoc in NPM module

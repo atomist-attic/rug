@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.19.0...HEAD
 
-
 ### Changed
 
--  TypeScript Plan class now exposes properties rather than functions
+-   TypeScript Plan class now exposes properties rather than functions
+-   Do not include TypeDoc in NPM module
 
 ## [0.19.0] - 2017-03-28
 
@@ -20,15 +20,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added tag to commit back relationship
-- Added platform property on builds
-- Added new methods for pluginManagement
+-   Added tag to commit back relationship
+-   Added platform property on builds
+-   Added new methods for pluginManagement
 
 ### Changed
 
-- Better error message when failing to navigate property
-- Better error message when handler was not registered in a test
-- Building typedocs for cortex as well as rug
+-   Better error message when failing to navigate property
+-   Better error message when handler was not registered in a test
+-   Building typedocs for cortex as well as rug
 
 ## [0.18.3] - 2017-03-27
 

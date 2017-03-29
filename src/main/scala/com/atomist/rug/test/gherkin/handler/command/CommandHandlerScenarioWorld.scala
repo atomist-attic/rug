@@ -10,8 +10,8 @@ class CommandHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] =
   extends AbstractHandlerScenarioWorld(definitions, rugs) {
 
   def invokeHandler(handler: CommandHandler, params: Any): Unit = {
-    recordPlan(handler.handle(createRugContext(IdentityTreeMaterializer),
-      parameters(params)))
+    val plan = handler.handle(createRugContext(IdentityTreeMaterializer), parameters(params))
+    plan.map(recordPlan)
   }
 
 }

@@ -17,7 +17,7 @@ import jsScalaHidingProxy.MethodValidator
   * Also, enables suppression of some methods.
   */
 class jsScalaHidingProxy private(
-                                  target: Any,
+                                  val target: Any,
                                   methodsToHide: Set[String],
                                   methodValidator: MethodValidator
                                 ) extends AbstractJSObject {
@@ -68,6 +68,12 @@ class jsScalaHidingProxy private(
     }
   }
 
+  override def equals(that: Any): Boolean = that match {
+    case jsp: jsScalaHidingProxy =>
+      this.target == jsp.target
+    case _ => false
+  }
+
   override def toString: String =
     s"${getClass.getSimpleName} wrapping [$target]"
 }
@@ -91,4 +97,5 @@ object jsScalaHidingProxy {
 
   def publicMethodsNotOnObject(m: Method): Boolean =
     Modifier.isPublic(m.getModifiers) && m.getDeclaringClass != classOf[Object]
+
 }

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Can now record more than one plan in Gherkin handler tests. Fixes #480
 -   TypeScript Plan class now exposes properties rather than functions
 -   Do not include TypeDoc in NPM module
 

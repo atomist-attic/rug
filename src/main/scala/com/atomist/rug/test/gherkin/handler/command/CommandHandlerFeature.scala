@@ -12,7 +12,7 @@ class CommandHandlerFeature(
                       listeners: Seq[GherkinExecutionListener])
   extends AbstractExecutableFeature[CommandHandlerScenarioWorld](definition, definitions, rugs, listeners) {
 
-  override protected def createWorldForScenario: CommandHandlerScenarioWorld = {
-    new CommandHandlerScenarioWorld(definitions, rugs)
+  override protected def createWorldForScenario(): CommandHandlerScenarioWorld = {
+    new CommandHandlerScenarioWorld(definitions, rugs, listeners)
   }
 }

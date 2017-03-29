@@ -4,7 +4,6 @@ import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.runtime.js.interop.{NashornUtils, jsSafeCommittingProxy}
-import com.atomist.util.lang.JavaScriptArray
 import com.typesafe.scalalogging.LazyLogging
 import gherkin.ast.{ScenarioDefinition, Step}
 import jdk.nashorn.api.scripting.ScriptObjectMirror

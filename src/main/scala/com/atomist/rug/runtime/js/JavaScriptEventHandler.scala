@@ -2,7 +2,6 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.{AddressableRug, EventHandler, RugSupport, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
@@ -29,12 +28,18 @@ class JavaScriptEventHandlerFinder
   }
 }
 
+object JavaScriptEventHandler {
+
+  def rootNodeFor(targetNode: GraphNode): GraphNode =
+    SimpleContainerGraphNode("root", targetNode, TreeNode.Dynamic)
+}
+
 /**
   * An invokable JS based handler for System Events
   */
 class JavaScriptEventHandler(jsc: JavaScriptContext,
                              val handler: ScriptObjectMirror,
-                             pathExpressionStr: String,
+                             val pathExpressionStr: String,
                              override val name: String,
                              override val description: String,
                              override val tags: Seq[Tag],
@@ -55,7 +60,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   override def handle(ctx: RugContext, e: SystemEvent): Option[Plan] = {
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
-    val root = SimpleContainerGraphNode("root", targetNode, TreeNode.Dynamic)
+    val root = JavaScriptEventHandler.rootNodeFor(targetNode)
     ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx.typeRegistry, None) match {
       case Right(Nil) => None
       case Right(matches) if matches.nonEmpty =>

@@ -13,6 +13,6 @@ class EventHandlerFeature(
   extends AbstractExecutableFeature[EventHandlerScenarioWorld](definition, definitions, rugs, listeners) {
 
   override protected def createWorldForScenario(): EventHandlerScenarioWorld = {
-    new EventHandlerScenarioWorld(definitions, rugs)
+    new EventHandlerScenarioWorld(definitions, rugs, listeners)
   }
 }

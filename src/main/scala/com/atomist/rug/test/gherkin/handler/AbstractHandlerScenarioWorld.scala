@@ -9,14 +9,14 @@ import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate, Review}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
+import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, ScenarioWorld}
 import com.atomist.tree.{TreeMaterializer, TreeNode}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
   */
-abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs])
+abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener])
   extends ScenarioWorld(definitions, rugs) {
 
   // Handler name to plan

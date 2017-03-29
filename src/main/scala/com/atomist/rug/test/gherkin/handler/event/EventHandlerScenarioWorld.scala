@@ -3,10 +3,10 @@ package com.atomist.rug.test.gherkin.handler.event
 import com.atomist.graph.GraphNode
 import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
-import com.atomist.rug.runtime.js.RugContext
+import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
-import com.atomist.rug.test.gherkin.Definitions
+import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, PathExpressionEvaluation}
 import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
 import com.atomist.tree.TreeMaterializer
 import com.atomist.tree.pathexpression.PathExpression
@@ -17,8 +17,8 @@ import scala.collection.mutable.ListBuffer
   * World implementation for testing event handlers. Allows us to pump in events
   * and test the reaction
   */
-class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None)
-  extends AbstractHandlerScenarioWorld(definitions, rugs) {
+class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None, listeners: Seq[GherkinExecutionListener] = Nil)
+  extends AbstractHandlerScenarioWorld(definitions, rugs, listeners) {
 
   private val registeredHandlers = ListBuffer.empty[EventHandler]
 
@@ -41,6 +41,8 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
   }
 
   /**
+    * Publish an event constructed in TypeScript using our API
+    * (normally a cortex stub)
     * It's hopefully a ScriptObjectMirror
     */
   def sendEvent(e: AnyRef): Unit = {
@@ -50,20 +52,54 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
     if (registeredHandlers.isEmpty)
       throw new IllegalStateException("No handler is registered")
     for (h <- registeredHandlers) {
-      if (gn.nodeTags.contains(h.rootNodeName)) {
-        val tm = new TreeMaterializer {
-          override def rootNodeFor(e: SystemEvent, pe: PathExpression) = gn
-          override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
+      handleEventNode(gn, h)
+    }
+  }
+
+  private def handleEventNode(eventNode: GraphNode, h: EventHandler) = {
+    if (eventNode.nodeTags.contains(h.rootNodeName)) {
+      val tm = new TreeMaterializer {
+        override def rootNodeFor(e: SystemEvent, pe: PathExpression) = eventNode
+
+        override def hydrate(teamId: String, rawRootNode: GraphNode, pe: PathExpression) = rawRootNode
+      }
+      val rugContext: RugContext = createRugContext(tm)
+
+      // Check if it matches, if we can
+      notifyListenersOfMatchResult(eventNode, h, rugContext)
+
+      //println("About to handle event")
+      val plan = h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1))
+      plan.foreach(recordPlan(h.name, _))
+    }
+    else {
+      notifyListenersOfMatchPossible(eventNode, h)
+    }
+  }
+
+  private def notifyListenersOfMatchResult(eventNode: GraphNode, h: EventHandler, rugContext: RugContext) = {
+    h match {
+      case jsh: JavaScriptEventHandler =>
+        rugContext.pathExpressionEngine.ee.evaluate(JavaScriptEventHandler.rootNodeFor(eventNode), jsh.pathExpression, rugContext.typeRegistry) match {
+          case Right(nodes) =>
+            //println(s"Results for [${jsh.pathExpressionStr}] were ${nodes}")
+            for (l <- listeners)
+              l.pathExpressionResult(PathExpressionEvaluation(jsh.pathExpressionStr, eventNode, nodes))
+          case Left(_) =>
+          // The evaluation failed. Who cares. The test will blow up anyway
         }
-        val rugContext: RugContext = createRugContext(tm)
-        //println("About to handle event")
-        val plan = h.handle(rugContext, SystemEvent(rugContext.teamId, h.rootNodeName, 1))
-        plan.foreach(recordPlan(h.name, _))
-      }
-      else {
-        // TODO should publish an event to record the miss
-        println(s"Handler $h handles [${h.rootNodeName}], not ${gn.nodeTags}")
-      }
+      case _ =>
+      // We can't find the path expression to check the match for
+    }
+  }
+
+  private def notifyListenersOfMatchPossible(eventNode: GraphNode, h: EventHandler) = {
+    h match {
+      case jsh: JavaScriptEventHandler =>
+        for (l <- listeners)
+          l.pathExpressionResult(PathExpressionEvaluation(jsh.pathExpressionStr, eventNode, Nil))
+      case _ =>
+      // We can't find the path expression to check the match for
     }
   }
 

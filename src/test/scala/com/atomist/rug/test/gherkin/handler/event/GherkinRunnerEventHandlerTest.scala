@@ -3,8 +3,7 @@ package com.atomist.rug.test.gherkin.handler.event
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.spi.Handlers.Status.Failure
-import com.atomist.rug.test.gherkin.{Failed, GherkinRunner, Passed}
+import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
@@ -33,11 +32,15 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
 
     //println(ArtifactSourceUtils.prettyListFiles(as))
     val cas = TypeScriptBuilder.compileWithModel(as)
+    val msl = new MatchSavingListener
 
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)), Seq(msl))
     val run = grt.execute()
     run.result match {
       case Passed =>
+        assert(msl.matches.nonEmpty)
+//        assert(msl.matches.exists(_.matched))
+//        assert(msl.matches.exists(!_.matched))
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -156,8 +159,14 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
     val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile, nodesFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val msl = new MatchSavingListener
+    val grt = new GherkinRunner(
+      new JavaScriptContext(cas),
+      Some(RugArchiveReader.find(cas)),
+      listeners = Seq(msl))
     val run = grt.execute()
+    assert(msl.matches.nonEmpty)
+    assert(msl.matches.exists(_.matched))
     run.result match {
       case Passed =>
       case wtf => fail(s"Unexpected: $wtf")
@@ -200,4 +209,14 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
+}
+
+
+private class MatchSavingListener extends GherkinExecutionListenerAdapter {
+
+  var matches: Seq[PathExpressionEvaluation] = Nil
+
+  override def pathExpressionResult(peval: PathExpressionEvaluation): Unit = {
+    matches = matches :+ peval
+  }
 }

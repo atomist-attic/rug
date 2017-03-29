@@ -2,7 +2,7 @@ import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/C
 import * as node from "../../../handlers/event/Nodes"
 
 Given("a sleepy country", world => {
-    world.registerHandler("ReturnsEmptyPlanEventHandler")
+    world.registerHandler("AngryHandler")
 })
 When("a visionary leader enters", world => {
    world.sendEvent(new node.Commit)

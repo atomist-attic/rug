@@ -78,6 +78,7 @@ export const simpleMessageHandler = new ReturnsAMessage();
 class AngryHandler implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
+        if (23 > 0) throw new Error("I hate y'all")
         return new Message("Hello there!")
     }
 }

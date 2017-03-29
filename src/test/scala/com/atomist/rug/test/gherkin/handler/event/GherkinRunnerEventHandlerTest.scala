@@ -64,10 +64,10 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "produce good message when a test fails with a void return and exception" in {
+  it should "produce good message when a test step fails with a void return and exception" in {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
-      "FailsDueToError.ts",
+      "FailsDueToStepError.ts",
       ".atomist/tests/handlers/event"
     )
 
@@ -82,6 +82,28 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     run.result match {
       case Failed(msg) =>
         assert(msg.contains("What in God's holy name are you blathering about"))
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "produce good message when a handler fails with an exception" in {
+    val passingFeature1StepsFile = requiredFileInPackage(
+      this,
+      "FailsDueToHandlerError.ts",
+      ".atomist/tests/handlers/event"
+    )
+
+    val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
+    val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile, nodesFile)
+
+    //println(ArtifactSourceUtils.prettyListFiles(as))
+    val cas = TypeScriptBuilder.compileWithModel(as)
+
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader.find(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Failed(msg) =>
+        assert(msg.contains("hate"))
       case wtf => fail(s"Unexpected: $wtf")
     }
   }

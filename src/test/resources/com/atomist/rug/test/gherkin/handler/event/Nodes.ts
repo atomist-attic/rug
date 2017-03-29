@@ -7,7 +7,9 @@ import {GraphNode} from "@atomist/rug/tree/PathExpression"
 
 export class Commit implements GraphNode {
 
-    private _madeBy: Person = null
+    private _madeBy: Person
+
+    private _sha: string
 
     nodeName(): string {  return "Commit" }
 
@@ -18,6 +20,13 @@ export class Commit implements GraphNode {
         this._madeBy = p 
         return this
     }
+
+    withSha(sha: string): Commit {
+        this._sha = sha
+        return this;
+    }
+
+    sha() { return this._sha }
 
     madeBy(): Person { return this._madeBy }
 

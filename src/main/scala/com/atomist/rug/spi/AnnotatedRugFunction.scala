@@ -38,12 +38,7 @@ trait AnnotatedRugFunction extends RugFunction {
   override def parameters: Seq[Parameter] = functionMethod().getParameters.flatMap(p => {
     AnnotationUtils.findAnnotation(p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
       case pa: com.atomist.rug.spi.annotation.Parameter =>
-        val param = Parameter(pa.name(), pa.pattern())
-        val defaultValue = pa.defaultValue()
-        if (defaultValue != null && defaultValue != "")
-          param.setDefaultValue(defaultValue)
-
-        Some(Parameter(pa.name(), pa.pattern()))
+        Some(Parameter(pa.name(), pa.pattern(), pa.defaultValue()))
       case _ => None
     }
   }).toSeq

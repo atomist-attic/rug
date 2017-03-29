@@ -200,4 +200,7 @@ object Parameter {
   def apply(name: String): Parameter = new Parameter(name)
 
   def apply(name: String, pattern: String): Parameter = new Parameter(name).setPattern(pattern)
+
+  def apply(name: String, pattern: String, defaultValue: String): Parameter =
+    new Parameter(name).setPattern(pattern).setDefaultValue(defaultValue)
 }

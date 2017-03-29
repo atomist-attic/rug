@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.19.0...HEAD
 
+### Added
+
+-   Added defaultValue parameter to @Parameter annotation
+
 ### Changed
 
 -   TypeScript Plan class now exposes properties rather than functions

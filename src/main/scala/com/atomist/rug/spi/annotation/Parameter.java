@@ -8,7 +8,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Parameter {
+
     String name();
+
     String pattern() default "@any";
+
     boolean required() default true;
+
+    String defaultValue() default "";
 }

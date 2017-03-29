@@ -3,11 +3,10 @@ package com.atomist.rug.spi
 import java.lang.reflect.Method
 
 import com.atomist.param.{Parameter, ParameterValues, Tag}
-import com.atomist.rug.spi.Handlers.Response
 import org.springframework.core.annotation.AnnotationUtils
 
 /**
-  * Use this for a terser way to define RugFunctions in Scala
+  * Use this for a terser way to define RugFunctions in Scala.
   */
 trait AnnotatedRugFunction extends RugFunction {
 
@@ -38,7 +37,13 @@ trait AnnotatedRugFunction extends RugFunction {
 
   override def parameters: Seq[Parameter] = functionMethod().getParameters.flatMap(p => {
     AnnotationUtils.findAnnotation(p, classOf[com.atomist.rug.spi.annotation.Parameter]) match {
-      case pa: com.atomist.rug.spi.annotation.Parameter => Some(Parameter(pa.name(), pa.pattern()))
+      case pa: com.atomist.rug.spi.annotation.Parameter =>
+        val param = Parameter(pa.name(), pa.pattern())
+        val defaultValue = pa.defaultValue()
+        if (defaultValue != null && defaultValue != "")
+          param.setDefaultValue(defaultValue)
+
+        Some(Parameter(pa.name(), pa.pattern()))
       case _ => None
     }
   }).toSeq
@@ -52,20 +57,17 @@ trait AnnotatedRugFunction extends RugFunction {
         convert(p, parameters.paramValue(secretAnnotation.name()))
       } else if (parameterAnnotation != null && secretAnnotation == null && parameterAnnotation.required()) {
         convert(p, parameters.paramValue(parameterAnnotation.name()))
-      }else if(parameterAnnotation == null && secretAnnotation == null){
+      } else if (parameterAnnotation == null && secretAnnotation == null) {
         throw new IllegalArgumentException(s"Parameter ${p.getName} not annotated with either @Secret or @Parameter")
-      }else{
+      } else {
         null
       }
     })
-    method.invoke(this, args:_*).asInstanceOf[FunctionResponse]
+    method.invoke(this, args: _*).asInstanceOf[FunctionResponse]
   }
 
   /**
-    * Convert the paramter value based on the type of the paramter
-    * @param param
-    * @param avalue
-    * @return
+    * Convert the parameter value based on the type of the parameter.
     */
   private def convert(param: java.lang.reflect.Parameter, avalue: Any): Object = {
     avalue match {

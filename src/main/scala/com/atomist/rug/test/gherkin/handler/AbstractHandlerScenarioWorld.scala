@@ -11,7 +11,6 @@ import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, ScenarioWorld}
 import com.atomist.tree.{TreeMaterializer, TreeNode}
-import com.atomist.util.lang.JavaScriptArray
 
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
@@ -19,7 +18,8 @@ import com.atomist.util.lang.JavaScriptArray
 abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs])
   extends ScenarioWorld(definitions, rugs) {
 
-  private var recordedPlans = List[Plan]()
+  // Handler name to plan
+  private var recordedPlans = Map[String, Plan]()
 
   protected def createRugContext(tm: TreeMaterializer): RugContext =
     new FakeRugContext("team_id", tm)
@@ -52,15 +52,15 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = rootContext.addRelatedNode(gn)
   }
 
-  protected def recordPlan(plan: Plan): Unit = {
-    //println(s"Recorded plan option $plan")
-    recordedPlans = recordedPlans :+ plan
+  protected def recordPlan(handlerName: String, plan: Plan): Unit = {
+    //println(s"Recorded plan $plan")
+    recordedPlans = recordedPlans + (handlerName -> plan)
   }
 
   /**
     * Return a single plan or throw an exception if none was recorded
     */
-  def requiredPlan: jsScalaHidingProxy = recordedPlans match {
+  def requiredPlan: jsScalaHidingProxy = recordedPlans.values.toList match {
     case Nil =>
       throw new IllegalArgumentException("No plan was recorded")
     case plan :: Nil =>
@@ -74,18 +74,23 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     * Return the plan or null if none was recorded
     */
   def plan: jsScalaHidingProxy =
-    recordedPlans.headOption.map(jsScalaHidingProxy.apply(_)).orNull
+    recordedPlans.values.headOption.map(jsScalaHidingProxy.apply(_)).orNull
 
   /**
-    * Return all plans recorded
+    * Return the plan recorded for this named handler, or null if not found
     */
-  def plans: JavaScriptArray[jsScalaHidingProxy] = JavaScriptArray.fromSeq(recordedPlans.map(jsScalaHidingProxy.apply(_)))
+  def planFor(handlerName: String): jsScalaHidingProxy =
+    recordedPlans.get(handlerName)
+      .map(jsScalaHidingProxy.apply(_))
+      .orNull
+
+  def planCount: Int = recordedPlans.size
 
   /**
     * Return the message or null if none was recorded
     */
   def message: jsScalaHidingProxy = {
-    recordedPlans match {
+    recordedPlans.values.toList match {
       case List(p) => p.messages.map(jsScalaHidingProxy.apply(_)).head
       case _ => null
     }
@@ -97,7 +102,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   def planIsInternallyValid(): Boolean = {
     if (recordedPlans.isEmpty)
       throw new IllegalArgumentException("No plan was recorded")
-    recordedPlans.forall(p => {
+    recordedPlans.values.forall(p => {
       !p.instructions.map(_.instruction).exists {
         case Edit(detail) =>
           val knownEditors: Seq[String] = rugs.map(_.editorNames).getOrElse(Nil)

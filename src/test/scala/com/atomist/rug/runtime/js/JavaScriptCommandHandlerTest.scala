@@ -48,7 +48,10 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerWithNullDefault = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerWithNullDefault.ts"))
 
-  it should "allow us to return an empty message" in {
+  val simpleCommandHandlerWithBadStubUse = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerWithBadStubUse.ts"))
+
+  "JavaScriptCommandHandler" should "allow us to return an empty message" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
     val rugs = RugArchiveReader.find(rugArchive, Nil)
@@ -57,6 +60,22 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(plan.messages.size === 1)
     assert(plan.messages.head.body.value == null)
     assert(JsonUtils.toJson(plan.messages.head) == """{"body":{},"instructions":[]}""")
+  }
+
+  it should "#488: get good error message from generated model stubs" in {
+    val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
+      SimpleFileBasedArtifactSource(simpleCommandHandlerWithBadStubUse))
+    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val commandHandler = rugs.commandHandlers.head
+    try {
+      commandHandler.handle(null, SimpleParameterValues.Empty)
+      fail("Should have failed with exception")
+    }
+     catch {
+       case ex: Throwable =>
+         ex.printStackTrace()
+         assert(ex.getMessage.contains("stub"))
+     }
   }
 
   it should "be able to schedule an Execution and handle its response" in {

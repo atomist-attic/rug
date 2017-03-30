@@ -100,7 +100,9 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           // It has a return. So let's create a field
           val core =
             s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
-                |$indent${indent}return this.${toFieldName(this)};
+                |$indent${indent}if (this.${toFieldName(this)} === undefined)
+                |$indent${indent}${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
+                |$indent${indent}${indent}return this.${toFieldName(this)};
                 |$indent}""".stripMargin
           val builderMethod =
             if (returnsArray) {

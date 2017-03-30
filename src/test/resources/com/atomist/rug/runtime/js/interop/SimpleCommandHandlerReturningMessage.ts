@@ -4,8 +4,8 @@ import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/D
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
 class KittieFetcher implements HandleCommand{
 
-  handle(ctx: HandlerContext) : Message {
-    return new Message("Up and at 'em!");
+  handle(ctx: HandlerContext) : Plan {
+    return Plan.ofMessage(new Message("Up and at 'em!"));
   }
 }
 

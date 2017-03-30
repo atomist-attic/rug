@@ -191,10 +191,13 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "return the message from the handler when no plan was explicitly returned" in {
+  it should "return the message from the handler when no plan was explicitly returned and more than one event fired" in
+    feature2Steps("PassingFeature2Steps1.ts")
+
+  private def feature2Steps(stepsFile: String): Unit = {
     val passingFeature1StepsFile = requiredFileInPackage(
       this,
-      "PassingFeature2Steps.ts",
+      stepsFile,
       ".atomist/tests/handler/event"
     )
 

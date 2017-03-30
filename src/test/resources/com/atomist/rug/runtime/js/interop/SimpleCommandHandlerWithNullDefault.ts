@@ -7,8 +7,8 @@ class KittieFetcher implements HandleCommand{
   @Parameter({description: "test", pattern: "@any", required: false})
   test: string = null
 
-  handle(ctx: HandlerContext) : Message {
-    return new Message();
+  handle(ctx: HandlerContext) : Plan {
+    return new Plan().add(new Message());
   }
 }
 

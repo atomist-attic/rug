@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+-  **BREAKING** Handlers must return `Plan`, not `Message`
+-  **BREAKING** Messages can only contain a string value, not JSON
+
+
 [Unreleased]: https://github.com/atomist/rug/compare/0.20.0...HEAD
 
 ## [0.20.0] - 2017-03-29

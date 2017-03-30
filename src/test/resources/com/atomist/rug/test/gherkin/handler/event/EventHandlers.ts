@@ -65,7 +65,7 @@ export const handler3 = new ReturnsEmptyPlanEventHandler3();
 class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
-        return new Message("Hello there!")
+        return new Plan().add(new Message("Hello there!"))
     }
 }
 export const simpleMessageHandler = new ReturnsAMessage();
@@ -79,7 +79,7 @@ class AngryHandler implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
         if (23 > 0) throw new Error("I hate y'all")
-        return new Message("Hello there!")
+        return new Plan().add(new Message("Hello there!"))
     }
 }
 export const angry = new AngryHandler();

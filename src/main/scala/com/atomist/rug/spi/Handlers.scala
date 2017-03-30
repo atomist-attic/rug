@@ -124,12 +124,14 @@ object Handlers {
     def value: String
   }
 
-  case class JsonBody(json: String) extends MessageBody {
-    override def value: String = { json }
-  }
-
   case class MessageText(text: String) extends MessageBody {
     override def value: String = { text }
+  }
+
+  @deprecated(message = "No longer supported. Class Only retained for the runner",
+    since = "0.21.0")
+  case class JsonBody(json: String) extends MessageBody {
+    override def value: String = { json }
   }
 
   case class Response(status: Status,

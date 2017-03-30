@@ -9,6 +9,9 @@ When("a visionary leader enters", world => {
 });
 Then("excitement ensues", world => {
     //console.log(`World plan is ${world.plan()}, first message body is ${world.plan().messages[0].body.value}`)
+    if (!world.plan().messages) throw new Error(`Messages bad`)
+    if (world.plan().messages.length == 0) throw new Error(`Messages length is 0`)
+    if (!world.plan().messages[0].body) throw new Error(`Message[0].body bad`)
     let drillDown = world.plan().messages[0].body;
     if (drillDown != "woot")
         throw new Error(`Unexpected drill-down value [${drillDown}]`)

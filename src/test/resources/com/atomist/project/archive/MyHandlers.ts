@@ -62,7 +62,7 @@ class IssueLister implements HandleCommand{
   @Parameter({description: "Days", pattern: "^.*$", maxLength: 100, required: false })
   days = 1
 
-  handle(ctx: HandlerContext) : Message {
+  handle(ctx: HandlerContext) {
     var match: Match<Issue,Issue>; // ctx.pathExpressionEngine().evaluate<Issue,Issue>("/Repo()/Issue[@raisedBy='kipz']")
     let issues = match.matches();
     if (issues.length > 0) {
@@ -87,9 +87,10 @@ class IssueLister implements HandleCommand{
               }`
                  }
              }).join(",") + "]}"
-             return {body: attachments}
-         }else{
-            return {body: "You are not crushin' it right now!"}
+             return new Plan().add({body: attachments})
+         }
+         else{
+            return new Plan().add({body: "You are not crushin' it right now!"})
          }
   }
 }
@@ -99,7 +100,8 @@ export let lister = new IssueLister();
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
 @Tags("kitty", "youtube", "slack")
 @Intent("show me kitties")
-class KittieFetcher implements HandleCommand{
+class KittieFetcher implements HandleCommand {
+
   handle(command: HandlerContext) : Plan {
     let result = new Plan()
     result.add({instruction: {kind: "execution",
@@ -112,10 +114,10 @@ class KittieFetcher implements HandleCommand{
 }
 
 @ResponseHandler("Kitties", "Prints out kitty urls")
-class KittiesResponder implements HandleResponse<Object>{
-  handle(response: Response<Object>) : Message {
+class KittiesResponder implements HandleResponse<Object> {
+  handle(response: Response<Object>): Plan {
     let results = response.body as any;
-    return new Message(results.urls.join(","))
+    return new Plan().add(new Message(results.urls.join(",")));
   }
 }
 

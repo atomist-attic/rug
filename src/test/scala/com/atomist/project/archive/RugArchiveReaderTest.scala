@@ -12,7 +12,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class RugArchiveReaderTest extends FlatSpec with Matchers {
 
   it should "load handlers of different kinds from an archive" in {
-    val ts = ClassPathArtifactSource.toArtifactSource("com/atomist/project/archive/MyHandlers.ts")
+    val ts = ClassPathArtifactSource.toArtifactSource(
+      "com/atomist/project/archive/MyHandlers.ts")
     val moved = ts.withPathAbove(".atomist/handlers")
     val as = TypeScriptBuilder.compileWithModel(moved)
     val ops = RugArchiveReader.find(as, Nil)
@@ -20,6 +21,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
     assert(ops.commandHandlers.size === 2)
     assert(ops.eventHandlers.size === 1)
   }
+
   it should "find and invoke plain javascript generators" in {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")

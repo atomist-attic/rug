@@ -46,9 +46,6 @@ object JavaScriptEventHandlerTest {
        |    })
        |    plan.add(message);
        |
-       |    const jsonMessage = new Message({ value: "message2"})
-       |    plan.add(jsonMessage);
-       |
        |    plan.add({ instruction: {
        |                 kind: "execute",
        |                 name: "HTTP",
@@ -156,7 +153,9 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
   import JavaScriptEventHandlerTest._
 
   it should "extract and run an event handler" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(
+        JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
     val finder = new JavaScriptEventHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)
@@ -177,8 +176,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
               Nil, None
             )), None)
         ),
-        Some("w00t")),
-      Message(JsonBody("[value=message2]"), Nil, None)
+        Some("w00t"))
     )
     val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
 

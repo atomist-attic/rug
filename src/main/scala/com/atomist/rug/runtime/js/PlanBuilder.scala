@@ -54,7 +54,7 @@ class PlanBuilder {
     }
     val messageBody = jsMessage.getMember("body") match {
       case json: ScriptObjectMirror =>
-        JsonBody(json.entrySet().toString)
+        throw new UnsupportedOperationException("Message body must now be a string")
       case text: String =>
         MessageText(text)
       case ScriptRuntime.UNDEFINED => MessageText(null)

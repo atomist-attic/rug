@@ -124,10 +124,6 @@ object Handlers {
     def value: String
   }
 
-  case class JsonBody(json: String) extends MessageBody {
-    override def value: String = { json }
-  }
-
   case class MessageText(text: String) extends MessageBody {
     override def value: String = { text }
   }

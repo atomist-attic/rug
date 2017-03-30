@@ -5,7 +5,7 @@ import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/D
 class KittieFetcher implements HandleCommand{
 
   handle(ctx: HandlerContext) : Plan {
-    return new Plan().add(new Message("Up and at 'em!"));
+    return Plan.ofMessage(new Message("Up and at 'em!"));
   }
 }
 

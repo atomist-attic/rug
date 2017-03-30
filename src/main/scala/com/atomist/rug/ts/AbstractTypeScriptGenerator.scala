@@ -197,13 +197,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
 
-  protected def emitDocComment(description: String): String = {
-    s"""
-       |/*
-       | * ${description.replace("\n", "\n * ")}
-       | */""".stripMargin
-  }
-
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]

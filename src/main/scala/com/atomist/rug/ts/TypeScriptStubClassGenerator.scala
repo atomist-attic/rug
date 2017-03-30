@@ -12,6 +12,9 @@ private object TypeScriptStubClassGenerator {
     """
       |Generated class exposing Atomist Cortex.
       |Fluent builder style class for use in testing and query by example.""".stripMargin
+
+  val GraphNodeMethodImplementationDoc: String =
+    "Implementation of GraphNode interface method.\nFor infrastructure, not user use"
 }
 
 /**
@@ -24,6 +27,8 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                    override val tags: Seq[Tag] = Nil,
                                    val root: String = "GraphNode")
   extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
+
+  import TypeScriptStubClassGenerator._
 
   private case class ClassGeneratedType(name: String,
                                         description: String,
@@ -40,8 +45,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
     override def toString: String = {
       val output = new StringBuilder
-      output ++= emitDocComment(description + "\n" +
-        TypeScriptStubClassGenerator.DefaultTypedocBoilerplate)
+      output ++= helper.toJsDoc(description + "\n" + DefaultTypedocBoilerplate)
       output ++= s"\nclass $name "
       val implementation = s"implements $interfaceModuleImport.$name"
       output ++= (if (parent.head == root) {
@@ -61,16 +65,17 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
       // Emit methods from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
       output ++=
-        s"""|${indent}nodeName(): string {
-            |${indent}${indent}return "$name";
-            |$indent}
-            |
-            |${indent}nodeTags(): string[] {
-            |${indent}${indent}return [ "$name", "-dynamic" ];
-            |$indent}
-            |
-            |""".stripMargin
-
+        helper.indented(
+          s"""|${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+              |nodeName(): string {
+              |${indent}return "$name";
+              |}
+              |
+              |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+              |nodeTags(): string[] {
+              |${indent}return [ "$name", "-dynamic" ];
+              |}""".stripMargin, 1)
+      output ++= config.separator
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString

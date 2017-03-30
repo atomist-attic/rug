@@ -126,21 +126,6 @@ private case class Prop(name: String, typ: String)
 
 private case class PropertyNode(labels: Set[String], properties: Seq[Prop])
 
-private sealed trait Cardinality
-
-private object Cardinality {
-
-  def apply(s: String): Cardinality = s match {
-    case "1:1" => OneToOne
-    case "1:M" => OneToM
-    case x => throw new IllegalArgumentException(s"Unknown cardinality: [$x]")
-  }
-}
-
-private case object OneToOne extends Cardinality
-
-private case object OneToM extends Cardinality
-
 private case class Relationship(left: String, name: String, cardinality: Cardinality, right: String)
 
 private class JsonBackedTyped(

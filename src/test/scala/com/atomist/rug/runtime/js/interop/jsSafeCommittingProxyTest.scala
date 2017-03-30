@@ -1,12 +1,19 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util
+
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileMutableView
 import com.atomist.rug.runtime.js.SimpleContainerGraphNode
+import com.atomist.rug.ts.Cardinality
 import com.atomist.source.StringFileArtifact
 import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
+import com.atomist.util.lang.JavaScriptArray
+import jdk.nashorn.api.scripting.JSObject
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.parsing.json.JSONObject
 
 class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 
@@ -32,6 +39,51 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
     val c = SimpleContainerGraphNode("root", SimpleTerminalTreeNode("bar", "baz"), TreeNode.Dynamic)
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
     sc.getMember("bar")
+  }
+
+  it should "recognize cardinality of single value" in {
+    val c = SimpleContainerGraphNode("root",
+      SimpleTerminalTreeNode("bar", "baz"))
+      .withTag(TreeNode.Dynamic)
+    val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
+    val jso = sc.getMember("bar").asInstanceOf[JSObject]
+    assert(jso.isFunction)
+    val invoked = jso.call(null)
+    assert(invoked === "baz")
+  }
+
+  it should "recognize cardinality of single value with array marker" in {
+    val c = SimpleContainerGraphNode("root",
+      SimpleTerminalTreeNode("bar", "baz", Set(Cardinality.One2Many)))
+      .withTag(TreeNode.Dynamic)
+    val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
+    val jso = sc.getMember("bar").asInstanceOf[JSObject]
+    assert(jso.isFunction)
+    val invoked = jso.call(null)
+    invoked match {
+      case jsa: JavaScriptArray[_] =>
+        assert(jsa.size === 1)
+      //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
+      case x => fail(s"Unexpected: $x")
+    }
+  }
+
+  it should "recognize cardinality of multiple values" in {
+    val c = new SimpleContainerGraphNode("root",
+      Seq(SimpleTerminalTreeNode("bar", "baz"),
+        SimpleTerminalTreeNode("bar", "baz2")),
+      Set(TreeNode.Dynamic)
+    )
+    val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
+    val jso = sc.getMember("bar").asInstanceOf[JSObject]
+    assert(jso.isFunction)
+    val invoked = jso.call(null)
+    invoked match {
+      case jsa: JavaScriptArray[_] =>
+        assert(jsa.size === 2)
+       //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
+      case x => fail(s"Unexpected: $x")
+    }
   }
 
 }

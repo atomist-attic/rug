@@ -1,5 +1,6 @@
 package com.atomist.tree.marshal
 
+import com.atomist.rug.ts.Cardinality
 import com.atomist.tree.TreeNode
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -48,7 +49,7 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
       |]
     """.stripMargin
 
-  val t2: String =
+  val WithLinks: String =
     """
      |[
      |   {
@@ -123,7 +124,14 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
      |   {
      |      "startNodeId":4770,
      |      "endNodeId":2391,
-     |      "type":"ON"
+     |      "type":"ON",
+     |      "cardinality": "1:1"
+     |   },
+     |   {
+     |      "startNodeId":4770,
+     |      "endNodeId":2391,
+     |      "type":"ONM",
+     |      "cardinality": "1:M"
      |   },
      |   {
      |      "startNodeId":2391,
@@ -138,7 +146,8 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
      |   {
      |      "startNodeId":4766,
      |      "endNodeId":4767,
-     |      "type":"CONTAINS"
+     |      "type":"CONTAINS",
+     |       "cardinality": "1:M"
      |   },
      |   {
      |      "startNodeId":4767,
@@ -155,11 +164,29 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
   }
 
   it should "deserialize a tree of n depth" in {
-    val node = LinkedJsonTreeDeserializer.fromJson(t2)
+    val node = LinkedJsonTreeDeserializer.fromJson(WithLinks)
     assert(node.nodeTags === Set("Build", TreeNode.Dynamic))
     assert(node.childrenNamed("status").head.value === "Passed")
     val repo = node.childrenNamed("ON").head
     assert(repo.childrenNamed("owner").size === 1)
+    val chatChannel = repo.childrenNamed("CHANNEL").head
+    assert(chatChannel.childrenNamed("name").size === 1)
+    assert(chatChannel.childrenNamed("id").head.value === "channel-id")
+  }
+
+  it should "distinguish cardinality" in {
+    val node = LinkedJsonTreeDeserializer.fromJson(WithLinks)
+    assert(node.nodeTags === Set("Build", TreeNode.Dynamic))
+    assert(node.childrenNamed("status").head.value === "Passed")
+    val repo = node.childrenNamed("ON").head
+    assert(repo.childrenNamed("owner").size === 1)
+    assert(!repo.nodeTags.contains(Cardinality.One2Many))
+    assert(!node.nodeTags.contains(Cardinality.One2Many))
+
+    // Special node with cardinality
+    val contains = node.childrenNamed("ONM").head
+    assert(contains.nodeTags.contains(Cardinality.One2Many))
+
     val chatChannel = repo.childrenNamed("CHANNEL").head
     assert(chatChannel.childrenNamed("name").size === 1)
     assert(chatChannel.childrenNamed("id").head.value === "channel-id")

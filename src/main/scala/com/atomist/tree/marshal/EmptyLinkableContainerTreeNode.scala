@@ -1,5 +1,6 @@
 package com.atomist.tree.marshal
 
+import com.atomist.rug.ts.{Cardinality, OneToM}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 class EmptyLinkableContainerTreeNode() extends ContainerTreeNode {
@@ -25,9 +26,9 @@ private class LinkableContainerTreeNode(
                                        )
   extends ContainerTreeNode {
 
-  def link(c: LinkableContainerTreeNode, link: String): Unit = {
+  def link(c: LinkableContainerTreeNode, link: String, cardinality: Cardinality): Unit = {
     // Add a child with the appropriate name
-    val nn = new WrappingLinkableContainerTreeNode(c, link)
+    val nn = new WrappingLinkableContainerTreeNode(c, link, cardinality)
     fieldValues = fieldValues :+ nn
   }
 
@@ -44,12 +45,16 @@ private class LinkableContainerTreeNode(
 }
 
 private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
-                                                override val nodeName: String)
+                                                override val nodeName: String,
+                                                cardinality: Cardinality)
   extends ContainerTreeNode {
 
   override def value: String = wrappedNode.value
 
-  override def nodeTags: Set[String] = wrappedNode.nodeTags
+  override def nodeTags: Set[String] = wrappedNode.nodeTags ++ (cardinality match {
+    case OneToM => Set(Cardinality.One2Many)
+    case _ => Set()
+  })
 
   override def childNodeNames: Set[String] = wrappedNode.childNodeNames
 

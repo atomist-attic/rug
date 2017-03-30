@@ -1,5 +1,6 @@
 package com.atomist.tree.marshal
 
+import com.atomist.rug.ts.Cardinality
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -15,6 +16,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
   private val StartNodeId = "startNodeId"
   private val EndNodeId = "endNodeId"
   private val Type = "type"
+  private val CardinalityStr = "cardinality"
 
   // Properties that we handle specially, rather than treating as ordinary subnodes
   private val SpecialProperties = Set(NodeId, Type)
@@ -79,13 +81,16 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
     } {
       val startNodeId: String = requiredStringEntry(m, StartNodeId)
       val endNodeId: String = requiredStringEntry(m, EndNodeId)
+      val cardinality: Cardinality =
+        Cardinality(defaultedStringEntry(m, CardinalityStr, Cardinality.One2One))
       val link: String = requiredStringEntry(m, Type)
       logger.debug(s"Creating link from $startNodeId to $endNodeId")
       idToNode.get(startNodeId) match {
         case Some(parent) => parent.link(
           idToNode.getOrElse(endNodeId,
             throw new IllegalArgumentException(s"Cannot link to end node $endNodeId: not found")),
-          link)
+          link,
+          cardinality)
         case None =>
           throw new IllegalArgumentException(s"Cannot link to start node $startNodeId: not found")
       }
@@ -97,6 +102,13 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
   private def requiredStringEntry(m: Map[String,Any], key: String): String =
     m.get(key) match {
       case None => throw new IllegalArgumentException(s"Property [$key] was required, but not found in map with keys [${m.keySet.mkString(",")}]")
+      case Some(s: String) => s
+      case Some(x) => x.toString
+    }
+
+  private def defaultedStringEntry(m: Map[String,Any], key: String, default: String): String =
+    m.get(key) match {
+      case None => default
       case Some(s: String) => s
       case Some(x) => x.toString
     }

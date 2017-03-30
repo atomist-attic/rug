@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js.interop
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
+import com.atomist.rug.ts.Cardinality
 import com.atomist.tree._
 import com.atomist.tree.utils.NodeUtils
 import com.atomist.util.lang.JavaScriptArray
@@ -177,10 +178,15 @@ class jsSafeCommittingProxy(
           throw new RugRuntimeException(name,
             s"No children or function found for property '$name' on $node")
         case null :: Nil => null
+        case (ttn: TerminalTreeNode) :: Nil if ttn.nodeTags.contains(Cardinality.One2Many) =>
+          // Pull out the value and put in an array
+          JavaScriptArray.fromSeq(Seq(ttn.value))
         case (ttn: TerminalTreeNode) :: Nil =>
           // Pull out the value
           ttn.value
-        case head :: Nil => wrapOne(head)
+        case head :: Nil if !head.nodeTags.contains(Cardinality.One2Many) =>
+          // Only one entry and we know it's not marked as an array
+          wrapOne(head)
         case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
       }
     }

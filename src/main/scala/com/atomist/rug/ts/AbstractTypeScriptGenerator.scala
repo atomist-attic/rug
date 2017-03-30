@@ -79,6 +79,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     def description: Option[String]
 
+    def returnsArray: Boolean = returnType.contains("[")
+
+    /** Return the underlying type if we return an array */
+    def underlyingType: String = returnType.stripSuffix("[]")
+
     def comment: String = {
       val builder = new StringBuilder(s"$indent/**\n")
       builder ++= s"$indent  * ${description.getOrElse("")}\n"

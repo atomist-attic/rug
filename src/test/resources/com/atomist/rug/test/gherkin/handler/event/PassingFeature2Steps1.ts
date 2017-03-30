@@ -9,9 +9,9 @@ When("i call you", world => {
    world.sendEvent(new node.GitHubId("myId"))
 })
 Then("you call me", world => {
-    return world.message() != null
+    return world.plan().messages[0] != null
 })
 Then("to greet me", world => {
-    let message = world.message()
-    return (message.body.value == "Hello there!")
+    let message = world.plan().messages[0]
+    return (message.body === "Hello there!")
 })

@@ -5,6 +5,7 @@ import java.util.Objects
 import com.atomist.graph.{AddressableGraphNode, GraphNode}
 import com.atomist.tree.SimpleTerminalTreeNode
 import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.internal.runtime.ScriptRuntime
 
 import scala.collection.JavaConverters._
 
@@ -62,7 +63,7 @@ private[interop] class NodeRegistry {
     gn.nodeId.foreach(id => {
       reg = reg ++ Map(id -> gn)
     })
-    somReg = somReg ++ Map(gn.som -> gn)
+    somReg = somReg ++ Map(gn.scriptObject -> gn)
   }
 
   def get(id: String): Option[NashornMapBackedGraphNode] = reg.get(id)
@@ -73,17 +74,19 @@ private[interop] class NodeRegistry {
 
 }
 
-import NashornMapBackedGraphNode._
+import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
 
 /**
+  * Object used within the JVM whose implementation of the GraphNode interface is based on
+  * navigation of a graph defined in JavaScript object or data structure.
   * Backed by a Map that can include simple properties or Nashorn ScriptObjectMirror in the event of nesting.
   * Handles cycles if references are provided.
   */
-private class NashornMapBackedGraphNode(val som: ScriptObjectMirror,
+class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
                                         nodeRegistry: NodeRegistry)
   extends GraphNode {
 
-  protected val relevantPropertiesAndValues: Map[String, Object] = relevantPropertyValues(som)
+  protected val relevantPropertiesAndValues: Map[String, Object] = relevantPropertyValues(scriptObject)
 
   val nodeId: Option[String] = relevantPropertiesAndValues.get(NodeIdField).map(id => "" + id)
   nodeRegistry.register(this)
@@ -148,7 +151,9 @@ private class NashornMapBackedGraphNode(val som: ScriptObjectMirror,
         }.toSeq
       case Some(som: ScriptObjectMirror) =>
         Seq(nodify(som))
-      case x =>
+      case Some(ScriptRuntime.UNDEFINED) =>
+        Nil
+      case Some(x) =>
         val v = Objects.toString(x)
         Seq(SimpleTerminalTreeNode(key, v, Set()))
     }

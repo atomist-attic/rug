@@ -29,6 +29,8 @@ class jsSafeCommittingProxy(
 
   private val typ: Typed = Typed.typeFor(node, typeRegistry)
 
+  // Members the user has added dynamically in JavaScript,
+  // for example in mixins
   private var additionalMembers: Map[String, Object] = Map()
 
   //-----------------------------------------------------
@@ -47,14 +49,14 @@ class jsSafeCommittingProxy(
     node match {
       case tn: TreeNode =>
         //println(s"Wrapping childrenNamed of $node")
-        tn.childrenNamed(key).map(wrapOne)
+        tn.childrenNamed(key).map(wrapOne(_)).map(_.asInstanceOf[TreeNode])
       case _ => ???
     }
 
-  override def relatedNodes: Seq[TreeNode] =
+  override def relatedNodes: Seq[GraphNode] =
     node.relatedNodes.map(wrapOne)
 
-  override def relatedNodesNamed(key: String): Seq[TreeNode] =
+  override def relatedNodesNamed(key: String): Seq[GraphNode] =
     node.relatedNodesNamed(key).map(wrapOne)
 
   private def wrapOne(n: GraphNode) = jsSafeCommittingProxy.wrapOne(n, typeRegistry)
@@ -77,21 +79,22 @@ class jsSafeCommittingProxy(
   }
 
   override def getMember(name: String): AnyRef = {
-    // println(s"getMember: [$name]")
-    // First, look for an added member
-    additionalMembers.get(name) match {
+    // First, look for a member added in JavaScript
+    val member = additionalMembers.get(name) match {
       case Some(som: ScriptObjectMirror) =>
-        // println(s"Going with added value [$som] for [$name]")
         som
       case Some(x) =>
-        // println(s"Going with added non-function value [$x] for [$name]")
         x
       case None if MagicJavaScriptMethods.contains(name) =>
         super.getMember(name)
       case None if name == "toString" =>
         new AlwaysReturns(toString)
-      case _ => invokeConsideringTypeInformation(name)
+      case _ =>
+        // Invoke using navigation on underlying node or reflection
+        invokeConsideringTypeInformation(name)
     }
+    //println(s"Returning member [$member] for $name in $this")
+    member
   }
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
@@ -115,7 +118,8 @@ class jsSafeCommittingProxy(
         throw new UnsupportedOperationException(
           s"""Function [$name] cannot be evaluated on node with name [${node.nodeName}]
              |Check that the function is defined on type [${node.nodeTags.headOption.getOrElse("???")}] and that the relationship is materialized
-             |""".stripMargin)
+             |""".stripMargin +
+            s"Type information=[$st]")
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
@@ -173,6 +177,7 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
       val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
+      println(s"${this}.call returned $nodesAccessedThroughThisFunctionCall")
       nodesAccessedThroughThisFunctionCall.toList match {
         case Nil =>
           throw new RugRuntimeException(name,
@@ -210,7 +215,7 @@ object jsSafeCommittingProxy {
     * @param nodes sequence to wrap
     * @return TypeScript and JavaScript-friendly list
     */
-  def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[jsSafeCommittingProxy] =
+  def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[GraphNode] =
     new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 
   def wrapIfNecessary(nodes: Seq[_], typeRegistry: TypeRegistry): java.util.List[Object] = {
@@ -221,6 +226,11 @@ object jsSafeCommittingProxy {
     wrapped.map(_.asInstanceOf[Object]).asJava
   }
 
-  def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): jsSafeCommittingProxy =
-    new jsSafeCommittingProxy(n, typeRegistry)
+  def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): GraphNode = n match {
+    case jsp: jsSafeCommittingProxy =>
+      jsp
+    case _ =>
+      new jsSafeCommittingProxy(n, typeRegistry)
+  }
+
 }

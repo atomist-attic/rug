@@ -103,12 +103,27 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                 |$indent${indent}return this.${toFieldName(this)};
                 |$indent}""".stripMargin
           val builderMethod =
-            s"""
-               |
-               |${indent}with${upperize(name)}($name: $returnType): $typeName {
-               |$indent${indent}this.${toFieldName(this)} = $name;
-               |$indent${indent}return this;
-               |$indent}""".stripMargin
+            if (returnsArray) {
+              // It's an array type. Create an "addX" method to add the value to the array,
+              // initializing it if necessary
+              s"""
+                 |
+                 |${indent}add${upperize(name)}($name: ${underlyingType}): $typeName {
+                 |$indent${indent}if (this.${toFieldName(this)} === undefined)
+                 |$indent$indent${indent}this.${toFieldName(this)} = [];
+                 |$indent${indent}this.${toFieldName(this)}.push($name);
+                 |$indent${indent}return this;
+                 |$indent}""".stripMargin
+            }
+            else {
+              // It's a scalar. Create a "withX" method to set the value
+              s"""
+                 |
+                 |${indent}with${upperize(name)}($name: $returnType): $typeName {
+                 |$indent${indent}this.${toFieldName(this)} = $name;
+                 |$indent${indent}return this;
+                 |$indent}""".stripMargin
+            }
           core + builderMethod
       }
 

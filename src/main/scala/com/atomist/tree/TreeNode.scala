@@ -19,9 +19,9 @@ trait TreeNode extends GraphNode {
   @ExportFunction(readOnly = true, description = "Node content")
   def value: String
 
-  def relatedNodes: Seq[TreeNode] = childNodes
+  override def relatedNodes: Seq[GraphNode] = childNodes
 
-  def relatedNodesNamed(key: String): Seq[TreeNode] = childrenNamed(key)
+  override def relatedNodesNamed(key: String): Seq[GraphNode] = childrenNamed(key)
 
   def childrenNamed(key: String): Seq[TreeNode]
 

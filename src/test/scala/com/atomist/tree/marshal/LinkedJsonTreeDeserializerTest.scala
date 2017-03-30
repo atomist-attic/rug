@@ -125,7 +125,8 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
      |      "startNodeId":4770,
      |      "endNodeId":2391,
      |      "type":"ON",
-     |      "cardinality": "1:1"
+     |      "cardinality": "1:1",
+     |      "random-nonsense": "savage,ruthless"
      |   },
      |   {
      |      "startNodeId":4770,

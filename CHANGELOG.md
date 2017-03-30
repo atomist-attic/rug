@@ -7,15 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+[Unreleased]: https://github.com/atomist/rug/compare/0.21.0...HEAD
+
+## [0.21.0] - 2017-03-30
+
+[0.21.0]: https://github.com/atomist/rug/compare/0.20.0...0.21.0
+
+Handler return release
+
 ### Changed
 
 -  **BREAKING** Handlers must return `Plan`, not `Message`
 -  **BREAKING** Messages can only contain a string value, not JSON
-
-
-[Unreleased]: https://github.com/atomist/rug/compare/0.20.0...HEAD
+-  Cardinality is processed in `TreeNode` deserializtion from Cortex ingestion
 
 ## [0.20.0] - 2017-03-29
+
+[0.20.0]: https://github.com/atomist/rug/compare/0.19.0...0.20.0
 
 Handler testing improvement release
 

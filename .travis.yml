@@ -36,5 +36,4 @@ deploy:
     condition: "$TRAVIS_TAG =~ ^[0-9]+\\.[0-9]+\\.[0-9]+$"
 after_deploy:
 - bash src/main/scripts/npm-publish.bash $TRAVIS_TAG rug
-- bash src/main/scripts/npm-publish.bash $TRAVIS_TAG cortex
 - bash src/main/scripts/gh-publish.bash $TRAVIS_REPO_SLUG

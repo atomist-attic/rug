@@ -10,6 +10,7 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers {
 
   it should "find and run a RugFunction from the registry" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
+    ExampleRugFunction.clearSecrets = true
     fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot"))) match {
       case FunctionResponse(Status.Success, _, _, Some(Body(Some(str), None))) => assert(str === "woot")
       case _ => ???
@@ -22,6 +23,7 @@ class RugFunctionRegistryTest extends FlatSpec with Matchers {
 
   it should "fail if a secret is not set in the parameter list" in {
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
+    ExampleRugFunction.clearSecrets = false
     assertThrows[MissingSecretException] {
       fn.run(SimpleParameterValues(SimpleParameterValue("thingy", "woot")))
     }

@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.21.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.22.0...HEAD
+
+## [0.22.0] - 2017-03-31
+
+[0.22.0]: https://github.com/atomist/rug/compare/0.21.0...0.22.0
+
+Back from the future release
+
+### Changed
+
+-   Removed use of `Futures` in `LocalPlanRunner`
+-   Changed `ServiceLoader`-based registries to not use caching 
 
 ## [0.21.0] - 2017-03-30
 

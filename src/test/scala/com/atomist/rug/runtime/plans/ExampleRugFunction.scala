@@ -17,7 +17,12 @@ class ExampleRugFunction
 
   override def parameters = Seq(new Parameter("thingy"))
 
-  override def secrets: Seq[Secret] = Seq(Secret("very", "/secret/thingy"))
+  override def secrets: Seq[Secret] = {
+    ExampleRugFunction.clearSecrets match {
+      case true => Seq()
+      case false => Seq(Secret("very", "/secret/thingy"))
+    }
+  }
 
   /**
     * Run the function, return the Response.
@@ -35,4 +40,8 @@ class ExampleRugFunction
   override def name: String = "ExampleFunction"
   override def description: String = "Example function"
   override def tags: Seq[Tag] = Seq(Tag("example","example"))
+}
+
+object ExampleRugFunction {
+  var clearSecrets = false
 }

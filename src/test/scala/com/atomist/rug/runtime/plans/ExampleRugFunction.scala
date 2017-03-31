@@ -17,15 +17,7 @@ class ExampleRugFunction
 
   override def parameters = Seq(new Parameter("thingy"))
 
-  private val _secrets = new ListBuffer[Secret]
-
-  def secrets: Seq[Secret] = _secrets
-
-  def addSecret(secret: Secret): Unit = {
-    _secrets += secret
-  }
-
-  def clearSecrets = _secrets.clear()
+  override def secrets: Seq[Secret] = Seq(Secret("very", "/secret/thingy"))
 
   /**
     * Run the function, return the Response.

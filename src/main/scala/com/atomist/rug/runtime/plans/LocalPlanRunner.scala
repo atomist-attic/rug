@@ -36,9 +36,8 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
       }
     }
     val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
-      Future {
-        handleInstruction(respondable, callbackInput)
-      }
+      val instruction = handleInstruction(respondable, callbackInput)
+      Future { instruction }
     }
     val futureInstructionLog: Future[Seq[PlanLogEvent]] = Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)
     futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))

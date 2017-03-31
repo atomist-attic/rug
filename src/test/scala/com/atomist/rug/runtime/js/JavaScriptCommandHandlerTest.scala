@@ -136,8 +136,6 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val finder = new JavaScriptCommandHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
-    fn.clearSecrets
-    fn.addSecret(Secret("very", "/secret/thingy"))
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil, null, null, new TestSecretResolver(handlers.head) {
       /**
         * Resolve a bunch of secrets at once
@@ -156,7 +154,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       case i:
         InstructionResult =>
         assert(i.response.status === Status.Success)
-      case i => ???
+      case i => println(i.getClass)
     }
   }
 

@@ -3,7 +3,7 @@ import * as node from "../../../handlers/command/Nodes"
 
 Given("a sleepy country", f => {
 });
-When("a visionary leader enters", (rugContext, world) => {
+When("a visionary leader enters", world => {
     let handler = world.commandHandler("RunsMatchingPathExpressionCommandHandler");
     let c = new node.Commit().withMadeBy(new node.Person("Ebony"));
     world.addToRootContext(c);

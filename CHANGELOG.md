@@ -20,6 +20,11 @@ Back from the future release
 -   Removed use of `Futures` in `LocalPlanRunner`
 -   Changed `ServiceLoader`-based registries to not use caching 
 
+### Changed
+
+-  If the fixture is the same as the world in a Gherkin step, pass only one parameter. This changes the 
+signatures of handler tests.
+
 ## [0.21.0] - 2017-03-30
 
 [0.21.0]: https://github.com/atomist/rug/compare/0.20.0...0.21.0

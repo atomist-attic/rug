@@ -138,7 +138,12 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case gn: GraphNode => new jsSafeCommittingProxy(gn, world.typeRegistry)
       case t => t
     }
-    val args = Seq(target, world) ++ sm.args
+    // Only include the target if it's different from the world.
+    val fixedParams: Seq[AnyRef] = target match {
+      case `world` => Seq(world)
+      case _ => Seq(target, world)
+    }
+    val args = fixedParams ++ sm.args
     allCatch.either(sm.jsVar.call("apply", args:_*))
   }
 

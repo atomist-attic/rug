@@ -73,7 +73,6 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     }
      catch {
        case ex: Throwable =>
-         ex.printStackTrace()
          assert(ex.getMessage.contains("stub"))
      }
   }

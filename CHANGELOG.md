@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.22.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.23.0...HEAD
+
+## [0.23.0] - 2017-03-31
+
+[0.23.0]: https://github.com/atomist/rug/compare/0.22.0...0.23.0
+
+TypeScript stub generation and proxy improvement release
+
+### Changed
+
+- Now generating `add` instead of `with` methods to handle arrays in TypeScript code generation
 
 ## [0.22.0] - 2017-03-31
 
@@ -19,9 +29,6 @@ Back from the future release
 
 -   Removed use of `Futures` in `LocalPlanRunner`
 -   Changed `ServiceLoader`-based registries to not use caching 
-
-### Changed
-
 -  If the fixture is the same as the world in a Gherkin step, pass only one parameter. This changes the 
 signatures of handler tests.
 

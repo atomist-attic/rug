@@ -38,7 +38,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
     override def toString: String = {
       val output = new StringBuilder
-      output ++= emitDocComment(description)
+      output ++= helper.toJsDoc(description)
       if (parent.isEmpty)
         output ++= s"\ninterface $name {${config.separator}"
       else

@@ -24,7 +24,8 @@ import scala.collection.JavaConverters._
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class jsMatch(root: GraphNode, matches: _root_.java.util.List[jsSafeCommittingProxy])
+case class jsMatch(root: GraphNode,
+                   matches: _root_.java.util.List[GraphNode])
 
 /**
   * JavaScript-friendly facade to an ExpressionEngine.
@@ -136,7 +137,7 @@ class jsPathExpressionEngine(
     * @param root root of Tree. SafeCommittingProxy wrapping a TreeNode
     * @param pe   path expression of object
     */
-  def scalar(root: GraphNode, pe: Object): jsSafeCommittingProxy = {
+  def scalar(root: GraphNode, pe: Object): GraphNode = {
     val res = evaluate(root, pe)
     val ms = res.matches
     ms.size() match {
@@ -171,7 +172,8 @@ class jsPathExpressionEngine(
   /**
     * Try to cast the given node to the required type.
     */
-  def as(root: GraphNode, name: String): jsSafeCommittingProxy = scalar(root, s"->$name")
+  def as(root: GraphNode, name: String): GraphNode =
+    scalar(root, s"->$name")
 
   /**
     * Find the children of the current node of the named type.
@@ -179,7 +181,7 @@ class jsPathExpressionEngine(
     * @param parent parent node we want to look under
     * @param name   name of the children we want to look for
     */
-  def children(parent: GraphNode, name: String): util.List[jsSafeCommittingProxy] = {
+  def children(parent: GraphNode, name: String): util.List[GraphNode] = {
     val rootTn = toUnderlyingTreeNode(parent)
     val typ = typeRegistry.findByName(name).getOrElse(
       throw new IllegalArgumentException(s"Unknown type")

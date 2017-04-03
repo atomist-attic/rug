@@ -79,6 +79,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     def description: Option[String]
 
+    def returnsArray: Boolean = returnType.contains("[")
+
+    /** Return the underlying type if we return an array */
+    def underlyingType: String = returnType.stripSuffix("[]")
+
     def comment: String = {
       val builder = new StringBuilder(s"$indent/**\n")
       builder ++= s"$indent  * ${description.getOrElse("")}\n"
@@ -196,13 +201,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
-
-  protected def emitDocComment(description: String): String = {
-    s"""
-       |/*
-       | * ${description.replace("\n", "\n * ")}
-       | */""".stripMargin
-  }
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]

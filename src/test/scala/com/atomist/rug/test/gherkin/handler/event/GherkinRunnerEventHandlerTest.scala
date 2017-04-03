@@ -111,8 +111,13 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "use generated model" in
+  it should "use generated model"
     useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
+
+
+  it should "#487: use generated model with arrays" in (
+    useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithArrays.ts")
+  )
 
   private def useGeneratedModel(stepsFile: String): Unit = {
     val passingFeature1StepsFile = requiredFileInPackage(

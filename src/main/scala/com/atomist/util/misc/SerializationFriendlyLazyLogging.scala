@@ -14,7 +14,7 @@ trait SerializationFriendlyLazyLogging {
 
   @Transient
   @JsonIgnore
-  private lazy val logger: Logger =
+  protected lazy val logger: Logger =
     Logger(LoggerFactory.getLogger(getClass.getName))
 
 }

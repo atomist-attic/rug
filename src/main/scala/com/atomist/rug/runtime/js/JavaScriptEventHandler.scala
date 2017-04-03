@@ -2,12 +2,14 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
-import com.atomist.rug.runtime.js.interop.{jsContextMatch, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy}
 import com.atomist.rug.runtime.{AddressableRug, EventHandler, RugSupport, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
+import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{NamedNodeTest, NodesWithTag, PathExpression, PathExpressionParser}
+import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -65,8 +67,8 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
       case Right(Nil) => None
       case Right(matches) if matches.nonEmpty =>
         val cm = jsContextMatch(
-          jsSafeCommittingProxy.wrapOne(targetNode, ctx.typeRegistry),
-          jsSafeCommittingProxy.wrap(matches, ctx.typeRegistry),
+          wrapOne(targetNode, ctx.typeRegistry),
+          wrap(matches, ctx.typeRegistry),
           teamId = e.teamId)
         invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
           case plan: ScriptObjectMirror => ConstructPlan(plan)
@@ -78,6 +80,18 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           s"Error evaluating path expression $pathExpression: [$failure]")
     }
   }
+
+  private def wrapOne(n: GraphNode, typeRegistry: TypeRegistry): AnyRef = n match {
+    case nbgn: NashornMapBackedGraphNode =>
+      nbgn.scriptObject
+    case _ =>
+      jsSafeCommittingProxy.wrapOne(n, typeRegistry)
+  }
+
+  import scala.collection.JavaConverters._
+
+  private def wrap(nodes: Seq[GraphNode], typeRegistry: TypeRegistry): java.util.List[AnyRef] =
+    new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 }
 
 /**
@@ -87,9 +101,9 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   */
 private case class jsMatch(cm: jsContextMatch) {
 
-  def root(): Object = cm.root
+  def root(): AnyRef = cm.root
 
-  def matches(): java.util.List[jsSafeCommittingProxy] = cm.matches
+  def matches(): java.util.List[AnyRef] = cm.matches
 
   override def toString: String = cm.toString
 }

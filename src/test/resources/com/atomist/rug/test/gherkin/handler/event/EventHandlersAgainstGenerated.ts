@@ -4,9 +4,12 @@ import { GraphNode, Match, PathExpression } from '@atomist/rug/tree/PathExpressi
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
 
 import {Build} from "@atomist/rug/cortex/Build"
+import {Push} from "@atomist/rug/cortex/Push"
+
 import * as buildstub from "@atomist/rug/cortex/stub/Build"
 import * as repostub from "@atomist/rug/cortex/stub/Repo"
 import * as ccstub from "@atomist/rug/cortex/stub/ChatChannel"
+
 
 /**
  * Works against generated model
@@ -26,3 +29,19 @@ class ReturnsEmptyPlanEventHandlerGen1 implements HandleEvent<GraphNode, Build> 
     }
 }
 export const handler1 = new ReturnsEmptyPlanEventHandlerGen1();
+
+@EventHandler("ReturnsEmptyPlanEventHandlerGenWithArrays", "Handles a new Commit event",
+    new PathExpression<GraphNode, Push>(
+        `/Push()`))
+@Tags("push")
+class ReturnsEmptyPlanEventHandlerGenWithArrays implements HandleEvent<GraphNode, Push> {
+
+    handle(m: Match<GraphNode, Push>) {
+        let p: Push = m.matches()[0]
+
+        if (p.contains().length != 1) throw new Error("No contains")
+
+        return new Plan();
+    }
+}
+export const handler2 = new ReturnsEmptyPlanEventHandlerGenWithArrays();

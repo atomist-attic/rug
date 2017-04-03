@@ -27,7 +27,6 @@ case class XPathStyleFunctionPredicate(override val name: String,
                ee: ExpressionEngine,
                typeRegistry: TypeRegistry,
                nodePreparer: Option[NodePreparer]): Boolean = {
-    //println(s"Evaluate $this against $tn")
     val convertedArgs: Seq[Any] = args.zipWithIndex.map(tup =>
       convertToRequiredType(tup._1, fun.argTypes(tup._2), tn, ee, typeRegistry, nodePreparer))
     fun.invoke(convertedArgs) == true
@@ -52,7 +51,6 @@ case class XPathStyleFunctionPredicate(override val name: String,
         case _ => ""
       }
     }
-    //println(s"convertToString found node: $fa, value=[$value] against $contextNode")
     value
   }
 

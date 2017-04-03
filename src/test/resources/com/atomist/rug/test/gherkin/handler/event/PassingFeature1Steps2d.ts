@@ -11,4 +11,7 @@ When("a visionary leader enters", world => {
 Then("excitement ensues", world => {
     // Void return is the same as returning true.
     // This enables us to use assertion frameworks such as Chai
+    let m = world.plan().messages[0]
+    if (m.channelId != "test-channel")
+        throw new Error(`Unexpected channel for message: [${m.channelId}]`)
 })

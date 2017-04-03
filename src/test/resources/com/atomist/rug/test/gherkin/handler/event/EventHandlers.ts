@@ -65,7 +65,7 @@ export const handler3 = new ReturnsEmptyPlanEventHandler3();
 class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
-        return new Plan().add(new Message("Hello there!"))
+        return new Plan().add(new Message("Hello there!").withChannelId("test-channel"))
     }
 }
 export const simpleMessageHandler = new ReturnsAMessage();

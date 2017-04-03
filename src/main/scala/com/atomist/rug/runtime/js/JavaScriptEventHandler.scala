@@ -101,7 +101,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
   */
 private case class jsMatch(cm: jsContextMatch) {
 
-  def root(): Object = cm.root
+  def root(): AnyRef = cm.root
 
   def matches(): java.util.List[AnyRef] = cm.matches
 

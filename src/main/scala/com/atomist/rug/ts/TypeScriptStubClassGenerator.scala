@@ -106,23 +106,25 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
             if (returnsArray) {
               // It's an array type. Create an "addX" method to add the value to the array,
               // initializing it if necessary
-              s"""
+              helper.indented(s"""
                  |
-                 |${indent}add${upperize(name)}($name: ${underlyingType}): $typeName {
-                 |$indent${indent}if (this.${toFieldName(this)} === undefined)
-                 |$indent$indent${indent}this.${toFieldName(this)} = [];
-                 |$indent${indent}this.${toFieldName(this)}.push($name);
-                 |$indent${indent}return this;
-                 |$indent}""".stripMargin
+                 |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
+                 |add${upperize(name)}($name: $underlyingType): $typeName {
+                 |${indent}if (this.${toFieldName(this)} === undefined)
+                 |$indent${indent}this.${toFieldName(this)} = [];
+                 |${indent}this.${toFieldName(this)}.push($name);
+                 |${indent}return this;
+                 |}""".stripMargin, 1)
             }
             else {
               // It's a scalar. Create a "withX" method to set the value
-              s"""
+              helper.indented(s"""
                  |
-                 |${indent}with${upperize(name)}($name: $returnType): $typeName {
-                 |$indent${indent}this.${toFieldName(this)} = $name;
-                 |$indent${indent}return this;
-                 |$indent}""".stripMargin
+                 |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
+                 |with${upperize(name)}($name: $returnType): $typeName {
+                 |${indent}this.${toFieldName(this)} = $name;
+                 |${indent}return this;
+                 |}""".stripMargin, 1)
             }
           core + builderMethod
       }

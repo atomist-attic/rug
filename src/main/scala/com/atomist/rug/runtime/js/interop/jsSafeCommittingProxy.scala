@@ -177,7 +177,7 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
       val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
-      println(s"${this}.call returned $nodesAccessedThroughThisFunctionCall")
+      //println(s"${this}.call returned $nodesAccessedThroughThisFunctionCall")
       nodesAccessedThroughThisFunctionCall.toList match {
         case Nil =>
           throw new RugRuntimeException(name,

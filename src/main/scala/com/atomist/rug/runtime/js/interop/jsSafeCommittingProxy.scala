@@ -7,6 +7,7 @@ import com.atomist.rug.ts.Cardinality
 import com.atomist.tree._
 import com.atomist.tree.utils.NodeUtils
 import com.atomist.util.lang.JavaScriptArray
+import com.atomist.util.misc.SerializationFriendlyLazyLogging
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 /**
@@ -21,7 +22,7 @@ class jsSafeCommittingProxy(
                              val node: GraphNode,
                              typeRegistry: TypeRegistry)
   extends AbstractJSObject
-    with TreeNode {
+    with TreeNode with SerializationFriendlyLazyLogging {
 
   import jsSafeCommittingProxy._
 
@@ -48,9 +49,9 @@ class jsSafeCommittingProxy(
   override def childrenNamed(key: String): Seq[TreeNode] =
     node match {
       case tn: TreeNode =>
-        //println(s"Wrapping childrenNamed of $node")
         tn.childrenNamed(key).map(wrapOne(_)).map(_.asInstanceOf[TreeNode])
-      case _ => ???
+      case unTreeNode =>
+        throw new IllegalStateException(s"Attempt to invoke TreeNode navigation method on non TreeNode [$unTreeNode]")
     }
 
   override def relatedNodes: Seq[GraphNode] =
@@ -71,10 +72,10 @@ class jsSafeCommittingProxy(
     */
   override def setMember(name: String, value: Object): Unit = value match {
     case som: ScriptObjectMirror =>
-      // println(s"Adding function member [$name]")
+      logger.debug(s"JavaScript code has added function member [$name]")
       additionalMembers = additionalMembers ++ Map(name -> som)
     case x =>
-      // println(s"Adding non-function member [$name]")
+      logger.debug(s"JavaScript code has added non-function member [$name]")
       additionalMembers = additionalMembers ++ Map(name -> x)
   }
 
@@ -93,7 +94,7 @@ class jsSafeCommittingProxy(
         // Invoke using navigation on underlying node or reflection
         invokeConsideringTypeInformation(name)
     }
-    //println(s"Returning member [$member] for $name in $this")
+    logger.debug(s"Returning member [$member] for $name in $this")
     member
   }
 
@@ -177,7 +178,6 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       import scala.language.reflectiveCalls
       val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
-      //println(s"${this}.call returned $nodesAccessedThroughThisFunctionCall")
       nodesAccessedThroughThisFunctionCall.toList match {
         case Nil =>
           throw new RugRuntimeException(name,

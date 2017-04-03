@@ -5,6 +5,7 @@ import java.util.Objects
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.ConsString
+import scala.util.control.Exception._
 
 /**
   * Utilities to help in binding to Nashorn.
@@ -28,9 +29,14 @@ object NashornUtils {
   def extractNoArgFunctions(som: ScriptObjectMirror): Map[String, Object] = {
     som.entrySet().asScala
       .map(me => me.getKey -> me.getValue)
-      .collect {
+      .flatMap {
         case (key, f: ScriptObjectMirror) if isNoArgFunction(f) =>
-          (key, som.callMember(key))
+          // If calling the function throws an exception, discard the value.
+          // This will happen with builder stubs that haven't been fully initialized
+          // Otherwise, use it
+          allCatch.opt(som.callMember(key))
+            .map(result => (key, result))
+        case _ => None
       }.toMap
   }
 

@@ -105,6 +105,6 @@ class GherkinExecutionListenerAdapter extends GherkinExecutionListener {
 
   override def featureCompleted(feature: FeatureDefinition, result: FeatureResult): Unit = {}
 
-  override def pathExpressionResult(peval: PathExpressionEvaluation): Unit = ???
+  override def pathExpressionResult(peval: PathExpressionEvaluation): Unit = {}
 }
 

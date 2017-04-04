@@ -1,10 +1,9 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.ParameterValues
-import com.atomist.project.archive.DefaultAtomistConfig
+import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
 import com.atomist.project.review.{ProjectReviewer, ReviewComment, ReviewResult, Severity}
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.AddressableRug
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
@@ -22,8 +21,8 @@ class JavaScriptProjectReviewerFinder
     JsRugOperationSignature(Set("review"),Set("name", "description")),
     JsRugOperationSignature(Set("review"), Set("__name", "__description")))
 
-  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): JavaScriptProjectReviewer = {
-    new JavaScriptProjectReviewer(jsc, fnVar, jsc.rugAs, externalContext)
+  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): JavaScriptProjectReviewer = {
+    new JavaScriptProjectReviewer(jsc, fnVar, jsc.rugAs)
   }
 }
 
@@ -34,10 +33,9 @@ class JavaScriptProjectReviewerFinder
 class JavaScriptProjectReviewer(
                                  jsc: JavaScriptContext,
                                  jsVar: ScriptObjectMirror,
-                                 rugAs: ArtifactSource,
-                                 externalContext: Seq[AddressableRug]
+                                 rugAs: ArtifactSource
                                )
-  extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectReviewer {
 
   override def review(targetProject: ArtifactSource, poa: ParameterValues): ReviewResult = {

@@ -2,7 +2,7 @@ package com.atomist.tree.content.text
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.archive.RugArchiveReader
+import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.runtime.js.JavaScriptProjectEditor
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
@@ -23,7 +23,7 @@ class OverwriteableTextTreeNodeTypeScriptTest extends FlatSpec with Matchers {
     val artifactSourceWithRugNpmModule = TypeScriptBuilder.compileWithModel(artifactSourceWithEditor)
 
     // get the operation out of the artifact source
-    val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val projectEditor = RugArchiveReader(artifactSourceWithRugNpmModule).editors.head.asInstanceOf[JavaScriptProjectEditor]
 
     // apply the operation
     try {

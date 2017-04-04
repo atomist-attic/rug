@@ -2,9 +2,9 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.js.interop.{jsPathExpressionEngine, jsSafeCommittingProxy, jsScalaHidingProxy}
+import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.plans.MappedParameterSupport
-import com.atomist.rug.runtime.{AddressableRug, CommandHandler, RugSupport}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -20,8 +20,7 @@ class JavaScriptCommandHandlerFinder
   override def kind = "command-handler"
 
   override def extractHandler(jsc: JavaScriptContext,
-                              handler: ScriptObjectMirror,
-                              externalContext: Seq[AddressableRug]): Option[JavaScriptCommandHandler] = {
+                              handler: ScriptObjectMirror): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(
       jsc,
       handler,
@@ -31,8 +30,7 @@ class JavaScriptCommandHandlerFinder
       mappedParameters(handler),
       tags(handler),
       secrets(handler),
-      intent(handler),
-      externalContext))
+      intent(handler)))
   }
 
   /**
@@ -91,11 +89,9 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                override val mappedParameters: Seq[MappedParameter],
                                override val tags: Seq[Tag],
                                override val secrets: Seq[Secret],
-                               override val intent: Seq[String] = Seq(),
-                               override val externalContext: Seq[AddressableRug])
+                               override val intent: Seq[String] = Seq())
   extends CommandHandler
   with MappedParameterSupport
-  with RugSupport
   with JavaScriptUtils {
 
   /**

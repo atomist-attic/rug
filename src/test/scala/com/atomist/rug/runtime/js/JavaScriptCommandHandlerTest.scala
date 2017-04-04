@@ -1,10 +1,11 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param._
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugArchiveReader}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
+import com.atomist.rug.RugArchiveReader
+import com.atomist.rug.runtime.ResponseHandler
 import com.atomist.rug.runtime.plans._
-import com.atomist.rug.runtime.{AddressableRug, ResponseHandler, RugSupport}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -54,7 +55,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   "JavaScriptCommandHandler" should "allow us to return an empty message" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
-    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val rugs = RugArchiveReader(rugArchive)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     assert(plan.messages.size === 1)
@@ -65,7 +66,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "#488: get good error message from generated model stubs" in {
     val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithBadStubUse))
-    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val rugs = RugArchiveReader(rugArchive)
     val commandHandler = rugs.commandHandlers.head
     try {
       commandHandler.handle(null, SimpleParameterValues.Empty)
@@ -79,12 +80,12 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
   it should "be able to schedule an Execution and handle its response" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstructionCallingRespondable))
-    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val rugs = RugArchiveReader(rugArchive)
     val com = rugs.commandHandlers.head
     val responseHandler = rugs.responseHandlers.head
 
     val plan = com.handle(null,SimpleParameterValues.Empty).get
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Seq(new TestResponseHandler(responseHandler)), null, null, new TestSecretResolver(null) {
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(responseHandler, null, null, new TestSecretResolver(null) {
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil}))
 
     val results = Await.result(runner.run(plan, None), 10.seconds)
@@ -154,7 +155,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val finder = new JavaScriptCommandHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(Nil, null, null, new TestSecretResolver(handlers.head) {
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(fn, null, null, new TestSecretResolver(handlers.head) {
       /**
         * Resolve a bunch of secrets at once
         *
@@ -179,19 +180,13 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   it should "Not fail if parameter has default value 'null' https://github.com/atomist/rug/issues/458" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullDefault))
-    val rugs = RugArchiveReader.find(rugArchive, Nil)
+    val rugs = RugArchiveReader(rugArchive)
     val com = rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
   }
 }
 
-class TestResponseHandler(r: ResponseHandler) extends AddressableRug with ResponseHandler with RugSupport {
-
-  override def artifact: String = ???
-
-  override def group: String = ???
-
-  override def version: String = ???
+class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
 
   override def handle(response: Response, params: ParameterValues): Option[Plan] = {
     None

@@ -1,9 +1,9 @@
 package com.atomist.rug.ts
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.RugArchiveReader
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.RugArchiveReader
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -22,7 +22,7 @@ class SampleTypeScriptTest extends FlatSpec with Matchers {
     //println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
-    val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head
+    val projectEditor = RugArchiveReader(artifactSourceWithRugNpmModule).editors.head
 
     // apply the operation
     projectEditor.modify(target, parameters) match {

@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy}
-import com.atomist.rug.runtime.{AddressableRug, EventHandler, RugSupport, SystemEvent}
+import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.{InvalidHandlerResultException, RugRuntimeException}
@@ -20,10 +20,10 @@ class JavaScriptEventHandlerFinder
 
   override def kind = "event-handler"
 
-  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptEventHandler] = {
+  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror): Option[JavaScriptEventHandler] = {
     if (someVar.hasMember("__expression")) {
       val expression: String = someVar.getMember("__expression").asInstanceOf[String]
-      Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), externalContext))
+      Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar)))
     } else {
       Option.empty
     }
@@ -44,12 +44,9 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
                              val pathExpressionStr: String,
                              override val name: String,
                              override val description: String,
-                             override val tags: Seq[Tag],
-                             override val externalContext: Seq[AddressableRug]
-                            )
+                             override val tags: Seq[Tag])
   extends EventHandler
-    with JavaScriptUtils
-    with RugSupport {
+    with JavaScriptUtils {
 
   val pathExpression: PathExpression = PathExpressionParser.parsePathExpression(pathExpressionStr)
 

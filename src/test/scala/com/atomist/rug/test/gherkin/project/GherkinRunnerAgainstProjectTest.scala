@@ -3,8 +3,7 @@ package com.atomist.rug.test.gherkin.project
 import javax.script.ScriptContext
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.archive.RugArchiveReader
-import com.atomist.rug.TestUtils
+import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -56,7 +55,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       SimpleFeatureFile,
       EditorWithoutParametersTsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)))
     val run = grt.execute()
     assert(run.result === Passed)
   }
@@ -69,7 +68,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         SimpleFeatureFile,
         EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -89,7 +88,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         SimpleFeatureFile,
         EditorWithParametersStepsFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute((fd: FeatureDefinition) => {!fd.feature.getName.equals("Australian political history")})
     assert(run.testCount == 0)
     assert(run.result === Passed)
@@ -107,7 +106,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       EditorWithBadParametersStepsFile
     )
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -122,7 +121,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         TestUtils.contentOf(this, "ParameterizedFeatureSteps.ts"))
     )
     val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader.find(cas)), Seq(el))
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -159,7 +158,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader.find(rugArchive)), Seq(el))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Option(RugArchiveReader(rugArchive)), Seq(el))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -184,7 +183,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)
@@ -203,7 +202,7 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader.find(rugArchive)))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result === Passed)

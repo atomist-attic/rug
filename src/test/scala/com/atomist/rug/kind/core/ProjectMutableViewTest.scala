@@ -4,10 +4,10 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor}
-import com.atomist.rug.EditorNotFoundException
+import com.atomist.rug.{EditorNotFoundException, SimpleRugResolver}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.rug.runtime.{AddressableRug, ParameterizedRug, Rug}
 import com.atomist.rug.spi.InstantEditorFailureException
+import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.FileSystemArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
@@ -15,6 +15,21 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.JavaConverters._
 
 class ProjectMutableViewTest extends FlatSpec with Matchers {
+
+  val SimpleEditor: String =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {File} from '@atomist/rug/model/Core'
+       |import {Parameter} from '@atomist/rug/operations/RugOperation'
+       |
+       |class SimpleEditor implements ProjectEditor {
+       |    name: string = "Simple"
+       |    description: string = "A nice little editor"
+       |    edit(project: Project) {}
+       |  }
+       |export let editor = new SimpleEditor()
+    """.stripMargin
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
 
@@ -91,20 +106,26 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   it should "throw MissingEditorException if an editor cannot be found via editWith" in {
     val as = ParsingTargets.NewStartSpringIoProject
     as.isInstanceOf[FileSystemArtifactSource] should be(true)
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(EditorStub))
+    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditor)
+    val otherAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val resolver = SimpleRugResolver(otherAs)
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(resolver.resolvedDependencies.resolvedRugs.head), rugResolver = Some(resolver))
     assertThrows[EditorNotFoundException] {
       pmv.editWith("blah", None)
     }
   }
 
-  it should "throw MissingEditorException with a helpful message if we can help" in {
+  it should "throw EditorNotFoundException with a helpful message if we can help" in {
     val as = ParsingTargets.NewStartSpringIoProject
     as.isInstanceOf[FileSystemArtifactSource] should be(true)
-    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(EditorStub))
+    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditor)
+    val otherAs = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+    val resolver = SimpleRugResolver(otherAs)
+    val pmv = new ProjectMutableView(EmptyArtifactSource(""), as, DefaultAtomistConfig, Some(resolver.resolvedDependencies.resolvedRugs.head), rugResolver = Some(resolver))
     val caught = intercept[EditorNotFoundException] {
-      pmv.editWith("fully:qualified:EditorStub", None)
+      pmv.editWith("fully:qualified:Simple", None)
     }
-    assert(caught.getMessage === "Could not find editor: fully:qualified:EditorStub. Did you mean: EditorStub?")
+    assert(caught.getMessage === "Could not find editor: fully:qualified:Simple. Did you mean: Simple?")
   }
 
   it should "handle path and content replace" in {
@@ -449,34 +470,4 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     pmv.files.asScala.map(_.path).contains(oldPath) should be(false)
     pmv.files.asScala.map(_.path).contains(newPath) should be(true)
   }
-}
-
-private object EditorStub extends ProjectEditor {
-  override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = ???
-
-  override def applicability(as: ArtifactSource): Applicability = ???
-
-  override def name: String = "EditorStub"
-
-  override def description: String = ???
-
-  override def tags: Seq[Tag] = ???
-
-  override def findRug(simpleOrFq: String): Option[Rug] = {
-    if (simpleOrFq == "EditorStub") {
-      Some(this)
-    } else {
-      None
-    }
-  }
-
-  override def findParameterizedRug(simpleOrFq: String): Option[ParameterizedRug] = ???
-
-  override def allRugs: Seq[Rug] = Nil
-
-  override def addToArchiveContext(rugs: Seq[Rug]): Unit = ???
-
-  override def externalContext: Seq[AddressableRug] = ???
-
-  override def archiveContext: Seq[Rug] = ???
 }

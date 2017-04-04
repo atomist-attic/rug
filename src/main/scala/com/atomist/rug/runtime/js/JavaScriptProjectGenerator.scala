@@ -1,14 +1,13 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.ParameterValues
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import com.atomist.rug.runtime.AddressableRug
 
 /**
   * Find Generators in a Nashorn
@@ -20,9 +19,9 @@ class JavaScriptProjectGeneratorFinder
     JsRugOperationSignature(Set("populate"),Set("name", "description")),
     JsRugOperationSignature(Set("populate"),Set("__name", "__description")))
 
-  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): JavaScriptProjectGenerator = {
+  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): JavaScriptProjectGenerator = {
     val project: ArtifactSource = removeAtomistTemplateContent(jsc.rugAs)
-    new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, externalContext)
+    new JavaScriptProjectGenerator(jsc, fnVar, jsc.rugAs, project, resolver)
   }
   private def removeAtomistTemplateContent(startingProject: ArtifactSource, atomistConfig: AtomistConfig = DefaultAtomistConfig): ArtifactSource = {
     startingProject.filter(d => !d.path.equals(atomistConfig.atomistRoot), f => true)
@@ -38,9 +37,9 @@ class JavaScriptProjectGenerator(
                                   jsVar: ScriptObjectMirror,
                                   rugAs: ArtifactSource,
                                   startProject: ArtifactSource,
-                                  externalContext: Seq[AddressableRug]
-                                        )
-  extends JavaScriptProjectOperation(jsc, jsVar, rugAs, externalContext)
+                                  resolver: Option[RugResolver]
+                                )
+  extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
 
   @throws(classOf[InvalidParametersException])
@@ -50,7 +49,7 @@ class JavaScriptProjectGenerator(
 
     val (result, elapsedMillis) = time {
       val project = new EmptyArtifactSource(projectName) + startProject
-      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this))
+      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
       invokeMemberFunction(jsc, jsVar, "populate", wrapProject(pmv), validated)
       pmv.currentBackingObject
     }

@@ -1,14 +1,21 @@
 package com.atomist.rug
 
-import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
+import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive._
-import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor, SuccessfulModification}
+import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.rug.runtime.{AddressableRug, RugSupport}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.Matchers
+
+object RugArchiveReader {
+  def apply(as: ArtifactSource) : Rugs = SimpleRugResolver(as).resolvedDependencies.rugs
+}
+
+object SimpleRugResolver {
+  def apply(as: ArtifactSource) : RugResolver = new RugResolver(Dependency(as))
+}
 
 object TestUtils extends Matchers {
 
@@ -35,7 +42,7 @@ object TestUtils extends Matchers {
     val pe: ProjectEditor =
       if (isTypeScript(program)) {
         val as = TypeScriptBuilder.compileWithModel(program)
-        RugArchiveReader.find(as).editors.head
+        RugArchiveReader(as).editors.head
       }
       else {
         // Rug editor
@@ -95,7 +102,7 @@ object TestUtils extends Matchers {
 
   def rugsInSideFile(caller: AnyRef, names: String*): Rugs = {
     val as = rugsInSideFileAsArtifactSource(caller, names:_*)
-    RugArchiveReader.find(as)
+    RugArchiveReader(as)
   }
 
   def rugsInSideFileAsArtifactSource(caller: AnyRef, names: String*): ArtifactSource = {
@@ -116,24 +123,24 @@ object TestUtils extends Matchers {
   /**
     * Make a rug addressable
     */
-  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3"): AddressableRug = {
-    new AddressableRug with ProjectEditor with RugSupport {
-
-      override def artifact: String = _artifact
-
-      override def group: String = _group
-
-      override def version = _version
-
-      override def description: String = rug.description
-
-      override def name: String = rug.name
-
-      override def tags: Seq[Tag] = rug.tags
-
-      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as, poa)
-
-      override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
-    }
-  }
+//  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3"): AddressableRug = {
+//    new AddressableRug with ProjectEditor with RugSupport {
+//
+//      override def artifact: String = _artifact
+//
+//      override def group: String = _group
+//
+//      override def version = _version
+//
+//      override def description: String = rug.description
+//
+//      override def name: String = rug.name
+//
+//      override def tags: Seq[Tag] = rug.tags
+//
+//      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as, poa)
+//
+//      override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
+//    }
+//  }
 }

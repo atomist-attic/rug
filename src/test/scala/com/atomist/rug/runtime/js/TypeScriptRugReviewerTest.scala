@@ -1,12 +1,10 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.ProjectOperation
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.review.{ReviewResult, Severity}
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.rug.TestUtils
-import com.atomist.project.archive.RugArchiveReader
+import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -262,19 +260,18 @@ class TypeScriptRugReviewerTest extends FlatSpec with Matchers {
   it should "combine review results" in {
     val rf = StringFileArtifact(".atomist/reviewers/TwoReviewers.ts", TestUtils.contentOf(this, "TwoReviewers.ts"))
     val cas = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(rf))
-    val reviewer = RugArchiveReader.find(cas).reviewers.find(_.name == "ReviewerC").get
+    val reviewer = RugArchiveReader(cas).reviewers.find(_.name == "ReviewerC").get
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     val rr = reviewer.review(target, SimpleParameterValues( Map("content" -> ParameterContent)))
     assert(rr.note === "ReviewerA,ReviewerB")
     assert(rr.comments.size === 2)
   }
 
-  private  def reviewSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): ReviewResult = {
+  private  def reviewSimple(tsf: FileArtifact): ReviewResult = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val reviewer = RugArchiveReader.find(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
+    val reviewer = RugArchiveReader(as).reviewers.head.asInstanceOf[JavaScriptProjectReviewer]
     assert(reviewer.name === "Simple")
-    reviewer.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

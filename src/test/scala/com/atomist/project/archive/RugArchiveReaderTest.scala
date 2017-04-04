@@ -1,12 +1,12 @@
 package com.atomist.project.archive
 
-import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
+import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
-import com.atomist.rug.runtime.AddressableRug
+import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 
 class RugArchiveReaderTest extends FlatSpec with Matchers {
@@ -16,7 +16,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
       "com/atomist/project/archive/MyHandlers.ts")
     val moved = ts.withPathAbove(".atomist/handlers")
     val as = TypeScriptBuilder.compileWithModel(moved)
-    val ops = RugArchiveReader.find(as, Nil)
+    val ops = RugArchiveReader(as)
     assert(ops.responseHandlers.size === 2)
     assert(ops.commandHandlers.size === 2)
     assert(ops.eventHandlers.size === 1)
@@ -33,7 +33,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
       f2
     ) + TypeScriptBuilder.userModel
 
-    val ops = RugArchiveReader.find(rugAs, Nil)
+    val ops = RugArchiveReader(rugAs)
     assert(ops.editors.size === 1)
     assert(ops.editors.head.parameters.size === 1)
   }
@@ -83,44 +83,54 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
 
     """.stripMargin
 
-  val otherEditor: AddressableRug = new ProjectEditorSupport with AddressableRug{
-    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
-      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
-    }
-    override def applicability(as: ArtifactSource): Applicability = Applicability.OK
-    override def name: String = "other"
-    override def description: String = name
-    override def tags: Seq[Tag] = Nil
-
-    override def artifact: String = "common-rugs"
-
-    override def group: String = "com.atomist.rugs"
-
-    override def version: String = "1.2.3"
-  }
+//  val otherEditor: AddressableRug = new ProjectEditorSupport with AddressableRug{
+//    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
+//      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
+//    }
+//    override def applicability(as: ArtifactSource): Applicability = Applicability.OK
+//    override def name: String = "other"
+//    override def description: String = name
+//    override def tags: Seq[Tag] = Nil
+//
+//    override def artifact: String = "common-rugs"
+//
+//    override def group: String = "com.atomist.rugs"
+//
+//    override def version: String = "1.2.3"
+//  }
 
   it should "invoke editors in the same archive" in {
     invokeAndVerifySimple(
       Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor),
         StringFileArtifact(s".atomist/editors/Other.ts", OtherEditorProg)
-    ), Nil)
+    ))
   }
 
   it should "invoke editors in a different archive referenced by GAV" in {
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(StringFileArtifact(s".atomist/editors/Other.ts", OtherEditorProg)))
+    val coords = Coordinate("com.atomist.rugs","common-rugs", "1.2.3")
+    val deps = Seq(Dependency(as, Some(coords), Nil))
+
     invokeAndVerifySimple(
       Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorViaGa)
-      ), Seq(otherEditor))
+      ), deps)
   }
 
   it should "invoke editors in a different archive referenced by simple name as fallback" in {
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(StringFileArtifact(s".atomist/editors/Other.ts", OtherEditorProg)))
+    val coords = Coordinate("com.atomist.rugs","common-rugs", "1.2.3")
+    val deps = Seq(Dependency(as, Some(coords), Nil))
+
     invokeAndVerifySimple(
       Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor)
-      ), Seq(otherEditor))
+      ), deps)
   }
 
-  private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], others: Seq[AddressableRug] = Nil): ProjectEditor = {
+  private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], dependencies: Seq[Dependency] = Nil): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf:_*))
-    val jsed = RugArchiveReader.find(as, others).editors.head
+    val coord = Coordinate("com.atomist.test","test-rugs", "1.2.3")
+    val resolver =  new RugResolver(Dependency(as, Some(coord), dependencies))
+    val jsed = resolver.resolvedDependencies.rugs.editors.head
 
     assert(jsed.name === "Simple")
 

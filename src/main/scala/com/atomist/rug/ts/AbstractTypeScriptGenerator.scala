@@ -5,7 +5,6 @@ import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source._
@@ -33,8 +32,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
                                            config: TypeGenerationConfig,
                                            override val tags: Seq[Tag])
   extends ProjectGenerator
-    with ProjectEditor
-    with RugSupport {
+    with ProjectEditor {
 
   import AbstractTypeScriptGenerator._
 

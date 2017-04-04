@@ -2,9 +2,9 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.ProjectOperation
-import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
+import com.atomist.rug.{RugArchiveReader, SimpleRugResolver}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -93,6 +93,21 @@ object TypeScriptRugEditorTest {
       |import {Editor} from '@atomist/rug/operations/Decorators'
       |
       |@Editor("Simple", "My simple editor")
+      |class SimpleEditor {
+      |    edit(project: Project) {
+      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+      |    }
+      |}
+      |
+      |export let myeditor = new SimpleEditor()
+    """.stripMargin
+
+  val OtherEditor =
+    """
+      |import {Project} from '@atomist/rug/model/Core'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
+      |
+      |@Editor("other", "My simple editor")
       |class SimpleEditor {
       |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
@@ -391,24 +406,12 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor with separate parameters object" in {
-    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor), Seq(otherEditor))
-  }
-
-  val otherEditor: ProjectEditor = new ProjectEditorSupport {
-    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
-      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
-    }
-
-    override def applicability(as: ArtifactSource): Applicability = Applicability.OK
-    override def name: String = "other"
-    override def description: String = name
-
-    override def tags: Seq[Tag] = Nil
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor))
   }
 
   it should "run simple editor compiled from TypeScript that invokes another editor adding to our parameters object" in {
     val jsed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
-      SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters), Seq(otherEditor))
+      SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters))
     val p = jsed.parameters.head
     assert(p.getTags === ListBuffer(Tag("foo","foo"),Tag("bar","bar")))
     assert(p.isDisplayable === true)
@@ -426,7 +429,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
       SimpleEditorWithRelativeDependency)
     val dep = StringFileArtifact(s".atomist/editors/Foo.ts", SimpleTsUtil)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simple, dep))
-    val jsed = RugArchiveReader.find(as).editors.head
+    val jsed = RugArchiveReader(as).editors.head
   }
 
   it should "find parameter metadata" in {
@@ -485,7 +488,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   it should "send editor bad input and get appropriate response" in {
     val as = SimpleFileBasedArtifactSource(
       StringFileArtifact(".atomist/editors/Simple.ts", SimpleEditorTaggedAndMeta))
-    val jsed = RugArchiveReader.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val jsed = RugArchiveReader(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -509,7 +512,7 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = RugArchiveReader.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val jsed = RugArchiveReader(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Constructed")
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
@@ -525,10 +528,10 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
   private  def invokeAndVerifySimpleGenerator(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectGenerator = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
 
-    val jsed = RugArchiveReader.find(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
+    val jsed = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
     assert(jsed.name === "SimpleGenerator")
 
-    jsed.addToArchiveContext(others)
+//    jsed.addToArchiveContext(others)
 
     val prj = jsed.generate("woot", SimpleParameterValues( Map("content" -> "Anders Hjelsberg is God")))
     assert(prj.id.name === "woot")
@@ -536,13 +539,11 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
     jsed
   }
 
-  private  def invokeAndVerifySimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
-    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
+  private  def invokeAndVerifySimple(tsf: FileArtifact): JavaScriptProjectEditor = {
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf) + StringFileArtifact(s".atomist/editors/OtherEditor.ts", OtherEditor))
 
-    val jsed = RugArchiveReader.find(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
-
-    jsed.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
@@ -557,10 +558,10 @@ class TypeScriptRugEditorTest extends FlatSpec with Matchers {
 
   private  def invokeAndVerifyIdempotentSimple(tsf: FileArtifact, others: Seq[ProjectOperation] = Nil): JavaScriptProjectEditor = {
     val as = SimpleFileBasedArtifactSource(tsf)
-    val jsed = RugArchiveReader.find(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
+    val jsed = RugArchiveReader(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Simple")
 
-    jsed.addToArchiveContext(others)
+//    jsed.addToArchiveContext(others)
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 

@@ -1,9 +1,8 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.RugArchiveReader
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
@@ -23,7 +22,7 @@ class JavaScriptContextTypeScriptTest extends FlatSpec with Matchers {
     //println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
-    val projectGenerator = RugArchiveReader.find(artifactSourceWithRugNpmModule).generators.head
+    val projectGenerator = RugArchiveReader(artifactSourceWithRugNpmModule).generators.head
 
     // apply the operation
     val result = projectGenerator.generate("poe", parameters)

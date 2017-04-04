@@ -26,7 +26,7 @@ object ReflectiveFunctionExport {
         TypeOperation(m.getName, a.description(),
           a.readOnly(),
           params,
-          m.getGenericReturnType.toString,
+          SimpleParameterOrReturnType(m.getGenericReturnType.toString),
           m.getDeclaringClass,
           a.example() match {
             case "" => None
@@ -38,9 +38,11 @@ object ReflectiveFunctionExport {
     m.getParameters.map(p =>
       if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription])) {
         val annotation = p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription])
-        TypeParameter(annotation.name(), p.getParameterizedType.toString, Some(annotation.description()))
+        TypeParameter(annotation.name(), SimpleParameterOrReturnType(p.getParameterizedType.toString),
+          Some(annotation.description()))
       } else
-        TypeParameter(p.getName, p.getParameterizedType.toString, None)
+        TypeParameter(p.getName, SimpleParameterOrReturnType(p.getParameterizedType.toString),
+          None)
     )
   }
 

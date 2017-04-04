@@ -1,7 +1,7 @@
 package com.atomist.rug.ts
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.rug.spi.{SimpleTypeRegistry, TypeOperation, TypeRegistry, Typed}
+import com.atomist.rug.spi._
 import com.atomist.source.ArtifactSource
 import com.atomist.util.lang.JavaHelpers._
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -150,8 +150,8 @@ private class JsonBackedTyped(
           readOnly = false,
           parameters = Nil,
           returnType = rel.cardinality match {
-            case OneToOne => rel.right
-            case OneToM => s"${rel.right}[]"
+            case OneToOne => SimpleParameterOrReturnType(rel.right)
+            case OneToM => SimpleParameterOrReturnType(rel.right, isArray = true)
           },
           definedOn = null,
           example = None
@@ -166,7 +166,7 @@ private class JsonBackedTyped(
             description = prop.typ,
             readOnly = false,
             parameters = Nil,
-            returnType = prop.typ,
+            returnType = SimpleParameterOrReturnType(prop.typ),
             definedOn = null,
             example = None
           ))

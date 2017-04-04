@@ -191,7 +191,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       val params =
         for (p <- op.parameters)
           yield
-            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
+            MethodParam(p.name, helper.rugTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
       methods += getMethodInfo(typeName, op, params)
     }
@@ -206,7 +206,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     }).toSeq.sortBy(_.name)
 
   private def shouldEmit(top: TypeOperation) =
-    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
+    true
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]

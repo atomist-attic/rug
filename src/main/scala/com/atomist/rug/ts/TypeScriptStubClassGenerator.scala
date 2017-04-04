@@ -66,22 +66,30 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       output ++= config.separator
 
       // Emit methods from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
-      output ++=
-        helper.indented(
-          s"""|${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-              |nodeName(): string {
-              |${indent}return "$name";
-              |}
-              |
-              |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-              |nodeTags(): string[] {
-              |${indent}return [ "$name", "-dynamic" ];
-              |}""".stripMargin, 1)
+      output ++= graphNodeImpl(name)
       output ++= config.separator
       output ++= methods.map(_.toString).mkString(config.separator)
       output ++= s"${if (methods.isEmpty) "" else config.separator}}${indent.dropRight(1)}"
       output.toString
     }
+  }
+
+  // Implementation of fields and methods from GraphNode interface
+  private def graphNodeImpl(name: String): String = {
+    // Create fields to make JSON stringification more revealing
+    helper.indented(
+      s"""|private _nodeName = "$name";
+          |private _nodeTags = [ "$name", "-dynamic" ];
+          |
+          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+          |nodeName(): string {
+          |${indent}return this._nodeName;
+          |}
+          |
+          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+          |nodeTags(): string[] {
+          |${indent}return this._nodeTags;
+          |}""".stripMargin, 1)
   }
 
   private def toFieldName(m: MethodInfo): String = "_" + m.name

@@ -43,6 +43,9 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
     assert(cas.allFiles.exists(_.content.contains("withOn(")), "Should be relationship on Build")
     assert(cas.allFiles.exists(_.content.contains("withLogin")), "Should be simple property on GitHubId")
     assert(cas.allFiles.exists(_.content.contains("Issue[]")), "Must have back relationship from Repo to Issue")
+
+    val buildFile = cas.allFiles.find(f => f.content.contains("class Build ")).get
+    assert(buildFile.content.contains("""[ "Build", "-dynamic""""), "We should have correct node tags")
   }
 
 }

@@ -28,7 +28,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                    config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
                                    override val tags: Seq[Tag] = Nil,
                                    val root: String = "GraphNode")
-  extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
+  extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
 
   import TypeScriptStubClassGenerator._
 

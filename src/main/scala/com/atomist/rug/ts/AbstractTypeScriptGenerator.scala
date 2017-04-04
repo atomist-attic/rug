@@ -31,7 +31,6 @@ object AbstractTypeScriptGenerator {
   */
 abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
                                            config: TypeGenerationConfig,
-                                           generateClasses: Boolean,
                                            override val tags: Seq[Tag])
   extends ProjectGenerator
     with ProjectEditor
@@ -238,7 +237,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       .map(t => s"""import { ${t.name} } from "./${t.name}";""")
       .mkString("\n")
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"export { ${t.name} };").mkString("\n")
+    output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("\n")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())
 
     tsClassOrInterfaces

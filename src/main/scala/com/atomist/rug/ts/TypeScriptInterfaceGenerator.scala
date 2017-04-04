@@ -26,7 +26,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                    config: TypeGenerationConfig = TypeGenerationConfig(),
                                    override val tags: Seq[Tag] = Nil,
                                    root: String = "TreeNode")
-  extends AbstractTypeScriptGenerator(typeRegistry, config, false, tags) {
+  extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
 
   private case class InterfaceGeneratedType(name: String,
                                             description: String,

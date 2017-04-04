@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [0.24.0]: https://github.com/atomist/rug/compare/0.23.0...0.24.0
 
-The one TS to rule of stubs
+The one TS to rule all stubs
 
 ### Changed
 

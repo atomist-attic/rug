@@ -63,7 +63,7 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
         case "timestamp" => "String"
         case x => x
       }
-      Prop(propName, genTyp)
+      SimpleProp(propName, genTyp)
     }
 
     /*
@@ -78,11 +78,17 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
       doc("nodes").map(node => {
         // A node is of form labels, properties, unique?
         val n = node.asInstanceOf[Map[String, _]]
-        val props = n("properties") match {
-          case l: List[List[String]]@unchecked if l.head.isInstanceOf[Seq[_]] =>
-            l.map(l => defineProperty(l.head, l(1)))
-          case l: List[String]@unchecked =>
-            Seq(defineProperty(l.head, l(1)))
+        val props: Seq[Prop] = n("properties") match {
+          case l: List[_] =>
+            l.map {
+              case List(id: String, typ: String) =>
+                defineProperty(id, typ)
+              case List(id: String, legalValues: List[String]@unchecked) =>
+                defineProperty(id, "String")
+              // TODO we can't yet support enums in the generation process
+              // so we return string for now
+              //EnumProp(id, legalValues)
+            }
         }
 
         val pn = PropertyNode(
@@ -95,7 +101,7 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
     // These are normally a - [right,cardinality] - right
     // [["Org"], ["HAS", "1:M", ["OWNED_BY", "1:1"]], ["Repo"]]
     val allRelationships: Traversable[Relationship] =
-    doc("relationships") flatMap {
+    doc.getOrElse("relationships", Nil) flatMap {
       case List(left: String, List(name: String, card: String), right: String) =>
         val cardinality = Cardinality(card)
         val relName = toTypeScriptIdentifier(name)
@@ -122,7 +128,24 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
     toCamelizedPropertyName(name.toLowerCase)
 }
 
-private case class Prop(name: String, typ: String)
+private trait Prop {
+
+  def name: String
+
+  def description: String = name
+
+  def toType: ParameterOrReturnType
+}
+
+private case class SimpleProp(name: String, typ: String) extends Prop {
+
+  def toType: ParameterOrReturnType = SimpleParameterOrReturnType(typ)
+}
+
+private case class EnumProp(name: String, legalValues: Seq[String]) extends Prop {
+
+  def toType: ParameterOrReturnType = EnumParameterOrReturnType(name, legalValues)
+}
 
 private case class PropertyNode(labels: Set[String], properties: Seq[Prop])
 
@@ -163,10 +186,10 @@ private class JsonBackedTyped(
         .map(prop =>
           TypeOperation(
             name = prop.name,
-            description = prop.typ,
+            description = prop.description,
             readOnly = false,
             parameters = Nil,
-            returnType = SimpleParameterOrReturnType(prop.typ),
+            returnType = prop.toType,
             definedOn = null,
             example = None
           ))

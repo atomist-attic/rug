@@ -56,7 +56,8 @@ class TypeScriptGenerationHelper(indent: String = "    ")
         cname
       case x if tr.findByName(x).isDefined && jt.isArray => x + "[]"
       case x if tr.findByName(x).isDefined => x
-      case x => throw new UnsupportedOperationException(s"Unsupported type [$x]. Did you export a function with this in its type signature?")
+      case x =>
+        throw new UnsupportedOperationException(s"Unsupported type [$x]. Did you export a function with this in its type signature?")
     }
   }
 }

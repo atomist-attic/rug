@@ -1,6 +1,8 @@
 package com.atomist.rug.ts
 
+import com.atomist.rug.ts.DefaultTypeGeneratorConfig.getClass
 import com.atomist.source.ArtifactSource
+import org.apache.commons.io.IOUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class CortexTypeGeneratorTest extends FlatSpec with Matchers {
@@ -16,6 +18,16 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
     assert(types.nonEmpty)
   }
 
+  it should "handle enums" in {
+    val enumJson: String =
+      IOUtils.toString(
+        getClass.getResourceAsStream("/com/atomist/rug/ts/enum_test.json"), "UTF-8")
+    val types = typeGen.extract(enumJson)
+    assert(types.size === 1)
+    val t = types.head
+    t.allOperations
+  }
+
   it should "return types with operations" in {
     val types = typeGen.extract(CortexJson)
     types.foreach(t => {
@@ -26,9 +38,9 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
   it should "generate compiling node module" in {
     val extendedModel = typeGen.toNodeModule(CortexJson)
       .withPathAbove(".atomist/rug")
-     //println(ArtifactSourceUtils.prettyListFiles(as))
-//    extendedModel.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
-//      println(s"${f.path}\n${f.content}\n\n"))
+    //println(ArtifactSourceUtils.prettyListFiles(as))
+    //    extendedModel.allFiles.filter(_.name.endsWith(".ts")).foreach(f =>
+    //      println(s"${f.path}\n${f.content}\n\n"))
     val cas = TypeScriptBuilder.compiler.compile(extendedModel + TypeScriptBuilder.compileUserModel(Seq(
       TypeScriptBuilder.coreSource,
       extendedModel

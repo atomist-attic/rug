@@ -185,7 +185,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val methods = new ListBuffer[MethodInfo]
     for {
       op <- ops
-      if shouldEmit(op)
     } {
       val params =
         for (p <- op.parameters)
@@ -204,10 +203,26 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       case (_, l) => l.head
     }).toSeq.sortBy(_.name)
 
-  private def shouldEmit(top: TypeOperation) =
-    true
+  /**
+    * Create enum types that will be referenced in other classes
+    */
+  private def emitEnums(): Unit = {
+    val returnedTypes: Seq[ParameterOrReturnType] =
+      typeRegistry.types.flatMap(t => t.allOperations.map(_.returnType))
+    val parameterTypes: Seq[ParameterOrReturnType] =
+      typeRegistry.types.flatMap(t =>
+        t.allOperations.flatMap(_.parameters.map(_.parameterType)))
+    val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct
+    allParameterOrReturnedTypes.foreach {
+      case et: EnumParameterOrReturnType =>
+        ???
+      case _ =>
+        // We don't need to emit anything
+    }
+  }
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
+    emitEnums()
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))

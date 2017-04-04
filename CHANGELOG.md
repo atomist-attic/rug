@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.23.0...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.24.0...HEAD
+
+## [0.24.0] - 2017-04-04
+
+[0.24.0]: https://github.com/atomist/rug/compare/0.23.0...0.24.0
+
+The one TS to rule of stubs
+
+### Changed
+
+- Model stubs are generated in one uber file
+- Generally refined TS generation
+
+### Added
+
+- Set the channel id on a message with `withChannelId`
+
 
 ## [0.23.0] - 2017-03-31
 

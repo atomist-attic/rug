@@ -1,8 +1,10 @@
 package com.atomist.rug.ts
 
-import com.atomist.param.Tag
+import com.atomist.param.{ParameterValues, Tag}
 import com.atomist.rug.spi._
+import com.atomist.source.{FileArtifact, StringFileArtifact}
 import com.atomist.util.lang.JavaHelpers._
+import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.ListBuffer
 
@@ -36,7 +38,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                         parent: Seq[String] = Seq(root))
     extends GeneratedType {
 
-    private val interfaceModuleImport = "api"
+    private val interfaceModuleImport = s"${StringUtils.uncapitalize(name)}Api"
 
     override def root: String = TypeScriptStubClassGenerator.this.root
 
@@ -166,5 +168,29 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
     generatedTypes += ClassGeneratedType(t.name, t.description, leafClassMethods, parent)
 
     generatedTypes
+  }
+
+  override protected def emitCombinedTypes(poa: ParameterValues): Option[FileArtifact] = {
+    val alreadyGenerated = ListBuffer.empty[GeneratedType]
+    val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
+    val pathParam = poa.stringParamValue(outputPathParam)
+    val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
+    val output = new StringBuilder(config.licenseHeader)
+    output ++= config.separator
+    output ++= TypeGenerationConfig.TestStubImports
+
+    for {
+      t <- generatedTypes
+      if !alreadyGenerated.contains(t)
+    } {
+      output ++= t.specificImports
+      output ++= s"export { ${t.name} };"
+      output ++= config.separator
+      output ++= t.toString
+      output ++= config.separator
+      alreadyGenerated += t
+    }
+
+    Some(StringFileArtifact(s"${path}Stubs.ts", output.toString()))
   }
 }

@@ -8,7 +8,7 @@ import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
-import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source._
 import com.atomist.tree.TreeNode
 import com.atomist.util.lang.TypeScriptGenerationHelper
 import org.apache.commons.lang3.{ClassUtils, StringUtils}
@@ -43,10 +43,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   protected val indent = "    "
   protected val helper = new TypeScriptGenerationHelper()
+  protected val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   protected case class ParentClassHolder(parent: Class[_], exportedMethods: Seq[MethodInfo])
-
-  private val typeSort: (Typed, Typed) => Boolean = (a, b) => a.name <= b.name
 
   /**
     * Either an interface or a test class, depending on whether we're generated test classes
@@ -146,7 +145,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   @throws[InvalidParametersException](classOf[InvalidParametersException])
   override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
     val createdFiles = emitTypes(poa)
-    new SimpleFileBasedArtifactSource("Rug user model", createdFiles)
+    new SimpleFileBasedArtifactSource("Rug user model", createdFiles ++ emitCombinedTypes(poa))
   }
 
   override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {
@@ -160,6 +159,8 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
   override def description: String = "Generate core Rug type info"
 
   override def name: String = "TypedDoc"
+
+  protected def emitCombinedTypes(poa: ParameterValues): Option[FileArtifact] = None
 
   protected def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType]
 
@@ -199,6 +200,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo
 
+  protected def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] =
+    (allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op))).groupBy(_.name) map {
+      case (_, l) => l.head
+    }).toSeq.sortBy(_.name)
+
   private def shouldEmit(top: TypeOperation) =
     !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
 
@@ -218,14 +224,14 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.imports
       output ++= t.specificImports
       output ++= getImports(generatedTypes, t)
-      output ++= s"\nexport { ${t.name} };\n"
+      output ++= s"export { ${t.name} };"
+      output ++= config.separator
       output ++= t.toString
       output ++= config.separator
       tsClassOrInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
       alreadyGenerated += t
     }
 
-    // Add Core.ts
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
     output ++= alreadyGenerated
@@ -237,11 +243,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     tsClassOrInterfaces
   }
-
-  private def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] =
-    (allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op))).groupBy(_.name) map {
-      case (_, l) => l.head
-    }).toSeq.sortBy(_.name)
 
   private def getImports(interfaceTypes: Seq[GeneratedType], currentType: GeneratedType) = {
     val imports = interfaceTypes

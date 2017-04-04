@@ -6,6 +6,7 @@ import com.atomist.source._
   * Lazy ArtifactSource to pass into ProjectMutableViews.
   * We don't read the actual content unless we need to.
   * Not threadsafe.
+  *
   * @param loc locator that enables us to load this ArtifactSource
   * @param materialize
   */

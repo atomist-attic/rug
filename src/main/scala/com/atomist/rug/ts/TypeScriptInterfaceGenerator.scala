@@ -57,8 +57,16 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                          description: Option[String])
     extends MethodInfo {
 
-    override def toString: String =
-      s"$comment$indent$name(${params.mkString(", ")}): $returnType;"
+    override def toString: String = {
+      if (noArg) {
+        // Emit property only
+        s"$comment$indent$name: $returnType;"
+      }
+      else {
+        // Emit function
+        s"$comment$indent$name(${params.mkString(", ")}): $returnType;"
+      }
+    }
   }
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =

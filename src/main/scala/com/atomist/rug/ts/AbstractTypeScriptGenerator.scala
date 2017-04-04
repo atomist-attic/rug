@@ -65,6 +65,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def parent: Seq[String]
   }
 
+  /**
+    * toString methods on subclasses will drive generation
+    */
   trait MethodInfo {
 
     def typeName: String
@@ -72,6 +75,8 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def name: String
 
     def params: Seq[MethodParam]
+
+    def noArg: Boolean = params.isEmpty
 
     def returnType: String
 

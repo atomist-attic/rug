@@ -103,11 +103,13 @@ class jsSafeCommittingProxy(
     if (possibleOps.nonEmpty) {
       val op = possibleOps.head //TODO seems fragile
       if (op.invocable) {
-        val fproxy = new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
-        if (op.exposeAsProperty)
-          fproxy.call("whatever")
+        val function = new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+        if (op.exposeAsProperty) {
+          // Reuse the logic we have in the function implementation by simply creating and invoking it
+          function.call("whatever")
+        }
         else {
-          fproxy
+          function
         }
       }
       else

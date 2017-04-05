@@ -76,15 +76,6 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   }
 
   // Implementation of fields and methods from GraphNode interface
-//  private def graphNodeImpl(name: String): String = {
-//    // Emit fields from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
-//    helper.indented(
-//      s"""|nodeName = "$name";
-//          |nodeTags = [ "$name", "-dynamic" ];
-//          |""".stripMargin, 1)
-//  }
-
-  // Implementation of fields and methods from GraphNode interface
   private def graphNodeImpl(name: String): String = {
     // Create fields to make JSON stringification more revealing
     helper.indented(

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.24.0...HEAD
 
+## Changed
+
+- **BREAKING** Generated TypeScript project model types use properties rather than functions for no-arg operations
+marked with `@ExportFunction` when the new `exposeAsProperty` flag is true.
+- **BREAKING** All Generated TypeScript Cortex types use properties rather than functions for 
+all navigation
+
 ## [0.24.0] - 2017-04-04
 
 [0.24.0]: https://github.com/atomist/rug/compare/0.23.0...0.24.0
@@ -58,7 +65,7 @@ Handler return release
 
 -  **BREAKING** Handlers must return `Plan`, not `Message`
 -  **BREAKING** Messages can only contain a string value, not JSON
--  Cardinality is processed in `TreeNode` deserializtion from Cortex ingestion
+-  Cardinality is processed in `TreeNode` deserialization from Cortex ingestion
 
 ## [0.20.0] - 2017-03-29
 

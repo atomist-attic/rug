@@ -102,8 +102,11 @@ class jsSafeCommittingProxy(
     val st = typ
     val possibleOps = st.allOperations.filter(op => name == op.name)
     if (possibleOps.nonEmpty) {
-      if (possibleOps.head.invocable)
-        new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+      val op = possibleOps.head //TODO seems fragile
+      if (op.invocable) {
+        val fproxy = new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+        if (op.exposeAsProperty) fproxy.call("whatever") else fproxy
+      }
       else
         new FunctionProxyToNodeNavigationMethods(name, node)
     }

@@ -12,7 +12,7 @@ class Replacer1 implements ProjectEditor {
     
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
     
             eng.with<Replacer>(project, '//Replacer()', r => {
                 r.replaceIt("org.springframework", "nonsense")

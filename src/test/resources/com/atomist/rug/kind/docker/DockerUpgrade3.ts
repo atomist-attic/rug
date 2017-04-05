@@ -16,7 +16,7 @@ class DockerUpgrade3 implements ProjectEditor {
     
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
         
         let exposePort = "8181"
     

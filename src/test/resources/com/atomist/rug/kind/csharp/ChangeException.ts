@@ -13,7 +13,7 @@ class ChangeException implements ProjectEditor {
     newException: string
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       /*
         specific_catch_clause

@@ -76,7 +76,7 @@ class TwoLevel implements ProjectEditor {
 
     edit(project: Project) {
       let mg = new FruitererType()
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
 
       eng.with<MutatingBanana>(project, "//File()/fruiterer()/mutatingBanana()", n => {
         n.mutate()

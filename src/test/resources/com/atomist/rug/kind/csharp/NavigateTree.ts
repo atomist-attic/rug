@@ -11,7 +11,7 @@ class NavigateTree implements ProjectEditor {
     description: string = "Navigates tree but doesn't make changes"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       /*
         specific_catch_clause

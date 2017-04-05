@@ -12,7 +12,7 @@ class AccessDirectory implements ProjectEditor {
     
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
     
         let found = false
         eng.with<Directory>(project, '/src/main/java', dir => {

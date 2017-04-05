@@ -9,7 +9,7 @@ class Rename2 implements ProjectEditor {
 
     edit(project: Project) {
 
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
       eng.with<Pair>(project, `/*[@name='package.json']/Json()/dependencies`, p =>
        p.addKeyValue("foo", "bar")
      )

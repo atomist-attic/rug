@@ -11,7 +11,7 @@ class EqualsToSymbol implements ProjectEditor {
     description: string = "Convert .equals to =="
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       /*
       We're matching a structure like this:

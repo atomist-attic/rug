@@ -14,7 +14,7 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
 
     edit(project: Project) {
       let eng: PathExpressionEngine = 
-        new ScalaPathExpressionEngine(project.context().pathExpressionEngine())
+        new ScalaPathExpressionEngine(project.context.pathExpressionEngine())
 
       /*
       We're matching a structure like this:

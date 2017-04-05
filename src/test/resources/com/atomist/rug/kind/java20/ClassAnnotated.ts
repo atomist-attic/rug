@@ -11,7 +11,7 @@ import * as helper from "@atomist/rug/tree/TreeHelper";
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', jt => {
                 jt.children()

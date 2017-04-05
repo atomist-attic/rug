@@ -9,7 +9,7 @@ class SampleTypeScriptTest {
 
         // or you can do this: let pom = project.findFile('pom.xml');
 
-        let eng : PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng : PathExpressionEngine = project.context.pathExpressionEngine();
 
         eng.with<File>(project, `/File()[@name="pom.xml"]`, pom => {
             pom.replace('dependency', 'dependenciesAreForBirds');

@@ -20,7 +20,7 @@ class YamlEdit implements ProjectEditor {
     
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();    
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
         
             eng.with<any>(project, this.path, g => {
                     g.update(this.newValue )

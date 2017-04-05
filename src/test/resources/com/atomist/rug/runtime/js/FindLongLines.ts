@@ -18,7 +18,7 @@ class FindLongLines implements ProjectReviewer {
     review(project: Project) {
      
         let eng: PathExpressionEngine = 
-            new DecoratingPathExpressionEngine(project.context().pathExpressionEngine())
+            new DecoratingPathExpressionEngine(project.context.pathExpressionEngine())
 
         let comments: ReviewComment[] = []
 

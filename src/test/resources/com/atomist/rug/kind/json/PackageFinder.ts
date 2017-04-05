@@ -8,7 +8,7 @@ class PackageFinder implements ProjectEditor {
     description: string = "Finds package.json dependencies"
     edit(project: Project) {
 
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
       let pe = new PathExpression<Project,Pair>(`/*[@name='package.json']/Json()/dependencies`)
       let p = eng.scalar(project, pe)
       //if (p == null)

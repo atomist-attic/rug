@@ -11,7 +11,7 @@ class AddUsing implements ProjectEditor {
 
     edit(project: Project) {
       let eng: PathExpressionEngine = 
-      new DecoratingPathExpressionEngine(project.context().pathExpressionEngine())
+      new DecoratingPathExpressionEngine(project.context.pathExpressionEngine())
 
       let count = 0
       eng.with<RichTextTreeNode>(project, "//File()/CSharpFile()//using_directive[1]", n => {

@@ -10,7 +10,7 @@ class ChangeUsing implements ProjectEditor {
     description: string = "Uses single microgrammar"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       let count = 0
       eng.with<TextTreeNode>(project, "//File()/CSharpFile()//using_directive", n => {

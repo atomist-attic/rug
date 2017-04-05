@@ -17,7 +17,8 @@ When("run corruption reviewer", (p, world) => {
 });
 Then("we have comments", (p, world) => {
     if (helpers.prettyListFiles(p).indexOf("NSW") == -1) throw new Error("Bad pretty list");
-    if (helpers.dump(p, "NSW").indexOf("Wran") == -1)  throw new Error("Bad dump");
+    let d = helpers.dump(p, "NSW");
+    if (d.indexOf("Wran") == -1)  throw new Error(`Bad dump: [${d}]`);
     let rr = world.get("review");
     return rr.comments.length == 1;
 });

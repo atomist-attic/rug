@@ -18,7 +18,7 @@ class ClassAnnotated implements EditProject {
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaField>(c, '//JavaField()', f => {
-                    if (f.nodeName().indexOf("Field") > -1 && f.type().name().indexOf("Dog") > -1) {
+                    if (f.nodeName().indexOf("Field") > -1 && f.type.name.indexOf("Dog") > -1) {
                         f.addAnnotation("com.someone", "FooBar")
                     }
                 })

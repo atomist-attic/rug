@@ -11,7 +11,7 @@ class ClassAnnotated implements EditProject {
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            if(c.sourceFile().javaProject().javaFileCount() < 100) {
+            if(c.sourceFile.javaProject().javaFileCount() < 100) {
                 c.addAnnotation("com.someone", "FooBar")
             }
         })

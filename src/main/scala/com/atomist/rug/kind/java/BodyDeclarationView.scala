@@ -19,7 +19,9 @@ abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: 
 
   override def childNodeTypes: Set[String] = childNodeNames
 
-  @ExportFunction(readOnly = true, description = "Line count")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Line count")
   override def lineCount: Int =
     FileMetrics.lineCount(currentBackingObject.toString)
 

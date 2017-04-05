@@ -294,7 +294,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
     // Second filter is really a no op
-    val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract()]"
+    val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract]"
     val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
     assert(rtn2.right.get.size === 0)
   }

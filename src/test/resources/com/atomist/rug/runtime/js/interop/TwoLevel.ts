@@ -18,7 +18,7 @@ class FruitererType implements TypeProvider {
    if (this.isFile(context)) {
      let f = context as File
      //console.log(f.name())
-     if (f.isJava())
+     if (f.isJava)
       return [ new Fruiterer() ]
       else return []
    }

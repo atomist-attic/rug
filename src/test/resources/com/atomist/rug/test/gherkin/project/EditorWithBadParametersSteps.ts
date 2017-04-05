@@ -12,6 +12,6 @@ When("politics takes its course", (p, w) => {
     world.editWith(world.editor("AlpEditorWithParameters"), {heir: "Malcolm0Fraser"});
 });
 Then("the rage has a name", p => {
-    let name = p.name();
+    let name = p.name;
     return name != null && name != "" && name.length > 0;
 });

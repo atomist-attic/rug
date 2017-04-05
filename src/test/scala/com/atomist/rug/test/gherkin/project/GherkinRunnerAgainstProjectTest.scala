@@ -152,7 +152,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts", generationTest("SimpleGenerator", projectName, Map()))
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
+            generationTest("SimpleGenerator", projectName, Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject

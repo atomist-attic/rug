@@ -17,7 +17,7 @@ class AccessDirectory implements ProjectEditor {
         let found = false
         eng.with<Directory>(project, '/src/main/java', dir => {
             found = true
-            if (dir.totalFileCount() == 0)
+            if (dir.totalFileCount == 0)
                 throw new Error("Should have reported files in the directory")
         })
         if (!found)

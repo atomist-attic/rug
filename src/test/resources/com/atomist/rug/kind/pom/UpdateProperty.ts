@@ -8,7 +8,7 @@ class UpdateProperty {
 
  edit(project: Project) {
    project.context().pathExpressionEngine().with<Pom>(project, `/Pom()`, p => {
-     if (p.path() == "pom.xml")
+     if (p.path == "pom.xml")
        p.setGroupId("mygroup")
    })
  }

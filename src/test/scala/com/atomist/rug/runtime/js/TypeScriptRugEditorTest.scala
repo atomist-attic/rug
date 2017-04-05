@@ -204,7 +204,7 @@ object TypeScriptRugEditorTest {
       |    edit(project: Project) {
       |        let bar: Bar = new Bar();
       |        bar.doWork()
-      |        project.describeChange(`Edited Project now containing ${project.fileCount()} files: \n`)
+      |        project.describeChange(`Edited Project now containing ${project.fileCount} files: \n`)
       |    }
       |}
       |
@@ -233,18 +233,18 @@ object TypeScriptRugEditorTest {
         |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         |      let m = eng.evaluate<Project,File>(project, new PomFile())
         |
-        |      let t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
+        |      let t: string = `param=${this.packageName},filecount=${m.root().fileCount}`
         |      for (let n of m.matches()) {
-        |        t += `Matched file=${n.path()}`;
+        |        t += `Matched file=${n.path}`;
         |        n.append("randomness")
         |        }
         |
         |        let s: string = ""
         |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-        |        for (let f of project.files())
-        |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
+        |        for (let f of project.files)
+        |            s = s + `File [${f.path}] containing [${f.content}]\n`
         |        project.describeChange(
-        |        `${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+        |        `${t}\n\nEdited Project containing ${project.fileCount} files: \n${s}`)
         |    }
         |  }
         |  export let myeditor = new ConstructedEditor()
@@ -268,17 +268,17 @@ object TypeScriptRugEditorTest {
       |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
-      |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount()}`
+      |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount}`
       |      for (let n of m.matches()) {
-      |        t += `Matched file=${n.path()}`;
+      |        t += `Matched file=${n.path}`;
       |        n.append("randomness")
       |        }
       |
       |        var s: string = ""
       |
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        for (let f of project.files())
-      |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
+      |        for (let f of project.files)
+      |            s = s + `File [${f.path}] containing [${f.content}]\n`
       |    }
       |  }
       |  export let myeditor = new ConstructedEditor()
@@ -302,21 +302,21 @@ object TypeScriptRugEditorTest {
       |
       |    edit(project: Project) {
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-      |      project.files().filter(t => false)
-      |      var t: string = `param=${this.packageName},filecount=${project.fileCount()}`
+      |      project.files.filter(t => false)
+      |      var t: string = `param=${this.packageName},filecount=${project.fileCount}`
       |
       |      eng.with<File>(project, "/*[@name='pom.xml']", n => {
-      |        t += `Matched file=${n.path()}`;
+      |        t += `Matched file=${n.path}`;
       |        n.append("randomness")
       |      })
       |
       |        var s: string = ""
       |
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        for (let f of project.files())
-      |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
+      |        for (let f of project.files)
+      |            s = s + `File [${f.path}] containing [${f.content}]\n`
       |
-      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |        //`${t}\n\nEdited Project containing ${project.fileCount} files: \n${s}`)
       |    }
       |  }
       |
@@ -341,20 +341,20 @@ object TypeScriptRugEditorTest {
       |
       |      let eng: PathExpressionEngine = project.context().pathExpressionEngine();
       |
-      |      let t: string = `param=${this.packageName},filecount=${project.fileCount()}`
+      |      let t: string = `param=${this.packageName},filecount=${project.fileCount}`
       |
       |      eng.with<File>(project, "/File()", n => {
-      |        t += `Matched file=${n.path()}`;
+      |        t += `Matched file=${n.path}`;
       |        n.append("randomness")
       |      })
       |
       |        let s: string = ""
       |
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        for (let f of project.files())
-      |            s = s + `File [${f.path()}] containing [${f.content()}]\n`
+      |        for (let f of project.files)
+      |            s = s + `File [${f.path}] containing [${f.content}]\n`
       |
-      |        //`${t}\n\nEdited Project containing ${project.fileCount()} files: \n${s}`)
+      |        //`${t}\n\nEdited Project containing ${project.fileCount} files: \n${s}`)
       |    }
       |  }
       |  export let myeditor = new ConstructedEditor()

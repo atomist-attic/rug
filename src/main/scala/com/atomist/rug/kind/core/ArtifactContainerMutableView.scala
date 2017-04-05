@@ -37,6 +37,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   }
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "The total number of files in this project or directory")
   def totalFileCount: Int = currentBackingObject.totalFileCount
 

@@ -96,6 +96,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "The total number of files in this project")
   def fileCount: Int = currentBackingObject.totalFileCount
 
@@ -411,6 +412,7 @@ class ProjectMutableView(
   def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
 
   @ExportFunction(readOnly = false,
+    exposeAsProperty = true,
     description = "Files in this archive")
   def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._

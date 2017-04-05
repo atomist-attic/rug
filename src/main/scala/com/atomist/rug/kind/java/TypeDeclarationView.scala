@@ -10,10 +10,14 @@ abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: 
 
   def compilationUnit: Option[CompilationUnit] = parent.compilationUnit
 
-  @ExportFunction(readOnly = true, description = "Return the package")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return the package")
   def pkg: String = parent.pkg
 
-  @ExportFunction(readOnly = true, description = "Return the name of the type")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return the name of the type")
   def name: String = currentBackingObject.getName
 
   @ExportFunction(readOnly = false, description = "Add or replace header comment for this type")

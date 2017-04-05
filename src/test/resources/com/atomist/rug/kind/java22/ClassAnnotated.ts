@@ -18,7 +18,7 @@ class ClassAnnotated implements EditProject {
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaMethod>(c, '//JavaMethod()', m => {
-                    if (m.name().indexOf("bark") > -1) {
+                    if (m.name.indexOf("bark") > -1) {
                         m.removeAnnotation("com.someone", "FooBar")
                     }
                 })

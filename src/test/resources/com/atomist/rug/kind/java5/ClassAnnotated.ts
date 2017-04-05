@@ -16,7 +16,7 @@ class ClassAnnotated implements EditProject {
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            if ( c.name().indexOf("Tests") == c.name().length - 5 ) {
+            if ( c.name.indexOf("Tests") == c.name.length - 5 ) {
                 c.removeAnnotation("org.junit.runner", "RunWith")
             }
         })

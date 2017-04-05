@@ -55,7 +55,6 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "navigate up and down tree with TypeScript helper" in {
     modify("NavigateTree.ts", exceptionProject) match {
       case _: NoModificationNeeded =>
-      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }

@@ -18,7 +18,7 @@ class SetProperty implements ProjectEditor {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine();
         
             eng.with<Properties>(project, '//Properties()', p => {
-                if (p.path() == "src/main/resources/application.properties") {
+                if (p.path == "src/main/resources/application.properties") {
                     p.setProperty(this.value, "8181")
                 }
             })

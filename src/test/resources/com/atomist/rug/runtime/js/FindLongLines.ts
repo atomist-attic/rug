@@ -30,7 +30,7 @@ class FindLongLines implements ProjectReviewer {
             let rc = new ReviewComment(
                     this.name,
                     Severity.Major,
-                    l.file().path(),
+                    l.file().path,
                     l.num(),
                     1)
             comments.push(rc)

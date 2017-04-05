@@ -16,7 +16,7 @@ class ClassAnnotated implements EditProject {
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context().pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            if (c.name() == "Dog") {
+            if (c.name == "Dog") {
                 c.movePackage("com.atomist")
             }
         })

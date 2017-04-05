@@ -11,4 +11,4 @@ When("politics takes its course", (p, world) => {
 Then("changes were made", p => true); // Override this one for this test
 Then("one edit was made", p => true);
 Then("the rage is maintained", p => p.fileExists("Gough"));
-Then("the rage has a name", p => p.name != null && p.name() != "" && p.name().length > 0);
+Then("the rage has a name", p => p.name != null && p.name != "" && p.name.length > 0);

@@ -8,8 +8,8 @@ class Rename3 implements ProjectEditor {
 
     edit(project: Project) {
       let eng: PathExpressionEngine = project.context().pathExpressionEngine();
-      project.files().forEach(f => {
-          if (f.name() == "package.json")
+      project.files.forEach(f => {
+          if (f.name == "package.json")
         eng.with<Pair>(f, "/Json()/subdomain", d => {
             d.setValue ("absquatulate")
         }) 

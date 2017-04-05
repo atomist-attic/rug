@@ -22,16 +22,23 @@ class FileMutableView(
     }
   }
 
-  @ExportFunction(readOnly = true, description = "Node content")
+  @ExportFunction(readOnly = true,
+    description = "Node content")
   override def value: String = currentBackingObject.path
 
-  @ExportFunction(readOnly = true, description = "Name of the file, excluding path")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Name of the file, excluding path")
   def name: String = filename
 
-  @ExportFunction(readOnly = true, description = "Is this a Java file?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this a Java file?")
   def isJava: Boolean = currentBackingObject.name.endsWith(".java")
 
-  @ExportFunction(readOnly = true, description = "Is this a Scala file?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this a Scala file?")
   def isScala: Boolean = currentBackingObject.name.endsWith(".scala")
 
   @ExportFunction(readOnly = false, description = "Set entire file content to new string")

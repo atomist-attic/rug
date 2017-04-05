@@ -2,6 +2,7 @@ package com.atomist.tree.marshal
 
 import com.atomist.rug.ts.{Cardinality, OneToM}
 import com.atomist.rug.spi.ExportFunction
+import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
 
 class EmptyLinkableContainerTreeNode() extends ContainerTreeNode {
@@ -75,7 +76,7 @@ private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContain
   *
   * @param remainingPathExpression The parts of the path expression that were unable to be resolved
   */
-class UnresolvableNode(val remainingPathExpression: String)
+class UnresolvableNode(val remainingPathExpression: PathExpression)
   extends ContainerTreeNode {
 
   @ExportFunction(readOnly = true, description = "Node content")
@@ -101,7 +102,7 @@ class UnresolvableNode(val remainingPathExpression: String)
   * @param sha (optional) the sha of the commit that represents the point in history and branches that we
   *            are resolving the path expression for. If not provided we should assume head of master
   */
-class UnresolvableProjectNode(override val remainingPathExpression: String,
+class UnresolvableProjectNode(override val remainingPathExpression: PathExpression,
                               val vcsOrg: String,
                               val vcsRepo: String,
                               val sha: String = null)

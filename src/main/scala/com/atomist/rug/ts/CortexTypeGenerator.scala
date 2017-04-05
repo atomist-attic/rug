@@ -99,23 +99,18 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
       })
 
     // These are normally a - [right,cardinality] - right
-    // [["Org"], ["HAS", "1:M", ["OWNED_BY", "1:1"]], ["Repo"]]
+    // ["Org", ["HAS", ["repo", "1:M"], ["org", "1:1"]], "Repo"]
+    // List(ChatTeam, List(OWNS, List(orgs, 1:M), List(chatTeam, 1:1)), Org)
     val allRelationships: Traversable[Relationship] =
     doc.getOrElse("relationships", Nil) flatMap {
-      case List(left: String, List(name: String, card: String), right: String) =>
-        val cardinality = Cardinality(card)
-        val relName = toTypeScriptIdentifier(name)
-        Seq(Relationship(left, relName, cardinality, right))
-      case List(left: String, List(name: String, card: String, List(backName: String, backCard: String)), right: String) =>
-        val cardinality = Cardinality(card)
-        val relName = toTypeScriptIdentifier(name)
-        val backCardinality = Cardinality(backCard)
-        val backRelName = toTypeScriptIdentifier(backName)
-        val backRel = Relationship(right, backRelName, backCardinality, left)
-        //println(s"bidirectional relationship $backRel")
+      case List(leftEntity: String, List(_: String, List(lrName: String, lrCard: String), List(rlName: String, rlCard: String)), rightEntity: String) =>
         Seq(
-          Relationship(left, relName, cardinality, right),
-          backRel
+          Relationship(leftEntity, lrName, Cardinality(lrCard), rightEntity),
+          Relationship(rightEntity, rlName, Cardinality(rlCard), leftEntity)
+        )
+      case List(leftEntity: String, List(discard: String, List(lrName: String, lrCard: String)), rightEntity: String) =>
+        Seq(
+          Relationship(leftEntity, lrName, Cardinality(lrCard), rightEntity)
         )
       case x =>
         throw new IllegalArgumentException(s"Illegal list, not able to destructure, $x")

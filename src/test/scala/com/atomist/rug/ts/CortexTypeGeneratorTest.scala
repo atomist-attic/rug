@@ -1,15 +1,13 @@
 package com.atomist.rug.ts
 
-import com.atomist.rug.ts.DefaultTypeGeneratorConfig.getClass
 import com.atomist.source.ArtifactSource
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class CortexTypeGeneratorTest extends FlatSpec with Matchers {
 
-  import DefaultTypeGeneratorConfig.CortexJson
-
   import CortexTypeGenerator._
+  import DefaultTypeGeneratorConfig.CortexJson
 
   private val typeGen = new CortexTypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
 
@@ -49,11 +47,7 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
 
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.ts")))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.js")))
-    assert(!cas.allFiles.exists(_.content.contains("started_at")))
-    assert(cas.allFiles.exists(_.content.contains("startedAt")))
     assert(cas.allFiles.exists(_.content.contains("Repo[]")))
-    assert(cas.allFiles.exists(_.content.contains("withOn(")), "Should be relationship on Build")
-    assert(cas.allFiles.exists(_.content.contains("withLogin")), "Should be simple property on GitHubId")
     assert(cas.allFiles.exists(_.content.contains("Issue[]")), "Must have back relationship from Repo to Issue")
 
     val buildFile = cas.allFiles.find(f => f.content.contains("class Build ")).get

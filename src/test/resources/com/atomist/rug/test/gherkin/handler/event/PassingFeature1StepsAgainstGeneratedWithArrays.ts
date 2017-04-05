@@ -8,7 +8,7 @@ Given("a sleepy country", f => {
 })
 When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandlerGenWithArrays")
-   let p = new Push().addContains(new Commit())
+   let p = new Push().addCommits(new Commit())
    //console.log(`Contains are ${p.contains().length} `);
    world.sendEvent(p)
 })

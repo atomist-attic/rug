@@ -31,7 +31,6 @@ object AbstractTypeScriptGenerator {
   */
 abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
                                            config: TypeGenerationConfig,
-                                           generateClasses: Boolean,
                                            override val tags: Seq[Tag])
   extends ProjectGenerator
     with ProjectEditor
@@ -186,12 +185,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val methods = new ListBuffer[MethodInfo]
     for {
       op <- ops
-      if shouldEmit(op)
     } {
       val params =
         for (p <- op.parameters)
           yield
-            MethodParam(p.name, helper.javaTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
+            MethodParam(p.name, helper.rugTypeToTypeScriptType(p.parameterType, typeRegistry), p.description)
 
       methods += getMethodInfo(typeName, op, params)
     }
@@ -205,10 +203,26 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       case (_, l) => l.head
     }).toSeq.sortBy(_.name)
 
-  private def shouldEmit(top: TypeOperation) =
-    !(top.parameters.exists(_.parameterType.contains("FunctionInvocationContext")) || "eval".equals(top.name))
+  /**
+    * Create enum types that will be referenced in other classes
+    */
+  private def emitEnums(): Unit = {
+    val returnedTypes: Seq[ParameterOrReturnType] =
+      typeRegistry.types.flatMap(t => t.allOperations.map(_.returnType))
+    val parameterTypes: Seq[ParameterOrReturnType] =
+      typeRegistry.types.flatMap(t =>
+        t.allOperations.flatMap(_.parameters.map(_.parameterType)))
+    val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct
+    allParameterOrReturnedTypes.foreach {
+      case et: EnumParameterOrReturnType =>
+        ???
+      case _ =>
+        // We don't need to emit anything
+    }
+  }
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
+    emitEnums()
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
@@ -238,7 +252,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       .map(t => s"""import { ${t.name} } from "./${t.name}";""")
       .mkString("\n")
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"export { ${t.name} };").mkString("\n")
+    output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("\n")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())
 
     tsClassOrInterfaces

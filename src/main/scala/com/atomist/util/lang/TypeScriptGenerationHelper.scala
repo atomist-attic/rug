@@ -1,10 +1,10 @@
 package com.atomist.util.lang
 
 import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.spi.{ParameterOrReturnType, TypeRegistry}
 
 /**
-  * Useful helps for generating TypeScript.
+  * Useful helpers for generating TypeScript.
   *
   * @param indent one indent: E.g. a number of spaces or tabs
   */
@@ -20,9 +20,9 @@ class TypeScriptGenerationHelper(indent: String = "    ")
         | */""".stripMargin
   }
 
-  def javaTypeToTypeScriptType(jt: String, tr: TypeRegistry): String = {
+  def rugTypeToTypeScriptType(jt: ParameterOrReturnType, tr: TypeRegistry): String = {
     val pathExpressionEngineClassName = "class " + classOf[jsPathExpressionEngine].getName
-    jt match {
+    jt.name match {
       case "String" => "string"
       case "boolean" => "boolean"
       case "int" | "long" => "number"
@@ -54,10 +54,10 @@ class TypeScriptGenerationHelper(indent: String = "    ")
         val cname = className.dropRight(11)
         //println(s"Returning [$cname]")
         cname
+      case x if tr.findByName(x).isDefined && jt.isArray => x + "[]"
       case x if tr.findByName(x).isDefined => x
-      case x if x.endsWith("[]") && tr.findByName(x.stripSuffix("[]")).isDefined =>
-        x
-      case x => throw new UnsupportedOperationException(s"Unsupported type [$x]. Did you export a function with this in its type signature?")
+      case x =>
+        throw new UnsupportedOperationException(s"Unsupported type [$x]. Did you export a function with this in its type signature?")
     }
   }
 }

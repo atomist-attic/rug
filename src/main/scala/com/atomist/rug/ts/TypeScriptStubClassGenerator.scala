@@ -28,7 +28,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                    config: TypeGenerationConfig = TypeGenerationConfig(imports = TypeGenerationConfig.TestStubImports),
                                    override val tags: Seq[Tag] = Nil,
                                    val root: String = "GraphNode")
-  extends AbstractTypeScriptGenerator(typeRegistry, config, true, tags) {
+  extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
 
   import TypeScriptStubClassGenerator._
 
@@ -144,7 +144,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   }
 
   override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    ClassMethodInfo(typeName, op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    ClassMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

@@ -21,7 +21,7 @@ case class TypeOperation(
                           description: String,
                           readOnly: Boolean,
                           parameters: Seq[TypeParameter],
-                          returnType: String,
+                          returnType: ParameterOrReturnType,
                           definedOn: Class[_],
                           example: Option[String]) {
 

@@ -5,7 +5,7 @@ package com.atomist.rug.spi
   */
 case class TypeParameter(
                           name: String,
-                          parameterType: String,
+                          parameterType: ParameterOrReturnType,
                           description: Option[String]
                         ) {
 

@@ -1,0 +1,8 @@
+{"nodes":
+[
+ {"labels":["Build"],
+  "properties":
+  [["id", "number"], ["name", "string"], ["status", ["broken", "passed"]]
+   ],
+  "unique":["id"]}
+ ]}

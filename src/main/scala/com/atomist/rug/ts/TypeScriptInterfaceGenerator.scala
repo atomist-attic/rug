@@ -26,7 +26,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                    config: TypeGenerationConfig = TypeGenerationConfig(),
                                    override val tags: Seq[Tag] = Nil,
                                    root: String = "TreeNode")
-  extends AbstractTypeScriptGenerator(typeRegistry, config, false, tags) {
+  extends AbstractTypeScriptGenerator(typeRegistry, config, tags) {
 
   private case class InterfaceGeneratedType(name: String,
                                             description: String,
@@ -62,7 +62,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   }
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    InterfaceMethodInfo(typeName, op.name, params, helper.javaTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

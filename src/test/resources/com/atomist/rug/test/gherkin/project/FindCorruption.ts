@@ -24,8 +24,8 @@ export class FindCorruption implements ProjectReviewer {
                 rr.add(new ReviewComment(
                     this.name,
                     Severity.Major,
-                    l.file().path,
-                    l.numFrom1(),
+                    l.file.path,
+                    l.numFrom1,
                     index + 1
                 )
             )

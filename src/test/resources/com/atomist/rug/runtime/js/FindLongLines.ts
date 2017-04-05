@@ -26,12 +26,12 @@ class FindLongLines implements ProjectReviewer {
 
       eng.with<Line>(project, longLines, l => {
           //console.log(`Checking [${l}]`)
-          if (l.length() > this.maxLength) {
+          if (l.length > this.maxLength) {
             let rc = new ReviewComment(
                     this.name,
                     Severity.Major,
-                    l.file().path,
-                    l.num(),
+                    l.file.path,
+                    l.num,
                     1)
             comments.push(rc)
         }

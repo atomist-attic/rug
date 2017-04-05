@@ -31,7 +31,8 @@ object ReflectiveFunctionExport {
           a.example() match {
             case "" => None
             case ex => Some(ex)
-          })
+          },
+          exposeAsProperty = a.exposeAsProperty())
       })
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {

@@ -76,7 +76,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     def params: Seq[MethodParam]
 
-    def noArg: Boolean = params.isEmpty
+    def exposeAsProperty: Boolean
 
     def returnType: String
 

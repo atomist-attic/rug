@@ -172,7 +172,8 @@ private class JsonBackedTyped(
             case OneToM => SimpleParameterOrReturnType(rel.right, isArray = true)
           },
           definedOn = null,
-          example = None
+          example = None,
+          exposeAsProperty = true
         )).toSeq
     val propsOps: Seq[TypeOperation] =
       properties.properties
@@ -186,7 +187,8 @@ private class JsonBackedTyped(
             parameters = Nil,
             returnType = prop.toType,
             definedOn = null,
-            example = None
+            example = None,
+            exposeAsProperty = true
           ))
 
     propsOps ++ relOps

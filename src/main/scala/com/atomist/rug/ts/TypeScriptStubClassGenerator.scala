@@ -61,7 +61,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       // Output private variables
       output ++= methods
         .map(mi => {
-          val visibility = if (mi.noArg) "" else "private"
+          val visibility = if (mi.exposeAsProperty) "" else "private"
           s"$indent$visibility ${toFieldName(mi)}: ${mi.returnType};"
         })
         .mkString("\n")
@@ -76,23 +76,42 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   }
 
   // Implementation of fields and methods from GraphNode interface
+//  private def graphNodeImpl(name: String): String = {
+//    // Emit fields from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
+//    helper.indented(
+//      s"""|nodeName = "$name";
+//          |nodeTags = [ "$name", "-dynamic" ];
+//          |""".stripMargin, 1)
+//  }
+
+  // Implementation of fields and methods from GraphNode interface
   private def graphNodeImpl(name: String): String = {
-    // Emit fields from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
+    // Create fields to make JSON stringification more revealing
     helper.indented(
-      s"""|nodeName = "$name";
-          |nodeTags = [ "$name", "-dynamic" ];
-          |""".stripMargin, 1)
+      s"""|private _nodeName = "$name";
+          |private _nodeTags = [ "$name", "-dynamic" ];
+          |
+          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+          |nodeName(): string {
+          |${indent}return this._nodeName;
+          |}
+          |
+          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
+          |nodeTags(): string[] {
+          |${indent}return this._nodeTags;
+          |}""".stripMargin, 1)
   }
 
   // Only create a concealed property if it's no arg
   private def toFieldName(m: MethodInfo): String =
-    if (m.noArg) m.name else "_" + m.name
+    if (m.exposeAsProperty) m.name else "_" + m.name
 
   private case class ClassMethodInfo(typeName: String,
                                      name: String,
                                      params: Seq[MethodParam],
                                      returnType: String,
-                                     description: Option[String])
+                                     description: Option[String],
+                                     exposeAsProperty: Boolean)
     extends MethodInfo {
 
     override def toString: String = {
@@ -105,7 +124,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           // It has a return. So let's create a field
           val fieldName = toFieldName(this)
 
-          val core = if (noArg) {
+          val core = if (exposeAsProperty) {
             // Emit nothing. We have the field.
             ""
           }
@@ -149,7 +168,10 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   }
 
   override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    ClassMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    ClassMethodInfo(typeName, op.name, params,
+      helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
+      Some(op.description),
+      op.exposeAsProperty)
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

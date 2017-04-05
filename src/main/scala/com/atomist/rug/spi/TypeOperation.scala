@@ -10,11 +10,13 @@ import com.atomist.tree.content.text.OutOfDateNodeException
 /**
   * Operation on an exported Rug type. Typically annotated with an [[ExportFunction]] annotation.
   *
-  * @param name name of the type
+  * @param name        name of the type
   * @param description description of the type. May be used in generated code
-  * @param example optional example of usage of the operation
-  * @param definedOn type we are defined on. May be an abstract superclass.
+  * @param example     optional example of usage of the operation
+  * @param definedOn   type we are defined on. May be an abstract superclass.
+  * @param exposeAsProperty    do we expose this as a property?
   * @see ExportFunction
+  * @see ExportProperty
   */
 case class TypeOperation(
                           name: String,
@@ -23,9 +25,13 @@ case class TypeOperation(
                           parameters: Seq[TypeParameter],
                           returnType: ParameterOrReturnType,
                           definedOn: Class[_],
-                          example: Option[String]) {
+                          example: Option[String],
+                          exposeAsProperty: Boolean) {
 
   import TypeOperation._
+
+  if (parameters.nonEmpty && exposeAsProperty)
+    throw new IllegalArgumentException(s"Cannot expose a function with arguments as a property: $this")
 
   def hasExample: Boolean = example.isDefined
 

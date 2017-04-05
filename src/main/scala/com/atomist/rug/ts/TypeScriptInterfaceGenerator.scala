@@ -54,11 +54,12 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                          name: String,
                                          params: Seq[MethodParam],
                                          returnType: String,
-                                         description: Option[String])
+                                         description: Option[String],
+                                         exposeAsProperty: Boolean)
     extends MethodInfo {
 
     override def toString: String = {
-      if (noArg) {
+      if (exposeAsProperty) {
         // Emit property only
         s"$comment$indent$name: $returnType;"
       }
@@ -70,7 +71,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
   }
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
+      Some(op.description), op.exposeAsProperty)
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

@@ -149,8 +149,8 @@ object TypeScriptRugEditorTest {
       |
       |     populate(project: Project) {
       |        let len: number = this.content.length;
-      |        if(project.name() != "woot"){
-      |           throw Error(`Project name should be woot, but was ${project.name()}`)
+      |        if(project.name != "woot"){
+      |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }

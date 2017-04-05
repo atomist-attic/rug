@@ -93,9 +93,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           |}""".stripMargin, 1)
   }
 
-  // Only create a concealed property if it's no arg
-  private def toFieldName(m: MethodInfo): String =
-    if (m.exposeAsProperty) m.name else "_" + m.name
+  private def toFieldName(m: MethodInfo): String = "_" + m.name
 
   private case class ClassMethodInfo(typeName: String,
                                      name: String,
@@ -116,14 +114,18 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           val fieldName = toFieldName(this)
 
           val core = if (exposeAsProperty) {
-            // Emit nothing. We have the field.
-            ""
+            helper.indented(s"""
+              |$comment
+              |get $name(): $returnType {
+              | return this.$fieldName;
+              |}
+            """.stripMargin, 1)
           }
           else {
             s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
                 |$indent${indent}if (this.$fieldName} === undefined)
-                |$indent${indent}${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
-                |$indent${indent}${indent}return this.${toFieldName(this)};
+                |$indent$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
+                |$indent$indent${indent}return this.${toFieldName(this)};
                 |$indent}""".stripMargin
           }
           val builderMethod =
@@ -134,7 +136,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                 s"""
                    |
                    |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                   |add${upperize(name)}($name: $underlyingType): $typeName {
+                   |add${depluralize(upperize(name))}($name: $underlyingType): $typeName {
                    |${indent}if (this.${fieldName} === undefined)
                    |$indent${indent}this.${fieldName} = [];
                    |${indent}this.${fieldName}.push($name);

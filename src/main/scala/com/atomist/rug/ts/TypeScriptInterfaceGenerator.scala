@@ -61,7 +61,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     override def toString: String = {
       if (exposeAsProperty) {
         // Emit property only
-        s"$comment$indent$name: $returnType;"
+        s"$comment${indent}readonly $name: $returnType;"
       }
       else {
         // Emit function

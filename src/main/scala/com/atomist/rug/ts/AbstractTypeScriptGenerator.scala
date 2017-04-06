@@ -87,10 +87,10 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     /** Return the underlying type if we return an array */
     def underlyingType: String = returnType.stripSuffix("[]")
 
-    def comment: String = {
+    def comment(indent: String): String = {
       val builder = new StringBuilder(s"$indent/**\n")
       builder ++= s"$indent  * ${description.getOrElse("")}\n"
-      builder ++= s"$indent  *\n"
+      builder ++= s"$indent  * \n"
 
       if (params.nonEmpty) {
         for (p <- params)
@@ -215,12 +215,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val returnedTypes: Seq[ParameterOrReturnType] =
       typeRegistry.types.flatMap(t => t.allOperations.map(_.returnType))
     val parameterTypes: Seq[ParameterOrReturnType] =
-      typeRegistry.types.flatMap(t =>
-        t.allOperations.flatMap(_.parameters.map(_.parameterType)))
+      typeRegistry.types.flatMap(t => t.allOperations.flatMap(_.parameters.map(_.parameterType)))
     val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct
     allParameterOrReturnedTypes.foreach {
       case et: EnumParameterOrReturnType =>
-        ???
+        println(et)
       case _ =>
         // We don't need to emit anything
     }
@@ -243,6 +242,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.imports
       output ++= t.specificImports
       output ++= getImports(generatedTypes, t)
+      output ++= config.separator
       output ++= s"export { ${t.name} };"
       output ++= config.separator
       output ++= t.toString

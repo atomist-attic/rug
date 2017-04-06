@@ -61,11 +61,11 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
     override def toString: String = {
       if (exposeAsProperty) {
         // Emit property only
-        s"$comment${indent}readonly $name: $returnType;"
+        s"${comment(indent)}${indent}readonly $name: $returnType;"
       }
       else {
         // Emit function
-        s"$comment$indent$name(${params.mkString(", ")}): $returnType;"
+        s"${comment(indent)}$indent$name(${params.mkString(", ")}): $returnType;"
       }
     }
   }

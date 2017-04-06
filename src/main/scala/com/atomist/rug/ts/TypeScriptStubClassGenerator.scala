@@ -104,25 +104,22 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
     extends MethodInfo {
 
     override def toString: String = {
-
       returnType match {
         case "void" =>
-          s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
+          s"""${comment("")}$indent$name(${params.mkString(", ")}): $returnType {}
              """.stripMargin
         case _ =>
           // It has a return. So let's create a field
           val fieldName = toFieldName(this)
 
           val core = if (exposeAsProperty) {
-            helper.indented(s"""
-              |$comment
-              |get $name(): $returnType {
-              | return this.$fieldName;
+            helper.indented(s"""${comment("")}get $name(): $returnType {
+              |${indent}return this.$fieldName;
               |}
             """.stripMargin, 1)
           }
           else {
-            s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
+            s"""|${comment("")}$indent$name(${params.mkString(", ")}): $returnType {
                 |$indent${indent}if (this.$fieldName} === undefined)
                 |$indent$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
                 |$indent$indent${indent}return this.${toFieldName(this)};
@@ -133,31 +130,28 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
               // It's an array type. Create an "addX" method to add the value to the array,
               // initializing it if necessary
               helper.indented(
-                s"""
-                   |
-                   |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                   |add${depluralize(upperize(name))}($name: $underlyingType): $typeName {
-                   |${indent}if (this.${fieldName} === undefined)
-                   |$indent${indent}this.${fieldName} = [];
-                   |${indent}this.${fieldName}.push($name);
-                   |${indent}return this;
-                   |}""".stripMargin, 1)
+                s"""|
+                    |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
+                    |add${depluralize(upperize(name))}($name: $underlyingType): $typeName {
+                    |${indent}if (this.${fieldName} === undefined)
+                    |$indent${indent}this.${fieldName} = [];
+                    |${indent}this.${fieldName}.push($name);
+                    |${indent}return this;
+                    |}""".stripMargin, 1)
             }
             else {
               // It's a scalar. Create a "withX" method to set the value
               helper.indented(
-                s"""
-                   |
-                   |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
-                   |with${upperize(name)}($name: $returnType): $typeName {
-                   |${indent}this.${fieldName} = $name;
-                   |${indent}return this;
-                   |}""".stripMargin, 1)
+                s"""|
+                    |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
+                    |with${upperize(name)}($name: $returnType): $typeName {
+                    |${indent}this.${fieldName} = $name;
+                    |${indent}return this;
+                    |}""".stripMargin, 1)
             }
           core + builderMethod
       }
     }
-
   }
 
   override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =

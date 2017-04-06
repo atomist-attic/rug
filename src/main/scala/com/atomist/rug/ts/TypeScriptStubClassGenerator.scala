@@ -199,7 +199,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   override protected def emitCombinedTypes(poa: ParameterValues): Option[FileArtifact] = {
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
-    val pathParam = poa.stringParamValue(outputPathParam)
+    val pathParam = poa.stringParamValue(AbstractTypeScriptGenerator.OutputPathParam)
     val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator

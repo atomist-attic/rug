@@ -51,12 +51,12 @@ class TypeScriptStubClassGeneratorTest extends FlatSpec with Matchers {
     val tid = new TypeScriptInterfaceGenerator(tr)
     // Make it put the generated files where our compiler will look for them
     val interfaces = tid.generate("", SimpleParameterValues(
-      Map(tid.outputPathParam -> ".atomist/editors/Interfaces.ts")))
+      Map(AbstractTypeScriptGenerator.OutputPathParam -> ".atomist/editors/Interfaces.ts")))
 
     val td = new TypeScriptStubClassGenerator(tr)
     // Make it put the generated files where our compiler will look for them
     val output = td.generate("", SimpleParameterValues(
-      Map(td.outputPathParam -> ".atomist/editors/stubs/Interfaces.ts")))
+      Map(AbstractTypeScriptGenerator.OutputPathParam -> ".atomist/editors/stubs/Interfaces.ts")))
     assert(output.allFiles.size > 1)
 
     val compiled = TypeScriptStubClassGeneratorTest.compile(interfaces + output)

@@ -21,6 +21,8 @@ object AbstractTypeScriptGenerator {
 
   val DefaultFilename = "model/Core.ts"
 
+  val OutputPathParam = "output_path"
+
 }
 
 /**
@@ -35,8 +37,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     with ProjectEditor {
 
   import AbstractTypeScriptGenerator._
-
-  val outputPathParam = "output_path"
 
   protected val indent = "    "
   protected val helper = new TypeScriptGenerationHelper()
@@ -153,9 +153,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     }
   }
 
-  override def parameters: Seq[Parameter] = Seq(Parameter(outputPathParam, ".*")
+  override def parameters: Seq[Parameter] = Seq(Parameter(OutputPathParam, ".*")
     .setRequired(false)
-    .setDisplayName("Path for created doc")
+    .setDisplayName("Path for consolidated exports file")
     .setDefaultValue(DefaultFilename))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
@@ -225,7 +225,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
-    val pathParam = poa.stringParamValue(outputPathParam)
+    val pathParam = poa.stringParamValue(OutputPathParam)
     val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
 
     for {

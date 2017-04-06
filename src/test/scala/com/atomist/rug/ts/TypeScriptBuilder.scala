@@ -52,7 +52,7 @@ object TypeScriptBuilder {
 
   val coreSource: ArtifactSource = {
     val generator = new TypeScriptInterfaceGenerator
-    generator.generate("stuff", SimpleParameterValues(Map(generator.outputPathParam -> "Core.ts")))
+    generator.generate("stuff", SimpleParameterValues(Map(AbstractTypeScriptGenerator.OutputPathParam -> "Core.ts")))
       .withPathAbove(".atomist/rug/model")
   }
 

@@ -428,8 +428,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <installDirectory>target/</installDirectory>
-                            <workingDirectory>target/</workingDirectory>
+                            <installDirectory>${project.build.directory}</installDirectory>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -445,13 +445,13 @@
                                 <phase>process-test-resources</phase>
                                 <configuration>
                                     <target>
-                                        <exec executable="target/node_modules/typescript/bin/tsc" failonerror="true">
+                                        <exec executable="${project.build.directory}/node_modules/typescript/bin/tsc" failonerror="true">
                                             <arg value="-p"/>
-                                            <arg value="target/.atomist/node_modules/@atomist/rug"/>
+                                            <arg value="${project.build.directory}/.atomist/node_modules/@atomist/rug"/>
                                         </exec>
-                                        <exec executable="target/node_modules/typescript/bin/tsc" failonerror="true">
+                                        <exec executable="${project.build.directory}/node_modules/typescript/bin/tsc" failonerror="true">
                                             <arg value="-p"/>
-                                            <arg value="target/.atomist/node_modules/@atomist/cortex"/>
+                                            <arg value="${project.build.directory}/.atomist/node_modules/@atomist/cortex"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -464,7 +464,7 @@
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist"/>
+                                        <mkdir dir="${project.build.directory}/.atomist"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -476,45 +476,45 @@
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <copy todir="target/.atomist">
+                                        <copy todir="${project.build.directory}/.atomist">
                                             <fileset dir="src/main/typescript"/>
                                         </copy>
                                     </target>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>mkdir</id>
+                                <id>mkdir-rug-model</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/rug/model"/>
+                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/rug/model"/>
                                     </target>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>mkdir_cortex</id>
+                                <id>mkdir-cortex</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/cortex"/>
+                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/cortex"/>
                                     </target>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>mkdir_cortex_stub</id>
+                                <id>mkdir-cortex-stub</id>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <phase>generate-sources</phase>
                                 <configuration>
                                     <target>
-                                        <mkdir dir="target/.atomist/node_modules/@atomist/cortex/stub"/>
+                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/cortex/stub"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -534,7 +534,7 @@
                                 <configuration>
                                     <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
                                     <arguments>
-                                        <argument>target/.atomist/node_modules/@atomist/rug/model/Core.ts</argument>
+                                        <argument>${project.build.directory}/.atomist/node_modules/@atomist</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -547,7 +547,7 @@
                                 <configuration>
                                     <mainClass>com.atomist.rug.ts.CortexTypeGeneratorApp</mainClass>
                                     <arguments>
-                                        <argument>target/.atomist/node_modules/@atomist/</argument>
+                                        <argument>${project.build.directory}/.atomist/node_modules/@atomist</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

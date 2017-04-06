@@ -220,6 +220,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     allParameterOrReturnedTypes.foreach {
       case et: EnumParameterOrReturnType =>
         println(et)
+        ???
       case _ =>
         // We don't need to emit anything
     }

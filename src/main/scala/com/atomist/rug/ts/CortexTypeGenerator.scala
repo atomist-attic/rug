@@ -84,10 +84,8 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
               case List(id: String, typ: String) =>
                 defineProperty(id, typ)
               case List(id: String, legalValues: List[String]@unchecked) =>
-                defineProperty(id, "String")
-              // TODO we can't yet support enums in the generation process
-              // so we return string for now
-              //EnumProp(id, legalValues)
+                //defineProperty(id, "String")
+                EnumProp(id, legalValues)
             }
         }
 

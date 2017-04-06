@@ -136,10 +136,10 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
               helper.indented(
                 s"""|
                     |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                    |add${depluralize(upperize(name))}($name: $underlyingType): $typeName {
-                    |${indent}if (this.${fieldName} === undefined)
+                    |add${upperize(name)}(...$name: $underlyingType[]): $typeName {
+                    |${indent}if (this.$fieldName === undefined)
                     |$indent${indent}this.${fieldName} = [];
-                    |${indent}this.${fieldName}.push($name);
+                    |${indent}this.$fieldName = this.$fieldName.concat($name);
                     |${indent}return this;
                     |}""".stripMargin, 1)
             }

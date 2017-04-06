@@ -10,7 +10,6 @@ import * as buildstub from "@atomist/rug/cortex/stub/Build"
 import * as repostub from "@atomist/rug/cortex/stub/Repo"
 import * as ccstub from "@atomist/rug/cortex/stub/ChatChannel"
 
-
 /**
  * Works against generated model
  */

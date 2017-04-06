@@ -10,7 +10,7 @@ object DefaultTypeGeneratorConfig {
   val CortexJsonLocation = "/com/atomist/rug/ts/cortex.json"
 
   lazy val CortexJson: String =
-    IOUtils.toString(getClass.getResourceAsStream(CortexJsonLocation), "UTF-8")
+    Utils.withCloseable(getClass.getResourceAsStream(CortexJsonLocation))(IOUtils.toString(_, "UTF-8"))
 }
 
 /**

@@ -71,12 +71,12 @@ class RugResolver(graph: Dependency) {
     * @return
     */
   def resolve(root: Rug, nameOrFqName: String): Option[Rug] = {
-    findRug(root, resolvedDependencies) match {
+    findResolvedDependency(root) match {
       case Some(rootDep) =>
         val local = rootDep.resolvedRugs.find(p => rugMatches(p, rootDep, nameOrFqName))
-        if(local.nonEmpty){
+        if (local.nonEmpty) {
           local
-        }else{
+        } else {
           (for {
             dep <- rootDep.dependencies
             rug <- dep.resolvedRugs
@@ -89,17 +89,18 @@ class RugResolver(graph: Dependency) {
 
   /**
     * Does the current rug/dep match the name?
+    *
     * @param rug
     * @param rootDep
     * @param name
     * @return
     */
-  private def rugMatches(rug: Rug, rootDep: ResolvedDependency, name: String) : Boolean = {
+  private def rugMatches(rug: Rug, rootDep: ResolvedDependency, name: String): Boolean = {
     name match {
       case simple: String if !simple.contains(":") => simple == rug.name
       case fq: String => (fqRex.findFirstMatchIn(fq), rootDep.address) match {
         case (Some(m), Some(address)) =>
-            m.group(1) == address.group &&
+          m.group(1) == address.group &&
             m.group(2) == address.artifact &&
             m.group(3) == rug.name
         case _ => false
@@ -108,19 +109,30 @@ class RugResolver(graph: Dependency) {
   }
 
   /**
+    * Find the node in the dependency graph for a given Rug instance
+    *
+    * @param rug
+    * @return
+    */
+  def findResolvedDependency(rug: Rug): Option[ResolvedDependency] = {
+    findRug(rug, resolvedDependencies)
+  }
+
+  /**
     * Find the root rug in the graph
     *
-    * @param root
+    * @param root the rug
     * @return
     */
   private def findRug(root: Rug, resolved: ResolvedDependency): Option[ResolvedDependency] = {
     resolved.resolvedRugs.find(r => r == root) match {
-      case Some(rug) => Some(resolved)
+      case Some(_) => Some(resolved)
       case _ =>
         val matched = resolved.dependencies.map(findRug(root, _))
         if (matched.isEmpty) {
           None
-        } else {
+        }
+        else {
           matched.head
         }
     }
@@ -130,7 +142,9 @@ class RugResolver(graph: Dependency) {
 
 sealed trait RugDependency[T <: RugDependency[T]] {
   def address: Option[Coordinate]
+
   def source: ArtifactSource
+
   def dependencies: Seq[T]
 }
 

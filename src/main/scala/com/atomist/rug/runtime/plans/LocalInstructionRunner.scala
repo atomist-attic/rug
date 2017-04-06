@@ -26,8 +26,7 @@ class LocalInstructionRunner(currentRug: Rug,
                              secretResolver: SecretResolver,
                              rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry,
                              rugResolver: Option[RugResolver] = None)
-  extends InstructionRunner
-  with PlanSupport{
+  extends InstructionRunner {
 
   private def doWithProjectName(instruction: Instruction, action: (String) => Response) = {
     instruction.detail.projectName match {

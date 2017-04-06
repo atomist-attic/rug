@@ -83,22 +83,6 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
 
     """.stripMargin
 
-//  val otherEditor: AddressableRug = new ProjectEditorSupport with AddressableRug{
-//    override protected  def modifyInternal(as: ArtifactSource, pmi: ParameterValues): ModificationAttempt = {
-//      SuccessfulModification(as + StringFileArtifact("src/from/typescript", pmi.stringParamValue("otherParam")))
-//    }
-//    override def applicability(as: ArtifactSource): Applicability = Applicability.OK
-//    override def name: String = "other"
-//    override def description: String = name
-//    override def tags: Seq[Tag] = Nil
-//
-//    override def artifact: String = "common-rugs"
-//
-//    override def group: String = "com.atomist.rugs"
-//
-//    override def version: String = "1.2.3"
-//  }
-
   it should "invoke editors in the same archive" in {
     invokeAndVerifySimple(
       Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor),

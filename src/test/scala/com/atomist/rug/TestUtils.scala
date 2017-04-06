@@ -78,7 +78,6 @@ object TestUtils extends Matchers {
     */
   def resourcesInPackage(caller: AnyRef): ArtifactSource = {
     val resourcePath = caller.getClass.getPackage.getName.replace(".", "/")
-    //println(s"Using resourcePath [$resourcePath] for $caller")
     val raw = ClassPathArtifactSource.toArtifactSource(resourcePath)
     if (raw.empty) {
       fail(s"Can't load resources at class path resource [$resourcePath]")
@@ -119,28 +118,4 @@ object TestUtils extends Matchers {
     })
     TypeScriptBuilder.compileWithModel(withAtomistDir)
   }
-
-  /**
-    * Make a rug addressable
-    */
-//  def addressableEditor(rug: ProjectEditor, _artifact: String = "artifact", _group: String = "foo", _version: String = "1.2.3"): AddressableRug = {
-//    new AddressableRug with ProjectEditor with RugSupport {
-//
-//      override def artifact: String = _artifact
-//
-//      override def group: String = _group
-//
-//      override def version = _version
-//
-//      override def description: String = rug.description
-//
-//      override def name: String = rug.name
-//
-//      override def tags: Seq[Tag] = rug.tags
-//
-//      override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = rug.modify(as, poa)
-//
-//      override def applicability(as: ArtifactSource): Applicability = rug.applicability(as)
-//    }
-//  }
 }

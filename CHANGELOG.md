@@ -44,6 +44,13 @@ TypeScript stub generation and proxy improvement release
 
 ## [0.22.0] - 2017-03-31
 
+
+### Changed
+
+-   **BREAKING** internal API for resolving and loading Rugs has changed to deal with
+    more complex dependency resolution scenarios. Also removal of AddressableRug and 
+    RugSupport traits.
+
 [0.22.0]: https://github.com/atomist/rug/compare/0.21.0...0.22.0
 
 Back from the future release

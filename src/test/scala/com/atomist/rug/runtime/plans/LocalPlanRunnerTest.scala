@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.{DefaultAtomistConfig, RugArchiveReader}
+import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._

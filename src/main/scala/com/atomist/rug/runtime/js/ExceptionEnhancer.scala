@@ -14,10 +14,10 @@ case class RuntimeErrorInfo(message: String,
                             detail: Object) {
 
   override def toString: String =
-    s"[${message}] at ${positionInfo}"
+    s"[$message] at $positionInfo"
 
   def positionInfo: String =
-    s"${filePath}:${pos.lineFrom1}/${pos.colFrom1}\n${pos.show}"
+    s"$filePath:${pos.lineFrom1}/${pos.colFrom1}\n${pos.show}"
 
 }
 
@@ -28,8 +28,6 @@ case class RuntimeErrorInfo(message: String,
 object ExceptionEnhancer {
 
   def enhanceIfPossible(rugAs: ArtifactSource, ecmaEx: ECMAException): Exception = {
-    //println(s"${ecmaEx.getFileName} at ${ecmaEx.getLineNumber}/${ecmaEx.getColumnNumber}, thrown = ${ecmaEx.getThrown}, ${ecmaEx.getCause}, ${ecmaEx.getEcmaError}")
-    //e.getThrown.asInstanceOf[Throwable].printStackTrace()
 
     // Let this through. They probably threw it voluntarily.
     if (ecmaEx.thrown.isInstanceOf[NativeError])
@@ -41,7 +39,7 @@ object ExceptionEnhancer {
         ecmaEx
       case filePath =>
         val f = rugAs.findFile(filePath).getOrElse(
-          throw new IllegalStateException(s"Cannot find file at path [$filePath] attempting to handle ${ecmaEx}")
+          throw new IllegalStateException(s"Cannot find file at path [$filePath] attempting to handle $ecmaEx")
         )
 
         val message: String =

@@ -6,7 +6,6 @@ import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.edit._
 import com.atomist.rug.kind.java.ExtractApplicationProperties
 import com.atomist.rug.kind.java.support.JavaAssertions
-import com.atomist.rug.runtime.RugSupport
 import com.atomist.source.{ArtifactSource, FileArtifact, StringFileArtifact}
 import com.atomist.tree.content.project.{ConfigValue, Configuration}
 import com.atomist.util.yaml.{MapToYamlStringSerializer, PropertiesToMapStructureParser}
@@ -17,8 +16,7 @@ import com.typesafe.scalalogging.LazyLogging
   */
 object ApplicationPropertiesToApplicationYamlEditor
   extends ProjectEditor
-    with LazyLogging
-    with RugSupport{
+    with LazyLogging {
 
   import JavaAssertions.ApplicationPropertiesFilePath
 

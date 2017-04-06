@@ -1,8 +1,8 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.edit.SuccessfulModification
+import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.source.file.ClassPathArtifactSource
@@ -29,7 +29,7 @@ class MultipleUseOfSubmatcherTypeScriptTest extends FlatSpec with Matchers {
     //println(s"rug archive: $artifactSourceWithEditor")
 
     // get the operation out of the artifact source
-    val projectEditor = RugArchiveReader.find(artifactSourceWithRugNpmModule).editors.head
+    val projectEditor = RugArchiveReader(artifactSourceWithRugNpmModule).editors.head
 
     // apply the operation
     projectEditor.modify(target, parameters) match {

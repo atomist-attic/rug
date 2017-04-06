@@ -1,7 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.project.ProjectOperation
-import com.atomist.rug.runtime.AddressableRug
+import com.atomist.project.archive.RugResolver
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -12,13 +12,13 @@ abstract class JavaScriptProjectOperationFinder[T <: ProjectOperation]
 
   def signatures: Set[JsRugOperationSignature]
 
-  override def find(jsc: JavaScriptContext, externalContext: Seq[AddressableRug]): Seq[T] = {
+  override def find(jsc: JavaScriptContext,resolver: Option[RugResolver] = None): Seq[T] = {
     jsc.vars.map(v => (v, matchesSignature(v.scriptObjectMirror))).collect{
-      case (v, true) => createProjectOperation(jsc,v.scriptObjectMirror, externalContext)
+      case (v, true) => createProjectOperation(jsc,v.scriptObjectMirror, resolver)
     }
   }
 
-  def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, externalContext: Seq[AddressableRug]): T
+  def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): T
 
   /**
     * Does the var match the signature of this ProjectOperation kind?

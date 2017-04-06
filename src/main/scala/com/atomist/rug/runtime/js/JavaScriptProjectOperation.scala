@@ -7,7 +7,6 @@ import com.atomist.project.ProjectOperation
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.parser.DefaultIdentifierResolver
-import com.atomist.rug.runtime.{AddressableRug, RugSupport}
 import com.atomist.rug.runtime.js.interop.{PathExpressionException, jsSafeCommittingProxy}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, RugRuntimeException}
 import com.atomist.source.ArtifactSource
@@ -28,13 +27,11 @@ import scala.util.control.NonFatal
 abstract class JavaScriptProjectOperation(
                                            _jsc: JavaScriptContext,
                                            _jsVar: ScriptObjectMirror,
-                                           rugAs: ArtifactSource,
-                                           override val externalContext: Seq[AddressableRug]
+                                           rugAs: ArtifactSource
                                          )
   extends ProjectOperation
     with LazyLogging
-    with JavaScriptUtils
-    with RugSupport{
+    with JavaScriptUtils {
 
   /** Needed by BDD testing support */
   val jsVar: ScriptObjectMirror = _jsVar

@@ -19,8 +19,8 @@ class JavaScriptResponseHandlerFinder
     */
   override val kind: String = "response-handler"
 
-  override protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror, externalContext: Seq[AddressableRug]): Option[JavaScriptResponseHandler] = {
-    Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler), coerce(jsc,handler), externalContext))
+  override protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptResponseHandler] = {
+    Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler), coerce(jsc,handler)))
   }
 
   /**
@@ -43,12 +43,10 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
                                  override val description: String,
                                  override val parameters: Seq[Parameter],
                                  override val tags: Seq[Tag],
-                                 responseCoercer: ResponseCoercer,
-                                 override val externalContext: Seq[AddressableRug])
+                                 responseCoercer: ResponseCoercer)
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport
-    with RugSupport
     with JavaScriptUtils {
 
   override def handle(response: Response, params: ParameterValues): Option[Plan] = {

@@ -1,26 +1,23 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param._
-import com.atomist.rug.runtime.RugSupport
 import com.atomist.rug.spi.Handlers.Status
 import com.atomist.rug.spi._
-
-import scala.collection.mutable.ListBuffer
 
 /**
   * Returns the value of its only parameter
   */
 class ExampleRugFunction
   extends RugFunction
-  with SecretSupport
-    with RugSupport{
+  with SecretSupport {
 
   override def parameters = Seq(new Parameter("thingy"))
 
   override def secrets: Seq[Secret] = {
-    ExampleRugFunction.clearSecrets match {
-      case true => Seq()
-      case false => Seq(Secret("very", "/secret/thingy"))
+    if (ExampleRugFunction.clearSecrets) {
+      Seq()
+    } else {
+      Seq(Secret("very", "/secret/thingy"))
     }
   }
 

@@ -4,7 +4,7 @@ import java.util.{Collections, Objects}
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
-import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
 import com.atomist.project.common.template._
 import com.atomist.project.edit.{NoModificationNeeded, ProjectEditor, SuccessfulModification}
 import com.atomist.rug.kind.DefaultTypeRegistry
@@ -46,7 +46,8 @@ class ProjectMutableView(
                           originalBackingObject: ArtifactSource,
                           atomistConfig: AtomistConfig,
                           creator: Option[Rug] = None,
-                          ctx: RugContext = LocalRugContext)
+                          ctx: RugContext = LocalRugContext,
+                          rugResolver: Option[RugResolver] = None)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
     with ChangeLogging[ArtifactSource] {
 
@@ -431,8 +432,8 @@ class ProjectMutableView(
   protected def editWith(editorName: String,
                          params: Map[String, Object]): Unit = {
 
-    creator match {
-      case Some(rug) => rug.findRug(editorName) match {
+    (creator,rugResolver) match {
+      case (Some(rug), Some(resolver)) => resolver.resolve(rug,editorName) match {
         case Some(ed: ProjectEditor) =>
           ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
             case sm: SuccessfulModification =>
@@ -444,13 +445,13 @@ class ProjectMutableView(
         case None =>
           if (editorName.contains(":")) {
             val shortName = StringUtils.substringAfterLast(editorName, ":")
-            if (rug.findRug(shortName).nonEmpty) {
+            if (resolver.resolve(rug,shortName).nonEmpty) {
               throw new EditorNotFoundException(s"Could not find editor: $editorName. Did you mean: $shortName?")
             }
           }
-          throw new EditorNotFoundException(editorName, rug.allRugs);
+          throw new EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs);
         case _ =>
-          throw new EditorNotFoundException(editorName, rug.allRugs);
+          throw new EditorNotFoundException(editorName, resolver.resolvedDependencies.rugs.allRugs);
       }
       case _ => throw new RugRuntimeException(name, s"No Rug context in which to find other editor: [$editorName]")
     }

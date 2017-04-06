@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param.SimpleParameterValues
+import com.atomist.project.archive.RugResolver
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
@@ -19,13 +20,13 @@ import com.atomist.util.JsonUtils
   * TODO - ensure we blow up if there are rugs or instructions with duplicate names
   * and don't have different GA's
   */
-class LocalInstructionRunner(rugs: Seq[AddressableRug],
+class LocalInstructionRunner(currentRug: Rug,
                              projectManagement: ProjectManagement,
                              rugContext: RugContext,
                              secretResolver: SecretResolver,
-                             rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry)
-  extends InstructionRunner
-  with PlanSupport{
+                             rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry,
+                             rugResolver: Option[RugResolver] = None)
+  extends InstructionRunner {
 
   private def doWithProjectName(instruction: Instruction, action: (String) => Response) = {
     instruction.detail.projectName match {
@@ -55,39 +56,57 @@ class LocalInstructionRunner(rugs: Seq[AddressableRug],
           case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
         }
       case _ =>
-        findMatch(rugs, instruction) match {
-          case Some(rug: ProjectGenerator) =>
-            doWithProjectName(instruction, (projectName: String) => {
-              val artifact = projectManagement.generate(rug, parameters, projectName)
-              Response(Success)//TODO serialize the response?
-            })
-          case Some(rug: ProjectEditor) =>
-            doWithProjectName(instruction, (projectName: String) => {
-              projectManagement.edit(rug,parameters, projectName) match {
-                case _: SuccessfulModification => Response(Success)
-                case success: NoModificationNeeded => Response(Success,Some(success.comment))
-                case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
-              }
-            })
-          case Some(rug: ProjectReviewer) =>
-            doWithProjectName(instruction, (projectName: String) => {
-              val reviewResult = projectManagement.review(rug,parameters, projectName)
-              Response(Success, None, None, Some(JsonUtils.toJson(reviewResult)))
-            })
-          case Some(rug: CommandHandler) =>
-            val planOption = rug.handle(rugContext, parameters)
-            Response(Success, None, None, planOption)
-          case Some(rug: ResponseHandler) =>
-            callbackInput match {
-              case Some(response) =>
-                val planOption = rug.handle(response, parameters)
+        rugResolver match {
+          case Some(resolver) =>
+            resolver.resolve(currentRug, extractName(instruction.detail)) match {
+              case Some(rug: ProjectGenerator) =>
+                doWithProjectName(instruction, (projectName: String) => {
+                  projectManagement.generate(rug, parameters, projectName)
+                  Response(Success)//TODO serialize the response?
+                })
+              case Some(rug: ProjectEditor) =>
+                doWithProjectName(instruction, (projectName: String) => {
+                  projectManagement.edit(rug,parameters, projectName) match {
+                    case _: SuccessfulModification => Response(Success)
+                    case success: NoModificationNeeded => Response(Success,Some(success.comment))
+                    case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
+                  }
+                })
+              case Some(rug: ProjectReviewer) =>
+                doWithProjectName(instruction, (projectName: String) => {
+                  val reviewResult = projectManagement.review(rug,parameters, projectName)
+                  Response(Success, None, None, Some(JsonUtils.toJson(reviewResult)))
+                })
+              case Some(rug: CommandHandler) =>
+                val planOption = rug.handle(rugContext, parameters)
                 Response(Success, None, None, planOption)
-              case c =>
-                throw new BadPlanException(s"Callback input was not recognized: $c")
+              case Some(rug: ResponseHandler) =>
+                callbackInput match {
+                  case Some(response) =>
+                    val planOption = rug.handle(response, parameters)
+                    Response(Success, None, None, planOption)
+                  case c =>
+                    throw new BadPlanException(s"Callback input was not recognized: $c")
+                }
+              case Some(rug) => throw new BadPlanException(s"Unrecognized rug: $rug")
+              case None => throw new BadPlanException(s"Could not find rug with name: ${instruction.detail.name}")
             }
-          case Some(rug) => throw new BadPlanException(s"Unrecognized rug: $rug")
-          case None => throw new BadPlanException(s"Could not find rug with name: ${instruction.detail.name}")
+          case _ => throw new IllegalArgumentException(s"Could not find rug with name: ${instruction.detail.name} because no RugResolver supplied")
         }
+
+    }
+  }
+
+  /**
+    * Convert Instruction.Detail name/coords to a string for resolver
+    * @param detail
+    * @return
+    */
+  def extractName(detail: Instruction.Detail): String = {
+    detail.coordinates match {
+      case Some(coords) =>
+        s"${coords.group}:${coords.artifact}:${detail.name}"
+      case _ => detail.name
     }
   }
 }

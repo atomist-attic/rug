@@ -25,14 +25,14 @@ object PlanUtils {
 
   private def instructionToString(i: Instruction) = {
     val op = i match {
-      case Generate(detail) => "Generate"
-      case Edit(detail) => "Edit"
-      case Review(detail) => "Review"
-      case Execute(detail) => "Execute"
-      case Command(detail) => "Command"
-      case Respond(detail) => "Respond"
+      case Generate(_) => "Generate"
+      case Edit(_) => "Edit"
+      case Review(_) => "Review"
+      case Execute(_) => "Execute"
+      case Command(_) => "Command"
+      case Respond(_) => "Respond"
     }
-    s"${op} ${i.detail.name} ${i.detail.coordinates} ${i.detail.parameters}"
+    s"$op ${i.detail.name} ${i.detail.coordinates} ${i.detail.parameters}"
   }
 
   private def messageToTree(m: Message) = {

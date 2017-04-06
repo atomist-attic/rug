@@ -1,8 +1,8 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.SimpleParameterValues
-import com.atomist.project.archive.RugArchiveReader
 import com.atomist.project.edit.ProjectEditor
+import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.util.Timing._
@@ -84,7 +84,7 @@ class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
     println(s"Compiling took: $compileTime ms")
 
     val (ed, evalTime) = time {
-      RugArchiveReader.find(as).editors.head
+      RugArchiveReader(as).editors.head
     }
     println(s"Loading editor took: $evalTime ms")
 
@@ -121,7 +121,7 @@ class JavaScriptProjectOperationFinderTest  extends FlatSpec with Matchers {
 
   private  def invokeAndVerifySimple(tsf: FileArtifact): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsed = RugArchiveReader.find(as).editors.head
+    val jsed = RugArchiveReader(as).editors.head
     assert(jsed.name === "Simple")
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target,SimpleParameterValues( Map("content" -> "woot")))

@@ -62,8 +62,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(JsonUtils.toJson(plan.messages.head) == """{"body":{},"instructions":[]}""")
   }
 
-  // This behavior is no longer supported this way
-  it should "#488: get good error message from generated model stubs" in pendingUntilFixed {
+  it should "#488: get good error message from generated model stubs" in {
     val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithBadStubUse))
     val rugs = RugArchiveReader.find(rugArchive, Nil)

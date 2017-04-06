@@ -5,6 +5,7 @@ import java.util.Objects
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.ConsString
+
 import scala.util.control.Exception._
 
 /**
@@ -14,37 +15,49 @@ object NashornUtils {
 
   import scala.collection.JavaConverters._
 
-  def extractProperties(som: ScriptObjectMirror): Map[String, Object] =
-    som.entrySet().asScala
-      .map(me => me.getKey -> me.getValue)
-      .filter(_._2 match {
-        case som: ScriptObjectMirror if som.isFunction => false
-        case _ => true
-      })
-      .toMap
+  /**
+    * Get all key values, ignoring exceptions, which can be thrown
+    * by Nashorn entrySet
+    */
+  private def safeObjectMap(som: ScriptObjectMirror): Map[String, AnyRef] =
+    som.keySet().asScala
+      .flatMap(key => {
+        // TypeScript "get" properties can throw exceptions
+        val maybeValue = allCatch.opt(som.get(key))
+        maybeValue.map(value => key -> value)
+      }).toMap
+
+
+  def extractProperties(som: ScriptObjectMirror): Map[String, AnyRef] =
+    safeObjectMap(som) flatMap {
+      case (_, som: ScriptObjectMirror) if som.isFunction =>
+        None
+      case (key, value) =>
+        Some(key -> value)
+    }
 
   /**
     * Return the current state of no-arg methods on this object
     */
-  def extractNoArgFunctions(som: ScriptObjectMirror): Map[String, Object] = {
-    som.entrySet().asScala
-      .map(me => me.getKey -> me.getValue)
-      .flatMap {
-        case (key, f: ScriptObjectMirror) if isNoArgFunction(f) =>
-          // If calling the function throws an exception, discard the value.
-          // This will happen with builder stubs that haven't been fully initialized
-          // Otherwise, use it
-          allCatch.opt(som.callMember(key))
-            .map(result => (key, result))
-        case _ => None
-      }.toMap
+  def extractNoArgFunctionValues(som: ScriptObjectMirror): Map[String, AnyRef] = {
+    val m = safeObjectMap(som) flatMap {
+      case (key, f: ScriptObjectMirror) if isNoArgFunction(f) =>
+        // If calling the function throws an exception, discard the value.
+        // This will happen with builder stubs that haven't been fully initialized
+        // Otherwise, use it
+        allCatch.opt(som.callMember(key))
+          .map(result => {
+            (key, result)
+          })
+      case _ => None
+    }
+    m
   }
 
   // TODO this is fragile but can't find a Nashorn method to do it
   private def isNoArgFunction(f: ScriptObjectMirror): Boolean = {
     f.isFunction && {
       val s = f.toString
-      //println(s)
       s.startsWith("function ()")
     }
   }

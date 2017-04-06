@@ -113,7 +113,11 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
           val fieldName = toFieldName(this)
 
           val core = if (exposeAsProperty) {
-            helper.indented(s"""${comment("")}get $name(): $returnType {
+            helper.indented(
+              s"""${comment("")}get $name(): $returnType {
+              |${indent}if (this.$fieldName === undefined) {
+              |$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
+              |$indent}
               |${indent}return this.$fieldName;
               |}
             """.stripMargin, 1)

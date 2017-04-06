@@ -8,7 +8,7 @@ class SimpleCommandHandlerWithBadStubUse implements HandleCommand{
 
   handle(ctx: HandlerContext) {
       // This will fail
-      let build = new Build().repo();
+      let build = new Build().repo;
       return Plan.ofMessage(new Message("foobar"));
   }
 }

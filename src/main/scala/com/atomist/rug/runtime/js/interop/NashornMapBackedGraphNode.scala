@@ -37,7 +37,7 @@ object NashornMapBackedGraphNode {
 
   private[interop] def relevantPropertyValues(som: ScriptObjectMirror): Map[String, Object] = {
     (NashornUtils.extractProperties(som) ++
-      NashornUtils.extractNoArgFunctions(som))
+      NashornUtils.extractNoArgFunctionValues(som))
       // Null properties don't match path expressions, so suppress them
       .filter(_._2 != null)
   }

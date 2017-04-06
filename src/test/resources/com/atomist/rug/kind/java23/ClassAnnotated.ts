@@ -14,11 +14,12 @@ import { JavaSource, JavaType, Project, JavaField } from '@atomist/rug/model/Cor
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaField>(c, '//JavaField()', f => {
-                    if (f.nodeName().indexOf("Field") > -1 && f.type().name().indexOf("Dog") > -1) {
+                    console.log(`f.type.name = [${f.type.name}]`)
+                    if (f.nodeName().indexOf("Field") > -1 && f.type.name.indexOf("Dog") > -1) {
                         f.addAnnotation("com.someone", "FooBar")
                     }
                 })

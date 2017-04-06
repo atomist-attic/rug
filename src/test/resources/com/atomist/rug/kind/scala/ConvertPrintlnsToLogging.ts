@@ -32,7 +32,7 @@ class ConvertPrintlnsToLogging implements ProjectEditor {
      */
     edit(project: Project) {
       let eng: PathExpressionEngine =
-        new ScalaPathExpressionEngine(project.context().pathExpressionEngine())
+        new ScalaPathExpressionEngine(project.context.pathExpressionEngine())
 
       let printlnStatement = 
         `/src/Directory()/scala//ScalaFile()//termApply

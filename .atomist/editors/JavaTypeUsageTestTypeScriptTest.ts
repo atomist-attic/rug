@@ -18,7 +18,7 @@ class JavaTypeUsageTestTypeScriptTest {
         let mg = new Microgrammar("tripleQuotedEditor", `§s{0,1}§"""¡"""¡.stripMargin`,
             {});
 
-        let eng = project.context().pathExpressionEngine().addType(mg);
+        let eng = project.context.pathExpressionEngine().addType(mg);
 
         let editors = '/src/test/scala/com/atomist/rug/kind/java/*[@name="JavaTypeUsageTest.scala"]/tripleQuotedEditor()';
 

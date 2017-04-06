@@ -14,7 +14,7 @@ class ImportDiagrammedAssertions implements ProjectEditor {
     newImport = "import org.scalatest.DiagrammedAssertions._"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
       let findExistingScalaTestImport = `/src/test/scala//ScalaFile()[not(//import[//termName[@value='DiagrammedAssertions']])]
                             //import[//termName[@value='scalatest']][1]`   
 

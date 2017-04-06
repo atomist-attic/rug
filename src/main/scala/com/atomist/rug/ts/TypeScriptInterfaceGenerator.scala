@@ -54,15 +54,25 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                          name: String,
                                          params: Seq[MethodParam],
                                          returnType: String,
-                                         description: Option[String])
+                                         description: Option[String],
+                                         exposeAsProperty: Boolean)
     extends MethodInfo {
 
-    override def toString: String =
-      s"$comment$indent$name(${params.mkString(", ")}): $returnType;"
+    override def toString: String = {
+      if (exposeAsProperty) {
+        // Emit property only
+        s"${comment(indent)}${indent}readonly $name: $returnType;"
+      }
+      else {
+        // Emit function
+        s"${comment(indent)}$indent$name(${params.mkString(", ")}): $returnType;"
+      }
+    }
   }
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
+      Some(op.description), op.exposeAsProperty)
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

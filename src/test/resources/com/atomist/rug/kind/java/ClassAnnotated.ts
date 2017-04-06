@@ -14,7 +14,7 @@ class ClassAnnotated implements ProjectEditor {
 
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
         
         eng.with<SpringBootProject>(project, '//SpringBootProject()', p => {
             p.annotateBootApplication("com.someone", "Foobar")

@@ -19,7 +19,7 @@ export class CatchThrowable implements ProjectReviewer {
 
     review(project: Project) {
       const eng = 
-      new DecoratingPathExpressionEngine(project.context().pathExpressionEngine())
+      new DecoratingPathExpressionEngine(project.context.pathExpressionEngine())
 
       const rr = ReviewResult.empty(this.name)
 

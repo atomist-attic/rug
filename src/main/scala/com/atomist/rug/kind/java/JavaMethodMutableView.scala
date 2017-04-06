@@ -26,10 +26,13 @@ class JavaMethodMutableView(originalBackingObject: MethodDeclaration, parent: Ja
     case _ => throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
-  @ExportFunction(readOnly = true, description = "Return the name of the method")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return the name of the method")
   def name: String = currentBackingObject.getName
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "Return the Javadoc for the method, or an empty string if there isn't any")
   def javadoc(): String =
     DocumentableNodeUtils.javadoc(currentBackingObject)

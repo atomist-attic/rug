@@ -18,6 +18,6 @@ Then("the rage is maintained", p => {
     return p.fileExists("Paul");
 });
 Then("the rage has a name", p => {
-    let name = p.name();
+    let name = p.name;
     return name != null && name != "" && name.length > 0;
 });

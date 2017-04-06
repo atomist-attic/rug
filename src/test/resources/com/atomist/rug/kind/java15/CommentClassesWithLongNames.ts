@@ -9,9 +9,9 @@ import { JavaType, Project } from '@atomist/rug/model/Core'
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
         eng.with<JavaType>(project, '//JavaType()', c => {
-            let name: string = c.name()
+            let name: string = c.name
             if (name.length > 17) {
                 c.setHeaderComment("It appears that Rod still likes long names")
             }

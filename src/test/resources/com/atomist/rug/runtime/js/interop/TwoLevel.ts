@@ -18,7 +18,7 @@ class FruitererType implements TypeProvider {
    if (this.isFile(context)) {
      let f = context as File
      //console.log(f.name())
-     if (f.isJava())
+     if (f.isJava)
       return [ new Fruiterer() ]
       else return []
    }
@@ -80,7 +80,7 @@ class TwoLevel implements ProjectEditor {
     edit(project: Project) {
       //console.log("Editing")
       let mg = new FruitererType()
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
 
       let i = 0
       eng.with<Banana>(project, "//File()/fruiterer()/banana()", n => {

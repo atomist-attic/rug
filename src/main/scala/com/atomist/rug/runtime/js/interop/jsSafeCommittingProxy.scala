@@ -99,16 +99,24 @@ class jsSafeCommittingProxy(
   }
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
-    val st = typ
-    val possibleOps = st.allOperations.filter(op => name == op.name)
+    val possibleOps = typ.allOperations.filter(op => name == op.name)
     if (possibleOps.nonEmpty) {
-      if (possibleOps.head.invocable)
-        new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+      val op = possibleOps.head //TODO seems fragile
+      if (op.invocable) {
+        val function = new FunctionProxyToReflectiveInvocationOnUnderlyingJVMNode(name, possibleOps)
+        if (op.exposeAsProperty) {
+          // Reuse the logic we have in the function implementation by simply creating and invoking it
+          function.call("whatever")
+        }
+        else {
+          function
+        }
+      }
       else
         new FunctionProxyToNodeNavigationMethods(name, node)
     }
     else
-      invokeGivenNoMatchingOperationInTypeInformation(name, st)
+      invokeGivenNoMatchingOperationInTypeInformation(name, typ)
   }
 
   private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
@@ -161,7 +169,9 @@ class jsSafeCommittingProxy(
             case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
             case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s, typeRegistry))
             case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
-            case _ => returned
+            case r =>
+              // Be sure to proxy all the way down
+              wrapIfNecessary(Seq(r), typeRegistry).get(0)
           }
       }
     }

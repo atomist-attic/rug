@@ -30,7 +30,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
       |       this.lyst[0].toString()
       |
       |       //ensure we return another JavaScriptArray
-      |       project.files().sort().sort()
+      |       project.files.sort().sort()
       |
       |       let filtered: string[] = this.lyst.filter(t => true)
       |       if(filtered.length != 1){

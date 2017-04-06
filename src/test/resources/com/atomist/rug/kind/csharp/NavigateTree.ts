@@ -11,7 +11,7 @@ class NavigateTree implements ProjectEditor {
     description: string = "Navigates tree but doesn't make changes"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       /*
         specific_catch_clause
@@ -33,8 +33,8 @@ class NavigateTree implements ProjectEditor {
 
         let inFile: File = treeHelper.findAncestorWithTag<File>(classType, "File")
         if (inFile != null) {
-            if (inFile.name() != "exception.cs")
-                throw new Error(`File has wrong name: ${inFile.name()}`)
+            if (inFile.name != "exception.cs")
+                throw new Error(`File has wrong name: ${inFile.name}`)
             count++
         }
          let inFile1: File = treeHelper.findAncestorWithTag<File>(c2, "File")

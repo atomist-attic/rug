@@ -39,7 +39,7 @@ class ReturnsEmptyPlanEventHandlerGenWithArrays implements HandleEvent<GraphNode
     handle(m: Match<GraphNode, Push>) {
         let p: Push = m.matches()[0]
 
-        if (p.commits().length != 1) throw new Error("No contains")
+        if (p.commits.length != 1) throw new Error("No commits")
 
         return new Plan();
     }

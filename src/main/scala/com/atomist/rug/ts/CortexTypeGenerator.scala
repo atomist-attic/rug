@@ -85,9 +85,7 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
                 defineProperty(id, typ)
               case List(id: String, legalValues: List[String]@unchecked) =>
                 defineProperty(id, "String")
-              // TODO we can't yet support enums in the generation process
-              // so we return string for now
-              //EnumProp(id, legalValues)
+                //EnumProp(id, legalValues)
             }
         }
 
@@ -172,7 +170,8 @@ private class JsonBackedTyped(
             case OneToM => SimpleParameterOrReturnType(rel.right, isArray = true)
           },
           definedOn = null,
-          example = None
+          example = None,
+          exposeAsProperty = true
         )).toSeq
     val propsOps: Seq[TypeOperation] =
       properties.properties
@@ -186,7 +185,8 @@ private class JsonBackedTyped(
             parameters = Nil,
             returnType = prop.toType,
             definedOn = null,
-            example = None
+            example = None,
+            exposeAsProperty = true
           ))
 
     propsOps ++ relOps

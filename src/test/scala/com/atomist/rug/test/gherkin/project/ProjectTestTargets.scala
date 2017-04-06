@@ -74,13 +74,13 @@ object ProjectTestTargets {
        |Then("parameters were valid", (p, world) => !world.invalidParameters())
        |Then("we have Anders", p => {
        |    let f = p.findFile("src/from/typescript");
-       |    return f != null && f.content().indexOf("Anders") > -1;
+       |    return f != null && f.content.indexOf("Anders") > -1;
        |});
        |Then("we have file from start project", p => {
        |    return p.findFile("pom.xml") != null;
        |});
        |Then("the project name is correct", p => {
-       |    return p.name() == "$projectName";
+       |    return p.name == "$projectName";
        |});
        |""".stripMargin
 

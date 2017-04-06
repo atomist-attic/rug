@@ -16,16 +16,16 @@ export class FindSecrets implements ProjectReviewer {
 
         let rr = ReviewResult.empty(this.name)
 
-        project.files()
-            .filter(f => f.name()
-            .indexOf("yml") > -1).forEach(f => {
+        project.files
+            .filter(f => f.name.indexOf("yml") > -1)
+            .forEach(f => {
             var secret = /\$\{secret\.([^\}]+)\}/g;
-            var matches = f.content().match(secret);
+            var matches = f.content.match(secret);
             for ( let i = 0; i < matches.length; i++)
                 rr.add(new ReviewComment(
                     matches[i],
                     Severity.Major,
-                    f.path()
+                    f.path
                 ))
         })
 

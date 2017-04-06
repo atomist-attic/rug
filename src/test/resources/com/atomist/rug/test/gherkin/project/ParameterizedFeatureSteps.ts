@@ -10,7 +10,7 @@ Given("a file named ([a-zA-Z]+)", (p, world, filename) => {
 When("do nothing", p => {
 });
 Then("the project has (\\d+) files", (p, world, filecount) => {
-    return p.totalFileCount() == filecount;
+    return p.totalFileCount == filecount;
 });
 Then("the project has a file named ([a-zA-Z]+)", (p, world, filename) => {
     //console.log(`First arg = ${filename}`)

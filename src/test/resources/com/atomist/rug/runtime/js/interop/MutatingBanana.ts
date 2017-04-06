@@ -17,7 +17,7 @@ class FruitererType implements TypeProvider {
  find(context: TreeNode): TreeNode[] {
    if (this.isFile(context)) {
      let f = context as File
-     if (f.isJava())
+     if (f.isJava)
       return [ new Fruiterer(f) ]
       else return []
    }
@@ -76,7 +76,7 @@ class TwoLevel implements ProjectEditor {
 
     edit(project: Project) {
       let mg = new FruitererType()
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
 
       eng.with<MutatingBanana>(project, "//File()/fruiterer()/mutatingBanana()", n => {
         n.mutate()

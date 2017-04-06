@@ -133,7 +133,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
       SimpleFileBasedArtifactSource(
         TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
         CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts", TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
+        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts",
+          TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
       )
     val cas = TypeScriptBuilder.compileWithModel(as)
     val grt = new GherkinRunner(new JavaScriptContext(cas))
@@ -152,7 +153,8 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
         .withPathAbove(".atomist/editors") +
         SimpleFileBasedArtifactSource(
           GenerationFeatureFile,
-          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts", generationTest("SimpleGenerator", projectName, Map()))
+          StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
+            generationTest("SimpleGenerator", projectName, Map()))
         )
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject

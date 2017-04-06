@@ -13,7 +13,7 @@ export class FindCorruption implements ProjectReviewer {
     description = "Look for corrupt politicians"
 
     review(project: Project) {
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
         let rr = ReviewResult.empty(this.name)
 
@@ -24,8 +24,8 @@ export class FindCorruption implements ProjectReviewer {
                 rr.add(new ReviewComment(
                     this.name,
                     Severity.Major,
-                    l.file().path(),
-                    l.numFrom1(),
+                    l.file.path,
+                    l.numFrom1,
                     index + 1
                 )
             )

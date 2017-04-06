@@ -18,7 +18,7 @@ class FindLongLines implements ProjectReviewer {
     review(project: Project) {
      
         let eng: PathExpressionEngine = 
-            new DecoratingPathExpressionEngine(project.context().pathExpressionEngine())
+            new DecoratingPathExpressionEngine(project.context.pathExpressionEngine())
 
         let comments: ReviewComment[] = []
 
@@ -26,12 +26,12 @@ class FindLongLines implements ProjectReviewer {
 
       eng.with<Line>(project, longLines, l => {
           //console.log(`Checking [${l}]`)
-          if (l.length() > this.maxLength) {
+          if (l.length > this.maxLength) {
             let rc = new ReviewComment(
                     this.name,
                     Severity.Major,
-                    l.file().path(),
-                    l.num(),
+                    l.file.path,
+                    l.num,
                     1)
             comments.push(rc)
         }

@@ -26,7 +26,9 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   override protected def toReviewComment(msg: String, severity: Severity): ReviewComment =
     ReviewComment(msg, severity, Some(currentBackingObject.path))
 
-  @ExportFunction(readOnly = true, description = "Is this file well-formed?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this file well-formed?")
   final def isWellFormed: Boolean = wellFormed
 
   /**
@@ -34,22 +36,34 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
     */
   protected def wellFormed: Boolean = true
 
-  @ExportFunction(readOnly = true, description = "Return content length")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return content length")
   def content: String = currentBackingObject.content
 
-  @ExportFunction(readOnly = true, description = "Return file size")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return file size")
   def contentLength: Long = currentBackingObject.contentLength
 
-  @ExportFunction(readOnly = true, description = "Return file name, excluding path")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return file name, excluding path")
   def filename: String = currentBackingObject.name
 
-  @ExportFunction(readOnly = true, description = "Return file path, with forward slashes")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return file path, with forward slashes")
   def path: String = currentBackingObject.path
 
-  @ExportFunction(readOnly = true, description = "Return the number of lines in the file")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return the number of lines in the file")
   override def lineCount: Int = FileMetrics.lineCount(currentBackingObject.content)
 
-  @ExportFunction(readOnly = true, description = "Return the file's permissions")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Return the file's permissions")
   def permissions: Int = currentBackingObject.mode
 
   @ExportFunction(readOnly = false, description = "Make the file executable")

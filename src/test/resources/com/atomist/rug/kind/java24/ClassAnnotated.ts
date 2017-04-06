@@ -10,11 +10,11 @@ import { JavaSource, JavaType, JavaField, Project } from '@atomist/rug/model/Cor
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaField>(c, '//JavaField()', f => {
-                    if (f.type().name().indexOf("Dog") > -1) {
+                    if (f.type.name.indexOf("Dog") > -1) {
                         f.removeAnnotation("com.someone", "ComFooBar")
                     }
                 })

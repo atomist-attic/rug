@@ -92,6 +92,8 @@ object JavaHelpers {
     case _ => s(0).toUpper + s.substring(1)
   }
 
+  def depluralize(s: String): String = s.stripSuffix("s")
+
   def lowerize(s: String): String = s.length match {
     case 0 | 1 => s.take(1).toLowerCase
     case _ => s(0).toLower + s.substring(1)

@@ -33,7 +33,7 @@ $whateverElse
           );
 
 
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine().addType(mg)
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
 
 
         let mgNode = `/File()[@name="pom.xml"]/parent()`

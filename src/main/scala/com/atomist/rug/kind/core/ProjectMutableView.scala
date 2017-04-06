@@ -87,6 +87,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "Return the name of the project. If it's in GitHub, it will be the repo name. " +
       "If it's on the local filesystem it will be the directory name")
   override def name: String = {
@@ -95,6 +96,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "The total number of files in this project")
   def fileCount: Int = currentBackingObject.totalFileCount
 
@@ -410,6 +412,7 @@ class ProjectMutableView(
   def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
 
   @ExportFunction(readOnly = false,
+    exposeAsProperty = true,
     description = "Files in this archive")
   def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
@@ -491,6 +494,7 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context: ProjectContext = new ProjectContext(ctx)
 

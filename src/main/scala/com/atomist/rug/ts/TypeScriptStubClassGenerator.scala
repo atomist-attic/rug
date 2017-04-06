@@ -60,12 +60,13 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
       // Output private variables
       output ++= methods
-        .map(mi =>
-          s"${indent}private ${toFieldName(mi)}: ${mi.returnType};")
+        .map(mi => {
+          val visibility = if (mi.exposeAsProperty) "" else "private"
+          s"$indent$visibility ${toFieldName(mi)}: ${mi.returnType};"
+        })
         .mkString("\n")
       output ++= config.separator
 
-      // Emit methods from GraphNode We need a tag of "-dynamic" to allow dispatch in the proxy
       output ++= graphNodeImpl(name)
       output ++= config.separator
       output ++= methods.map(_.toString).mkString(config.separator)
@@ -98,53 +99,66 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                      name: String,
                                      params: Seq[MethodParam],
                                      returnType: String,
-                                     description: Option[String])
+                                     description: Option[String],
+                                     exposeAsProperty: Boolean)
     extends MethodInfo {
 
-    override def toString: String =
+    override def toString: String = {
       returnType match {
         case "void" =>
-          s"""$comment$indent$name(${params.mkString(", ")}): $returnType {}
+          s"""${comment("")}$indent$name(${params.mkString(", ")}): $returnType {}
              """.stripMargin
         case _ =>
           // It has a return. So let's create a field
-          val core =
-            s"""|$comment$indent$name(${params.mkString(", ")}): $returnType {
-                |$indent${indent}if (this.${toFieldName(this)} === undefined)
-                |$indent${indent}${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
-                |$indent${indent}${indent}return this.${toFieldName(this)};
+          val fieldName = toFieldName(this)
+
+          val core = if (exposeAsProperty) {
+            helper.indented(s"""${comment("")}get $name(): $returnType {
+              |${indent}return this.$fieldName;
+              |}
+            """.stripMargin, 1)
+          }
+          else {
+            s"""|${comment("")}$indent$name(${params.mkString(", ")}): $returnType {
+                |$indent${indent}if (this.$fieldName} === undefined)
+                |$indent$indent${indent}throw new Error(`Please use the relevant builder method to set property [$name] on stub [$typeName] before accessing it. It's probably called [with${upperize(name)}]`)
+                |$indent$indent${indent}return this.${toFieldName(this)};
                 |$indent}""".stripMargin
+          }
           val builderMethod =
             if (returnsArray) {
               // It's an array type. Create an "addX" method to add the value to the array,
               // initializing it if necessary
-              helper.indented(s"""
-                 |
-                 |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                 |add${upperize(name)}($name: $underlyingType): $typeName {
-                 |${indent}if (this.${toFieldName(this)} === undefined)
-                 |$indent${indent}this.${toFieldName(this)} = [];
-                 |${indent}this.${toFieldName(this)}.push($name);
-                 |${indent}return this;
-                 |}""".stripMargin, 1)
+              helper.indented(
+                s"""|
+                    |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
+                    |add${depluralize(upperize(name))}($name: $underlyingType): $typeName {
+                    |${indent}if (this.${fieldName} === undefined)
+                    |$indent${indent}this.${fieldName} = [];
+                    |${indent}this.${fieldName}.push($name);
+                    |${indent}return this;
+                    |}""".stripMargin, 1)
             }
             else {
               // It's a scalar. Create a "withX" method to set the value
-              helper.indented(s"""
-                 |
-                 |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
-                 |with${upperize(name)}($name: $returnType): $typeName {
-                 |${indent}this.${toFieldName(this)} = $name;
-                 |${indent}return this;
-                 |}""".stripMargin, 1)
+              helper.indented(
+                s"""|
+                    |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
+                    |with${upperize(name)}($name: $returnType): $typeName {
+                    |${indent}this.${fieldName} = $name;
+                    |${indent}return this;
+                    |}""".stripMargin, 1)
             }
           core + builderMethod
       }
-
+    }
   }
 
   override protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
-    ClassMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry), Some(op.description))
+    ClassMethodInfo(typeName, op.name, params,
+      helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
+      Some(op.description),
+      op.exposeAsProperty)
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

@@ -12,6 +12,8 @@ public @interface ExportFunction {
 
     boolean readOnly();
 
+    boolean exposeAsProperty() default false;
+
     String description();
 
     String example() default "";

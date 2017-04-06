@@ -37,13 +37,19 @@ class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: 
       throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
   }
 
-  @ExportFunction(readOnly = true, description = "Is this an interface?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this an interface?")
   def sourceFile: JavaSourceMutableView = parent
 
-  @ExportFunction(readOnly = true, description = "Is this an interface?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this an interface?")
   def isInterface: Boolean = currentBackingObject.isInterface
 
-  @ExportFunction(readOnly = true, description = "Is this abstract?")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Is this type abstract?")
   def isAbstract: Boolean =
     isInterface || ModifierSet.isAbstract(currentBackingObject.getModifiers)
 

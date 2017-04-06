@@ -103,7 +103,7 @@ object JavaScriptProjectOperationTest {
          |
          |    edit(project: Project, {content} : {content: string}) {
          |      project.describeChange(
-         |        `Edited Project now containing $${project.fileCount()} files: \n`
+         |        `Edited Project now containing $${project.fileCount} files: \n`
          |        );
          |    }
          |  }
@@ -177,7 +177,7 @@ object JavaScriptProjectOperationTest {
        |    ]
        |    edit(project: Project, {content} : {content: string}) {
        |      project.describeChange(
-       |        `Edited Project now containing $${project.fileCount()} files: \n`
+       |        `Edited Project now containing $${project.fileCount} files: \n`
        |      )
        |    }
        |  }
@@ -230,7 +230,8 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   it should "run simple editor and throw an exception for the bad pattern" in {
     assertThrows[InvalidRugParameterPatternException] {
-      invokeAndVerifySimpleEditor(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBrokenParameterPattern))
+      invokeAndVerifySimpleEditor(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
+        SimpleEditorWithBrokenParameterPattern))
     }
   }
 
@@ -246,7 +247,8 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   it should "run simple editor and throw an exception for default parameter value not matching pattern" in {
     assertThrows[InvalidRugParameterDefaultValue] {
-      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorWithInvalidDefaultParameterValuePattern))
+      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts",
+        SimpleEditorWithInvalidDefaultParameterValuePattern))
     }
   }
 

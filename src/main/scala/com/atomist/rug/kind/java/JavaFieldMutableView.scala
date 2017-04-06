@@ -20,7 +20,9 @@ class JavaFieldMutableView(originalBackingObject: FieldDeclaration, parent: Java
 
   override def childNodeNames: Set[String] = Set()
 
-  @ExportFunction(readOnly = true, description = "Type this is on")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "Type this is on")
   def `type`: JavaClassOrInterfaceMutableView = parent
 
   @ExportFunction(readOnly = true, description = "Return the name of the field")

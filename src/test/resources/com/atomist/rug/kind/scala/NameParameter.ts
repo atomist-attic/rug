@@ -12,7 +12,7 @@ class NameParameter implements ProjectEditor {
     description: string = "Name a parameter"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context().pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
 
       /*
       termApply:[ScalaMetaTreeBacked, -dynamic]

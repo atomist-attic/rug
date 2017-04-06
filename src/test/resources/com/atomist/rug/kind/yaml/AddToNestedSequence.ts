@@ -10,7 +10,7 @@ class AddToNestedSequence implements ProjectEditor {
 
     edit(project: Project) {
         let eng: PathExpressionEngine =
-            new YamlPathExpressionEngine(project.context().pathExpressionEngine())
+            new YamlPathExpressionEngine(project.context.pathExpressionEngine())
 
         let findNested = `/*[@name='x.yml']/YamlFile()/components/Amplifier/*[@name='future upgrades']`
 

@@ -14,7 +14,7 @@ class DockerUpgrade implements ProjectEditor {
     
     edit(project: Project) {
 
-        let eng: PathExpressionEngine = project.context().pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
 
             eng.with<DockerFile>(project, '//DockerFile()', d => {
                 d.addExpose("8081")

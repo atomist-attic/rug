@@ -1,16 +1,16 @@
 package com.atomist.util.lang
 
 /**
-  * Useful helper for generating any language
+  * Useful helper for generating any language.
   *
   * @param indent one indent: E.g. a number of spaces or tabs
   */
 class CodeGenerationHelper(indent: String = "    ") {
 
   /**
-    * Indent the block
+    * Indent the block.
     *
-    * @param block
+    * @param block the string to indent
     * @param n number of indents
     * @return a String
     */

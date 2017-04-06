@@ -10,7 +10,7 @@ import { JavaSource, JavaType, JavaField, Project } from '@atomist/rug/model/Cor
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaField>(c, '//JavaField()', f => {

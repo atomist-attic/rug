@@ -26,7 +26,7 @@ class ReturnsOneMessageCommandHandler implements HandleCommand {
 
     handle(ctx: HandlerContext): Plan {
         let result = new Plan()
-        if (ctx.teamId() == null)
+        if (ctx.teamId == null)
             throw new Error("Cannot get at team id")
 
         result.add(new Message("woot").withCorrelationId("dude"))
@@ -43,11 +43,11 @@ class RunsPathExpressionCommandHandler implements HandleCommand {
 
     handle(ctx: HandlerContext): Plan {
         let result = new Plan()
-        const eng = ctx.pathExpressionEngine()
+        let eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
 
-        eng.with<node.Person>(ctx.contextRoot(), findPerson, peep => {
+        eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             throw new Error(`Shouldn't have found a person but found ${peep}`)
         })
         result.add(new Message("woot").withCorrelationId("dude"))
@@ -65,10 +65,10 @@ class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
 
     handle(ctx: HandlerContext): Plan {
         let result = new Plan()
-        const eng = ctx.pathExpressionEngine()
+        const eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
-        eng.with<node.Person>(ctx.contextRoot(), findPerson, peep => {
+        eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
             result.add(new Message(peep.name()).withCorrelationId("dude"))
         })
@@ -84,10 +84,10 @@ class GoesOffGraph implements HandleCommand {
 
     handle(ctx: HandlerContext): Plan {
         let result = new Plan()
-        const eng = ctx.pathExpressionEngine()
+        const eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
-        eng.with<node.Person>(ctx.contextRoot(), findPerson, peep => {
+        eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             // Deliberate error should throw exception
             peep.gitHubId().id()
             // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)

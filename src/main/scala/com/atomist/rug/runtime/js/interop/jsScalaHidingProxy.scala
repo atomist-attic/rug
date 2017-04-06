@@ -2,24 +2,30 @@ package com.atomist.rug.runtime.js.interop
 
 import java.lang.reflect.{Method, Modifier}
 
+import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy.MethodValidator
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.AbstractJSObject
 import jdk.nashorn.internal.runtime.ScriptRuntime
+import org.springframework.util.ReflectionUtils
 
 import scala.collection.JavaConverters._
-
-import jsScalaHidingProxy.MethodValidator
+import scala.util.control.NonFatal
 
 /**
   * Use this if you want to expose a structure in JavaScript
   * with TypeScript-friendly arrays and null in place of Option.
   * Simply uses reflection.
   * Also, enables suppression of some methods.
+  * Exposes no-arg methods as properties but allows invocation with parameters.
+  * If you wish to expose a no-arg method as a function (because it has
+  * side effects etc) use
+  * @see ExposeAsFunction
   */
 class jsScalaHidingProxy private(
                                   val target: Any,
                                   methodsToHide: Set[String],
-                                  methodValidator: MethodValidator
+                                  methodValidator: MethodValidator,
+                                  returnNotToProxy: Any => Boolean
                                 ) extends AbstractJSObject {
 
   override def getDefaultValue(hint: Class[_]): AnyRef = {
@@ -29,7 +35,7 @@ class jsScalaHidingProxy private(
     else if (hint == null)
       null
     else
-      throw new UnsupportedOperationException("no conversion for " + hint)
+      throw new UnsupportedOperationException("No conversion for " + hint)
   }
 
   override def getMember(name: String): AnyRef = {
@@ -43,28 +49,55 @@ class jsScalaHidingProxy private(
         super.getMember(name)
       case _ =>
         try {
-          val m = target.getClass.getMethod(name)
-          if (methodValidator(m))
-            m.invoke(target)
-          else
-            ScriptRuntime.UNDEFINED
+          ReflectionUtils.getAllDeclaredMethods(target.getClass).find(_.getName == name) match {
+            case Some(m) if methodValidator(m) =>
+              if (m.getParameterCount == 0 && !m.isAnnotationPresent(classOf[ExposeAsFunction]))
+                m.invoke(target)
+              else {
+                new FunctionProxyToReflectiveInvocation(m)
+              }
+            case _ =>
+              ScriptRuntime.UNDEFINED
+          }
         }
         catch {
-          case _: NoSuchMethodException => ScriptRuntime.UNDEFINED
+          case _: NoSuchMethodException =>
+            ScriptRuntime.UNDEFINED
         }
     }
+
     //println(s"Raw result for $name=[$r]")
     (r match {
       case seq: Seq[_] => new JavaScriptArray(
-        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator))
+        seq.map(new jsScalaHidingProxy(_, methodsToHide, methodValidator, returnNotToProxy))
           .asJava)
       case opt: Option[AnyRef]@unchecked => opt.orNull
       case x => x
     }) match {
+      case null => null
+      case x if returnNotToProxy(x) => x
       case arr: JavaScriptArray[_] => arr
       case s: String => s
       case i: Integer => i
+      case fun: FunctionProxyToReflectiveInvocation => fun
       case x => jsScalaHidingProxy(x)
+    }
+  }
+
+  private class FunctionProxyToReflectiveInvocation(m: Method)
+    extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      try {
+        m.invoke(target, args: _*)
+      }
+      catch {
+        case iex: IllegalArgumentException =>
+          throw new IllegalArgumentException(s"Illegal ${args.size} arguments for ${target.getClass}.${m.getName}: [$args]", iex)
+        case NonFatal(t) => throw t
+      }
     }
   }
 
@@ -84,10 +117,15 @@ object jsScalaHidingProxy {
 
   def apply(target: Any,
             methodsToHide: Set[String] = DefaultMethodsToHide,
-            methodValidator: MethodValidator = publicMethodsNotOnObject): jsScalaHidingProxy = {
+            methodValidator: MethodValidator = publicMethodsNotOnObject,
+            returnNotToProxy: Any => Boolean = _ => false): jsScalaHidingProxy = {
     val r = target match {
       case null | None => null
-      case x => new jsScalaHidingProxy(x, methodsToHide, methodValidator)
+      case shp: jsScalaHidingProxy =>
+        // Don't double proxy
+        shp
+      case x =>
+        new jsScalaHidingProxy(x, methodsToHide, methodValidator, returnNotToProxy)
     }
     //println(s"Result for $target is $r")
     r

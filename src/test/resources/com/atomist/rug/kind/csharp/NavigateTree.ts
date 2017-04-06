@@ -11,7 +11,7 @@ class NavigateTree implements ProjectEditor {
     description: string = "Navigates tree but doesn't make changes"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine
 
       /*
         specific_catch_clause
@@ -21,11 +21,11 @@ class NavigateTree implements ProjectEditor {
 
       let count = 0
       eng.with<TextTreeNode>(project, catchClause, cc => {
-        //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo()}'`)
-        if (cc.formatInfo() == null) 
+        //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo}'`)
+        if (cc.formatInfo == null)
           throw new Error(`Format info was null for ${cc.nodeName()}`)
-        if (cc.formatInfo().start().lineNumberFrom1() < 5 || cc.formatInfo().start().lineNumberFrom1() > 100) 
-          throw new Error(`Format info values are wacky in ${cc.formatInfo()}`)
+        if (cc.formatInfo.start.lineNumberFrom1 < 5 || cc.formatInfo.start.lineNumberFrom1 > 100)
+          throw new Error(`Format info values are wacky in ${cc.formatInfo}`)
         let c2 = cc as any // We need to do this to get to the children using functions
         let classType = c2.class_type()
         if (classType.parent().value() != cc.value())

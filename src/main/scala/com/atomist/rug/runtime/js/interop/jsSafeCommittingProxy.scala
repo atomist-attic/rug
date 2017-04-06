@@ -1,5 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
+import java.util
+
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
@@ -164,15 +166,24 @@ class jsSafeCommittingProxy(
             case _ =>
           }
           // The returned type needs to be wrapped if it's a collection
-          import scala.collection.JavaConverters._
-          returned match {
-            case l: java.util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
-            case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s, typeRegistry))
-            case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
-            case r =>
-              // Be sure to proxy all the way down
-              wrapIfNecessary(Seq(r), typeRegistry).get(0)
-          }
+          wrapJVMReturn(returned, op)
+      }
+    }
+
+    import scala.collection.JavaConverters._
+
+    private def wrapJVMReturn(returned: AnyRef, op: TypeOperation): AnyRef = {
+      returned match {
+        case l: util.List[_] => new JavaScriptArray(wrapIfNecessary(l.asScala, typeRegistry))
+        case s: Seq[_] => new JavaScriptArray(wrapIfNecessary(s, typeRegistry))
+        case s: Set[_] => new JavaScriptArray(s.toSeq.asJava)
+        case r =>
+          // Be sure to proxy all the way down
+          val wrapped = wrapIfNecessary(Seq(r), typeRegistry).get(0)
+          if (op.exposeResultDirectlyToNashorn)
+            jsScalaHidingProxy(wrapped, returnNotToProxy = DoNotProxy)
+          else
+            wrapped
       }
     }
   }
@@ -212,6 +223,10 @@ class jsSafeCommittingProxy(
 object jsSafeCommittingProxy {
 
   import scala.collection.JavaConverters._
+
+  /** To not proxy in scala hiding proxy */
+  val DoNotProxy: Any => Boolean = r =>
+    r.isInstanceOf[jsPathExpressionEngine] || r.isInstanceOf[GraphNode]
 
   /**
     * Set of JavaScript magic methods that we should let Nashorn superclass handle.

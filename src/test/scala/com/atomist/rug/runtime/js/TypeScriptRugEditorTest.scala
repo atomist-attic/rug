@@ -230,7 +230,7 @@ object TypeScriptRugEditorTest {
         |
         |    edit(project: Project) {
         |
-        |      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+        |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         |      let m = eng.evaluate<Project,File>(project, new PomFile())
         |
         |      let t: string = `param=${this.packageName},filecount=${m.root().fileCount}`
@@ -264,7 +264,7 @@ object TypeScriptRugEditorTest {
       |
       |    edit(project: Project) {
       |
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
       |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
       |      let m: Match<Project,File> = eng.evaluate(project, pe)
       |
@@ -301,7 +301,7 @@ object TypeScriptRugEditorTest {
       |    packageName: string
       |
       |    edit(project: Project) {
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
       |      project.files.filter(t => false)
       |      var t: string = `param=${this.packageName},filecount=${project.fileCount}`
       |
@@ -339,7 +339,7 @@ object TypeScriptRugEditorTest {
       |
       |    edit(project: Project) {
       |
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
       |
       |      let t: string = `param=${this.packageName},filecount=${project.fileCount}`
       |

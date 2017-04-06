@@ -1,7 +1,7 @@
 package com.atomist.rug.kind.dynamic
 
-import com.atomist.tree.content.text._
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView, ViewSupport}
+import com.atomist.tree.content.text._
 import com.atomist.tree.{ContainerTreeNode, MutableTreeNode, TreeNode}
 
 /**
@@ -12,7 +12,7 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
                                                      originalBackingObject: O,
                                                      parent: MutableView[_])
   extends ViewSupport[O](originalBackingObject, parent)
-    with FormatInfoProvider {
+    with FormatInfoProviderSupport {
 
   override def nodeName: String = currentBackingObject.nodeName
 
@@ -63,7 +63,7 @@ class ScalarValueView(
                        parent: MutableView[_])
   extends ViewSupport[MutableTerminalTreeNode](originalBackingObject, parent)
     with MutableTreeNode
-    with FormatInfoProvider {
+    with FormatInfoProviderSupport {
 
   override def dirty: Boolean = originalBackingObject.dirty
 

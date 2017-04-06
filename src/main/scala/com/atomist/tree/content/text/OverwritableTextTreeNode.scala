@@ -156,7 +156,10 @@ class OverwritableTextTreeNode(name: String,
     }
   }
 
-  @ExportFunction(readOnly = true, description = "Return the format info for the start of this structure in the file or null if not available")
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    exposeResultDirectlyToNashorn = true,
+    description = "Return the format info for the start of this structure in the file or null if not available")
   final def formatInfo: FormatInfo =
     requireNotInvalidated(_parent.formatInfoFromHere(Seq(), this, value))
 

@@ -36,7 +36,7 @@ class SimpleBanana implements ProjectEditor {
 
     edit(project: Project) {
       let mg = new BananaType()
-      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
 
       let i = 0
       eng.with<Banana>(project, "//File()/banana()", n => {

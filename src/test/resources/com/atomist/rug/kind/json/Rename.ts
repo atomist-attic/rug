@@ -7,7 +7,7 @@ class Rename implements ProjectEditor {
     description: string = "Rename"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
       eng.with<Pair>(project, "/*[@name='package.json']/Json()/subdomain", d => {
         d.setValue ("absquatulate")
       })

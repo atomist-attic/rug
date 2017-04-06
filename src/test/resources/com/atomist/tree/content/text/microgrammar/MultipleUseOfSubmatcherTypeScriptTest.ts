@@ -10,7 +10,7 @@ class MultipleUseOfSubmatcherTypeScriptTest {
         let mg = new Microgrammar('things', 'I like $something, $something, $something, and $something.',
             { something: '§[a-z]+§'});
 
-        let eng : PathExpressionEngine = project.context.pathExpressionEngine().addType(mg);
+        let eng : PathExpressionEngine = project.context.pathExpressionEngine.addType(mg);
 
         eng.with<any>(project, `/File()[@name="targetFile"]/things()`, things => {
 

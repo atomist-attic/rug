@@ -7,7 +7,7 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 class UpdateProperty {
 
  edit(project: Project) {
-   project.context.pathExpressionEngine().with<Pom>(project, `/Pom()`, p => {
+   project.context.pathExpressionEngine.with<Pom>(project, `/Pom()`, p => {
      if (p.path == "pom.xml")
        p.setGroupId("mygroup")
    })

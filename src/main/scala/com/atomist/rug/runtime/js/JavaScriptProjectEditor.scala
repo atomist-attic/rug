@@ -74,7 +74,7 @@ class JavaScriptProjectEditor(
         case sle: SourceLanguageRuntimeException =>
           throw sle
         case NonFatal(t) =>
-          throw new RuntimeException(s"Editor '${name}' failed due to ${t.getMessage}", t)
+          throw new RuntimeException(s"Editor '$name' failed due to ${t.getMessage}", t)
       }
     }
     logger.debug(s"$name modifyInternal took ${elapsedTime}ms")

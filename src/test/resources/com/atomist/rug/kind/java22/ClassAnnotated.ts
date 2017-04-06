@@ -14,7 +14,7 @@ import { JavaSource, JavaType, Project, JavaMethod } from '@atomist/rug/model/Co
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 eng.with<JavaMethod>(c, '//JavaMethod()', m => {

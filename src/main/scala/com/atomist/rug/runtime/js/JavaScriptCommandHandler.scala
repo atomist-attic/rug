@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.rug.InvalidHandlerResultException
+import com.atomist.rug.runtime.js.interop.{jsPathExpressionEngine, jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.plans.MappedParameterSupport
 import com.atomist.rug.runtime.{AddressableRug, CommandHandler, RugSupport}
 import com.atomist.rug.spi.Handlers.Plan
@@ -103,7 +104,10 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
   override def handle(ctx: RugContext, params: ParameterValues): Option[Plan] = {
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
-    invokeMemberFunction(jsc, handler, "handle", ctx, validated) match {
+    // We need to proxy the context to allow for property access
+    invokeMemberFunction(jsc, handler, "handle",
+      jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy),
+      validated) match {
       case plan: ScriptObjectMirror =>
         ConstructPlan(plan)
       case other =>

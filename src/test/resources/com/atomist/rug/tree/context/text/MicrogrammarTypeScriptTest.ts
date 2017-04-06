@@ -12,7 +12,7 @@ class MicrogrammarTypeScriptTest {
     edit(project: Project) {
 
         let mg = new Microgrammar('oldObject', 'object $oldObjectName:§TheTestWillChangeThis§ {');
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
 
         eng.with<any>(project, "//File()/oldObject()/oldObjectName", n => {
             n.update("TheTestHasChangedThis")

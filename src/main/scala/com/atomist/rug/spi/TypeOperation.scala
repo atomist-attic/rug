@@ -26,7 +26,8 @@ case class TypeOperation(
                           returnType: ParameterOrReturnType,
                           definedOn: Class[_],
                           example: Option[String],
-                          exposeAsProperty: Boolean) {
+                          exposeAsProperty: Boolean,
+                          exposeResultDirectlyToNashorn: Boolean = false) {
 
   import TypeOperation._
 

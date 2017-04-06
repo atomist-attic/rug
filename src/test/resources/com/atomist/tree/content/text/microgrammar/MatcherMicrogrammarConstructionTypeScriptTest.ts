@@ -12,7 +12,7 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
         let mg = new Microgrammar("testMe", `I like $vegetable`,
             { vegetable: Or(["broccoli", "carrots"]) });
 
-        let eng = project.context.pathExpressionEngine().addType(mg);
+        let eng = project.context.pathExpressionEngine.addType(mg);
 
         eng.with<TextTreeNode>(project, "/targetFile/testMe()", e => {
             //console.log("Found " + e.value())

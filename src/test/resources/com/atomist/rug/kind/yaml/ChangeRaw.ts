@@ -10,7 +10,7 @@ class ChangeRaw implements ProjectEditor {
 
     edit(project: Project) {
         let eng: PathExpressionEngine =
-            new YamlPathExpressionEngine(project.context.pathExpressionEngine())
+            new YamlPathExpressionEngine(project.context.pathExpressionEngine)
 
         let findGroup = `/*[@name='x.yml']/YamlFile()/group/value`
 

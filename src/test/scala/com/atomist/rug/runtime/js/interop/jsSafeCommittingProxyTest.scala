@@ -1,7 +1,5 @@
 package com.atomist.rug.runtime.js.interop
 
-import java.util
-
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.FileMutableView
@@ -12,8 +10,6 @@ import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import com.atomist.util.lang.JavaScriptArray
 import jdk.nashorn.api.scripting.JSObject
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.util.parsing.json.JSONObject
 
 class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
 

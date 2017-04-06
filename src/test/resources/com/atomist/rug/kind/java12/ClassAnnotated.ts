@@ -10,7 +10,7 @@ import { JavaSource, JavaType, Project } from '@atomist/rug/model/Core'
 class ClassAnnotated implements EditProject {
 
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine()
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', c => {
                 c.addAnnotation("com.foo", "Baz")

@@ -14,7 +14,7 @@ class EveryPomEdit implements ProjectEditor {
 
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         
             let p = project
             eng.with<EveryPom>(p, '//EveryPom()', o => {

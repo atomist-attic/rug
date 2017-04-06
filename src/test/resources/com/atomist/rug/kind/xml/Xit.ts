@@ -11,7 +11,7 @@ class Xit implements ProjectEditor {
     
     edit(project: Project) {
     
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         
         eng.with<TextTreeNode>(project, `/*[@name='pom.xml']/XmlFile()/project/groupId`, n => {
             n.update("<groupId>not-atomist</groupId>")

@@ -24,7 +24,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project) {
       |      let mg = new Microgrammar('modelVersion', `<modelVersion>$version:§[a-zA-Z0-9_\\.]+§</modelVersion>`)
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/version()", n => {
       |        n.update('Foo bar')
@@ -49,7 +49,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    edit(project: Project) {
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
       |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg2)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value()) // did this ever work??
@@ -75,15 +75,15 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    edit(project: Project) {
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
       |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg2)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
       |
-      |        let fi = n.formatInfo()
+      |        let fi = n.formatInfo
       |        if (fi == null)
       |         throw new Error("FormatInfo was null")
-      |        if (fi.start().lineNumberFrom1() < 4)
+      |        if (fi.start.lineNumberFrom1 < 4)
       |         throw new Error(`I don't like format info value ${fi}`)
       |        n.update('Foo bar')
       |        //console.log(fi)
@@ -107,7 +107,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project) {
       |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
       |
       |      eng.with<TextTreeNode>(project, "//File()/method()/type()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
@@ -133,7 +133,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |    edit(project: Project) {
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
       |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg2)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {
       |        if (n.value() != "4.0.0") project.fail("" + n.value())
@@ -160,7 +160,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project) {
       |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
@@ -221,7 +221,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project) {
       |      let mg = new Microgrammar('method', `public $type:§[A-Za-z0-9]+§`)
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        n.setBanana("this is bananas")

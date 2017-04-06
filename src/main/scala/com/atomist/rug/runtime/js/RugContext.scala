@@ -37,14 +37,9 @@ trait RugContext {
 
 }
 
-object LocalRugContext extends RugContext {
+class BaseRugContext extends RugContext {
 
   var _treeMaterializer: TreeMaterializer = IdentityTreeMaterializer
-
-  def apply(trees: TreeMaterializer): LocalRugContext.type = {
-    this._treeMaterializer = trees
-    this
-  }
 
   override def typeRegistry: TypeRegistry = DefaultTypeRegistry
 
@@ -58,4 +53,12 @@ object LocalRugContext extends RugContext {
   override def teamId: String = "LOCAL_CONTEXT"
 
   override def contextRoot(): GraphNode = ???
+}
+
+object LocalRugContext extends BaseRugContext {
+
+  def apply(trees: TreeMaterializer): LocalRugContext.type = {
+    this._treeMaterializer = trees
+    this
+  }
 }

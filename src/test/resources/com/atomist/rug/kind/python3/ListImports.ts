@@ -10,7 +10,7 @@ class Imports implements ProjectEditor {
     description: string = "Uses single microgrammar"
 
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context.pathExpressionEngine()
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine
 
     eng.with<TextTreeNode>(project, "//File()/PythonFile()//import_from()//dotted_name", n => {
         //console.log(`The FROM value is '${n.value()}'`)

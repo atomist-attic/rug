@@ -13,7 +13,6 @@ class JavaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   it should "find catch(throwable) and validate format info" in {
     val exceptionToSearchFor = "ThePlaneHasFlownIntoTheMountain"
-
     val rr = reviewerInSideFile(this, "CatchThrowable.ts").review(ExceptionsSources,
       SimpleParameterValues(Map("exception" -> exceptionToSearchFor)))
     rr.comments.nonEmpty should be (true)

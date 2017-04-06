@@ -30,7 +30,7 @@ class MicrogrammarTypeScriptSampleEditor {
             { outputVar: lowercaseIdentifier,
               mg: lowercaseIdentifier,
               inputString: javaString } ); // for this to be useful I need to say javaExpression here
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine().addType(mg)
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
 
         eng.with<any>(project, `//File()/strictMatchCall()`, n => {
             n.update(`val ${n.outputVar().value()} = strictMatchAndFakeAFile(${n.mg().value()}, ${n.inputString().value()})`)

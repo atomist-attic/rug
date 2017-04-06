@@ -32,7 +32,8 @@ object ReflectiveFunctionExport {
             case "" => None
             case ex => Some(ex)
           },
-          exposeAsProperty = a.exposeAsProperty())
+          exposeAsProperty = a.exposeAsProperty(),
+          exposeResultDirectlyToNashorn = a.exposeResultDirectlyToNashorn())
       })
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {

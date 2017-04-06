@@ -11,7 +11,7 @@ class Replacer implements ProjectEditor {
     description: string = "Replacer"
     
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         
         eng.with<ReplacerClj>(project, '//ReplacerClj()', r => {
             r.replaceIt("com.atomist.sample", "com.atomist.wassom")

@@ -12,7 +12,7 @@ class AddOrReplaceDependency implements ProjectEditor {
     description: string = "AddOrReplaceDependency"
     
     edit(project: Project) {
-        let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         let p = project
             eng.with<Pom>(p, '//Pom()', o => {
                 o.addOrReplaceDependency("mygroup", "myartifact")

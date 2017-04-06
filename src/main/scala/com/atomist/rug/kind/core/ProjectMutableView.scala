@@ -495,6 +495,7 @@ class ProjectMutableView(
 
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
+    exposeResultDirectlyToNashorn = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
   def context: ProjectContext = new ProjectContext(ctx)
 

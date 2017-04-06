@@ -6,7 +6,7 @@ class PackageFinder implements ProjectEditor {
     name: string = "package.finder"
     description: string = "Find a spring boot package"
     edit(project: Project) {
-      let eng: PathExpressionEngine = project.context.pathExpressionEngine();
+      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
       let pe = new PathExpression<Project,SpringBootProject>("/SpringBootProject()")
       let p = eng.scalar(project, pe)
     }

@@ -23,7 +23,8 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
   private val logger: Logger = loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)
 
   override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
-    val messageLog: Seq[MessageDeliveryError] = plan.messages.flatMap { message =>
+    val allMessages = plan.lifecycle ++ plan.local
+    val messageLog: Seq[MessageDeliveryError] = allMessages.flatMap { message =>
       Try(messageDeliverer.deliver(message, callbackInput)) match {
         case ScalaFailure(error) =>
           val msg = s"Failed to deliver message ${message.toDisplay} - ${error.getMessage}"

@@ -1,4 +1,4 @@
-import {HandleResponse, HandleEvent, Respondable, HandleCommand, Respond, Instruction, Response, HandlerContext, Plan, Message, Execute} from '@atomist/rug/operations/Handlers'
+import {HandleResponse, HandleEvent, Respondable, HandleCommand, Respond, Instruction, Response, HandlerContext, Plan, Execute, DirectedMessage, UserAddress, ResponseMessage, ChannelAddress} from '@atomist/rug/operations/Handlers'
 import {TreeNode, Match, PathExpression} from '@atomist/rug//tree/PathExpression'
 import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
@@ -10,7 +10,7 @@ class SimpleHandler implements HandleEvent<Issue,Issue>{
   handle(match: Match<Issue,Issue>): Plan {
     let issue = match.root()
     let reopen = issue.reopen
-    reopen.onSuccess = {body: ""}
+    reopen.onSuccess = new ResponseMessage("blah")
     return new Plan().add(reopen)
   }
 }
@@ -25,8 +25,7 @@ class IssueReopenFailedResponder implements HandleResponse<Issue>{
 
   handle(response: Response<Issue>): Plan {
     let issue = response.body()
-    let msg = new Message(`Issue ${issue.number} was not reopened, trying again`)
-    msg.channelId = this.who
+    let msg = new DirectedMessage(`Issue ${issue.number} was not reopened, trying again`, new ChannelAddress(this.who))
     return new Plan()
       .add(msg)
   }
@@ -47,7 +46,7 @@ class LicenseAdder implements HandleCommand{
     result.add({instruction: {kind: "execute",
                     name: "HTTP",
                     parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}},
-                    onError: {body: "No kitties for you today!"}})
+                    onError: {body: "No kitties for you today!", kind: "directed", contentType: "text/plain"}})
     return result;
   }
 }
@@ -87,10 +86,10 @@ class IssueLister implements HandleCommand{
               }`
                  }
              }).join(",") + "]}"
-             return new Plan().add({body: attachments})
+             return new Plan().add({body: attachments, contentType: "text/plain", kind: "directed"})
          }
          else{
-            return new Plan().add({body: "You are not crushin' it right now!"})
+            return new Plan().add({body: "You are not crushin' it right now!", contentType: "text/plain", kind: "directed"})
          }
   }
 }
@@ -108,7 +107,7 @@ class KittieFetcher implements HandleCommand {
                 name: "HTTP",
                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}},
                 onSuccess: {kind: "respond", name: "Kitties"},
-                onError: {body: "No kitties for you today!"}})
+                onError: new ResponseMessage("No kitties for you today!")})
     return result;
   }
 }
@@ -117,7 +116,7 @@ class KittieFetcher implements HandleCommand {
 class KittiesResponder implements HandleResponse<Object> {
   handle(response: Response<Object>): Plan {
     let results = response.body as any;
-    return new Plan().add(new Message(results.urls.join(",")));
+    return new Plan().add(new DirectedMessage(results.urls.join(","), new UserAddress("woot")));
   }
 }
 

@@ -1,4 +1,4 @@
-import { HandleEvent, Plan, Message } from '@atomist/rug/operations/Handlers'
+import { HandleEvent, Plan } from '@atomist/rug/operations/Handlers'
 import { GraphNode, Match, PathExpression } from '@atomist/rug/tree/PathExpression'
 
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'

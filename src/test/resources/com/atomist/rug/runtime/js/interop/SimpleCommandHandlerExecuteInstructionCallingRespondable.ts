@@ -1,4 +1,4 @@
-import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
 import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")

@@ -13,41 +13,55 @@ object Handlers {
 
   /**
     * A plan in response to this event
-    * @param messages messages in the plan
+    * @param lifecycle messages in the plan
+    * @param local messages in the plan
     * @param instructions instructions in the plan
     * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
     *                     if one is available
     */
-  case class Plan(messages: Seq[Message],
+  case class Plan(lifecycle: Seq[LifecycleMessage],
+                  local: Seq[LocallyRenderedMessage],
                   instructions: Seq[Plannable],
                   nativeObject: Option[AnyRef] = None) extends Callback {
+
+    def messages: Seq[Message] = local ++ lifecycle
 
     override def toDisplay: String = {
       s"Plan[${(messages.map(_.toDisplay) ++ instructions.map(_.toDisplay)).mkString(", ")}]"
     }
   }
 
-  case class Message(body: MessageBody,
-                     instructions: Seq[Presentable],
-                     channelId: Option[String],
-                     correlationId: Option[String] = None,
-                     treeNode: Option[TreeNode] = None) extends Callback {
+  trait Message extends Callback {}
+
+  case class LifecycleMessage(
+                              node: TreeNode,
+                              actions: Seq[Presentable])
+    extends Callback
+      with Message {
 
     override def toDisplay: String = {
-      val channel = channelId match {
-        case Some(c) => s"$c: "
-        case None => ""
-      }
+      s"tags: ${node.nodeTags.mkString}, actions: ${actions.mkString}"
+    }
+  }
 
-      val correlation = correlationId match {
-        case Some(c) => s" ($c)"
-        case None => ""
-      }
-      val tree = treeNode match {
-        case Some(c) => s" regarding: ${c.nodeName}"
-        case None => ""
-      }
-      s"$channel'${body.value}'$tree$correlation"
+  /**
+    * Rendering/correlation is done in the handler
+    * Directed & Response messages become these
+    * @param body
+    * @param channelNames
+    * @param contentType
+    * @param usernames
+    */
+  case class LocallyRenderedMessage(
+                              body: String,
+                              contentType: String,
+                              channelNames: Seq[String],
+                              usernames: Seq[String])
+    extends Callback
+      with Message {
+
+    override def toDisplay: String = {
+      s"channels: ${channelNames.mkString}, usernames: ${usernames.mkString}, type: $contentType, body: $body"
     }
   }
 
@@ -120,20 +134,6 @@ object Handlers {
                              artifact: String) {
   }
 
-  sealed trait MessageBody {
-    def value: String
-  }
-
-  case class MessageText(text: String) extends MessageBody {
-    override def value: String = { text }
-  }
-
-  @deprecated(message = "No longer supported. Class Only retained for the runner",
-    since = "0.21.0")
-  case class JsonBody(json: String) extends MessageBody {
-    override def value: String = { json }
-  }
-
   case class Response(status: Status,
                       msg: Option[String] = None,
                       code: Option[Int] = None,
@@ -184,5 +184,4 @@ object Handlers {
       }
     }
   }
-
 }

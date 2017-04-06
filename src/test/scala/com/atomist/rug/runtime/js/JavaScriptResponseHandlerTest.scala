@@ -8,7 +8,8 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeMaterializer
 import org.scalatest.{FlatSpec, Matchers}
 
-class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
+class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
+
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
   val treeMaterializer: TreeMaterializer = TestTreeMaterializer
 
@@ -16,7 +17,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
   val kittyDesc = "Prints out kitty urls"
   val simpleResponseHandler =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-      |import {Respond, Instruction, Response, Plan, Message} from '@atomist/rug/operations/Handlers'
+      |import {Respond, Instruction, Response, Plan, DirectedMessage, UserAddress} from '@atomist/rug/operations/Handlers'
       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
       |import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
       |import {Project} from '@atomist/rug/model/Core'
@@ -32,7 +33,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
       |  handle(response: Response<Object>) {
       |    if(this.name != "his dudeness") throw new Error("Not on the rug, man!");
       |    let results = response.body as any;
-      |    return new Plan().add(new Message("https://www.youtube.com/watch?v=fNodQpGVVyg"));
+      |    return new Plan().add(new DirectedMessage("https://www.youtube.com/watch?v=fNodQpGVVyg", new UserAddress("bob")));
       |  }
       |}
       |
@@ -42,7 +43,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
 
   val simpleResponseHandlerWithJsonCoercion =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {Respond, Instruction, Response, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {Respond, Instruction, Response, Plan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, ParseJson, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
        |import {Project} from '@atomist/rug/model/Core'
@@ -51,7 +52,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers{
        |@ResponseHandler("$kitties", "$kittyDesc")
        |class KittiesResponder implements HandleResponse<any>{
        | handle(@ParseJson response: Response<any>) : Plan {
-       |    let results = response.body() as any;
+       |    let results = response.body as any;
        |
        |    if(results.yaml != "is more annoying than json") { throw new Error("Rats: " + results.yaml)}
        |    results.reasons.map(reason => reason.main.length)

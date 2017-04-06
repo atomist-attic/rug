@@ -20,7 +20,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
   val simpleCommandWithObjectInstructionParamAsJson =
     StringFileArtifact(DefaultAtomistConfig.handlersRoot + "/Handler.ts",
       """
-        |import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
         |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
         |
         |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
@@ -43,7 +43,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
   val simpleCommandHandlerWithNullAndUndefinedParameterValues =
     StringFileArtifact(DefaultAtomistConfig.handlersRoot + "/Handler.ts",
       s"""
-        |import {HandleCommand, HandleResponse, Message, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
         |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
         |
         |@CommandHandler("show-me-the-kitties","Search Youtube for kitty videos and post results to slack")

@@ -28,7 +28,7 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, LifecycleMessage, DirectedMessage, MessageMimetypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -39,12 +39,8 @@ object JavaScriptEventHandlerTest {
        |    let issue = event.root
        |    let plan = new Plan()
        |
-       |    const message = new Message("message1")
-       |    message.channelId = "w00t";
-       |    message.addAction({instruction: {
-       |                kind: "command",
-       |                name: {name: "n", group: "g", artifact: "a", version: "v"}}
-       |    })
+       |    const message = new DirectedMessage("message1", new ChannelAddress("w00t"))
+       |
        |    plan.add(message);
        |
        |    plan.add({ instruction: {
@@ -53,12 +49,13 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
        |               },
        |               onSuccess: {kind: "respond", name: "Kitties"},
-       |               onError: {body: "No kitties for you today!"}
+       |               onError: {body: "No kitties for you today!", kind: "directed", contentType: MessageMimetypes.PLAIN_TEXT, usernames: ["w00t"]}
        |             });
        |
        |    const anEmptyPlan = new Plan()
        |    const aPlansPlan = new Plan()
-       |    aPlansPlan.add(new Message("this is a plan that is in another plan"))
+       |    aPlansPlan.add(new DirectedMessage("this is a plan that is in another plan", new ChannelAddress("w00t")))
+       |
        |    aPlansPlan.add({ instruction: {
        |                       kind: "generate",
        |                       name: "createSomething"
@@ -72,7 +69,7 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {message: "planception"}
        |               },
        |               onSuccess: aPlansPlan,
-       |               onError: {body: "Error!"}
+       |               onError: {body: "error", kind: "directed", contentType: MessageMimetypes.PLAIN_TEXT, usernames: ["w00t"]}
        |             });
        |    return plan;
        |  }
@@ -82,7 +79,7 @@ object JavaScriptEventHandlerTest {
 
   val noPlanBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -99,7 +96,7 @@ object JavaScriptEventHandlerTest {
 
   val nodesWithTagBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -116,7 +113,7 @@ object JavaScriptEventHandlerTest {
 
   val eventHandlerWithTreeNode = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -125,7 +122,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |
        |  handle(event: Match<TreeNode, TreeNode>) {
-       |     return new Plan().add(new Message("woot").withCorrelationId("dude").withNode(event.root()));
+       |     return new Plan().add(new LifecycleMessage(event.root()));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -133,7 +130,7 @@ object JavaScriptEventHandlerTest {
 
   val eventHandlerWithEmptyMatches = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, Message} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -141,7 +138,7 @@ object JavaScriptEventHandlerTest {
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
-       |     return new Plan().add(new Message("woot").withCorrelationId("dude").withNode(event.root()));
+       |     return new Plan().add(new LifecycleMessage(event.root()));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -168,52 +165,19 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     handler.pathExpression should not be null
 
     val expectedMessages = Seq(
-      Message(MessageText("message1"),
-        Seq(
-          Presentable(
-            Instruction.Command(Instruction.Detail(
-              "n",
-              Some(MavenCoordinate("g", "a")),
-              Nil, None
-            )), None)
-        ),
-        Some("w00t"))
+      LocallyRenderedMessage("message1",
+        "text/plain",
+        Seq("w00t"),
+        Nil)
     )
     val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
 
-    val expectedInstructions =
-      Seq(
-        Respondable(Instruction.Execute(Instruction.Detail(
-          "HTTP",
-          None,
-          Seq(
-            SimpleParameterValue("method", "GET"),
-            SimpleParameterValue("url", "http://youtube.com?search=kitty&safe=true"),
-            SimpleParameterValue("as", "JSON")
-          ), None
-        )),
-          Some(Instruction.Respond(Instruction.Detail("Kitties", None, Nil, None))),
-          Some(Message(MessageText("No kitties for you today!"), Nil, None))
-        ),
-        Respondable(Instruction.Edit(Instruction.Detail(
-          "modifySomething",
-          None,
-          Seq(
-            SimpleParameterValue("message", "planception")
-          ), None
-        )),
-          Some(Plan(
-            Seq(Message(MessageText("this is a plan that is in another plan"), Nil, None)),
-            Seq(Respondable(Instruction.Generate(Instruction.Detail("createSomething", None, Nil, None)), Some(Plan(Nil, Nil)), None))
-          )),
-          Some(Message(MessageText("Error!"), Nil, None))
-        )
-      )
+
     actualPlan shouldBe defined
     assert(actualPlan.get.messages == expectedMessages)
 
     // TODO this will no longer match as Plan can now expose a native object
-    //assert(actualPlan.get.instructions == expectedInstructions)
+
   }
 
   it should "return the right failure if a rug is not found" in {
@@ -270,9 +234,8 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
     assert(actualPlan.nonEmpty)
     assert(actualPlan.get.messages.size === 1)
-    val msg = actualPlan.get.messages.head
-    assert(msg.treeNode.nonEmpty)
-    assert(msg.correlationId.nonEmpty)
+    val msg = actualPlan.get.lifecycle.head
+    assert(msg.node != null)
   }
 
   it should "it should not invoke the actual handler if there matches are empty" in {

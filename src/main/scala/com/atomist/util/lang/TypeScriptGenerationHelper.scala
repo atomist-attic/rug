@@ -48,7 +48,6 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
       case "com.atomist.rug.spi.EnumParameterOrReturnType" => "string[]"
-      case "status" => "Status"
       case x if x.endsWith("MutableView") && x.contains(".") =>
         val className = x.substring(x.lastIndexOf(".") + 1)
         // TODO why doesn't this work??

@@ -19,11 +19,15 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
 
   lazy val pomWithPluginManagement = JavaTypeUsageTest.NewSpringBootProject.findFile("pomWithPluginManagement.xml").get
 
+  lazy val pomWithProfile = JavaTypeUsageTest.NewSpringBootProject.findFile("pomWithProfile.xml").get
+
   var validPomNoParent: PomMutableView = _
 
   var validPomWithDependencyManagement: PomMutableView = _
 
   var validPomWithPluginManagement: PomMutableView = _
+
+  var validPomWithProfile: PomMutableView = _
 
   private def testConditions(uut: PomMutableView, response: String, expectedResponse: String, dirty: Boolean = false) = {
     response should be(expectedResponse)
@@ -35,6 +39,7 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     validPomNoParent = new PomMutableView(pomNoParent, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomWithDependencyManagement = new PomMutableView(pomWithDependencyManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
     validPomWithPluginManagement = new PomMutableView(pomWithPluginManagement, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
+    validPomWithProfile = new PomMutableView(pomWithProfile, new ProjectMutableView(EmptyArtifactSource(""), JavaTypeUsageTest.NewSpringBootProject))
 
   }
 
@@ -664,6 +669,35 @@ class PomMutableViewTest extends FlatSpec with Matchers with BeforeAndAfterEach 
     assert(validPomUut.dirty === true)
 
     validPomUut.isBuildPluginManagementPresent(groupId, artifactId) should be(true)
+  }
+
+  it should "be able to test that a profile is present when no profiles section" in {
+    val profileId = "docker"
+
+    validPomUut.isProfilePresent(profileId) should be(false)
+
+    assert(validPomUut.dirty === false)
+  }
+
+  it should "be able to test that a profule is present when it is" in {
+    val profileId = "docker"
+
+    validPomWithProfile.isProfilePresent(profileId) should be(true)
+
+    assert(validPomWithProfile.dirty === false)
+  }
+
+  it should "add a profile" in {
+    val profileId = "docker"
+    val profile = s"""<profile><id>$profileId</id><activation><activeByDefault>true</activeByDefault></activation></profile>"""
+
+    validPomUut.isProfilePresent(profileId) should be(false)
+
+    validPomUut.addOrReplaceProfile(profileId, profile)
+
+    assert(validPomUut.dirty === true)
+
+    validPomUut.isProfilePresent(profileId) should be(true)
   }
 }
 

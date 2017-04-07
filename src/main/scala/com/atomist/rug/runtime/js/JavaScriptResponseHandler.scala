@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.{Parameter, ParameterValues, ParameterizedSupport, Tag}
+import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.plans.{JsonResponseCoercer, NullResponseCoercer, ResponseCoercer}
 import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler, _}
@@ -54,7 +55,7 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     val coerced = responseCoercer.coerce(response)
-    invokeMemberFunction(jsc, handler, "handle", jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil)), validated) match {
+    invokeMemberFunction(jsc, handler, "handle", jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))), validated) match {
       case plan: ScriptObjectMirror => ConstructPlan(plan)
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }

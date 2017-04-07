@@ -1,4 +1,4 @@
-import { HandleCommand, Instruction, Response, HandlerContext, Plan, Message } from '@atomist/rug/operations/Handlers'
+import { HandleCommand, Instruction, Response, HandlerContext, Plan, ResponseMessage } from '@atomist/rug/operations/Handlers'
 import { CommandHandler, Secrets, Parameter, Tags, Intent } from '@atomist/rug/operations/Decorators'
 
 import * as node from "./Nodes"
@@ -29,7 +29,7 @@ class ReturnsOneMessageCommandHandler implements HandleCommand {
         if (ctx.teamId == null)
             throw new Error("Cannot get at team id")
 
-        result.add(new Message("woot").withCorrelationId("dude"))
+        result.add(new ResponseMessage("woot"))
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;
     }
@@ -50,7 +50,7 @@ class RunsPathExpressionCommandHandler implements HandleCommand {
         eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             throw new Error(`Shouldn't have found a person but found ${peep}`)
         })
-        result.add(new Message("woot").withCorrelationId("dude"))
+        result.add(new ResponseMessage("woot"))
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;
     }
@@ -70,7 +70,8 @@ class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
         const findPerson = "/Commit/Person()[@name='Ebony']"
         eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
-            result.add(new Message(peep.name()).withCorrelationId("dude"))
+            result.add(
+                new ResponseMessage(peep.name()))
         })
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;
@@ -91,7 +92,7 @@ class GoesOffGraph implements HandleCommand {
             // Deliberate error should throw exception
             peep.gitHubId().id()
             // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
-            result.add(new Message(peep.name()).withCorrelationId("dude"))
+            result.add(new ResponseMessage(peep.name()))
         })
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;

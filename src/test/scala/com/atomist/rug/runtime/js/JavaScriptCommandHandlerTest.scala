@@ -3,15 +3,16 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
-import com.atomist.rug.RugArchiveReader
+import com.atomist.rug.{RugArchiveReader, SimpleRugResolver}
 import com.atomist.rug.runtime.ResponseHandler
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.util.JsonUtils
 import org.scalatest.{FlatSpec, Matchers}
+import org.slf4j.LoggerFactory
+import org.slf4j.helpers.NOPLogger
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -52,17 +53,6 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerWithBadStubUse = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerWithBadStubUse.ts"))
 
-  "JavaScriptCommandHandler" should "allow us to return an empty message" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(
-      SimpleFileBasedArtifactSource(simpleCommandHandlerReturningEmptyMessage))
-    val rugs = RugArchiveReader(rugArchive)
-    val com = rugs.commandHandlers.head
-    val plan = com.handle(null,SimpleParameterValues.Empty).get
-    assert(plan.messages.size === 1)
-    assert(plan.messages.head.body.value == null)
-    assert(JsonUtils.toJson(plan.messages.head) == """{"body":{},"instructions":[]}""")
-  }
-
   it should "#488: get good error message from generated model stubs" in {
     val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithBadStubUse))
@@ -80,22 +70,26 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
   it should "be able to schedule an Execution and handle its response" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerExecuteInstructionCallingRespondable))
-    val rugs = RugArchiveReader(rugArchive)
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
     val com = rugs.commandHandlers.head
     val responseHandler = rugs.responseHandlers.head
 
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(responseHandler, null, null, new TestSecretResolver(null) {
-      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil}))
-
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] =  {
+        assert(secrets.size === 1)
+        assert(secrets.head.name === "very")
+        assert(secrets.head.path === "/secret/thingy")
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
     val results = Await.result(runner.run(plan, None), 10.seconds)
-    PlanUtils.drawEventLogs("testplan",results.log)
-    results.log.foreach {
-      case i: InstructionResult =>
-      case e :InstructionError => e.error.printStackTrace()
-      case i => println("Ga:" + i)
-    }
+    val single = PlanResultInterpreter.interpret(results)
+    assert(single.status == Status.Success)
+
   }
+
 
   it should "extract and run a command handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandler))
@@ -108,20 +102,12 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     handler.description should be(kittyDesc)
     handler.tags.size should be(3)
     handler.intent.size should be(2)
-    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("name", "el duderino")))
-  }
-
-  it should "parse messages containing Presentables" in {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithPresentable))
-    val finder = new JavaScriptCommandHandlerFinder()
-    val handlers = finder.find(new JavaScriptContext(rugArchive))
-    handlers.size should be(1)
-    val handler = handlers.head
-    handler.name should be(kitties)
-    handler.description should be(kittyDesc)
-    handler.tags.size should be(3)
-    handler.intent.size should be(2)
-    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("owner", "his dudeness"), SimpleParameterValue("name", "el duderino")))
+    val plano = handler.handle(LocalRugContext(TestTreeMaterializer), SimpleParameterValues(SimpleParameterValue("name", "el duderino")))
+    assert(plano.nonEmpty)
+    val plan = plano.get
+    assert(plan.lifecycle.isEmpty)
+    assert(plan.local.size == 2)
+    assert(plan.instructions.size == 2)
   }
 
   it should "throw exceptions if required parameters are not set" in {
@@ -156,12 +142,6 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(fn, null, null, new TestSecretResolver(handlers.head) {
-      /**
-        * Resolve a bunch of secrets at once
-        *
-        * @param secrets set of Secrets
-        * @return a mapping from secret name (could be same as path) to actual secret value
-        */
       override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
         assert(secrets.size === 1)
         assert(secrets.head.name === "very")

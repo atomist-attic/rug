@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 marked with `@ExportFunction` when the new `exposeAsProperty` flag is true.
 - **BREAKING** All Generated TypeScript Cortex types use properties rather than functions for 
 all navigation
+- **BREAKING** Use specific message types in Plans for the different scenarios (directed, lifecycle and response) as 
+  per https://github.com/atomist/rug/issues/501
 
 ## [0.24.0] - 2017-04-04
 

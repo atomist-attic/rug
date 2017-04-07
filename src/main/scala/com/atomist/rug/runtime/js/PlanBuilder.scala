@@ -41,49 +41,57 @@ class PlanBuilder {
           constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
         }
     }
-    Plan(messages, instructions, nativeObject = Some(jsPlan))
+
+    val lifecycle = messages.collect{case o: LifecycleMessage => o}
+    val local = messages.collect{case o: LocallyRenderedMessage => o}
+
+    Plan(lifecycle, local, instructions, nativeObject = Some(jsPlan))
   }
 
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {
-    val instructions = jsMessage.getMember("instructions") match {
-      case _: Undefined => Nil
-      case jsInstructions: ScriptObjectMirror =>
-        jsInstructions.values().toArray.toList.map { presentable =>
-          constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+
+    jsMessage.getMember("kind") match {
+      case "response" | "directed" =>
+        val messageBody = jsMessage.getMember("body") match {
+          case json: ScriptObjectMirror =>
+            throw new UnsupportedOperationException("Message body must be a string")
+          case text: String => text
+          case _ =>
+            throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")}")
         }
-    }
-    val messageBody = jsMessage.getMember("body") match {
-      case json: ScriptObjectMirror =>
-        throw new UnsupportedOperationException("Message body must now be a string")
-      case text: String =>
-        MessageText(text)
-      case ScriptRuntime.UNDEFINED => MessageText(null)
-      case _ =>
-        throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")}")
-    }
+        val contentType = jsMessage.getMember("contentType") match {
+          case c: String => c
+          case _ => throw new InvalidHandlerResultException(s"Message must have a `contentType`")
+        }
+        val usernames = jsMessage.getMember("usernames") match {
+          case _: Undefined => Nil
+          case usernames: ScriptObjectMirror =>
+            usernames.values().toArray.toSeq.asInstanceOf[Seq[String]]
+        }
+        val channelNames = jsMessage.getMember("channelNames") match {
+          case _: Undefined => Nil
+          case channelNames: ScriptObjectMirror =>
+            channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]
+        }
+        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames)
 
-    val channelId = jsMessage.getMember("channelId") match {
-      case c: String => Some(c)
-      case _ => None
-    }
+      case "lifecycle"=>
+        val instructions = jsMessage.getMember("instructions") match {
+          case _: Undefined => Nil
+          case jsInstructions: ScriptObjectMirror =>
+            jsInstructions.values().toArray.toList.map { presentable =>
+              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+            }
+        }
 
-    val correlationId = jsMessage.getMember("correlationId") match {
-      case c: String => Some(c)
-      case _ => None
-    }
+        val treeNode = jsMessage.getMember("node") match {
+          case t: TreeNode => t
+          case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a GraphNode")
+        }
+        LifecycleMessage(treeNode,instructions)
 
-    val treeNode = jsMessage.getMember("node") match {
-      case t: TreeNode => Some(t)
-      case _ => None
+      case _: Undefined => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }
-
-    Message(
-      messageBody,
-      instructions,
-      channelId,
-      correlationId,
-      treeNode
-    )
   }
 
   def constructPresentable(jsPresentable: ScriptObjectMirror): Presentable = {
@@ -168,17 +176,16 @@ class PlanBuilder {
     callback match {
       case u: Undefined => None
       case jsOnSuccess: ScriptObjectMirror =>
-        val callback = if (jsOnSuccess.hasMember("body")) {
-          constructMessage(jsOnSuccess)
-        }
-        else if (jsOnSuccess.hasMember("kind")) {
-          Respond(constructInstructionDetail(jsOnSuccess))
-        }
-        else if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
-          constructPlan(jsOnSuccess)
-        }
-        else {
-          throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
+        val callback = jsOnSuccess.getMember("kind") match {
+          case "response" | "lifecycle" | "directed" => constructMessage(jsOnSuccess)
+          case _: String => Respond(constructInstructionDetail(jsOnSuccess))
+          case _ =>
+            if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
+            constructPlan(jsOnSuccess)
+          }
+          else {
+            throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
+          }
         }
         Option(callback)
     }

@@ -36,7 +36,7 @@ object PlanUtils {
   }
 
   private def messageToTree(m: Message) = {
-    val messageString = s"Message: ${m.body}${m.channelId.map(" to " + _).getOrElse("")}, like ${m.instructions}"
+    val messageString = s"Message: ${m.toDisplay}"
     BabyTree(messageString)
   }
   private def callbackToTree(name: String, c: Callback): BabyTree = BabyTree(name, Seq(c match {
@@ -59,9 +59,10 @@ object PlanUtils {
       }
     }
 
+    val allMessages = plan.local ++ plan.lifecycle
     BabyTree("Plan",
       plan.instructions.sortBy(_.toString).map(respondableToTree) ++
-        plan.messages.sortBy(_.toString).map(messageToTree))
+        allMessages.sortBy(_.toDisplay).map(messageToTree))
   }
 
   private def awaitAndTreeLogEvents(name: String, events: Seq[PlanLogEvent]): BabyTree = {

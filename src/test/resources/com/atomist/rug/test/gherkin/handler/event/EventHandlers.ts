@@ -1,4 +1,4 @@
-import { HandleEvent, Plan, Message } from '@atomist/rug/operations/Handlers'
+import { HandleEvent, Plan, DirectedMessage, ChannelAddress } from '@atomist/rug/operations/Handlers'
 import { GraphNode, Match, PathExpression } from '@atomist/rug/tree/PathExpression'
 
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
@@ -65,7 +65,8 @@ export const handler3 = new ReturnsEmptyPlanEventHandler3();
 class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
-        return new Plan().add(new Message("Hello there!").withChannelId("test-channel"))
+        return new Plan().add(new DirectedMessage("Hello there!",
+        new ChannelAddress("test-channel")))
     }
 }
 export const simpleMessageHandler = new ReturnsAMessage();
@@ -79,7 +80,8 @@ class AngryHandler implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
         if (23 > 0) throw new Error("I hate y'all")
-        return new Plan().add(new Message("Hello there!"))
+        return new Plan().add(new DirectedMessage("Hello there!",
+        new ChannelAddress("test-channel")))
     }
 }
 export const angry = new AngryHandler();

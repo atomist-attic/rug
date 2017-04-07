@@ -91,8 +91,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
       if (exposeAsProperty) {
         builder ++= s"$indent  * @property {$returnType} $name\n"
-      }
-      else {
+      } else {
         if (params.nonEmpty) {
           for (p <- params)
             yield builder ++= s"$indent  * ${p.comment}\n"

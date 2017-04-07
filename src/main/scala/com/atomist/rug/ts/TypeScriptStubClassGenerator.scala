@@ -1,8 +1,7 @@
 package com.atomist.rug.ts
 
-import com.atomist.param.{ParameterValues, Tag}
+import com.atomist.param.Tag
 import com.atomist.rug.spi._
-import com.atomist.source.{FileArtifact, StringFileArtifact}
 import com.atomist.util.lang.JavaHelpers._
 import org.apache.commons.lang3.StringUtils
 
@@ -138,7 +137,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                     |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
                     |add${upperize(name)}(...$name: $underlyingType[]): $typeName {
                     |${indent}if (this.$fieldName === undefined)
-                    |$indent${indent}this.${fieldName} = [];
+                    |$indent${indent}this.$fieldName = [];
                     |${indent}this.$fieldName = this.$fieldName.concat($name);
                     |${indent}return this;
                     |}""".stripMargin, 1)
@@ -149,7 +148,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                 s"""|
                     |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
                     |with${upperize(name)}($name: $returnType): $typeName {
-                    |${indent}this.${fieldName} = $name;
+                    |${indent}this.$fieldName = $name;
                     |${indent}return this;
                     |}""".stripMargin, 1)
             }

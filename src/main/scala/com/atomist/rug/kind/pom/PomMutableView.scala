@@ -136,6 +136,10 @@ trait PomMutableViewNonMutatingFunctions extends BuildViewNonMutatingFunctions {
                                               artifactId: String): Boolean =
     contains(s"$dependencyManagementBaseXPath/$dependencies/$dependency/$mavenArtifactId [text() = '$artifactId' and ../$mavenGroupId [text() = '$groupId']]")
 
+  @ExportFunction(readOnly = true, description = "")
+  def isProfilePresent(@ExportFunctionParameterDescription(name = "id", description = "") id: String): Boolean =
+    contains(s"$projectBaseXPath/profiles/profile/id [text() = '$id']")
+
 }
 
 trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
@@ -391,6 +395,26 @@ trait PomMutableViewMutatingFunctions extends BuildViewMutatingFunctions {
       s"/$dependencyManagementBaseXPath/$dependencies/$dependency/$mavenArtifactId [text()='$artifactId' and ../$mavenGroupId [text() = '$groupId']]/..",
       dependency,
       dependencyContent)
+  }
+
+  @ExportFunction(readOnly = false, description = "Adds or replaces a profile")
+  def addOrReplaceProfile(@ExportFunctionParameterDescription(name = "id",
+    description = "The value of the profile's id") id: String,
+                          @ExportFunctionParameterDescription(name = "profileContent",
+                            description = "The XML content for the profile") profileContent: String): Unit = {
+    addProfilesSectionIfNotPresent()
+
+    addOrReplaceNode(s"$projectBaseXPath/profiles",
+      s"/$projectBaseXPath/profiles/profile/id [text()='$id']/..",
+      "profile",
+      profileContent)
+  }
+
+  private def addProfilesSectionIfNotPresent(): Unit = {
+    addNodeIfNotPresent(projectBaseXPath,
+      s"$projectBaseXPath/profiles",
+      "profiles",
+      "<profiles><profile></profile></profiles>")
   }
 
   private def addBuildPluginManagementSectionIfNotPresent(): Unit = {

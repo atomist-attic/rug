@@ -98,7 +98,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
   it ("should not pass through null/undefined parameters or JSON serialize them") {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullAndUndefinedParameterValues))
     val coord = Coordinate("com.atomist.test","test-rugs", "1.2.3")
-    val resolver = new RugResolver(Dependency(rugArchive, Some(coord)))
+    val resolver = new ArchiveRugResolver(Dependency(rugArchive, Some(coord)))
     val com = resolver.resolvedDependencies.rugs.commandHandlers.head
     val plan = com.handle(null,SimpleParameterValues.Empty).get
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(com, null, null, new TestSecretResolver(com) {

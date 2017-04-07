@@ -56,7 +56,7 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     validateParameters(validated)
     val coerced = responseCoercer.coerce(response)
     invokeMemberFunction(jsc, handler, "handle", jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))), validated) match {
-      case plan: ScriptObjectMirror => ConstructPlan(plan)
+      case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }
   }

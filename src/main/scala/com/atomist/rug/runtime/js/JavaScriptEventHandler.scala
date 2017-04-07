@@ -68,7 +68,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           wrap(matches, ctx.typeRegistry),
           teamId = e.teamId)
         invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
-          case plan: ScriptObjectMirror => ConstructPlan(plan)
+          case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
         }
       case Right(matches) if matches.isEmpty => None

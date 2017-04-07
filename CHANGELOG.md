@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.24.0...HEAD
 
-## Changed
+### Changed
 
 -   **BREAKING** Generated TypeScript project model types use
     properties rather than functions for no-arg operations marked with
@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Improve release documentation
 
 [501]: https://github.com/atomist/rug/issues/501
+
+### Removed
+
+-   **BREAKING** The Stubs.ts file is no longer generated, use the
+    Types.ts instead
 
 ## [0.24.0] - 2017-04-04
 

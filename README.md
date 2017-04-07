@@ -124,7 +124,7 @@ named `target/typedoc`.
 Releasing Rug involves releasing the JVM artifacts to a Maven
 repository, the TypeScript module to NPM, and the documentation to
 GitHub pages for this repository, available at
-http://apidocs.atomist.com/.  Releasing Rug can be a multi-stepped
+http://apidocs.atomist.com/ .  Releasing Rug can be a multi-stepped
 process, depending on the changes that have been made.
 
 If there are no changes to the TypeScript API, to create a release

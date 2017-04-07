@@ -195,28 +195,4 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
 
     generatedTypes
   }
-
-  override protected def emitCombinedTypes(poa: ParameterValues): Option[FileArtifact] = {
-    val alreadyGenerated = ListBuffer.empty[GeneratedType]
-    val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
-    val pathParam = poa.stringParamValue(AbstractTypeScriptGenerator.OutputPathParam)
-    val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
-    val output = new StringBuilder(config.licenseHeader)
-    output ++= config.separator
-    output ++= TypeGenerationConfig.TestStubImports
-
-    for {
-      t <- generatedTypes
-      if !alreadyGenerated.contains(t)
-    } {
-      output ++= t.specificImports
-      output ++= s"export { ${t.name} };"
-      output ++= config.separator
-      output ++= t.toString
-      output ++= config.separator
-      alreadyGenerated += t
-    }
-
-    Some(StringFileArtifact(s"${path}Stubs.ts", output.toString()))
-  }
 }

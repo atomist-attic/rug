@@ -90,13 +90,18 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       builder ++= s"$indent  * ${description.getOrElse("")}\n"
       builder ++= s"$indent  * \n"
 
-      if (params.nonEmpty) {
-        for (p <- params)
-          yield builder ++= s"$indent  * ${p.comment}\n"
+      if (exposeAsProperty) {
+        builder ++= s"$indent  * @property {$returnType} $name\n"
       }
+      else {
+        if (params.nonEmpty) {
+          for (p <- params)
+            yield builder ++= s"$indent  * ${p.comment}\n"
+        }
 
-      if (returnType != "void")
-        builder ++= s"$indent  * @returns {$returnType}\n"
+        if (returnType != "void")
+          builder ++= s"$indent  * @returns {$returnType}\n"
+      }
 
       builder ++= s"$indent  */\n"
       builder.toString
@@ -248,9 +253,10 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"""import { ${t.name} } from "./${t.name}";""").mkString("\n")
+    output ++= alreadyGenerated.map(t =>
+      s"""import { ${t.name} } from "./${t.name}";""").mkString("\n")
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("\n")
+    output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())
 
     tsClassOrInterfaces

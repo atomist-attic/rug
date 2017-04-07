@@ -9,17 +9,38 @@ import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
 import org.scalatest.Matchers
 
+import scala.util.matching.Regex
+
 object RugArchiveReader {
-  def apply(as: ArtifactSource) : Rugs = SimpleRugResolver(as).resolvedDependencies.rugs
+  def apply(as: ArtifactSource): Rugs = SimpleRugResolver(as).resolvedDependencies.rugs
 }
 
 object SimpleRugResolver {
-  def apply(as: ArtifactSource) : RugResolver = new RugResolver(Dependency(as))
+  def apply(as: ArtifactSource): RugResolver = new RugResolver(Dependency(as))
 }
 
 object TestUtils extends Matchers {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
+
+  /**
+    * Find a bad pattern in the given ArtifactSource and fail with a
+    * list and then a dump of the files containing it
+    */
+  def failOnFindingPattern(as: ArtifactSource,
+                           badThingName: String,
+                           regex: Regex,
+                           fileFilter: FileArtifact => Boolean = _ => true): Unit = {
+    val badFiles = as.allFiles.filter(fileFilter) collect {
+      case f if regex.findFirstIn(f.content).isDefined =>
+        //println(regex.findAllIn(f.content).mkString("\n"))
+        f
+    }
+    if (badFiles.nonEmpty) {
+      fail(s"$badThingName:\n\n" + badFiles.map(_.path).mkString("\n")
+        + "\n" + badFiles.map(f => f.path + "\n" + f.content).mkString("\n"))
+    }
+  }
 
   def doModification(program: ArtifactSource,
                      as: ArtifactSource,
@@ -100,7 +121,7 @@ object TestUtils extends Matchers {
     requiredFileInPackage(this, name).content
 
   def rugsInSideFile(caller: AnyRef, names: String*): Rugs = {
-    val as = rugsInSideFileAsArtifactSource(caller, names:_*)
+    val as = rugsInSideFileAsArtifactSource(caller, names: _*)
     RugArchiveReader(as)
   }
 

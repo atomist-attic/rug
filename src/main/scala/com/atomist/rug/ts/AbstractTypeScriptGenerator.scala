@@ -139,6 +139,20 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def apply(name: String, paramType: String, description: Option[String]) = new MethodParam(name, paramType, description)
   }
 
+  private case class EnumType(name: String, legalValues: Seq[String]) {
+
+    override def toString: String = {
+      val builder = new StringBuilder
+      builder ++= s"enum $name {\n"
+      legalValues.foreach(lv => builder ++= s"$indent$lv,\n")
+      builder ++= "}"
+      builder ++= config.separator
+      builder ++= s"export { $name };"
+      builder ++= config.separator
+      builder.toString
+    }
+  }
+
   override def parameters: Seq[Parameter] = Seq(Parameter(outputPathParam, ".*")
     .setRequired(false)
     .setDisplayName("Path for created doc")
@@ -207,25 +221,24 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     }).toSeq.sortBy(_.name)
 
   /**
-    * Create enum types that will be referenced in other classes
+    * Create enum types that will be referenced in other classes.
     */
-  private def emitEnums(): Unit = {
+  private def emitEnums(): String = {
     val returnedTypes: Seq[ParameterOrReturnType] =
       typeRegistry.types.flatMap(t => t.allOperations.map(_.returnType))
     val parameterTypes: Seq[ParameterOrReturnType] =
       typeRegistry.types.flatMap(t => t.allOperations.flatMap(_.parameters.map(_.parameterType)))
-    val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct
+    val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct // ++ Seq(EnumParameterOrReturnType("Status", Seq("broken", "passed")))
+
+    val output = new StringBuilder
     allParameterOrReturnedTypes.foreach {
-      case et: EnumParameterOrReturnType =>
-        println(et)
-        ???
-      case _ =>
-        // We don't need to emit anything
+      case et: EnumParameterOrReturnType => output ++= EnumType(et.name, et.legalValues).toString
+      case _ => "" // We don't need to emit anything
     }
+    output.toString
   }
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
-    emitEnums()
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
     val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
@@ -244,6 +257,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.separator
       output ++= s"export { ${t.name} };"
       output ++= config.separator
+      output ++= emitEnums()
       output ++= t.toString
       output ++= config.separator
       tsClassOrInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())
@@ -252,9 +266,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-    output ++= alreadyGenerated
-      .map(t => s"""import { ${t.name} } from "./${t.name}";""")
-      .mkString("\n")
+    output ++= alreadyGenerated.map(t => s"""import { ${t.name} } from "./${t.name}";""").mkString("\n")
     output ++= config.separator
     output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("\n")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())

@@ -38,7 +38,8 @@ trait ParameterizedSupport
     val missingParameters = findMissingParameters(poa)
     if (missingParameters.nonEmpty)
       throw new MissingParametersException(
-        s"Missing parameters: [${missingParameters.map(_.getName).mkString(",")}]: $poa"
+        s"Missing parameters: [${missingParameters.map(_.getName).mkString(",")}]: $poa",
+        missingParameters
       )
 
     def validEmptyOptionalValue(v: Any) = v == null || "".equals(v)
@@ -55,7 +56,8 @@ trait ParameterizedSupport
 
     if (validationErrors.nonEmpty)
       throw new IllformedParametersException(s"Invalid parameters: [[${validationErrors.map(p => p.getName + "=" + p.getValue).mkString(",")}]" +
-        s": $poa")
+        s": $poa",
+        validationErrors)
   }
   /**
     * Convenience method subclasses can use to identify any missing parameters.

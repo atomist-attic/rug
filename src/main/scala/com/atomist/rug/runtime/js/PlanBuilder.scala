@@ -1,5 +1,6 @@
 package com.atomist.rug.runtime.js
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
@@ -84,11 +85,11 @@ class PlanBuilder {
             }
         }
 
-        val treeNode = jsMessage.getMember("node") match {
-          case t: TreeNode => t
+        val node = jsMessage.getMember("node") match {
+          case t: GraphNode => t
           case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a GraphNode")
         }
-        LifecycleMessage(treeNode,instructions)
+        LifecycleMessage(node,instructions)
 
       case _: Undefined => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }

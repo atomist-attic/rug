@@ -1,5 +1,6 @@
 package com.atomist.rug.spi
 
+import com.atomist.graph.GraphNode
 import com.atomist.param.ParameterValue
 import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
 import com.atomist.tree.TreeNode
@@ -34,8 +35,8 @@ object Handlers {
   trait Message extends Callback {}
 
   case class LifecycleMessage(
-                              node: TreeNode,
-                              actions: Seq[Presentable])
+                               node: GraphNode,
+                               actions: Seq[Presentable])
     extends Callback
       with Message {
 

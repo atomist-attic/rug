@@ -6,10 +6,11 @@ import {Repo} from "@atomist/rug/cortex/stub/Repo"
 Given("a sleepy country", f => {
 })
 When("a visionary leader enters", world => {
-   world.registerHandler("ReturnsEmptyPlanEventHandlerGen4")
+   world.registerHandler("ReturnsEmptyPlanEventHandlerGen1")
    world.sendEvent(
        new Build()
-        .withOn(
+        .withStatus("passed")
+        .withRepo(
             new Repo().withOwner("atomist")
         )
    )

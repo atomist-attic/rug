@@ -18,7 +18,7 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
     assert(types.nonEmpty)
   }
 
-  it should "handle enums" in pendingUntilFixed {
+  it should "handle enums" in {
     val enumJson =
       Utils.withCloseable(getClass.getResourceAsStream("/com/atomist/rug/ts/enum_test.json"))(IOUtils.toString(_, "UTF-8"))
     val types = typeGen.extract(enumJson)

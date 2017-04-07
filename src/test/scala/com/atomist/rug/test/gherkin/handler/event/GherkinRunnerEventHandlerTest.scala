@@ -115,6 +115,9 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   it should "use generated model"
     useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
 
+  it should "use generated model with enum/narrowed type"
+  useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
+
 
   it should "#487: use generated model with arrays" in
     useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithArrays.ts")

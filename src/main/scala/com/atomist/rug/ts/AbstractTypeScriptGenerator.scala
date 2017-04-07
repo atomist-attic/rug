@@ -220,23 +220,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       case (_, l) => l.head
     }).toSeq.sortBy(_.name)
 
-  /**
-    * Create enum types that will be referenced in other classes.
-    */
-  private def emitEnums(): String = {
-    val returnedTypes: Seq[ParameterOrReturnType] =
-      typeRegistry.types.flatMap(t => t.allOperations.map(_.returnType))
-    val parameterTypes: Seq[ParameterOrReturnType] =
-      typeRegistry.types.flatMap(t => t.allOperations.flatMap(_.parameters.map(_.parameterType)))
-    val allParameterOrReturnedTypes = (returnedTypes ++ parameterTypes).distinct // ++ Seq(EnumParameterOrReturnType("Status", Seq("broken", "passed")))
-
-    val output = new StringBuilder
-    allParameterOrReturnedTypes.foreach {
-      case et: EnumParameterOrReturnType => output ++= EnumType(et.name, et.legalValues).toString
-      case _ => "" // We don't need to emit anything
-    }
-    output.toString
-  }
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
@@ -257,7 +240,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       output ++= config.separator
       output ++= s"export { ${t.name} };"
       output ++= config.separator
-      output ++= emitEnums()
       output ++= t.toString
       output ++= config.separator
       tsClassOrInterfaces += StringFileArtifact(s"$path${t.name}.ts", output.toString())

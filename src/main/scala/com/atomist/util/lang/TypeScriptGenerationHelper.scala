@@ -47,7 +47,10 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty
       case `pathExpressionEngineClassName` => "PathExpressionEngine"
       case "class com.atomist.tree.content.text.FormatInfo" => "FormatInfo"
-      case _ if jt.isInstanceOf[EnumParameterOrReturnType] => "string[]"
+      case _ if jt.isInstanceOf[EnumParameterOrReturnType] =>
+        jt.asInstanceOf[EnumParameterOrReturnType].legalValues
+          .map("\"" + _ + "\"")
+          .mkString(" | ")
       case x if x.endsWith("MutableView") && x.contains(".") =>
         val className = x.substring(x.lastIndexOf(".") + 1)
         val cname = className.stripSuffix("MutableView")

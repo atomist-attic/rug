@@ -89,7 +89,12 @@ class PlanBuilder {
           case t: GraphNode => t
           case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a GraphNode")
         }
-        LifecycleMessage(node,instructions)
+
+        val id = jsMessage.getMember("lifecycleId") match {
+          case s: String => s
+          case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a lifecycleId")
+        }
+        LifecycleMessage(node,instructions,id)
 
       case _: Undefined => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }

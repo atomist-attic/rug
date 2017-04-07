@@ -11,10 +11,15 @@ import scala.collection.mutable.ListBuffer
 
 object TypeScriptInterfaceGenerator extends App {
 
-  val target = if (args.length < 1) "target/Core.ts" else args.head
+  import AbstractTypeScriptGenerator._
+
+  val DefaultRugDir = "rug"
+
+  val target = if (args.length < 1) "target/.atomist/node_modules/@atomist" else args.head
   val generator = new TypeScriptInterfaceGenerator
-  val output = generator.generate("", SimpleParameterValues(Map(generator.outputPathParam -> target)))
-  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(f.path))(_.write(f.content)))
+  val output = generator.generate("rug-ts-interfaces",
+    SimpleParameterValues(OutputPathParam, DefaultFilename)).withPathAbove(DefaultRugDir)
+  output.allFiles.foreach(f => Utils.withCloseable(new PrintWriter(target + "/" + f.path))(_.write(f.content)))
 }
 
 /**

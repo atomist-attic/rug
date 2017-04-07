@@ -11,12 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 
-- **BREAKING** Generated TypeScript project model types use properties rather than functions for no-arg operations
-marked with `@ExportFunction` when the new `exposeAsProperty` flag is true.
-- **BREAKING** All Generated TypeScript Cortex types use properties rather than functions for 
-all navigation
-- **BREAKING** Use specific message types in Plans for the different scenarios (directed, lifecycle and response) as 
-  per https://github.com/atomist/rug/issues/501
+-   **BREAKING** Generated TypeScript project model types use
+    properties rather than functions for no-arg operations marked with
+    `@ExportFunction` when the new `exposeAsProperty` flag is true
+-   **BREAKING** All Generated TypeScript Cortex types use properties
+    rather than functions for all navigation
+-   **BREAKING** Use specific message types in Plans for the different
+    scenarios (directed, lifecycle and response) as per [#501][501]
+-   Improved build
+-   Make TypeScript generator for rug more like that for cortex
+-   Improve release documentation
+
+[501]: https://github.com/atomist/rug/issues/501
 
 ## [0.24.0] - 2017-04-04
 
@@ -26,13 +32,12 @@ The one TS to rule all stubs
 
 ### Changed
 
-- Model stubs are generated in one uber file
-- Generally refined TS generation
+-   Model stubs are generated in one uber file
+-   Generally refined TS generation
 
 ### Added
 
-- Set the channel id on a message with `withChannelId`
-
+-   Set the channel id on a message with `withChannelId`
 
 ## [0.23.0] - 2017-03-31
 
@@ -42,7 +47,8 @@ TypeScript stub generation and proxy improvement release
 
 ### Changed
 
-- Now generating `add` instead of `with` methods to handle arrays in TypeScript code generation
+-   Now generating `add` instead of `with` methods to handle arrays in
+    TypeScript code generation
 
 ## [0.22.0] - 2017-03-31
 
@@ -50,7 +56,7 @@ TypeScript stub generation and proxy improvement release
 ### Changed
 
 -   **BREAKING** internal API for resolving and loading Rugs has changed to deal with
-    more complex dependency resolution scenarios. Also removal of AddressableRug and 
+    more complex dependency resolution scenarios. Also removal of AddressableRug and
     RugSupport traits.
 
 [0.22.0]: https://github.com/atomist/rug/compare/0.21.0...0.22.0
@@ -60,8 +66,8 @@ Back from the future release
 ### Changed
 
 -   Removed use of `Futures` in `LocalPlanRunner`
--   Changed `ServiceLoader`-based registries to not use caching 
--  If the fixture is the same as the world in a Gherkin step, pass only one parameter. This changes the 
+-   Changed `ServiceLoader`-based registries to not use caching
+-  If the fixture is the same as the world in a Gherkin step, pass only one parameter. This changes the
 signatures of handler tests.
 
 ## [0.21.0] - 2017-03-30

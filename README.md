@@ -90,7 +90,8 @@ If you find a problem, please create an [issue][].
 
 ## Development
 
-You can build, test, and install the project locally with [maven][].
+You can build, test, and install the project locally
+with [Maven][maven].
 
 [maven]: https://maven.apache.org/
 
@@ -98,28 +99,83 @@ You can build, test, and install the project locally with [maven][].
 $ mvn install
 ```
 
-To create a new release of the project, simply push a tag of the form
-`M.N.P` where `M`, `N`, and `P` are integers that form the next
-appropriate [semantic version][semver] for release.  For example:
+This will build, test, and locally install the Rug library.  To build
+the Rug TypeScript `@atomist/rug` and `@atomist/cortex` modules, the
+"npm-release" profile must be used.  Unlike the [cortex][] build, the
+cortex model is not downloaded dynamically because Rug tracks the
+latest, perhaps unreleased, version of the model.
 
-```
-$ git tag -a 1.2.3
-```
-
-The Travis CI build (see badge at the top of this page) will
-automatically create a GitHub release using the tag name for the
-release and the comment provided on the annotated tag as the contents
-of the release notes.  It will also automatically upload the needed
-artifacts.
-
-[semver]: http://semver.org
-
-The Rug extension documentation is created as part of running the
-Maven lifecycle `test` phase under the `npm-release` profile.
+To build the TypeScript modules and their documentation, generated
+from the TypeScript modules using [TypeDoc][typedoc], execute at least
+through the Maven lifecycle `test` phase using the `npm-release`
+profile.
 
 ```
 $ mvn -P npm-release test
 ```
 
 The documentation for all of the Rug extensions will be in a directory
-named `target/.atomist/node_modules/@atomist/rug/typedoc`.
+named `target/typedoc`.
+
+[typedoc]: http://typedoc.org/
+
+## Release
+
+Releasing Rug involves releasing the JVM artifacts to a Maven
+repository, the TypeScript module to NPM, and the documentation to
+GitHub pages for this repository, available at
+http://apidocs.atomist.com/.  Releasing Rug can be a multi-stepped
+process, depending on the changes that have been made.
+
+If there are no changes to the TypeScript API, to create a release
+simply push a tag of the form `M.N.P` where `M`, `N`, and `P` are
+integers that form the next appropriate [semantic version][semver] for
+release.  For example:
+
+```
+$ git tag -a 1.2.3
+```
+
+The Travis CI build (see badge at the top of this page) will upload
+the needed artifacts and automatically create a GitHub release using
+the tag name for the release and the comment provided on the annotated
+tag as the contents of the release notes.  The released artifacts are:
+
+-   Maven rug artifacts
+-   [`@atomist/rug`][rug-npm] Node module to [NPM][npm]
+-   TypeDoc for `@atomist/rug` and [`@atomist/cortex`][cortex-npm] to
+    the gh-pages branch of this repository, available under
+    http://apidocs.atomist.com/typedoc/
+
+Note that while the `@atomist/cortex` module is built as part of the
+rug build, it is published by the [cortex][]
+repository [build][cortex-build].  The cortex release process also
+publishes the cortex TypeDoc to http://cortex.atomist.com .  So if the
+API of cortex has changed at all, you will need to initiate a release
+of that repository.  This confusion will need to be resolved at some
+point in the future.
+
+[semver]: http://semver.org
+[rug-npm]: https://www.npmjs.com/package/@atomist/rug
+[npm]: https://www.npmjs.com/
+[cortex-npm]: https://www.npmjs.com/package/@atomist/cortex
+[cortex]: https://github.com/atomist/cortex
+[cortex-build]: https://travis-ci.org/atomist/cortex
+
+If there have been changes to either the `@atomist/rug` or
+`@atomist/cortex` TypeScript APIs, you will need to update the
+dependencies in the [rugs][] repository `package.json` and initiate a
+new release of that repository to publish a new version of the
+`@atomist/rugs` TypeScript module, which is the dependency everyone
+uses to bring in rug and cortex.  This should all be automated,
+perhaps in a separate repository or by chaining events to span
+repositories.
+
+[rugs]: https://github.com/atomist/rugs
+
+---
+Created by [Atomist][atomist].
+Need Help?  [Join our Slack team][slack].
+
+[atomist]: https://www.atomist.com/
+[slack]: https://join.atomist.com/

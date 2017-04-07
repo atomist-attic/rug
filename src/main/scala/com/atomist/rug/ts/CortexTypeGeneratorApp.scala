@@ -23,7 +23,7 @@ object CortexTypeGeneratorApp extends App {
 
   // TODO could take second argument as URL of endpoint
 
-  val target = if (args.length < 1) "target/.atomist/node_modules/@atomist/" else args.head
+  val target = if (args.length < 1) "target/.atomist/node_modules/@atomist" else args.head
   val tsig = new CortexTypeGenerator(DefaultCortexDir, DefaultCortexStubDir)
   val output = tsig.toNodeModule(CortexJson)
   println(s"Generated Type module")

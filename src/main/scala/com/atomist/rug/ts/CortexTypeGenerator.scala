@@ -26,6 +26,8 @@ object CortexTypeGenerator {
   */
 class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
 
+  import AbstractTypeScriptGenerator._
+
   private val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
@@ -35,8 +37,8 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
     //types.foreach(println(_))
     val tig = new TypeScriptInterfaceGenerator(typeRegistry, root = "GraphNode")
     val tcg = new TypeScriptStubClassGenerator(typeRegistry)
-    tig.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(basePackage) +
-      tcg.generate("types", SimpleParameterValues("output_path", "Types.ts")).withPathAbove(baseClassPackage)
+    tig.generate("cortex-interfaces", SimpleParameterValues(OutputPathParam, "Types.ts")).withPathAbove(basePackage) +
+      tcg.generate("cortex-class-stubs", SimpleParameterValues(OutputPathParam, "Types.ts")).withPathAbove(baseClassPackage)
   }
 
   /**

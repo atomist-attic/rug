@@ -36,7 +36,8 @@ object Handlers {
 
   case class LifecycleMessage(
                                node: GraphNode,
-                               actions: Seq[Presentable])
+                               actions: Seq[Presentable],
+                               lifecycleId: String)
     extends Callback
       with Message {
 

@@ -22,7 +22,6 @@ object AbstractTypeScriptGenerator {
   val DefaultFilename = "model/Core.ts"
 
   val OutputPathParam = "output_path"
-
 }
 
 /**
@@ -144,20 +143,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def apply(name: String, paramType: String, description: Option[String]) = new MethodParam(name, paramType, description)
   }
 
-  private case class EnumType(name: String, legalValues: Seq[String]) {
-
-    override def toString: String = {
-      val builder = new StringBuilder
-      builder ++= s"enum $name {\n"
-      legalValues.foreach(lv => builder ++= s"$indent$lv,\n")
-      builder ++= "}"
-      builder ++= config.separator
-      builder ++= s"export { $name };"
-      builder ++= config.separator
-      builder.toString
-    }
-  }
-
   override def parameters: Seq[Parameter] = Seq(Parameter(OutputPathParam, ".*")
     .setRequired(false)
     .setDisplayName("Path for consolidated exports file")
@@ -224,7 +209,6 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     (allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op))).groupBy(_.name) map {
       case (_, l) => l.head
     }).toSeq.sortBy(_.name)
-
 
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
@@ -310,5 +294,4 @@ object TypeGenerationConfig {
   val TestStubImports: String =
     """|import { GraphNode } from "@atomist/rug/tree/PathExpression";
        |""".stripMargin
-
 }

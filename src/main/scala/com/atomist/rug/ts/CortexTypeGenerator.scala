@@ -55,9 +55,7 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
     require(json != null)
     val doc: Map[String, List[_]] = mapper.readValue(json, classOf[Map[String, List[_]]])
 
-    def defineProperty(rawName: String, typ: String): Prop = {
-      // Do aliasing
-      val propName = toTypeScriptIdentifier(rawName)
+    def defineProperty(propName: String, typ: String): Prop = {
       val genTyp = typ match {
         case "string" => "String"
         case "number" => "long"
@@ -118,8 +116,6 @@ class CortexTypeGenerator(basePackage: String, baseClassPackage: String) {
     propertyNodes.map(pn => new JsonBackedTyped(pn, allRelationships)).toSet
   }
 
-  private def toTypeScriptIdentifier(name: String): String =
-    toCamelizedPropertyName(name.toLowerCase)
 }
 
 private trait Prop {

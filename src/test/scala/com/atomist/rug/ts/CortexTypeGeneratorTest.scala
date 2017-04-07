@@ -46,13 +46,17 @@ class CortexTypeGeneratorTest extends FlatSpec with Matchers {
     )))
     //println(ArtifactSourceUtils.prettyListFiles(cas))
 
+    val buildFile = cas.allFiles.find(f => f.name.endsWith("Build.ts")).get
+    assert(buildFile.content.contains("pullRequestNumber"),
+      s"Unexpected Build file content\n${buildFile.content}")
+
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.ts")))
     assert(cas.allFiles.exists(_.name.endsWith("ChatChannel.js")))
     assert(cas.allFiles.exists(_.content.contains("Repo[]")))
     assert(cas.allFiles.exists(_.content.contains("Issue[]")), "Must have back relationship from Repo to Issue")
 
-    val buildFile = cas.allFiles.find(f => f.content.contains("class Build ")).get
-    assert(buildFile.content.contains("""[ "Build", "-dynamic""""), "We should have correct node tags")
+    val buildStubFile = cas.allFiles.find(f => f.content.contains("class Build ")).get
+    assert(buildStubFile.content.contains("""[ "Build", "-dynamic""""), "We should have correct node tags")
   }
 }
 

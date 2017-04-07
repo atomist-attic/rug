@@ -61,7 +61,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
       // Output private variables
       output ++= methods
         .map(mi => {
-          val visibility = if (mi.exposeAsProperty) "" else "private"
+          val visibility = "private"
           s"$indent$visibility ${toFieldName(mi)}: ${mi.returnType};"
         })
         .mkString("\n")

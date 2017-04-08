@@ -1,15 +1,14 @@
 import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/Core"
 
-import {Build} from "@atomist/rug/cortex/stub/Build"
-import {Repo} from "@atomist/rug/cortex/stub/Repo"
- 
+import * as cortex from "@atomist/rug/cortex/stub/Types"
+
 Given("a sleepy country", f => {
 })
 When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandlerGen3")
    world.sendEvent(
-       new Build()
-        .withOn(new Repo())
+       new cortex.Build()
+        .withOn(new cortx.Repo())
    )
 })
 Then("excitement ensues", world => {

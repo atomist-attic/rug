@@ -1,14 +1,13 @@
 import {Given,When,Then, HandlerScenarioWorld} from "@atomist/rug/test/handler/Core"
 
-import {Push} from "@atomist/rug/cortex/stub/Push"
-import {Commit} from "@atomist/rug/cortex/stub/Commit"
+import * as cortex from "@atomist/rug/cortex/stub/Types"
 
  
 Given("a sleepy country", f => {
 })
 When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandlerGenWithArrays")
-   let p = new Push().addCommits(new Commit())
+   let p = new cortex.Push().addCommits(new cortex.Commit())
    //console.log(`Contains are ${p.contains().length} `);
    world.sendEvent(p)
 })

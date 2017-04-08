@@ -6,10 +6,6 @@ import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
 import {Build} from "@atomist/rug/cortex/Build"
 import {Push} from "@atomist/rug/cortex/Push"
 
-import * as buildstub from "@atomist/rug/cortex/stub/Build"
-import * as repostub from "@atomist/rug/cortex/stub/Repo"
-import * as ccstub from "@atomist/rug/cortex/stub/ChatChannel"
-
 /**
  * Works against generated model
  */

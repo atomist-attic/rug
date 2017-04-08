@@ -5,6 +5,7 @@ import javax.script._
 
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
+import com.atomist.rug.runtime.js.JavaScriptContext.EngineInitializer
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -12,6 +13,31 @@ import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactor
 import jdk.nashorn.internal.runtime.ECMAException
 
 import scala.collection.JavaConverters._
+
+object JavaScriptContext {
+
+  /**
+    * Function that can initialize a NashornScriptEngine before use.
+    * Typically evaluates JavaScript strings or binds objects.
+    */
+  type EngineInitializer = NashornScriptEngine => Unit
+
+  /**
+    * JavaScript snippet to evaluate to
+    */
+  private val ConsoleToSysOut: String =
+    """
+      |console = {
+      |   log: print,
+      |   warn: print,
+      |   error: print
+      |};
+    """.stripMargin
+
+  def redirectConsoleToSysOut(engine: NashornScriptEngine): Unit = {
+    engine.eval(ConsoleToSysOut)
+  }
+}
 
 /**
   * Context superclass for evaluating JavaScript.
@@ -21,12 +47,13 @@ import scala.collection.JavaConverters._
   *
   * One of these per rug please, or else they may stomp on one-another
   *
-  * @param toEval JavaScript to evaluate on initialization
+  * @param initializer function to initialize the engine:
+  *                          for example, binding objects or evaluating standard scripts
   */
 class JavaScriptContext(val rugAs: ArtifactSource,
                         val atomistConfig: AtomistConfig = DefaultAtomistConfig,
                         bindings: Bindings = new SimpleBindings(),
-                        toEval: Seq[String] = Nil)
+                        initializer: EngineInitializer = JavaScriptContext.redirectConsoleToSysOut)
   extends LazyLogging {
 
   val engine: NashornScriptEngine =
@@ -36,19 +63,7 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
 
-  private val consoleJs =
-    """
-      |console = {
-      |   log: print,
-      |   warn: print,
-      |   error: print
-      |};
-    """.stripMargin
-
-  //so we can print stuff out from TS
-  engine.eval(consoleJs)
-
-  toEval.foreach(engine.eval)
+   initializer(engine)
 
   try {
     Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))

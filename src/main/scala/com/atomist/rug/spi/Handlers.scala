@@ -2,8 +2,8 @@ package com.atomist.rug.spi
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.ParameterValue
+import com.atomist.rug.runtime.Rug
 import com.atomist.rug.spi.Handlers.Instruction.{Detail, NonrespondableInstruction, RespondableInstruction}
-import com.atomist.tree.TreeNode
 
 import scala.concurrent.Future
 
@@ -14,13 +14,15 @@ object Handlers {
 
   /**
     * A plan in response to this event
+    * @param returningRug - the rug that returned this plan
     * @param lifecycle messages in the plan
     * @param local messages in the plan
     * @param instructions instructions in the plan
     * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
     *                     if one is available
     */
-  case class Plan(lifecycle: Seq[LifecycleMessage],
+  case class Plan(returningRug: Option[Rug],
+                  lifecycle: Seq[LifecycleMessage],
                   local: Seq[LocallyRenderedMessage],
                   instructions: Seq[Plannable],
                   nativeObject: Option[AnyRef] = None) extends Callback {

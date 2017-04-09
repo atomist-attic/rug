@@ -5,13 +5,13 @@ import com.atomist.project.archive.RugResolver
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
-import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
 import com.atomist.rug.spi.{Body, RugFunctionRegistry}
+import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
 import com.atomist.util.JsonUtils
 
 /**

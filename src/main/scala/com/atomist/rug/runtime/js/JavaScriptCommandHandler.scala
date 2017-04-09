@@ -105,7 +105,7 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
       jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy),
       validated) match {
       case plan: ScriptObjectMirror =>
-        ConstructPlan(plan)
+        ConstructPlan(plan, Some(this))
       case other =>
         throw new InvalidHandlerResultException(s"$name CommandHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }

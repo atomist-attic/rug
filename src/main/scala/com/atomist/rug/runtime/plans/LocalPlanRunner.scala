@@ -25,26 +25,32 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
   override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
     val allMessages = plan.lifecycle ++ plan.local
     val messageLog: Seq[MessageDeliveryError] = allMessages.flatMap { message =>
-      Try(messageDeliverer.deliver(message, callbackInput)) match {
-        case ScalaFailure(error) =>
-          val msg = s"Failed to deliver message ${message.toDisplay} - ${error.getMessage}"
-          logger.error(msg, error)
-          Some(MessageDeliveryError(message, error))
-        case ScalaSuccess(_) =>
-          val msg = s"Delivered message ${message.toDisplay}"
-          logger.debug(msg)
-          None
+      if(plan.returningRug.nonEmpty){
+        Try(messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)) match {
+          case ScalaFailure(error) =>
+            val msg = s"Failed to deliver message ${message.toDisplay} - ${error.getMessage}"
+            logger.error(msg, error)
+            Some(MessageDeliveryError(message, error))
+          case ScalaSuccess(_) =>
+            val msg = s"Delivered message ${message.toDisplay}"
+            logger.debug(msg)
+            None
+        }
+      }else{
+        val msg = s"Failed to deliver message ${message.toDisplay} - current Rug not available for dependency resolution"
+        logger.error(msg)
+        None
       }
     }
     val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
-      val instruction = handleInstruction(respondable, callbackInput)
+      val instruction = handleInstruction(plan, respondable, callbackInput)
       Future { instruction }
     }
     val futureInstructionLog: Future[Seq[PlanLogEvent]] = Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)
     futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))
   }
 
-  private def handleInstruction(plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
+  private def handleInstruction(currentPlan: Plan, plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
     Try { instructionRunner.run(plannable.instruction, callbackInput) } match {
       case ScalaFailure(error) =>
         val msg = s"Failed to run ${plannable.toDisplay} - ${error.getMessage}"
@@ -67,7 +73,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
         }
         val callbackResults: Option[Seq[PlanLogEvent]] = callbackOption.map { callback =>
-          Try(handleCallback(callback, Some(response))) match {
+          Try(handleCallback(currentPlan, callback, Some(response))) match {
             case ScalaFailure(error) =>
               val msg = s"Failed to invoke ${callback.toDisplay} after ${plannable.toDisplay} - ${error.getMessage}"
               logger.error(msg, error)
@@ -82,12 +88,24 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     }
   }
 
-  private def handleCallback(callback: Callback, instructionResult: Option[Response]): Seq[PlanLogEvent] = callback match {
+  private def handleCallback(currentPlan: Plan, callback: Callback, instructionResult: Option[Response]): Seq[PlanLogEvent] = callback match {
     case m: Message =>
-      messageDeliverer.deliver(m, instructionResult)
+      if(currentPlan.returningRug.nonEmpty){
+        Try(messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult)) match {
+          case ScalaFailure(error) =>
+            val msg = s"Failed to deliver message ${m.toDisplay} - ${error.getMessage}"
+            logger.error(msg, error)
+          case ScalaSuccess(_) =>
+            val msg = s"Delivered message ${m.toDisplay}"
+            logger.debug(msg)
+        }
+      }else{
+        val msg = s"Failed to deliver message ${m.toDisplay} - current Rug not available for dependency resolution"
+        logger.error(msg)
+      }
       Nil
     case r: Respond =>
-      handleInstruction(Nonrespondable(r), instructionResult)
+      handleInstruction(currentPlan, Nonrespondable(r), instructionResult)
     case p: Plan =>
       val planResult = runNestedPlan(p, instructionResult)
       Seq(NestedPlanRun(p, planResult))

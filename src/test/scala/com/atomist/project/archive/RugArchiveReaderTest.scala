@@ -113,7 +113,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
   private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], dependencies: Seq[Dependency] = Nil): ProjectEditor = {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf:_*))
     val coord = Coordinate("com.atomist.test","test-rugs", "1.2.3")
-    val resolver =  new RugResolver(Dependency(as, Some(coord), dependencies))
+    val resolver =  new ArchiveRugResolver(Dependency(as, Some(coord), dependencies))
     val jsed = resolver.resolvedDependencies.rugs.editors.head
 
     assert(jsed.name === "Simple")

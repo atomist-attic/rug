@@ -3,9 +3,9 @@ package com.atomist.rug.runtime.js
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
+import com.atomist.rug.runtime.Rug
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
-import com.atomist.tree.TreeNode
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
@@ -15,9 +15,9 @@ import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
   */
 object ConstructPlan {
 
-  def apply(jsObj: Any): Option[Plan] = {
+  def apply(jsObj: Any, returningRug: Some[Rug]): Option[Plan] = {
     jsObj match {
-      case o: ScriptObjectMirror => Some(new PlanBuilder().constructPlan(o))
+      case o: ScriptObjectMirror => Some(new PlanBuilder().constructPlan(o, returningRug))
       case other => throw new InvalidHandlerResultException(s"Could not construct Plan from: $other")
     }
   }
@@ -25,7 +25,7 @@ object ConstructPlan {
 
 class PlanBuilder {
 
-  def constructPlan(jsPlan: ScriptObjectMirror): Plan = {
+  def constructPlan(jsPlan: ScriptObjectMirror, returningRug: Option[Rug]): Plan = {
 
     val jsMessages = jsPlan.getMember("messages") match {
       case o: ScriptObjectMirror => o.values().toArray.toList
@@ -39,14 +39,14 @@ class PlanBuilder {
       case u: Undefined => Nil
       case jsInstructions: ScriptObjectMirror =>
         jsInstructions.values().toArray.toList.map { respondable =>
-          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror])
+          constructRespondable(respondable.asInstanceOf[ScriptObjectMirror], returningRug)
         }
     }
 
     val lifecycle = messages.collect{case o: LifecycleMessage => o}
     val local = messages.collect{case o: LocallyRenderedMessage => o}
 
-    Plan(lifecycle, local, instructions, nativeObject = Some(jsPlan))
+    Plan(returningRug, lifecycle, local, instructions, nativeObject = Some(jsPlan))
   }
 
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {
@@ -112,15 +112,15 @@ class PlanBuilder {
     Presentable(instruction, label)
   }
 
-  def constructRespondable(jsRespondable: ScriptObjectMirror): Plannable = {
+  def constructRespondable(jsRespondable: ScriptObjectMirror, returningRug: Option[Rug]): Plannable = {
     val instruction: Instruction = jsRespondable.getMember("instruction") match {
       case u: Undefined =>
         throw new IllegalArgumentException(s"No instruction found in $jsRespondable")
       case o: ScriptObjectMirror =>
         constructInstruction(o)
     }
-    val onSuccess: Option[Callback] = constructCallback(jsRespondable.getMember("onSuccess"))
-    val onError: Option[Callback] = constructCallback(jsRespondable.getMember("onError"))
+    val onSuccess: Option[Callback] = constructCallback(jsRespondable.getMember("onSuccess"), returningRug)
+    val onError: Option[Callback] = constructCallback(jsRespondable.getMember("onError"), returningRug)
     instruction match {
       case nr: NonrespondableInstruction => Nonrespondable(nr)
       case r: RespondableInstruction => Respondable(r, onSuccess, onError)
@@ -178,7 +178,7 @@ class PlanBuilder {
     Instruction.Detail(name, coordinates, parameters, project_name)
   }
 
-  def constructCallback(callback: Object): Option[Callback] = {
+  def constructCallback(callback: Object, returningRug: Option[Rug]): Option[Callback] = {
     callback match {
       case u: Undefined => None
       case jsOnSuccess: ScriptObjectMirror =>
@@ -187,7 +187,7 @@ class PlanBuilder {
           case _: String => Respond(constructInstructionDetail(jsOnSuccess))
           case _ =>
             if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
-            constructPlan(jsOnSuccess)
+            constructPlan(jsOnSuccess, returningRug)
           }
           else {
             throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")

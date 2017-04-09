@@ -16,7 +16,7 @@ object RugArchiveReader {
 }
 
 object SimpleRugResolver {
-  def apply(as: ArtifactSource): RugResolver = new RugResolver(Dependency(as))
+  def apply(as: ArtifactSource) : RugResolver = new ArchiveRugResolver(Dependency(as))
 }
 
 object TestUtils extends Matchers {

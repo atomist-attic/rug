@@ -4,6 +4,7 @@ import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.JavaScriptContext._
 import com.atomist.rug.runtime.js._
 import com.atomist.source.ArtifactSource
 
@@ -15,7 +16,9 @@ import com.atomist.source.ArtifactSource
   *
   * A None means no resolution!
   */
-class RugResolver(graph: Dependency) {
+class RugResolver(
+                   graph: Dependency,
+                   engineInitializer: EngineInitializer = redirectConsoleToSysOut) {
 
   private val finders: Seq[JavaScriptRugFinder[_ <: Rug]] = Seq(
     new JavaScriptCommandHandlerFinder(),
@@ -32,7 +35,7 @@ class RugResolver(graph: Dependency) {
     * @return
     */
   private def find(as: ArtifactSource, resolver: RugResolver): Seq[Rug] = {
-    val jsc = new JavaScriptContext(as)
+    val jsc = new JavaScriptContext(as, initializer = engineInitializer)
     finders.flatMap(finder => finder.find(jsc, Some(resolver)))
   }
 

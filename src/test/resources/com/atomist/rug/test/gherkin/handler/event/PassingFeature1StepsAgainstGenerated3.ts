@@ -8,7 +8,7 @@ When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandlerGen3")
    world.sendEvent(
        new cortex.Build()
-        .withOn(new cortx.Repo())
+        .withOn(new cortex.Repo())
    )
 })
 Then("excitement ensues", world => {

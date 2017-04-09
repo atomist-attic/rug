@@ -129,13 +129,15 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                 |$indent}""".stripMargin
           }
           val builderMethod =
+            // Rely on type inference in return types, as this increases
+            // flexibility for proxying etc.
             if (returnsArray) {
               // It's an array type. Create an "addX" method to add the value to the array,
               // initializing it if necessary
               helper.indented(
                 s"""|
                     |${helper.toJsDoc(s"Fluent builder method to add an element to the $name array")}
-                    |add${upperize(name)}(...$name: $underlyingType[]): $typeName {
+                    |add${upperize(name)}(...$name: $underlyingType[]) {
                     |${indent}if (this.$fieldName === undefined)
                     |$indent${indent}this.$fieldName = [];
                     |${indent}this.$fieldName = this.$fieldName.concat($name);
@@ -147,7 +149,7 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
               helper.indented(
                 s"""|
                     |${helper.toJsDoc(s"Fluent builder method to set the $name property")}
-                    |with${upperize(name)}($name: $returnType): $typeName {
+                    |with${upperize(name)}($name: $returnType) {
                     |${indent}this.$fieldName = $name;
                     |${indent}return this;
                     |}""".stripMargin, 1)

@@ -17,10 +17,10 @@ import scala.collection.JavaConverters._
 object JavaScriptContext {
 
   /**
-    * Function that can initialize a NashornScriptEngine before use.
+    * Function that can initialize a ScriptEngine before use.
     * Typically evaluates JavaScript strings or binds objects.
     */
-  type EngineInitializer = NashornScriptEngine => Unit
+  type EngineInitializer = ScriptEngine => Unit
 
   /**
     * JavaScript snippet to evaluate to
@@ -34,7 +34,7 @@ object JavaScriptContext {
       |};
     """.stripMargin
 
-  def redirectConsoleToSysOut(engine: NashornScriptEngine): Unit = {
+  def redirectConsoleToSysOut(engine: ScriptEngine): Unit = {
     engine.eval(ConsoleToSysOut)
   }
 }

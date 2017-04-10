@@ -65,6 +65,13 @@ function main() {
             return 1
         fi
 
+        if [[ $TRAVIS_BRANCH == master ]]; then
+            if ! src/main/scripts/npm-publish-dev.bash $project_version rug; then
+                err "npm publish to dev repo failed"
+                return 1
+            fi
+        fi
+
         if ! git config --global user.email "travis-ci@atomist.com"; then
             err "failed to set git user email"
             return 1

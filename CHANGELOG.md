@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [501]: https://github.com/atomist/rug/issues/501
 
+## Added
+
+-   The `@atomist/rug` npm module snapshots are now published to
+    https://atomist.jfrog.io/atomist/api/npm/npm-dev
+
 ### Removed
 
 -   **BREAKING** The Stubs.ts file is no longer generated, use the

@@ -117,6 +117,22 @@ $ mvn -P npm-release test
 The documentation for all of the Rug extensions will be in a directory
 named `target/typedoc`.
 
+Development versions of the `@atomist/rug` npm module are published to
+`https://atomist.jfrog.io/atomist/api/npm/npm-dev`. The most
+straightforward way to get these versions without making changes to
+your configuration is:
+
+```bash
+$ npm install @atomist/rug --registry https://atomist.jfrog.io/atomist/api/npm/npm-dev
+```
+
+Alternatively, if you always want the latest snapshot, you can change
+your config for the @atomist scope:
+
+```
+npm config set @atomist:registry https://atomist.jfrog.io/atomist/api/npm/npm-dev
+```
+
 [typedoc]: http://typedoc.org/
 
 ## Release

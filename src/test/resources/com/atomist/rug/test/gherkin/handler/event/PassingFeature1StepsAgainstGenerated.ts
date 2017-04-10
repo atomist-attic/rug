@@ -7,6 +7,7 @@ Given("a sleepy country", f => {
 When("a visionary leader enters", world => {
    world.registerHandler("ReturnsEmptyPlanEventHandlerGen1")
    let b = new Build()
+   b.withStatus("passed");
    world.sendEvent(b)
    // Check we don't break with toString problems
    let stringIt = String(b)

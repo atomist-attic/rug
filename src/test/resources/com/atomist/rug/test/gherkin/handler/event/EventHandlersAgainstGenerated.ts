@@ -17,9 +17,7 @@ class ReturnsEmptyPlanEventHandlerGen1 implements HandleEvent<GraphNode, Build> 
 
     handle(m: Match<GraphNode, Build>) {
         let b: Build = m.matches()[0]
-        //if (ghid.id() != "gogirl") throw new Error(`Unexpected github id ${ghid.id()}`)
-        //if (ghid.address() != "/madeBy/gitHubId") throw new Error(`Unexpected address [${ghid.address()}]`)
-
+        b.status + ""   // Evaluate this stringification doesn't break
         return new Plan();
     }
 }

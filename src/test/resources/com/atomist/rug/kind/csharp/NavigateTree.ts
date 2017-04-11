@@ -27,7 +27,7 @@ class NavigateTree implements ProjectEditor {
         if (cc.formatInfo.start.lineNumberFrom1 < 5 || cc.formatInfo.start.lineNumberFrom1 > 100)
           throw new Error(`Format info values are wacky in ${cc.formatInfo}`)
         let c2 = cc as any // We need to do this to get to the children using functions
-        let classType = c2.class_type()
+        let classType = c2.class_type
         if (classType.parent().value() != cc.value())
           throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
 

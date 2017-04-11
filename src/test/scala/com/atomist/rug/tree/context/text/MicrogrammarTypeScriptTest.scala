@@ -36,7 +36,6 @@ class MicrogrammarTypeScriptTest extends FlatSpec with Matchers {
 
       case boo => fail(s"Modification was not successful: $boo")
     }
-
   }
 
   it should "Apply a sample editor " in {

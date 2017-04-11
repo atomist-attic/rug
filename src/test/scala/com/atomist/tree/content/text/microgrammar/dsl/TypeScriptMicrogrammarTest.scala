@@ -164,7 +164,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |      eng.with<any>(project, "//File()/method()", n => {
       |        //console.log(`Type=${n.nodeType()},value=${n.value()}`)
-      |        n.update(n.type().value() + "_x") // replace the whole method with its type and a suffix. It doesn't make sense
+      |        n.update(n.type.value() + "_x") // replace the whole method with its type and a suffix. It doesn't make sense
       |      })
       |    }
       |  }

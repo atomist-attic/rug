@@ -69,9 +69,9 @@ class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
         eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
-            // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
+            // console.log(`Adding message with person name=${peep.name},obj=${peep}`)
             result.add(
-                new ResponseMessage(peep.name()))
+                new ResponseMessage(peep.name))
         })
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;
@@ -90,9 +90,9 @@ class GoesOffGraph implements HandleCommand {
         const findPerson = "/Commit/Person()[@name='Ebony']"
         eng.with<node.Person>(ctx.contextRoot, findPerson, peep => {
             // Deliberate error should throw exception
-            peep.gitHubId().id()
-            // console.log(`Adding message with person name=${peep.name()},obj=${peep}`)
-            result.add(new ResponseMessage(peep.name()))
+            peep.gitHubId.id
+            // console.log(`Adding message with person name=${peep.name},obj=${peep}`)
+            result.add(new ResponseMessage(peep.name))
         })
         // console.log(`The constructed plan messages were ${result.messages()},size=${result.messages().length}`)
         return result;

@@ -6,7 +6,6 @@ import { PathExpressionEngine, Microgrammar } from '@atomist/rug/tree/PathExpres
 class MultipleUseOfSubmatcherTypeScriptTest {
 
     edit(project: Project) {
-
         let mg = new Microgrammar('things', 'I like $something, $something, $something, and $something.',
             { something: '§[a-z]+§'});
 
@@ -14,7 +13,7 @@ class MultipleUseOfSubmatcherTypeScriptTest {
 
         eng.with<any>(project, `/File()[@name="targetFile"]/things()`, things => {
 
-            let somethings = things.something();
+            let somethings = things.something;
             // console.log(`the whole thing is ${things} and the somethings are ${somethings}`);
 
             somethings[0].update("(1) " + somethings[0].value());

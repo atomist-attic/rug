@@ -8,6 +8,9 @@ import com.atomist.util.ServiceLoaderBackedExtensionProvider
   * JAR files needs a META-INF/services/com.atomist.rug.spi.Typed file containing
   * the FQNs of the types it defines.
   *
+  * Does not include Cortex types: Only those backed by JVM objects
+  * available on the runtime classpath.
+  *
   * @see [[Type]]
   */
 class ServiceLoaderTypeRegistry(keyProvider: (Typed) => String = (r) => r.name)

@@ -115,16 +115,16 @@ class jsSafeCommittingProxy(
         }
       }
       else
-        new FunctionProxyToNodeNavigationMethods(name, node)
+        nodeNavigationPropertyAccess(node, name)
     }
     else
       invokeGivenNoMatchingOperationInTypeInformation(name, typ)
   }
 
-  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed) = {
+  private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed): AnyRef = {
     if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
       case navigation if node.relatedNodeNames.contains(navigation) =>
-        new FunctionProxyToNodeNavigationMethods(navigation, node)
+        nodeNavigationPropertyAccess(node, navigation)
       case _ =>
         throw new UnsupportedOperationException(
           s"""Function [$name] cannot be evaluated on node with name [${node.nodeName}]
@@ -189,32 +189,27 @@ class jsSafeCommittingProxy(
   }
 
   /**
-    * Nashorn proxy for a method invocation that use navigation methods on TreeNode.
+    * Nashorn property access using navigation methods on TreeNode.
     */
-  private class FunctionProxyToNodeNavigationMethods(name: String, node: GraphNode)
-    extends AbstractJSObject {
+  private def nodeNavigationPropertyAccess(node: GraphNode, name: String): AnyRef = {
 
-    override def isFunction: Boolean = true
-
-    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
-      import scala.language.reflectiveCalls
-      val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
-      nodesAccessedThroughThisFunctionCall.toList match {
-        case Nil =>
-          throw new RugRuntimeException(name,
-            s"No children or function found for property '$name' on $node")
-        case null :: Nil => null
-        case (ttn: TerminalTreeNode) :: Nil if ttn.nodeTags.contains(Cardinality.One2Many) =>
-          // Pull out the value and put in an array
-          JavaScriptArray.fromSeq(Seq(ttn.value))
-        case (ttn: TerminalTreeNode) :: Nil =>
-          // Pull out the value
-          ttn.value
-        case head :: Nil if !head.nodeTags.contains(Cardinality.One2Many) =>
-          // Only one entry and we know it's not marked as an array
-          wrapOne(head)
-        case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
-      }
+    import scala.language.reflectiveCalls
+    val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
+    nodesAccessedThroughThisFunctionCall.toList match {
+      case Nil =>
+        throw new RugRuntimeException(name,
+          s"No children or function found for property '$name' on $node")
+      case null :: Nil => null
+      case (ttn: TerminalTreeNode) :: Nil if ttn.nodeTags.contains(Cardinality.One2Many) =>
+        // Pull out the value and put in an array
+        JavaScriptArray.fromSeq(Seq(ttn.value))
+      case (ttn: TerminalTreeNode) :: Nil =>
+        // Pull out the value
+        ttn.value
+      case head :: Nil if !head.nodeTags.contains(Cardinality.One2Many) =>
+        // Only one entry and we know it's not marked as an array
+        wrapOne(head)
+      case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))
     }
   }
 

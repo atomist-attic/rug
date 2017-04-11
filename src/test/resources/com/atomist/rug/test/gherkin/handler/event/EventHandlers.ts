@@ -50,8 +50,8 @@ class ReturnsEmptyPlanEventHandler3 implements HandleEvent<node.Commit, node.Git
 
     handle(m: Match<node.Commit, node.GitHubId>) {
         let ghid: node.GitHubId = m.matches()[0]
-        if (ghid.id() != "gogirl") throw new Error(`Unexpected github id ${ghid.id()}`)
-        //if (ghid.address() != "/madeBy/gitHubId") throw new Error(`Unexpected address [${ghid.address()}]`)
+        if (ghid.id != "gogirl") throw new Error(`Unexpected github id ${ghid.id}`)
+        //if (ghid.address != "/madeBy/gitHubId") throw new Error(`Unexpected address [${ghid.address}]`)
 
         return new Plan();
     }

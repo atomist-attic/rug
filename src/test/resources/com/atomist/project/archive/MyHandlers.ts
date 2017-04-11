@@ -24,7 +24,7 @@ class IssueReopenFailedResponder implements HandleResponse<Issue>{
   who: string
 
   handle(response: Response<Issue>): Plan {
-    let issue = response.body()
+    let issue = response.body
     let msg = new DirectedMessage(`Issue ${issue.number} was not reopened, trying again`, new ChannelAddress(this.who))
     return new Plan()
       .add(msg)

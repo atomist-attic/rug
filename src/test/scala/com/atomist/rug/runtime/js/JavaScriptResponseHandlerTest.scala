@@ -25,14 +25,17 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
       |
       |@ResponseHandler("$kitties", "$kittyDesc")
       |@Tags("kitties", "ftw")
-      |class KittiesResponder implements HandleResponse<Object>{
+      |class KittiesResponder implements HandleResponse<String>{
       |
       |  @Parameter({description: "his dudeness", pattern: "^.*$$"})
       |  name: string = "dude"
       |
-      |  handle(response: Response<Object>) {
+      |  handle(response: Response<String>) {
       |    if(this.name != "his dudeness") throw new Error("Not on the rug, man!");
-      |    let results = response.body as any;
+      |    let results = response.body;
+      |    if(results != "woot") {
+      |       throw new Error("This will not stand");
+      |    }
       |    return new Plan().add(new DirectedMessage("https://www.youtube.com/watch?v=fNodQpGVVyg", new UserAddress("bob")));
       |  }
       |}

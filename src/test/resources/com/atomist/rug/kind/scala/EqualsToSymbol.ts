@@ -40,7 +40,7 @@ class EqualsToSymbol implements ProjectEditor {
       eng.with<any>(project, oldAssertion, termApply => {
         //console.log(`Operating on ${termApply}`);
         if (termApply.children().length == 2) { // Should go in path expression when we have "count"
-          let leftTerm = termApply.termSelect().children()[0]
+          let leftTerm = termApply.termSelect.children()[0]
           let rightTerm = termApply.children()[1]
 
           if (leftTerm && rightTerm) {

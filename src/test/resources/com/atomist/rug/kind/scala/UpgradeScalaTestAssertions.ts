@@ -33,8 +33,8 @@ class UpgradeScalaTestAssertions implements ProjectEditor {
       eng.with<scala.TermApplyInfix>(project, oldAssertion, shouldTerm => {
         //console.log(`ShouldTerm=${shouldTerm}`)
 
-        let termSelect = shouldTerm.termSelect();
-        let termApply = shouldTerm.termApply();
+        let termSelect = shouldTerm.termSelect;
+        let termApply = shouldTerm.termApply;
 
         if (termSelect == null)
           throw new Error(`termSelect should be navigable and non-null`)

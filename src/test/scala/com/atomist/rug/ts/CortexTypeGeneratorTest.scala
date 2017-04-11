@@ -6,8 +6,6 @@ import com.atomist.util.Utils
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.matching.Regex
-
 class CortexTypeGeneratorTest extends FlatSpec with Matchers {
 
   import CortexTypeGenerator._

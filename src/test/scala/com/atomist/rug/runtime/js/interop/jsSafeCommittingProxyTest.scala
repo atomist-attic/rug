@@ -42,10 +42,7 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
       SimpleTerminalTreeNode("bar", "baz"))
       .withTag(TreeNode.Dynamic)
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
-    val jso = sc.getMember("bar").asInstanceOf[JSObject]
-    assert(jso.isFunction)
-    val invoked = jso.call(null)
-    assert(invoked === "baz")
+    assert(sc.getMember("bar") === "baz")
   }
 
   it should "recognize cardinality of single value with array marker" in {
@@ -53,10 +50,8 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
       SimpleTerminalTreeNode("bar", "baz", Set(Cardinality.One2Many)))
       .withTag(TreeNode.Dynamic)
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
-    val jso = sc.getMember("bar").asInstanceOf[JSObject]
-    assert(jso.isFunction)
-    val invoked = jso.call(null)
-    invoked match {
+    val value = sc.getMember("bar")
+    value match {
       case jsa: JavaScriptArray[_] =>
         assert(jsa.size === 1)
       //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
@@ -71,10 +66,8 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
       Set(TreeNode.Dynamic)
     )
     val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
-    val jso = sc.getMember("bar").asInstanceOf[JSObject]
-    assert(jso.isFunction)
-    val invoked = jso.call(null)
-    invoked match {
+    val value = sc.getMember("bar")
+    value match {
       case jsa: JavaScriptArray[_] =>
         assert(jsa.size === 2)
        //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))

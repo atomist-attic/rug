@@ -33,7 +33,7 @@ class MicrogrammarTypeScriptSampleEditor {
         let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
 
         eng.with<any>(project, `//File()/strictMatchCall()`, n => {
-            n.update(`val ${n.outputVar().value()} = strictMatchAndFakeAFile(${n.mg().value()}, ${n.inputString().value()})`)
+            n.update(`val ${n.outputVar.value()} = strictMatchAndFakeAFile(${n.mg.value()}, ${n.inputString.value()})`)
         })
 
     }

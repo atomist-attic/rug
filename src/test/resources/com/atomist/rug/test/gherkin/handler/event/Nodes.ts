@@ -26,9 +26,9 @@ export class Commit implements GraphNode {
         return this;
     }
 
-    sha() { return this._sha }
+    get sha() { return this._sha }
 
-    madeBy(): Person { return this._madeBy }
+    get madeBy(): Person { return this._madeBy }
 
 }
 
@@ -43,9 +43,9 @@ export class Person implements GraphNode {
 
     nodeTags(): string[] { return [ "Person", "-dynamic" ] }
 
-    name(): string {  return this._name }
+    get name(): string {  return this._name }
 
-    gitHubId() { return this._gitHubId } 
+    get gitHubId() { return this._gitHubId }
 
     withGitHubId(g: GitHubId): Person {
         this._gitHubId = g
@@ -62,6 +62,6 @@ export class GitHubId implements GraphNode {
 
     nodeTags(): string[] { return [ "GitHubId", "-dynamic" ] }
 
-    id(): string {  return this._id }
+    get id(): string {  return this._id }
 
 }

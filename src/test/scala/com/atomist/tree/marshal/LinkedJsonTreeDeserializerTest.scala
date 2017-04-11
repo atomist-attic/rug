@@ -108,7 +108,7 @@ class LinkedJsonTreeDeserializerTest extends FlatSpec with Matchers {
      |      "timestamp":"2017-01-17T17:18:52.943Z",
      |      "nodeId":4766,
      |      "type":[
-     |         "Push"
+     |         "Push", "-dynamic"
      |      ]
      |   },
      |   {

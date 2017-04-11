@@ -5,8 +5,8 @@ import {Microgrammar, PathExpressionEngine, PathExpression, TextTreeNode} from '
 /*
  * Used in com/atomist/tree/content/text/OverwritableTextTreeNodeChild.scala
  */
-@Editor("OverwriteableTextTreeNodeTypeScriptTest", "Uses OverwriteableTextTreeNode from TypeScript")
-class OverwriteableTextTreeNodeTypeScriptTest {
+@Editor("OverwritableTextTreeNodeTypeScriptTest", "Uses OverwritableTextTreeNode from TypeScript")
+class OverwritableTextTreeNodeTypeScriptTest {
 
     edit(project: Project) {
 
@@ -35,18 +35,17 @@ $whateverElse
 
         let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg)
 
-
         let mgNode = `/File()[@name="pom.xml"]/parent()`
 
         eng.with<any>(project, mgNode, parent => {
             //console.log(`I matched: ${parent}`);
-            let versionNumber = parent.version();
+            let versionNumber = parent.version;
             parent.update("Everything under me is now invalidated! wahaha!");
             versionNumber.update("This should fail!!")
         })
 
         pom.replace('dependency', 'dependenciesAreForBirds');
-
     }
 }
-export let editor = new OverwriteableTextTreeNodeTypeScriptTest();
+
+export const editor = new OverwritableTextTreeNodeTypeScriptTest();

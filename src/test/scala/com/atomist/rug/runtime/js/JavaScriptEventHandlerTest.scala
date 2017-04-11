@@ -28,7 +28,7 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, LifecycleMessage, DirectedMessage, MessageMimetypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, Plan, LifecycleMessage, DirectedMessage, MessageMimeTypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -49,7 +49,7 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
        |               },
        |               onSuccess: {kind: "respond", name: "Kitties"},
-       |               onError: {body: "No kitties for you today!", kind: "directed", contentType: MessageMimetypes.PLAIN_TEXT, usernames: ["w00t"]}
+       |               onError: {body: "No kitties for you today!", kind: "directed", contentType: MessageMimeTypes.PLAIN_TEXT, usernames: ["w00t"]}
        |             });
        |
        |    const anEmptyPlan = new Plan()
@@ -69,7 +69,7 @@ object JavaScriptEventHandlerTest {
        |                 parameters: {message: "planception"}
        |               },
        |               onSuccess: aPlansPlan,
-       |               onError: {body: "error", kind: "directed", contentType: MessageMimetypes.PLAIN_TEXT, usernames: ["w00t"]}
+       |               onError: {body: "error", kind: "directed", contentType: MessageMimeTypes.PLAIN_TEXT, usernames: ["w00t"]}
        |             });
        |    return plan;
        |  }

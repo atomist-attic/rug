@@ -4,6 +4,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.util.JsonUtils
@@ -87,7 +88,12 @@ class PlanBuilder {
 
         val node = jsMessage.getMember("node") match {
           case t: GraphNode => t
-          case a => throw new InvalidHandlerResultException(s"Lifecycle messages must contain a GraphNode, actually: $a")
+          case som: ScriptObjectMirror =>
+            NashornMapBackedGraphNode.toGraphNode(som).getOrElse(
+              throw new InvalidHandlerResultException(s"Lifecycle message node script could not be converted to a GraphNode: Invalid argument: $som")
+            )
+          case a =>
+            throw new InvalidHandlerResultException(s"Lifecycle messages must contain a GraphNode, actually: $a")
         }
 
         val id = jsMessage.getMember("lifecycleId") match {

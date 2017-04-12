@@ -4,7 +4,7 @@ import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.TestUtils._
 import com.atomist.rug.runtime.js.JavaScriptContext
-import com.atomist.rug.test.gherkin._
+import com.atomist.rug.test.gherkin.{Passed, _}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource}
 import org.scalatest.{FlatSpec, Matchers}
@@ -132,9 +132,7 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val handlerFile = requiredFileInPackage(this, "EventHandlersAgainstGenerated.ts", atomistConfig.handlersRoot + "/event")
     val as = SimpleFileBasedArtifactSource(Feature1File, passingFeature1StepsFile, handlerFile)
 
-    //println(ArtifactSourceUtils.prettyListFiles(as))
     val cas = TypeScriptBuilder.compileWithExtendedModel(as)
-
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {
@@ -212,6 +210,22 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     val handlerFile = requiredFileInPackage(this, "EventHandlers.ts", atomistConfig.handlersRoot + "/event")
     val as = SimpleFileBasedArtifactSource(Feature2File, passingFeature1StepsFile, handlerFile, nodesFile)
     val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
+  it should "#517: Not encounter not a GraphNode" in {
+    val steps517 = requiredFileInPackage(this, "517_steps.ts", ".atomist/tests/handlers/event")
+    val feature517 = requiredFileInPackage(this, "517.feature", ".atomist/tests/handlers/event")
+    val handlerFile = requiredFileInPackage(this, "517_Pulled.ts", ".atomist/handlers/event")
+    val as = SimpleFileBasedArtifactSource(feature517, handlerFile, steps517)
+
+    val cas = TypeScriptBuilder.compileWithExtendedModel(as)
+
     val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
     val run = grt.execute()
     run.result match {

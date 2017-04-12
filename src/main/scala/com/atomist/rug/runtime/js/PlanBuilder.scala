@@ -87,7 +87,7 @@ class PlanBuilder {
 
         val node = jsMessage.getMember("node") match {
           case t: GraphNode => t
-          case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a GraphNode")
+          case a => throw new InvalidHandlerResultException(s"Lifecycle messages must contain a GraphNode, actually: $a")
         }
 
         val id = jsMessage.getMember("lifecycleId") match {

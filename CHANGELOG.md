@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.25.2...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.25.3...HEAD
+
+## [0.25.3] - 2017-04-13
+
+[0.25.3]: https://github.com/atomist/rug/compare/0.25.2...0.25.3
+
+Parameter release
+
+### Changed
+
+-   Parameter decorator now takes a copy of the parameter configuration.
+    It _was_ overwriting its contents.
 
 ## [0.25.2] - 2017-04-13
 

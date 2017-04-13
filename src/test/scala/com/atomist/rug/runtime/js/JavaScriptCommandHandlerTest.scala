@@ -53,6 +53,19 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerWithBadStubUse = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerWithBadStubUse.ts"))
 
+  val simpleCommandHandlerWithSameParametersConfig = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerWithSameParametersConfig.ts"))
+
+  it should "not overwrite parameters when we reuse the same parametes object" in {
+    val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
+      SimpleFileBasedArtifactSource(simpleCommandHandlerWithSameParametersConfig))
+    val rugs = RugArchiveReader(rugArchive)
+    val handler = rugs.commandHandlers.head
+    val params = handler.parameters
+    assert(params.head.name == "foo")
+    assert(params(1).name == "bar")
+  }
+
   it should "#488: get good error message from generated model stubs" in {
     val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithBadStubUse))

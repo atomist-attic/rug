@@ -45,7 +45,7 @@ class PlanBuilder {
     }
 
     val lifecycle = messages.collect{case o: LifecycleMessage => o}
-    val local = messages.collect{case o: LocallyRenderedMessage => o}
+    val local = messages.collect{case o: DirectedMessage => o}
 
     Plan(returningRug, lifecycle, local, instructions, nativeObject = Some(jsPlan))
   }
@@ -53,7 +53,21 @@ class PlanBuilder {
   def constructMessage(jsMessage: ScriptObjectMirror): Message = {
 
     jsMessage.getMember("kind") match {
-      case "response" | "directed" =>
+      case "response" =>
+        val messageBody = jsMessage.getMember("body") match {
+          case json: ScriptObjectMirror =>
+            throw new UnsupportedOperationException("Message body must be a string")
+          case text: String => text
+          case _ =>
+            throw new InvalidHandlerResultException(s"Cannot determine message content from body: ${jsMessage.getMember("body")}")
+        }
+        val contentType = jsMessage.getMember("contentType") match {
+          case c: String => c
+          case _ => throw new InvalidHandlerResultException(s"Message must have a `contentType`")
+        }
+        ResponseMessage(messageBody, contentType)
+
+      case  "directed" =>
         val messageBody = jsMessage.getMember("body") match {
           case json: ScriptObjectMirror =>
             throw new UnsupportedOperationException("Message body must be a string")
@@ -75,7 +89,7 @@ class PlanBuilder {
           case channelNames: ScriptObjectMirror =>
             channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]
         }
-        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames)
+        DirectedMessage(messageBody, contentType, channelNames, usernames)
 
       case "lifecycle"=>
         val instructions = jsMessage.getMember("instructions") match {

@@ -23,7 +23,7 @@ object Handlers {
     */
   case class Plan(returningRug: Option[Rug],
                   lifecycle: Seq[LifecycleMessage],
-                  local: Seq[LocallyRenderedMessage],
+                  local: Seq[DirectedMessage],
                   instructions: Seq[Plannable],
                   nativeObject: Option[AnyRef] = None) extends Callback {
 
@@ -49,14 +49,29 @@ object Handlers {
   }
 
   /**
-    * Rendering/correlation is done in the handler
-    * Directed & Response messages become these
+    * Rendering done in the handler. Use to send correlated response messages
+    * from Command Handlers
+    * @param body
+    * @param contentType
+    */
+  case class ResponseMessage(
+                              body: String,
+                              contentType: String)
+    extends Callback
+      with Message {
+
+    override def toDisplay: String = {
+      s"type: $contentType, body: $body"
+    }
+  }
+  /**
+    * Rendering done in the handler. Use to send direct uncorrelated messages
     * @param body
     * @param channelNames
     * @param contentType
     * @param usernames
     */
-  case class LocallyRenderedMessage(
+  case class DirectedMessage(
                               body: String,
                               contentType: String,
                               channelNames: Seq[String],

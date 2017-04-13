@@ -165,7 +165,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     handler.pathExpression should not be null
 
     val expectedMessages = Seq(
-      LocallyRenderedMessage("message1",
+      DirectedMessage("message1",
         "text/plain",
         Seq("w00t"),
         Nil)

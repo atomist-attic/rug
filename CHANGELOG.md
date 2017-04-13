@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.25.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.25.2...HEAD
+
+## [0.25.2] - 2017-04-13
+
+[0.25.2]: https://github.com/atomist/rug/compare/0.25.1...0.25.2
+
+Signature release
+
+### Add
+
+-   Add GPG signing of published artifacts
+
+### Changed
+
+-   Fixes [#517][501]: Converting script objects returned from tests to GraphNode
+
+-   Better error message when LifecycleMessage does not contain a GraphNode
+
+[501]: https://github.com/atomist/rug/issues/501
 
 ## [0.25.1] - 2017-04-11
 

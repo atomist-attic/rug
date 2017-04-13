@@ -1,6 +1,6 @@
 package com.atomist.rug.spi
 
-import java.lang.reflect.Method
+import java.lang.reflect.{InvocationTargetException, Method}
 
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import org.springframework.core.annotation.AnnotationUtils
@@ -58,7 +58,12 @@ trait AnnotatedRugFunction extends RugFunction {
         null
       }
     })
-    method.invoke(this, args: _*).asInstanceOf[FunctionResponse]
+    try {
+      method.invoke(this, args: _*).asInstanceOf[FunctionResponse]
+    }
+    catch {
+      case ite: InvocationTargetException => throw ite.getCause
+    }
   }
 
   /**

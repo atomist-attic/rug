@@ -33,7 +33,7 @@ class jsScalaHidingProxy private(
       toString()
     }
     else if (hint == null)
-      null
+      toString()
     else
       throw new UnsupportedOperationException("No conversion for " + hint)
   }

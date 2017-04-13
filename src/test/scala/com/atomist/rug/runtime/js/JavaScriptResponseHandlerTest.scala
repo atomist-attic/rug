@@ -57,6 +57,10 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
        | handle(@ParseJson response: Response<any>) : Plan {
        |    let results = response.body as any;
        |
+       |    let stringed = "Thing " + response;
+       |    if (stringed === "Thing null")
+       |      throw new Error("Response is evaluating to null default string");
+       |
        |    if(results.yaml != "is more annoying than json") { throw new Error("Rats: " + results.yaml)}
        |    results.reasons.map(reason => reason.main.length)
        |    return new Plan();

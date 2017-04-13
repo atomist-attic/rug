@@ -43,10 +43,6 @@ function main() {
         return 1
     fi
 
-    if ! $mvn install -DskipTests -Dmaven.javadoc.skip=true; then
-        err "maven install failed"
-        return 1
-    fi
 
     if [[ $TRAVIS_PULL_REQUEST != false ]]; then
         msg "not publishing or tagging pull request"
@@ -60,7 +56,12 @@ function main() {
             mvn_deploy_args=-DaltDeploymentRepository=public-atomist-dev::default::https://atomist.jfrog.io/atomist/libs-dev-local
         fi
 
-        if ! $mvn deploy site -DskipTests $mvn_deploy_args; then
+        if ! gpg --allow-secret-key-import --import atomist_sec.gpg; then
+           err "Error import gpg keys"
+           return 1
+        fi
+
+        if ! $mvn deploy site -DskipTests $mvn_deploy_args deploy -Dgpg.executable=gpg -Dgpg.keyname=DA85ED8F -Dgpg.passphrase="$GPG_PASSPHRASE"; then
             err "maven deploy failed"
             return 1
         fi

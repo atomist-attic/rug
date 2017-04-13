@@ -61,7 +61,7 @@ function main() {
            return 1
         fi
 
-        if ! $mvn deploy site -DskipTests $mvn_deploy_args -Dgpg.executable=gpg -Dgpg.keyname=DA85ED8F -Dgpg.passphrase="$GPG_PASSPHRASE"; then
+        if ! $mvn deploy site -PsignedRelease -DskipTests $mvn_deploy_args -Dgpg.executable=gpg -Dgpg.keyname=DA85ED8F -Dgpg.passphrase="$GPG_PASSPHRASE"; then
             err "maven deploy failed"
             return 1
         fi

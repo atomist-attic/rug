@@ -38,7 +38,7 @@ function main() {
         fi
     fi
 
-    if ! $mvn scoverage:report -Dmaven.javadoc.skip=true; then
+    if ! $mvn scoverage:report -Dmaven.javadoc.skip=true -Dgpg.skip=true; then
         err "tests failed"
         return 1
     fi
@@ -61,7 +61,7 @@ function main() {
            return 1
         fi
 
-        if ! $mvn deploy site -DskipTests $mvn_deploy_args deploy -Dgpg.executable=gpg -Dgpg.keyname=DA85ED8F -Dgpg.passphrase="$GPG_PASSPHRASE"; then
+        if ! $mvn deploy site -DskipTests $mvn_deploy_args -Dgpg.executable=gpg -Dgpg.keyname=DA85ED8F -Dgpg.passphrase="$GPG_PASSPHRASE"; then
             err "maven deploy failed"
             return 1
         fi

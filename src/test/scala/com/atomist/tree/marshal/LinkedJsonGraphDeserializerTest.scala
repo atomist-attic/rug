@@ -94,4 +94,17 @@ class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
     assert(node.relatedNodeTypes.isEmpty)
     assert(node.nodeName === "empty")
   }
+
+  it should "handle unresolvable in Repo -> Project" in {
+    val json = TestUtils.contentOf(this, "withLinksAndUnresolvable.json")
+    val node = LinkedJsonGraphDeserializer.fromJson(json)
+    val repo = node.relatedNodesNamed("ON").head
+    assert(repo.relatedNodesNamed("PROJECT").size === 1)
+    repo.relatedNodesNamed("PROJECT").head match {
+      case ur if Unresolvable(ur).isDefined =>
+        assert(ur.nodeTags.contains("Unresolvable"))
+      case x => fail(s"Expected Unresolvable node, not $x")
+    }
+
+  }
 }

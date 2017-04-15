@@ -13,8 +13,6 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new ScalaFileType
 
-  it should "change exception catch ???" is pending
-
   it should "name a specified parameter" in {
     modify("NameParameter.ts", PythonTypeSources) match {
       case sm: SuccessfulModification =>

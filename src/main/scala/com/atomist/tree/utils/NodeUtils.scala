@@ -8,6 +8,16 @@ import scala.reflect.ClassTag
 
 object NodeUtils {
 
+  /**
+    * Value of the related node if available, else None
+    */
+  def keyValue(gn: GraphNode, key: String): Option[String] = {
+    gn.relatedNodesNamed(key).headOption match {
+      case Some(tn: TreeNode) => Some(tn.value)
+      case _ => None
+    }
+  }
+
   def value(gn: GraphNode): String = gn match {
     case tn: TreeNode => tn.value
     case _ => ""

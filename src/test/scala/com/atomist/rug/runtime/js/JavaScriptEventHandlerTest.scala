@@ -10,7 +10,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.marshal.{EmptyLinkableContainerTreeNode, JsonBackedContainerTreeNode}
+import com.atomist.tree.marshal.{EmptyLinkableContainerGraphNode, JsonBackedContainerGraphNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
@@ -278,8 +278,8 @@ object TestTreeMaterializer extends TreeMaterializer {
 
 object EmptyTreeMaterializer extends TreeMaterializer {
 
-  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = new JsonBackedContainerTreeNode(
-    new EmptyLinkableContainerTreeNode(),
+  override def rootNodeFor(e: SystemEvent, pe: PathExpression): GraphNode = new JsonBackedContainerGraphNode(
+    new EmptyLinkableContainerGraphNode(),
     "[]",
     "0.0.1")
 

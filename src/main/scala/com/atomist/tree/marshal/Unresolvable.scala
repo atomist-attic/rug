@@ -20,10 +20,12 @@ object Unresolvable {
         NodeUtils.keyValue(n, RemainingPathExpressionKey).getOrElse(
           throw new IllegalArgumentException(
             s"Node $n must have key [$RemainingPathExpressionKey]: Found keys [${n.relatedNodeNames.mkString(",")}]")
-        )
+        ), n
       )
     })
 
 }
 
-case class Unresolvable(remainingPathExpression: String)
+case class Unresolvable(
+                         remainingPathExpression: String,
+                         rawNode: GraphNode)

@@ -97,7 +97,7 @@ object LinkedJsonGraphDeserializer extends LazyLogging {
       }
     }
 
-    if (nodes.nonEmpty) nodes.head else new EmptyLinkableContainerGraphNode
+    if (nodes.nonEmpty) nodes.head else new EmptyContainerGraphNode
   }
 
   private def requiredStringEntry(m: Map[String,Any], key: String): String =

@@ -63,7 +63,8 @@ class JavaScriptProjectEditor(
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")
-        } else {
+        }
+        else {
           SuccessfulModification(pmv.currentBackingObject, pmv.changeLogEntries)
         }
       }

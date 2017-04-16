@@ -9,11 +9,10 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new CSharpFileType
 
-  it should "enumerate usings in simple project" in {
+  "C# support" should "enumerate usings in simple project" in {
     val r = modify("ListImports.ts", HelloWorldSources)
     r match {
       case _: NoModificationNeeded =>
-      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }
@@ -21,7 +20,6 @@ class CSharpFileTypeUsageTest extends AbstractTypeUnderFileTest {
   it should "enumerate usings in simple project with ill-formed C#" in {
     modify("ListImports.ts", projectWithBogusCSharp.currentBackingObject) match {
       case _: NoModificationNeeded =>
-      
       case wtf => fail(s"Expected NoModificationNeeded, not $wtf")
     }
   }

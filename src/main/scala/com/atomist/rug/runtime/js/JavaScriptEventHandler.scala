@@ -60,7 +60,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
     val targetNode = ctx.treeMaterializer.rootNodeFor(e, pathExpression)
     // Put a new artificial root above to make expression work
     val root = JavaScriptEventHandler.rootNodeFor(targetNode)
-    ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx.typeRegistry, None) match {
+    ctx.pathExpressionEngine.ee.evaluate(root, pathExpression, ctx, None) match {
       case Right(Nil) => None
       case Right(matches) if matches.nonEmpty =>
         val cm = jsContextMatch(

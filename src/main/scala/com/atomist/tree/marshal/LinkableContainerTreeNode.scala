@@ -1,24 +1,7 @@
 package com.atomist.tree.marshal
 
-import com.atomist.graph.GraphNode
 import com.atomist.rug.ts.{Cardinality, OneToM}
 import com.atomist.tree.{ContainerTreeNode, TreeNode}
-
-class EmptyLinkableContainerGraphNode extends GraphNode {
-
-  override def nodeName: String = "empty"
-
-  override def nodeTags: Set[String] = Set.empty
-
-  override def relatedNodes: Seq[GraphNode] = Nil
-
-  override def relatedNodeNames: Set[String] = Set.empty
-
-  override def relatedNodeTypes: Set[String] = Set.empty
-
-  override def relatedNodesNamed(key: String): Seq[GraphNode] = Nil
-
-}
 
 private class LinkableContainerTreeNode(
                                          val nodeName: String,
@@ -43,7 +26,15 @@ private class LinkableContainerTreeNode(
 
   override def childrenNamed(key: String): Seq[TreeNode] =
     fieldValues.filter(n => n.nodeName.equals(key))
+
+  override def toString: String = {
+    getClass.getSimpleName + s": (${nodeTags.mkString(",")}); " +
+      childNodeNames.map(childName => {
+        childName + ":[" + childrenNamed(childName).mkString(",") + "]"
+      }).mkString("; ")
+  }
 }
+
 
 private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContainerTreeNode,
                                                 override val nodeName: String,
@@ -62,4 +53,6 @@ private class WrappingLinkableContainerTreeNode(val wrappedNode: LinkableContain
   override def childNodeTypes: Set[String] = wrappedNode.childNodeTypes
 
   override def childrenNamed(key: String): Seq[TreeNode] = wrappedNode.childrenNamed(key)
+
+  override def toString: String = wrappedNode.toString
 }

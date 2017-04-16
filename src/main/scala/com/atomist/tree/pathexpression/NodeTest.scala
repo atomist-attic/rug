@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeInfo.{As, Id}
@@ -19,6 +19,8 @@ trait NodeTest {
     * @param axis AxisSpecifier indicating the kind of navigation
     * @return Resulting nodes
     */
-  def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult
+  def follow(tn: GraphNode, axis: AxisSpecifier,
+             ee: ExpressionEngine,
+             executionContext: ExecutionContext): ExecutionResult
 
 }

@@ -1,6 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
@@ -28,7 +29,7 @@ trait Predicate {
   def evaluate(nodeToTest: GraphNode,
                returnedNodes: Seq[GraphNode],
                ee: ExpressionEngine,
-               typeRegistry: TypeRegistry,
+               executionContext: ExecutionContext,
                nodePreparer: Option[NodePreparer]): Boolean
 
   def and(that: Predicate): Predicate =
@@ -49,7 +50,7 @@ case object TruePredicate extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean = true
 }
 
@@ -60,7 +61,7 @@ case object FalsePredicate extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean = false
 }
 
@@ -71,8 +72,9 @@ case class NegationOfPredicate(p: Predicate) extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
-                        nodePreparer: Option[NodePreparer]): Boolean = !p.evaluate(root, returnedNodes, ee, typeRegistry, nodePreparer)
+                        executionContext: ExecutionContext,
+                        nodePreparer: Option[NodePreparer]): Boolean =
+      !p.evaluate(root, returnedNodes,ee, executionContext, nodePreparer)
 }
 
 case class AndPredicate(a: Predicate, b: Predicate) extends Predicate {
@@ -82,10 +84,10 @@ case class AndPredicate(a: Predicate, b: Predicate) extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean =
-    a.evaluate(root, returnedNodes, ee, typeRegistry, nodePreparer) &&
-      b.evaluate(root, returnedNodes, ee, typeRegistry, nodePreparer)
+    a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer) &&
+      b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)
 }
 
 case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
@@ -95,10 +97,10 @@ case class OrPredicate(a: Predicate, b: Predicate) extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean =
-    a.evaluate(root, returnedNodes, ee, typeRegistry, nodePreparer) ||
-      b.evaluate(root, returnedNodes, ee, typeRegistry, nodePreparer)
+    a.evaluate(root, returnedNodes, ee, executionContext, nodePreparer) ||
+      b.evaluate(root, returnedNodes, ee, executionContext, nodePreparer)
 }
 
 /**
@@ -119,7 +121,7 @@ case class OptionalPredicate(optionalPredicate: Predicate) extends Predicate {
   override def evaluate(root: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean = true
 }
 
@@ -132,7 +134,7 @@ case class IndexPredicate(i: Int) extends Predicate {
   def evaluate(tn: GraphNode,
                among: Seq[GraphNode],
                ee: ExpressionEngine,
-               typeRegistry: TypeRegistry,
+               executionContext: ExecutionContext,
                nodePreparer: Option[NodePreparer]): Boolean = {
     val index = among.indexOf(tn)
     if (index == -1)
@@ -152,7 +154,7 @@ case class NodeNamePredicate(expectedName: String) extends Predicate {
   override def evaluate(n: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean =
     n.nodeName == expectedName || (
       n.followEdge("name").toList match {
@@ -168,7 +170,7 @@ case class NodeTypePredicate(expectedType: String) extends Predicate {
   override def evaluate(n: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean =
     n.nodeTags.contains(expectedType)
 
@@ -187,7 +189,7 @@ case class FunctionPredicate(override val name: String, f: (GraphNode, Seq[Graph
   def evaluate(tn: GraphNode,
                among: Seq[GraphNode],
                ee: ExpressionEngine,
-               typeRegistry: TypeRegistry,
+               executionContext: ExecutionContext,
                nodePreparer: Option[NodePreparer]): Boolean = f(tn, among)
 
 }
@@ -197,9 +199,9 @@ case class NestedPathExpressionPredicate(expression: PathExpression) extends Pre
   override def evaluate(nodeToTest: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean = {
-    ee.evaluate(nodeToTest, expression, typeRegistry, nodePreparer) match {
+    ee.evaluate(nodeToTest, expression, executionContext, nodePreparer) match {
       case Left(_) => false
       case Right(nodes) => nodes.nonEmpty
     }

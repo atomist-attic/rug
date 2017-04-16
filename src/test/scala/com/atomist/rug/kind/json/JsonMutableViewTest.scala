@@ -42,7 +42,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val cheatyPosNode = jsonParser.parse(f.content).get
     val cheatyNode = TextTreeNodeLifecycle.makeReady("json", Seq(cheatyPosNode), fmv).head
     val j = new JsonMutableView(f, pmv, cheatyNode)
-    val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(j, expr)
     assert(rtn.right.get.size === 1)
     assert(rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.value === "S")
   }
@@ -57,7 +57,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val cheatyPosNode = jsonParser.parse(f.content).get
     val cheatyNode = TextTreeNodeLifecycle.makeReady("json", Seq(cheatyPosNode), fmv).head
     val j = new JsonMutableView(f, pmv, cheatyNode)
-    val rtn = ee.evaluate(j, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(j, expr)
     assert(rtn.right.get.size === 1)
     val target = rtn.right.get.head.asInstanceOf[ContainerTreeNode].childrenNamed("STRING").head.asInstanceOf[MutableTreeNode]
     assert(target.value === "markup")
@@ -71,7 +71,7 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
     val f = StringFileArtifact("src/main/resources/glossary.json", Simple)
     val proj = SimpleFileBasedArtifactSource(f)
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj)
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     val x = rtn.right.get.head.asInstanceOf[ContainerTreeNode]
     assert(x.nodeName === "GlossSee")

@@ -1,8 +1,7 @@
 package com.atomist.tree.pathexpression
 
-import java.util.Objects
-
 import com.atomist.graph.GraphNode
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.{TypeRegistry, Typed}
 import com.atomist.tree.SimpleTerminalTreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
@@ -24,7 +23,9 @@ case class NamedNodeTest(name: String)
     }
   }
 
-  override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = axis match {
+  override def follow(tn: GraphNode, axis: AxisSpecifier,
+                      ee: ExpressionEngine,
+                      executionContext: ExecutionContext): ExecutionResult = axis match {
     case Child =>
       val kids: List[GraphNode] = findUnder(tn)
       ExecutionResult(kids)
@@ -33,11 +34,11 @@ case class NamedNodeTest(name: String)
       ExecutionResult(possibleMatches)
     case Attribute =>
       // If the property is not published, don't permit it
-      val typed = Typed.typeFor(tn, typeRegistry)
+      val typed = Typed.typeFor(tn, executionContext.typeRegistry)
       if (!typed.allOperations.exists(op => op.name == this.name && op.parameters.isEmpty))
         Left(s"No exported property [$name] on ${tn.nodeName}: Type info:[$typed]")
       else
-        resultFromPropertyValue(tn, typeRegistry)
+        resultFromPropertyValue(tn, executionContext.typeRegistry)
     case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")
   }
 

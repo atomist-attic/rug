@@ -1,6 +1,8 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.kind.core.RepoResolver
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
@@ -18,12 +20,12 @@ case class LocationStep(axis: AxisSpecifier,
 
   import ExpressionEngine.NodePreparer
 
-  def follow(tn: GraphNode, ee: ExpressionEngine, typeRegistry: TypeRegistry, nodePreparer: NodePreparer): ExecutionResult =
-    test.follow(tn, axis, ee, typeRegistry) match {
+  def follow(tn: GraphNode, ee: ExpressionEngine, executionContext: ExecutionContext, nodePreparer: NodePreparer): ExecutionResult =
+    test.follow(tn, axis, ee, executionContext) match {
       case Right(nodes) => ExecutionResult(
         nodes
           .map(nodePreparer)
-          .filter(tn => predicateToEvaluate.evaluate(tn, nodes, ee, typeRegistry, Some(nodePreparer)))
+          .filter(tn => predicateToEvaluate.evaluate(tn, nodes, ee, executionContext, Some(nodePreparer)))
       )
       case failure => failure
     }

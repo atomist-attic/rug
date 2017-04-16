@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.TreeNode
 import com.atomist.util.{Visitable, Visitor}
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -69,9 +69,12 @@ object Descendant extends AxisSpecifier {
 object Attribute extends AxisSpecifier
 
 /**
-  * Navigation via the node property with the given name
+  * Navigation via the node property with the given name.
   *
   * @param propertyName name to navigate into
   */
 case class NavigationAxis(propertyName: String)
-  extends AxisSpecifier
+  extends AxisSpecifier {
+
+  override def toString = s"NavigationAxis->$propertyName"
+}

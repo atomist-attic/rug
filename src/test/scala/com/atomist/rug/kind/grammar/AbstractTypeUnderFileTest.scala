@@ -45,7 +45,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
     */
   protected def evaluatePathExpression(tn: GraphNode, pe: String): Seq[GraphNode] = {
     import com.atomist.tree.pathexpression.PathExpressionParser._
-    expressionEngine.evaluate(tn, pe, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(tn, pe) match {
       case Right(nodes) => nodes
       case Left(x) => fail(s"Path expression failure: $x executing [$pe]")
     }

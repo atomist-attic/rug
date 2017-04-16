@@ -520,7 +520,7 @@ class ProjectMutableView(
 
   private def nodeAt(path: String, kind: String, lineFrom1: Int, colFrom1: Int): Option[TreeNode] = {
     val pexpr = pathToRootContainer(path, kind)
-    ctx.pathExpressionEngine.ee.evaluate(this, pexpr, DefaultTypeRegistry) match {
+    ctx.pathExpressionEngine.ee.evaluate(this, pexpr) match {
       case Right(nodes) if nodes.size == 1 =>
         val theNode = nodes.head
         //println(theNode.toString)

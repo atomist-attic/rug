@@ -12,9 +12,7 @@ import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
   * Some of these are exposed to JavaScript
   * in the HandlerContext TypeScript interface.
   */
-trait RugContext {
-
-  def typeRegistry: TypeRegistry
+trait RugContext extends ExecutionContext {
 
   def pathExpressionEngine: jsPathExpressionEngine
 

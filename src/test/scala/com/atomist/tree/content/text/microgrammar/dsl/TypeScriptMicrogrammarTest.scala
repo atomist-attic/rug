@@ -183,7 +183,6 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       ModifiesWithSimpleMicrogrammarSplitInto2))
   }
 
-  // RJ: I think this fails because of the underlying bug in returning the wrong structure
   it should "use editor requiring FormatInfo" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       RequiresFormatInfo))
@@ -202,7 +201,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.content.contains("_x"))
-      case _ => ???
+      case x => fail(s"Unexpected: $x")
     }
     jsed
   }
@@ -257,7 +256,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.content.contains("_x"))
-      case _ => ???
+      case x => fail(s"Unexpected: $x")
     }
     jsed
   }
@@ -267,7 +266,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
     val jsed = RugArchiveReader(as).editors.head
     val target = ParsingTargets.NewStartSpringIoProject
     val before = target.findFile("pom.xml").get.content
-    jsed.modify(target, SimpleParameterValues.Empty) match {
+    jsed.modify(target) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("pom.xml").get.content.contains("Foo bar") should be(true)
         val after = sm.result.findFile("pom.xml").get.content

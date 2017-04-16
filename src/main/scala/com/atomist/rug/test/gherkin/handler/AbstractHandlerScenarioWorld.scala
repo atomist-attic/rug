@@ -122,7 +122,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
     override def typeRegistry: TypeRegistry = AbstractHandlerScenarioWorld.this.typeRegistry
 
-    override val pathExpressionEngine = new jsPathExpressionEngine(this, typeRegistry = typeRegistry)
+    override val pathExpressionEngine = new jsPathExpressionEngine(this)
 
     override def treeMaterializer: TreeMaterializer = _treeMaterializer
 

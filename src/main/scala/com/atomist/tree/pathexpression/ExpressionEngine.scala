@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.runtime.js.{DefaultExecutionContext, ExecutionContext}
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
 object ExpressionEngine {
@@ -23,14 +23,15 @@ trait ExpressionEngine {
     *
     * @param node         root node to evaluate the path against
     * @param parsed       Parsed path expression. It's already been validated
-    * @param typeRegistry type registry, which may contain user-specific types
+    * @param executionContext context used to resolve repos or anything else
+    *                         that needs user context
     * @param nodePreparer called on nodes before any methods (including navigation)
     *                     are called on them. This can be used to set state.
     * @return
     */
   def evaluate(node: GraphNode,
                parsed: PathExpression,
-               typeRegistry: TypeRegistry,
+               executionContext: ExecutionContext = DefaultExecutionContext,
                nodePreparer: Option[NodePreparer] = None
               ): ExecutionResult
 

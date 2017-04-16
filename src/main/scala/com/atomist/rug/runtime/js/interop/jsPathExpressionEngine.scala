@@ -7,7 +7,7 @@ import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.RugContext
+import com.atomist.rug.runtime.js.{RugContext, SimpleExecutionContext}
 import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.spi._
 import com.atomist.tree.content.text.microgrammar._
@@ -42,10 +42,14 @@ case class jsMatch(root: GraphNode,
   */
 class jsPathExpressionEngine(
                               rugContext: RugContext,
-                              val ee: ExpressionEngine = new PathExpressionEngine,
-                              val typeRegistry: TypeRegistry = DefaultTypeRegistry) {
+                              typeRegistry: TypeRegistry,
+                              val ee: ExpressionEngine = new PathExpressionEngine) {
 
   import jsSafeCommittingProxy._
+
+  def this(rugContext: RugContext) {
+    this(rugContext, rugContext.typeRegistry, new PathExpressionEngine)
+  }
 
   /**
     * Return a customized version of this path expression engine for use in a specific
@@ -55,10 +59,10 @@ class jsPathExpressionEngine(
     * @return customized instance of this engine
     */
   def addType(dynamicType: Object): jsPathExpressionEngine = {
-    val tr = new UsageSpecificTypeRegistry(this.typeRegistry,
+    val tr = new UsageSpecificTypeRegistry(typeRegistry,
       Seq(dynamicType).map(dynamicTypeDefinitionToTypeProvider)
     )
-    new jsPathExpressionEngine(rugContext, this.ee, tr)
+    new jsPathExpressionEngine(rugContext, tr, this.ee)
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
@@ -96,7 +100,9 @@ class jsPathExpressionEngine(
 
   private def evaluateParsed(root: GraphNode, parsed: PathExpression) = {
     val hydrated = rugContext.treeMaterializer.hydrate(rugContext.teamId, toUnderlyingTreeNode(root), parsed)
-    ee.evaluate(hydrated, parsed, typeRegistry) match {
+    ee.evaluate(hydrated, parsed,
+      SimpleExecutionContext(typeRegistry, rugContext.repoResolver)
+    ) match {
       case Right(nodes) =>
         val m = jsMatch(root, wrap(nodes, typeRegistry))
         m

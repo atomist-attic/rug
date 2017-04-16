@@ -18,6 +18,13 @@ object NodeUtils {
     }
   }
 
+  def requiredKeyValue(gn: GraphNode, key: String): String = {
+    gn.relatedNodesNamed(key).headOption match {
+      case Some(tn: TreeNode) => tn.value
+      case _ => throw new IllegalAccessError(s"No key named [$key] on $gn")
+    }
+  }
+
   def value(gn: GraphNode): String = gn match {
     case tn: TreeNode => tn.value
     case _ => ""

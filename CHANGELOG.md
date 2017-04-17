@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.25.3...HEAD
 
+### Changed
+
+- Project test steps can now return `void`, as for handlers.
+
 ## [0.25.3] - 2017-04-13
 
 [0.25.3]: https://github.com/atomist/rug/compare/0.25.2...0.25.3

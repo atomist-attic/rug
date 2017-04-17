@@ -22,3 +22,5 @@ Then("we have comments", (p, world) => {
     let rr = world.get("review");
     return rr.comments.length == 1;
 });
+Then("we can succeed by returning void", p => {
+});

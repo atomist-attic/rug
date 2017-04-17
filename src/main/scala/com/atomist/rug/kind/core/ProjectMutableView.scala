@@ -37,9 +37,9 @@ object ProjectMutableView {
   * Operations on a project. Backed by an immutable ArtifactSource,
   * using copy on write.
   *
-  * @param rugAs backing store of the editor
+  * @param rugAs                 backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig Atomist configuration used to determine where we look for files.
+  * @param atomistConfig         Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
@@ -190,8 +190,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter file filter
-    * @param regexp regexp
+    * @param filter      file filter
+    * @param regexp      regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -251,7 +251,7 @@ class ProjectMutableView(
     description = "Makes a file executable")
   def makeExecutable(@ExportFunctionParameterDescription(name = "path",
     description = "The path to use")
-                 path: String): Unit = {
+                     path: String): Unit = {
     val file = currentBackingObject.findFile(path)
     file match {
       case Some(sourceFile) =>
@@ -346,7 +346,14 @@ class ProjectMutableView(
                                           ): Unit = {
     if (rugAs.findFile(sourceDir).isDefined)
       throw new InstantEditorFailureException(s"Path [$sourceDir] is a file, not a directory")
-    val underDir = rugAs.filter(d => true, f => f.path.startsWith(sourceDir))
+    val underDir = rugAs.filter(_ => true, f => f.path.startsWith(sourceDir))
+    updateTo(currentBackingObject + underDir)
+  }
+
+  @ExportFunction(readOnly = false,
+    description = "Copy the given files from the editor's backing archive project to the project being edited. Doesn't copy Atomist content.")
+  def copyEditorBackingProject(): Unit = {
+    val underDir = rugAs.filter(_ => true, f => !f.path.startsWith(atomistConfig.atomistRoot))
     updateTo(currentBackingObject + underDir)
   }
 
@@ -426,14 +433,14 @@ class ProjectMutableView(
     * map of string arguments.
     *
     * @param editorName name of editor to use
-    * @param params parameters to pass to the editor
+    * @param params     parameters to pass to the editor
     * @return
     */
   protected def editWith(editorName: String,
                          params: Map[String, Object]): Unit = {
 
-    (creator,rugResolver) match {
-      case (Some(rug), Some(resolver)) => resolver.resolve(rug,editorName) match {
+    (creator, rugResolver) match {
+      case (Some(rug), Some(resolver)) => resolver.resolve(rug, editorName) match {
         case Some(ed: ProjectEditor) =>
           ed.modify(currentBackingObject, SimpleParameterValues(params)) match {
             case sm: SuccessfulModification =>
@@ -445,7 +452,7 @@ class ProjectMutableView(
         case None =>
           if (editorName.contains(":")) {
             val shortName = StringUtils.substringAfterLast(editorName, ":")
-            if (resolver.resolve(rug,shortName).nonEmpty) {
+            if (resolver.resolve(rug, shortName).nonEmpty) {
               throw new EditorNotFoundException(s"Could not find editor: $editorName. Did you mean: $shortName?")
             }
           }

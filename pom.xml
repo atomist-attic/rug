@@ -22,7 +22,7 @@
             <dependency>
                 <groupId>com.atomist</groupId>
                 <artifactId>atomist-bom</artifactId>
-                <version>0.10.0</version>
+                <version>0.11.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>0.18.1</version>
+            <version>0.20.0</version>
         </dependency>
         <!-- For now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
              when running rug install etc. This has to become part of the language <-> runtime version mapping -->

@@ -36,7 +36,7 @@ case class NodesWithTag(tag: String)
       case _ =>
         // With dynamic nodes we can't know this is invalid. A TreeMaterializer backed path expression
         // that doesn't match and thus had no kids is a valid case and it won't be able to define types
-        if (gn.nodeTags.contains(TreeNode.Dynamic)) {
+        if (gn.hasTag(TreeNode.Dynamic)) {
           None
         }
         else {
@@ -46,7 +46,7 @@ case class NodesWithTag(tag: String)
     }
 
   private val eligibleNode: GraphNode => Boolean =
-    n => n.nodeTags.contains(tag) || n.nodeName == tag
+    n => n.hasTag(tag) || n.nodeName == tag
 
   // Attempt to find nodes of the required type under the given node
   private def findMeUnder(gn: GraphNode, ec: ExecutionContext, edgeName: Option[String]): Seq[GraphNode] = {

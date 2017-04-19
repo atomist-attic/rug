@@ -50,7 +50,6 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val run = grt.execute()
     run.result match {
       case Failed(msg) =>
-
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
@@ -118,4 +117,28 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
       case wtf => fail(s"Unexpected: $wtf")
     }
   }
+
+  it should "verify path expression drilling into projects" in {
+    val stepsFile = "LooksInProjectsSteps.ts"
+    val passingFeature1Steps =
+      TestUtils.requiredFileInPackage(this, stepsFile)
+    val passingFeature1StepsFile = passingFeature1Steps.withPath(
+      s".atomist/test/handlers/command/$stepsFile")
+
+    val handlerName = "LooksInProjects.ts"
+    val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
+    val as = SimpleFileBasedArtifactSource(
+      nodesFile,
+      Feature1File,
+      passingFeature1StepsFile, handlerFile)
+
+    val cas = TypeScriptBuilder.compileWithExtendedModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
 }

@@ -1,5 +1,6 @@
 import { HandleCommand, Instruction, Response, HandlerContext, Plan, ResponseMessage } from '@atomist/rug/operations/Handlers'
 import { CommandHandler, Secrets, Parameter, Tags, Intent } from '@atomist/rug/operations/Decorators'
+import { Project } from "@atomist/rug/model/Project"
 
 import * as node from "./Nodes"
 
@@ -99,3 +100,22 @@ class GoesOffGraph implements HandleCommand {
     }
 }
 export const command5 = new GoesOffGraph();
+
+
+@CommandHandler("LooksInProjects", "Looks in projects")
+@Tags("path_expression")
+class LooksInProjects implements HandleCommand {
+
+    handle(ctx: HandlerContext): Plan {
+        let result = new Plan()
+        const eng = ctx.pathExpressionEngine
+
+        // Find all Maven projects
+        const mavenProjects = "/Repo()/master::Project()[/pom.xml]"
+        eng.with<Project>(ctx.contextRoot, mavenProjects, p => {
+            result.add(new ResponseMessage(`${p.name} is a Maven project`))
+        })
+        return result;
+    }
+}
+export const command6 = new LooksInProjects();

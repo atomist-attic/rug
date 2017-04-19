@@ -2,6 +2,10 @@ package com.atomist.rug.kind.core
 
 import com.atomist.source.ArtifactSource
 
+/**
+  * Interface to be implemented by infrastructure that knows how to resolve
+  * repos into an ArtifactSource (e.g. from GitHub or a local clone).
+  */
 trait RepoResolver {
 
   /**

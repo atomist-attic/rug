@@ -1,6 +1,5 @@
 package com.atomist.rug.spi
 
-import com.atomist.project.review.{ReviewComment, Severity}
 import com.typesafe.scalalogging.LazyLogging
 
 /**
@@ -9,8 +8,6 @@ import com.typesafe.scalalogging.LazyLogging
   * @tparam  T type of the underlying object
   */
 trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
-
-  import Severity._
 
   @ExportFunction(readOnly = false,
     description = "Evaluate, i.e., compile and execute, JavaScript code.")
@@ -35,9 +32,4 @@ trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
     Console.println(msg)
   }
 
-  /**
-    * Subclasses can override this to supply more information about comments.
-    */
-  protected def toReviewComment(msg: String, severity: Severity): ReviewComment =
-    ReviewComment(msg, severity)
 }

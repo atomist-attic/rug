@@ -1,7 +1,6 @@
 package com.atomist.project.archive
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime.{CommandHandler, EventHandler, ResponseHandler, Rug}
 import com.atomist.source.ArtifactSource
 
@@ -54,7 +53,6 @@ case class ResolvedDependency(override val source: ArtifactSource,
     Rugs(
       resolvedRugs.collect { case h: ProjectEditor => h },
       resolvedRugs.collect { case h: ProjectGenerator => h },
-      resolvedRugs.collect { case h: ProjectReviewer => h },
       resolvedRugs.collect { case h: CommandHandler => h },
       resolvedRugs.collect { case h: EventHandler => h },
       resolvedRugs.collect { case h: ResponseHandler => h })

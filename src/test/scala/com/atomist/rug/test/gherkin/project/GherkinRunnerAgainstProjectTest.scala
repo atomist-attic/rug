@@ -1,15 +1,12 @@
 package com.atomist.rug.test.gherkin.project
 
-import javax.script.ScriptContext
-
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.rug.runtime.js.JavaScriptContext
 import com.atomist.rug.test.gherkin._
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{RugArchiveReader, TestUtils}
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import gherkin.ast.ScenarioDefinition
-import jdk.nashorn.api.scripting.{NashornScriptEngine, NashornScriptEngineFactory}
 import org.scalatest.{FlatSpec, Matchers}
 
 class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
@@ -127,23 +124,6 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     assert(run.result === Passed)
   }
 
-  it should "test a reviewer" in {
-    val as =
-      SimpleFileBasedArtifactSource(
-        TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
-        CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts",
-          TestUtils.requiredFileInPackage(this, "CorruptionTestSteps.ts").content)
-      )
-    val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt = new GherkinRunner(new JavaScriptContext(cas))
-    val run = grt.execute()
-    assert(run.testCount > 0)
-    assert(run.result === Passed)
-    val sum = new TestReport(run).testSummary
-    assert(sum.contains("SUCCESS"))
-  }
-
   it should "test a generator that copies starting content without parameters" in {
     val el = new TestExecutionListener
     val projectName = "generator-test"
@@ -227,28 +207,6 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result.isInstanceOf[Failed])
-  }
-
-  it should "run two sets of tests without side effect" in {
-      val as = SimpleFileBasedArtifactSource(
-        TestUtils.requiredFileInPackage(this, "FindCorruption.ts").withPath(".atomist/editors/FindCorruption.ts"),
-        CorruptionFeatureFile,
-        StringFileArtifact(".atomist/tests/project/CorruptionTestSteps.ts",
-          TestUtils.contentOf(this, "CorruptionTestSteps.ts"))
-      )
-    val cas = TypeScriptBuilder.compileWithModel(as)
-    val grt1 = new GherkinRunner(new JavaScriptContext(cas))
-    val run1 = grt1.execute()
-    val grt2 = new GherkinRunner(new JavaScriptContext(cas))
-    val run2 = grt2.execute()
-
-    val hopefullyCleanEngine = new NashornScriptEngineFactory()
-      .getScriptEngine("--optimistic-types", "--language=es6", "--no-java")
-      .asInstanceOf[NashornScriptEngine]
-    import GherkinRunner._
-    hopefullyCleanEngine.getBindings(ScriptContext.ENGINE_SCOPE).containsKey(DefinitionsObjectName) should be (false)
-    val globs = hopefullyCleanEngine.getBindings(ScriptContext.GLOBAL_SCOPE)
-    (globs == null || !globs.containsKey(DefinitionsObjectName)) should be (true)
   }
 
   class TestExecutionListener extends GherkinExecutionListenerAdapter {

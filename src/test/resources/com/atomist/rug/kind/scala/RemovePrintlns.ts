@@ -5,6 +5,7 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpressionEngine'
 import * as scala from '@atomist/rug/ast/scala/Types'
+import {ReviewComment,Severity} from "@atomist/rug/operations/RugOperation"
 
 /**
  * Removes printlns
@@ -32,11 +33,16 @@ class RemovePrintlns implements ProjectEditor {
             [/termName[@value='println'] or contains(termSelect, 'System.out.println')]`   
 
       eng.with<scala.TermApply>(project, printlnStatement, termApply => {
-        // console.log(`The term apply is ${termApply}`)
-        termApply.delete()
+        termApply.delete();
+        if (termApply.containingFile() == null)
+            throw new Error("Can't determine file");
+        // Verify review comment behavior
+        const rc = termApply.commentConcerning("Something's wrong", Severity.Major);
+        if (rc.line <= 1) throw new Error(`line of ${rc.line} is wrong`);
+        if (!rc.projectName) throw new Error("Expected project name");
       })
   }
 
 }
 
-export let editor = new RemovePrintlns()
+export const editor = new RemovePrintlns();

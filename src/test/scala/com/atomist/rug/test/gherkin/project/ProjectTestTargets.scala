@@ -49,8 +49,11 @@ object ProjectTestTargets {
       |    When run simple generator
       |    Then parameters were valid
       |    Then we have Anders
+      |    Then file at src/from/typescript should exist
+      |    Then file at src/from/typescript should contain Anders
       |    Then we have file from start project
       |    Then the project name is correct
+      |    Then we can succeed by returning void
       |""".stripMargin
 
   val GenerationFeatureFile = StringFileArtifact(
@@ -81,6 +84,8 @@ object ProjectTestTargets {
        |});
        |Then("the project name is correct", p => {
        |    return p.name == "$projectName";
+       |});
+       |Then("we can succeed by returning void", p => {
        |});
        |""".stripMargin
 

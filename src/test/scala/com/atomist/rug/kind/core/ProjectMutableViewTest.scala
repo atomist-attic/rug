@@ -76,7 +76,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     readmeFile.content.contains(replacementText) should be(true)
   }
 
-  it should "correctly handle a regexReplace that has been accidentally specified with an @regex lookup" in {
+  "ProjectMutableView" should "correctly handle a regexReplace that has been accidentally specified with an @regex lookup" in {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)
     val regexToReplace = "@project_name"
@@ -261,6 +261,27 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
 
     assert(pmv.currentBackingObject.totalFileCount === 3)
 
+    assert(pmv.currentBackingObject.findFile(src1.path).get.content === src1.content)
+    assert(pmv.currentBackingObject.findFile(src2.path).get.content === src2.content)
+    assert(pmv.dirty === true)
+  }
+
+  it should "copy files from project" in {
+    val alreadyThere = StringFileArtifact("src/test.txt", "already there")
+    val outputAs = new SimpleFileBasedArtifactSource("", alreadyThere)
+    val src1 = StringFileArtifact("src/thing", "under src")
+    val src2 = StringFileArtifact("src/main/otherThing", "under src/main")
+    val backingAs = new SimpleFileBasedArtifactSource("", Seq(
+      StringFileArtifact("README.md", "in the root"),
+      src1,
+      src2,
+      StringFileArtifact("other", "random"),
+      StringFileArtifact(".atomist/editors/Random.ts", "class Thing {}")
+    ))
+    val pmv = new ProjectMutableView(backingAs, outputAs)
+    pmv.copyEditorBackingProject()
+    assert(pmv.currentBackingObject.findFile(alreadyThere.path).get === alreadyThere)
+    assert(!pmv.files.asScala.exists(_.path.startsWith(".atomist")))
     assert(pmv.currentBackingObject.findFile(src1.path).get.content === src1.content)
     assert(pmv.currentBackingObject.findFile(src2.path).get.content === src2.content)
     assert(pmv.dirty === true)

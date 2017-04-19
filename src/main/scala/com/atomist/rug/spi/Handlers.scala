@@ -109,7 +109,6 @@ object Handlers {
       name match {
         case "generate" => Generate(detail)
         case "edit" => Edit(detail)
-        case "review" => Review(detail)
         case "execute" => Execute(detail)
         case "command" => Command(detail)
         case "respond" => Respond(detail)

@@ -135,9 +135,6 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
         case Generate(detail) =>
           val knownGenerators: Seq[String] = rugs.map(_.generatorNames).getOrElse(Nil)
           !knownGenerators.contains(detail.name)
-        case Review(detail) =>
-          val knownReviewers: Seq[String] = rugs.map(_.reviewerNames).getOrElse(Nil)
-          !knownReviewers.contains(detail.name)
         case Command(detail) =>
           val knownCommandHandlers: Seq[String] = rugs.map(_.commandHandlerNames).getOrElse(Nil)
           !knownCommandHandlers.contains(detail.name)

@@ -4,7 +4,6 @@ import com.atomist.param.SimpleParameterValues
 import com.atomist.project.archive.RugResolver
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Instruction._
@@ -12,7 +11,6 @@ import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
 import com.atomist.rug.spi.Handlers.{Instruction, Response}
 import com.atomist.rug.spi.{Body, RugFunctionRegistry}
 import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
-import com.atomist.util.JsonUtils
 
 /**
   * Run instructions synchronously in this JVM
@@ -71,11 +69,6 @@ class LocalInstructionRunner(currentRug: Rug,
                     case success: NoModificationNeeded => Response(Success,Some(success.comment))
                     case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
                   }
-                })
-              case Some(rug: ProjectReviewer) =>
-                doWithProjectName(instruction, (projectName: String) => {
-                  val reviewResult = projectManagement.review(rug,parameters, projectName)
-                  Response(Success, None, None, Some(JsonUtils.toJson(reviewResult)))
                 })
               case Some(rug: CommandHandler) =>
                 val planOption = rug.handle(rugContext, parameters)

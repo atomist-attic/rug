@@ -20,7 +20,6 @@ class ArchiveRugResolver(graph: Dependency,
     new JavaScriptCommandHandlerFinder(),
     new JavaScriptResponseHandlerFinder(),
     new JavaScriptEventHandlerFinder(),
-    new JavaScriptProjectReviewerFinder(),
     new JavaScriptProjectGeneratorFinder(),
     new JavaScriptProjectEditorFinder())
 

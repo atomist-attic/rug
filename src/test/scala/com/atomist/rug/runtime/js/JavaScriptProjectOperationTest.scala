@@ -3,7 +3,6 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.common.MissingParametersException
 import com.atomist.project.edit.ProjectEditor
-import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException, RugArchiveReader}
 import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -234,16 +233,6 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "run simple reviewer compiled from TypeScript and validate the pattern correctly" in {
-    invokeAndVerifySimpleReviewer(StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts", SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters))
-  }
-
-  it should "run simple reviewer and throw an exception for the bad pattern" in {
-    assertThrows[InvalidRugParameterPatternException] {
-      invokeAndVerifySimpleReviewer(StringFileArtifact(s".atomist/reviewers/SimpleReviewer.ts", SimpleReviewerWithBrokenParameterPattern))
-    }
-  }
-
   it should "run simple editor and throw an exception for default parameter value not matching pattern" in {
     assertThrows[InvalidRugParameterDefaultValue] {
       invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts",
@@ -292,18 +281,6 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
     
     }
     jsed
-  }
-
-  private  def invokeAndVerifySimpleReviewer(tsf: FileArtifact): ProjectReviewer = {
-    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
-    val jsr = RugArchiveReader(as).reviewers.head
-    assert(jsr.name === "Simple")
-    val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
-    jsr.review(target, SimpleParameterValues( Map("content" -> "http://blah.com"))) match {
-      case _ =>
-    
-    }
-    jsr
   }
 
   private  def invokeAndVerifyEditorWithDefaults(tsf: FileArtifact): ProjectEditor = {

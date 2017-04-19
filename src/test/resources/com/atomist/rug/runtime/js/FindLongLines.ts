@@ -6,6 +6,8 @@ import {ReviewResult, ReviewComment, Severity} from '@atomist/rug/operations/Rug
 import {Parameter, Reviewer} from '@atomist/rug/operations/Decorators'
 import {DecoratingPathExpressionEngine} from '@atomist/rug/ast/DecoratingPathExpressionEngine'
 
+// TODO: Convert this to a command handler to show the way to achieve
+// the same result as a reviewer
 
 @Reviewer("Simple", "A nice little editor")
 class FindLongLines implements ProjectReviewer {

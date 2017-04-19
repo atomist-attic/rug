@@ -31,7 +31,6 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
       "/Build()[@status='Passed']/ON::Repo()/CHANNEL::ChatChannel()") match {
       case Right(nodes) =>
         assert(nodes.size === 1)
-        println(nodes.head)
       case x => fail(s"Unexpected: $x")
     }
 

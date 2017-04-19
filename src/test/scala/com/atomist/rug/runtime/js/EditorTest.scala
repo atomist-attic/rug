@@ -11,7 +11,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ListBuffer
 
-object TypeScriptRugEditorTest {
+object EditorTest {
 
   val ContentPattern = "^Anders .*$"
 
@@ -377,9 +377,9 @@ object TypeScriptRugEditorTest {
 
 }
 
-class TypeScriptRugEditorTest extends FlatSpec with Matchers {
+class EditorTest extends FlatSpec with Matchers {
 
-  import TypeScriptRugEditorTest._
+  import EditorTest._
 
   it should "allow use of name/description fields if we are using annotations" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBasicNameParameter))

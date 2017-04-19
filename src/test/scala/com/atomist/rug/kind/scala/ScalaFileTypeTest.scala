@@ -195,7 +195,6 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
     val updatedFile = proj.findFile(Exceptions.path)
     assert(updatedFile.content === newContent)
-    //updatedFile.dirty should be(true)
   }
 
 }
@@ -369,7 +368,7 @@ object ScalaFileTypeTest {
     Python3Source
   )
 
-  val UsesPrintlnsSources = SimpleFileBasedArtifactSource(
+  val UsesPrintlnsSources = new SimpleFileBasedArtifactSource("projectName",
     UsesPrintlnsSource
   )
 

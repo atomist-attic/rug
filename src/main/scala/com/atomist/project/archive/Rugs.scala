@@ -2,7 +2,6 @@ package com.atomist.project.archive
 
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.runtime._
 
 /**
@@ -11,14 +10,13 @@ import com.atomist.rug.runtime._
 
 object Rugs {
   def Empty: Rugs = {
-    new Rugs(Nil,Nil,Nil,Nil,Nil,Nil)
+    new Rugs(Nil, Nil, Nil, Nil, Nil)
   }
 }
 
 case class Rugs(
             private val _editors: Seq[ProjectEditor],
             private val _generators: Seq[ProjectGenerator],
-            private val _reviewers: Seq[ProjectReviewer],
             private val _commandHandlers: Seq[CommandHandler],
             private val _eventHandlers: Seq[EventHandler],
             private val _responseHandlers: Seq[ResponseHandler]
@@ -28,8 +26,6 @@ case class Rugs(
   def editors: Seq[ProjectEditor] = _editors.sortBy(p => p.name)
 
   def generators: Seq[ProjectGenerator] = _generators.sortBy(p => p.name)
-
-  def reviewers: Seq[ProjectReviewer] = _reviewers.sortBy(p => p.name)
 
   def commandHandlers: Seq[CommandHandler] = _commandHandlers.sortBy(p => p.name)
 
@@ -41,15 +37,13 @@ case class Rugs(
 
   def generatorNames: Seq[String] = names(generators)
 
-  def reviewerNames: Seq[String] = names(reviewers)
-
   def commandHandlerNames: Seq[String] = names(commandHandlers)
 
   def eventHandlerNames: Seq[String] = names(eventHandlers)
 
   def responseHandlerNames: Seq[String] = names(responseHandlers)
 
-  def allRugs: Seq[Rug] = editors ++ generators ++ reviewers ++ commandHandlers ++ eventHandlers ++ responseHandlers
+  def allRugs: Seq[Rug] = editors ++ generators ++ commandHandlers ++ eventHandlers ++ responseHandlers
 
   private def names(rugs: Seq[Rug]): Seq[String] = rugs.map(r => r.name)
 
@@ -59,8 +53,6 @@ case class Rugs(
     sb.append(editorNames.mkString(", "))
     sb.append("] generators: [")
     sb.append(generatorNames.mkString(", "))
-    sb.append("] reviewers: [")
-    sb.append(reviewerNames.mkString(", "))
     sb.append("] event handlers: [")
     sb.append(eventHandlerNames.mkString(", "))
     sb.append("] command handlers: [")

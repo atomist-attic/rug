@@ -3,7 +3,6 @@ package com.atomist.rug
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive._
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor, SuccessfulModification}
-import com.atomist.project.review.ProjectReviewer
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source._
 import com.atomist.source.file.ClassPathArtifactSource
@@ -90,9 +89,6 @@ object TestUtils extends Matchers {
     */
   def editorInSideFile(caller: AnyRef, name: String): ProjectEditor =
     rugsInSideFile(caller, name).editors.head
-
-  def reviewerInSideFile(caller: AnyRef, name: String): ProjectReviewer =
-    rugsInSideFile(caller, name).reviewers.head
 
   /**
     * Return all resources in this package as an ArtifactSource.

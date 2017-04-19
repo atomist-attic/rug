@@ -13,7 +13,7 @@ class ScalaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new ScalaFileType
 
-  it should "name a specified parameter" in {
+  "Scala file type in use" should "name a specified parameter" in {
     modify("NameParameter.ts", PythonTypeSources) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile(Python3Source.path).get

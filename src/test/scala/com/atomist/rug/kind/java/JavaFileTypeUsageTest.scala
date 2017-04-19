@@ -11,20 +11,21 @@ class JavaFileTypeUsageTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new JavaFileType
 
-  it should "find catch(throwable) and validate format info" in {
-    val exceptionToSearchFor = "ThePlaneHasFlownIntoTheMountain"
-    val rr = reviewerInSideFile(this, "CatchThrowable.ts").review(ExceptionsSources,
-      SimpleParameterValues(Map("exception" -> exceptionToSearchFor)))
-    rr.comments.nonEmpty should be (true)
-    assert(rr.comments.size === 1)
-    val c1 = rr.comments.head
-    c1.line should be (defined)
-    c1.column should be (defined)
-    c1.fileName.get should be (Exceptions.path)
+  // TODO we need to re-enable this as a handler test
+  it should "find catch(throwable) and validate format info" in pending //{
+//    val exceptionToSearchFor = "ThePlaneHasFlownIntoTheMountain"
+//    val rr = reviewerInSideFile(this, "CatchThrowable.ts").review(ExceptionsSources,
+//      SimpleParameterValues(Map("exception" -> exceptionToSearchFor)))
+//    rr.comments.nonEmpty should be (true)
+//    assert(rr.comments.size === 1)
+//    val c1 = rr.comments.head
+//    c1.line should be (defined)
+//    c1.column should be (defined)
+//    c1.fileName.get should be (Exceptions.path)
+//
+//    val pos = LineInputPositionImpl(Exceptions.content, c1.line.get, c1.column.get)
+//    val extracted = Exceptions.content.substring(pos.offset, pos.offset + exceptionToSearchFor.length)
+//    assert(extracted === exceptionToSearchFor)
 
-    val pos = LineInputPositionImpl(Exceptions.content, c1.line.get, c1.column.get)
-    val extracted = Exceptions.content.substring(pos.offset, pos.offset + exceptionToSearchFor.length)
-    assert(extracted === exceptionToSearchFor)
-  }
 
 }

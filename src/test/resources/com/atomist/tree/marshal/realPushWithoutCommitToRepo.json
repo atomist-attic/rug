@@ -1,0 +1,54 @@
+[
+  {
+    "after": "904c9c12b4cbc3e1fa32838ddddfe58230bd1714",
+    "id": "904c9c12b4cbc3e1fa32838ddddfe58230bd1714_master",
+    "branch": "master",
+    "timestamp": "2017-03-17T11:27:42.464Z",
+    "nodeId": 7732,
+    "type": [
+      "Push"
+    ]
+  },
+  {
+    "owner": "atomisthqa",
+    "name": "jenkinsfile-atomist-demo",
+    "nodeId": 7517,
+    "type": [
+      "Repo"
+    ]
+  },
+  {
+    "message": "this should be set",
+    "sha": "904c9c12b4cbc3e1fa32838ddddfe58230bd1714",
+    "timestamp": "2017-03-17T12:27:35+01:00",
+    "nodeId": 7733,
+    "type": [
+      "Commit"
+    ]
+  },
+  {
+    "startNodeId": 7732,
+    "endNodeId": 7517,
+    "type": "repo",
+    "cardinality": "1:1"
+  },
+  {
+    "startNodeId": 7732,
+    "endNodeId": 7733,
+    "type": "after",
+    "cardinality": "1:1"
+  },
+  {
+    "remainingPathExpression": "NavigationAxis::NodesWithTag(Project)[]/Child::NamedNodeTest(foo)[]",
+    "nodeId": -1000,
+    "type": [
+      "unresolvable"
+    ]
+  },
+  {
+    "startNodeId": 7733,
+    "endNodeId": -1000,
+    "type": "PROJECT",
+    "cardinality": "1:1"
+  }
+]

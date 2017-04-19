@@ -52,7 +52,8 @@ class ProjectType extends Type with ReflectivelyTypedType {
   }
 
   private def extractOwnerAndRepoFromAssociatedRepo(n: GraphNode): (String,String) = {
-    val repo = NodeUtils.requiredNodeOfType(n, "Repo")
+    val repo = NodeUtils.requiredNodeOfType(n, "Repo",
+      customMessage = Some(s"Commit node must expose Repo to find Project. Did you materialize it with a predicate? Raw node was $n"))
     val owner = NodeUtils.requiredKeyValue(repo, "owner")
     val name = NodeUtils.requiredKeyValue(repo, "name")
     (owner, name)

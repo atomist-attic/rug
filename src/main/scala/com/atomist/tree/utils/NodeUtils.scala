@@ -21,29 +21,38 @@ object NodeUtils {
     }
   }
 
-  def requiredKeyValue(gn: GraphNode, key: String): String = {
+  /**
+    * Throw an exception if this key value cannot be extracted as a string
+    * @param customMessage error message to use if desired
+    */
+  def requiredKeyValue(gn: GraphNode, key: String, customMessage: Option[String] = None): String = {
     gn.relatedNodesNamed(key).headOption match {
       case Some(tn: TreeNode) => tn.value
-      case _ => throw new IllegalAccessError(s"No key named [$key] on $gn")
+      case _ => throw new IllegalArgumentException(
+        customMessage.getOrElse(s"No key named [$key] on $gn")
+      )
     }
   }
 
-  def requiredKey(gn: GraphNode, key: String): GraphNode = {
+  def requiredKey(gn: GraphNode, key: String, customMessage: Option[String] = None): GraphNode = {
     gn.relatedNodesNamed(key).headOption match {
       case Some(gn: GraphNode) => gn
       case _ =>
         gn.followEdge(key).toList match {
           case List(n: GraphNode) => n
           case l =>
-            throw new IllegalAccessError(s"No single key value named [$key] on $gn: Found $l")
+            throw new IllegalArgumentException(
+              customMessage.getOrElse(s"No single key value named [$key] on $gn: Found $l")
+            )
         }
     }
   }
 
-  def requiredNodeOfType(gn: GraphNode, tag: String): GraphNode = {
+  def requiredNodeOfType(gn: GraphNode, tag: String, customMessage: Option[String] = None): GraphNode = {
     gn.relatedNodes.find(_.hasTag(tag)) match {
       case Some(gn: GraphNode) => gn
-      case _ => throw new IllegalAccessError(s"No key with tag [$tag] on $gn")
+      case _ => throw new IllegalArgumentException(
+        customMessage.getOrElse(s"No key with tag [$tag] on $gn"))
     }
   }
 

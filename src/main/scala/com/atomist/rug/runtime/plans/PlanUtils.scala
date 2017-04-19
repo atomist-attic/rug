@@ -29,7 +29,6 @@ object PlanUtils {
       case Edit(_) => "Edit"
       case Review(_) => "Review"
       case Execute(_) => "Execute"
-      case Command(_) => "Command"
       case Respond(_) => "Respond"
     }
     s"$op ${i.detail.name} ${i.detail.coordinates} ${i.detail.parameters}"

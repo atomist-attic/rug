@@ -7,7 +7,7 @@ import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
-import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate, Review}
+import com.atomist.rug.spi.Handlers.Instruction.{Edit, Generate, Review}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, ScenarioWorld}
@@ -135,9 +135,6 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
         case Generate(detail) =>
           val knownGenerators: Seq[String] = rugs.map(_.generatorNames).getOrElse(Nil)
           !knownGenerators.contains(detail.name)
-        case Command(detail) =>
-          val knownCommandHandlers: Seq[String] = rugs.map(_.commandHandlerNames).getOrElse(Nil)
-          !knownCommandHandlers.contains(detail.name)
         // TODO there are probably more cases here
         case _ => false
       }

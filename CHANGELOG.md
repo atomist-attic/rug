@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Project test steps can now return `void`, as for handlers.
+-   **BREAKING** Removed ability to add `command` instructions to the Plans 
+-   Project test steps can now return `void`, as for handlers.
 
 ## [0.25.3] - 2017-04-13
 

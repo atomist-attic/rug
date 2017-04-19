@@ -110,7 +110,6 @@ object Handlers {
         case "generate" => Generate(detail)
         case "edit" => Edit(detail)
         case "execute" => Execute(detail)
-        case "command" => Command(detail)
         case "respond" => Respond(detail)
         case _ => throw new IllegalArgumentException(s"Cannot derive Instruction from '$name'.")
       }
@@ -126,8 +125,6 @@ object Handlers {
     case class Review(detail: Detail) extends RespondableInstruction
 
     case class Execute(detail: Detail) extends RespondableInstruction
-
-    case class Command(detail: Detail) extends NonrespondableInstruction
 
     case class Respond(detail: Detail) extends NonrespondableInstruction with Callback
 

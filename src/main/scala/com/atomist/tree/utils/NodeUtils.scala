@@ -6,6 +6,9 @@ import org.springframework.util.ReflectionUtils
 
 import scala.reflect.ClassTag
 
+/**
+  * Convenience methods on GraphNode
+  */
 object NodeUtils {
 
   /**
@@ -56,7 +59,6 @@ object NodeUtils {
                               (implicit tag: ClassTag[T]): Option[T] = {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).find(
       m => m.getName == methodName && m.getParameterCount == args.size && {
-        //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
         m.getReturnType.isPrimitive || // Let boxing do its magic
           tag.runtimeClass.isAssignableFrom(m.getReturnType)
       }
@@ -68,7 +70,6 @@ object NodeUtils {
                        (implicit tag: ClassTag[T]): Boolean = {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).exists(
       m => m.getName == methodName && m.getParameterCount == 0 && {
-        //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
         tag.runtimeClass.isAssignableFrom(m.getReturnType)
       })
   }

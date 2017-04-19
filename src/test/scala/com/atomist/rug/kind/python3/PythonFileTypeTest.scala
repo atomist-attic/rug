@@ -17,15 +17,12 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
 
   private val pex = new PathExpressionEngine
 
-  it should "find Python file type using path expression" in {
+  "Python file type" should "find Python file type using path expression" in {
     val proj = SimpleFileBasedArtifactSource(StringFileArtifact("src/setup.py", setupDotPy))
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/src/File()/PythonFile()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     assert(rtn.right.get.size === 1)
-    //    rtn.right.get.foreach {
-    //      case p: PythonFileMutableView =>
-    //    }
   }
 
   it should "drill down to Python import statement using path expression" in {
@@ -35,17 +32,15 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     val parsed = PathExpressionParser.parseString(expr)
     val rtn = pex.evaluate(pmv, parsed)
 
-    rtn.right.filter(_.isEmpty).foreach {
-      _ => println(s"\nNon-match result:\n${matchReport(pex, pmv, parsed, DefaultTypeRegistry)}")
-    }
+//    rtn.right.filter(_.isEmpty).foreach {
+//      _ => println(s"\nNon-match result:\n${matchReport(pex, pmv, parsed, DefaultTypeRegistry)}")
+//    }
     withClue(rtn.right.get.map(TreeNodeUtils.toShortString)) {
       rtn.right.get.size should be(5)
     }
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
-
-      case x => // println(s"Was empty: $x")
-      // println(s"Was empty: $x")
+      case x => fail(s"Was empty: $x")
     }
   }
 
@@ -57,9 +52,7 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
     rtn.right.get.size should be(3)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
-
-      case x => // println(s"Was empty: $x")
-      // println(s"Was empty: $x")
+      case x => fail(s"Was empty: $x")
     }
   }
 
@@ -76,7 +69,7 @@ class PythonFileTypeTest extends FlatSpec with Matchers {
           val dirtyDeets = if (nonEmpty.size > 1) "" else {
             s" = ${nonEmpty.head}"
           }
-          val myReport = Seq(s"${steps} found ${nonEmpty.size}$dirtyDeets")
+          val myReport = Seq(s"$steps found ${nonEmpty.size}$dirtyDeets")
           val recentEmptyReport = lastEmptySteps.map(" " + _ + " found 0").toSeq
           val reportSoFar = myReport ++ recentEmptyReport ++ report
           inner(reportSoFar.map(" " + _), None, steps.dropLastStep)

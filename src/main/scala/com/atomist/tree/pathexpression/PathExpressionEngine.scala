@@ -16,7 +16,6 @@ class PathExpressionEngine extends ExpressionEngine {
                         executionContext: ExecutionContext = DefaultExecutionContext,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
     val (result, report) = evaluateAndReport(node, parsed, executionContext, nodePreparer)
-    // println("Evaluate Report:\n" + report.mkString("\n"))
     result
   }
 

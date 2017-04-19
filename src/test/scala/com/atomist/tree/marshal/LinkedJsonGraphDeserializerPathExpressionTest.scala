@@ -3,9 +3,8 @@ package com.atomist.tree.marshal
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.TestUtils
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
+import com.atomist.rug.kind.core.{FixedBranchRepoResolver, FixedShaRepoResolver, ProjectMutableView}
 import com.atomist.rug.runtime.js.{SimpleContainerGraphNode, SimpleExecutionContext}
-import com.atomist.source.ArtifactSource
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
@@ -57,7 +56,8 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
 
   it should "handle unresolvable in Repo -> Project using master" in {
     val as = ParsingTargets.NewStartSpringIoProject
-    val ec = SimpleExecutionContext(DefaultTypeRegistry, Some(FixedBranchRepoResolver("master", as)))
+    val ec = SimpleExecutionContext(DefaultTypeRegistry,
+      Some(FixedBranchRepoResolver("owner", "repo-name", "master", as)))
     val json = TestUtils.contentOf(this, "withLinksAndUnresolvable.json")
     val node = LinkedJsonGraphDeserializer.fromJson(json)
     val pex: PathExpression = "/Build()/ON::Repo()/master::Project()"
@@ -73,7 +73,8 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
   it should "handle unresolvable in Repo -> Project using sha" in {
     val sha = "d6cd1e2bd19e03a81132a23b2025920577f84e37"
     val as = ParsingTargets.NewStartSpringIoProject
-    val ec = SimpleExecutionContext(DefaultTypeRegistry, Some(FixedShaRepoResolver(sha, as)))
+    val ec = SimpleExecutionContext(DefaultTypeRegistry,
+      Some(FixedShaRepoResolver("owner", "repo-name", sha, as)))
     val json = TestUtils.contentOf(this, "withLinksAndUnresolvable.json")
     val node = LinkedJsonGraphDeserializer.fromJson(json)
     val pex: PathExpression = s"/Build()/ON::Repo()/$sha::Project()"
@@ -84,28 +85,9 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
         assert(proj.totalFileCount === as.totalFileCount)
       case x => fail(s"Unexpected: $x")
     }
-
   }
+
 }
 
-case class FixedBranchRepoResolver(expectedBranch: String, as: ArtifactSource) extends RepoResolver {
 
-  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource =
-    branch match {
-      case `expectedBranch` => as
-      case x => throw new IllegalArgumentException(s"Don't know about branch [$branch]")
-    }
 
-  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = ???
-}
-
-case class FixedShaRepoResolver(expectedSha: String, as: ArtifactSource) extends RepoResolver {
-
-  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = ???
-
-  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource =
-    sha match {
-      case `expectedSha` => as
-      case x => throw new IllegalArgumentException(s"Don't know about sha [$sha]")
-    }
-}

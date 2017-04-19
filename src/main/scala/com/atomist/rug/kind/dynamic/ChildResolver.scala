@@ -5,7 +5,10 @@ import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.tree.TreeNode
 
 /**
-  * Try to find children of this type in the given context
+  * Try to find related nodes of this type from the given context GraphNode.
+  * Supports both undirected navigation, via findAllIn, where all related
+  * nodes are found, and directed navigation, via navigate, where
+  * nodes are found only through a known edge.
   */
 trait ChildResolver {
 
@@ -16,8 +19,10 @@ trait ChildResolver {
   def findAllIn(context: GraphNode): Option[Seq[TreeNode]]
 
   /**
+    * Directed navigation.
     * Find all in the given context, under the given edge name.
     * Most implementations can return None as per the default.
+    * Return None if the edge name is unknown.
     *
     * @param edgeName relationship name
     * @param executionContext context in case we need to resolve repos etc.

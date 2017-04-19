@@ -11,11 +11,10 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
 
   override protected def typeBeingTested: TypeUnderFile = new YamlFileType
 
-  it should "parse and run path expression to find sequence" in {
+  "yaml file type" should "parse and run path expression to find sequence" in {
     val f = StringFileArtifact("test.yml", YamlNestedSeq)
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
     val nodes = evaluatePathExpression(tn, "/components/*")
     assert(NodeUtils.value(nodes.last) === "Nait 3R")
   }
@@ -24,7 +23,6 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     val f = StringFileArtifact("test.yml", YamlNestedSeq)
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
     val nodes = evaluatePathExpression(tn, "/components/cables/*")
     assert(NodeUtils.value(nodes.last) === "A5 speaker cable")
   }
@@ -125,11 +123,9 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(NodeUtils.value(nodes2.last) === "\"God Save the Queen\"")
   }
 
-  it should "parse and run path expression against YamlOrgStart invoice" in pendingUntilFixed {
+  it should "parse and run path expression against YamlOrgStart invoice" in {
     val f = StringFileArtifact("test.yml", YamlOrgStart)
     val tn = typeBeingTested.fileToRawNode(f).get
-    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
     val nodes = evaluatePathExpression(tn, "//bill-to/given")
     assert(nodes.size == 1)
   }

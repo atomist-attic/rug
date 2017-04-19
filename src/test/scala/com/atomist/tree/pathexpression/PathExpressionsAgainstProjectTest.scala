@@ -237,7 +237,22 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val pmv = new ProjectMutableView(proj)
     val rtn = ee.evaluate(pmv, pexp)
     assert(rtn.right.get.size === 3)
-    //rtn.right.get.map(_.)
+  }
+
+  // This is currently not legal. . can be used later, however
+  it should "#361: NOT support navigation into directories starting with ." in pendingUntilFixed(
+    fileNavUnder(".atomist")
+  )
+
+  it should "support navigation into directories containing special characters" in
+    Seq("atomist.home", "123#1", "$atomist", "-atomist", "_atomis_t").foreach(fileNavUnder)
+
+  private def fileNavUnder(directory: String) {
+    val pexp = s"/$directory//File()"
+    val proj = RugCompilerTest.JavaAndText.withPathAbove(directory)
+    val pmv = new ProjectMutableView(proj)
+    val rtn = ee.evaluate(pmv, pexp)
+    assert(rtn.right.get.size === 3)
   }
 
   it should "double descend into Java type with superfluous but valid File() type" in {
@@ -284,14 +299,13 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
-
+      case x => fail(s"Unexpected: $x")
     }
   }
 
   it should "jump into Java type and call boolean method" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
-    // Second filter is really a no op
     // Second filter is really a no op
     val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract()]"
     val rtn2 = ee.evaluate(pmv, expr2)
@@ -304,28 +318,14 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     )
     val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
-    // Second filter is really a no op
     val expr = "/*[@name='license.txt' or @name='foo']"
     val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
-  //  it should "find files irrespective of case" in {
-  //    val proj = SimpleFileBasedArtifactSource(
-  //      StringFileArtifact("license.txt", "The blah blah license")
-  //    )
-  //    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-  //
-  //    // Second filter is really a no op
-  //    val expr = "/[name='license.txt' or name='foo']"
-  //    val rtn = ee.evaluate(pmv, expr)
-  //    rtn.right.get.size should be (1)
-  //  }
-
   it should "jump into Java type and test on name" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
-    // Second filter is really a no op
     // Second filter is really a no op
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and .pkg()='com.example']"
     val rtn = ee.evaluate(pmv, expr)

@@ -25,6 +25,25 @@ object NodeUtils {
     }
   }
 
+  def requiredKey(gn: GraphNode, key: String): GraphNode = {
+    gn.relatedNodesNamed(key).headOption match {
+      case Some(gn: GraphNode) => gn
+      case _ =>
+        gn.followEdge(key).toList match {
+          case List(n: GraphNode) => n
+          case l =>
+            throw new IllegalAccessError(s"No single key value named [$key] on $gn: Found $l")
+        }
+    }
+  }
+
+  def requiredNodeOfType(gn: GraphNode, tag: String): GraphNode = {
+    gn.relatedNodes.find(_.hasTag(tag)) match {
+      case Some(gn: GraphNode) => gn
+      case _ => throw new IllegalAccessError(s"No key with tag [$tag] on $gn")
+    }
+  }
+
   def value(gn: GraphNode): String = gn match {
     case tn: TreeNode => tn.value
     case _ => ""
@@ -38,7 +57,7 @@ object NodeUtils {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).find(
       m => m.getName == methodName && m.getParameterCount == args.size && {
         //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
-        m.getReturnType.isPrimitive ||  // Let boxing do its magic
+        m.getReturnType.isPrimitive || // Let boxing do its magic
           tag.runtimeClass.isAssignableFrom(m.getReturnType)
       }
     )
@@ -46,11 +65,11 @@ object NodeUtils {
   }
 
   def hasNoArgMethod[T](n: GraphNode, methodName: String)
-                              (implicit tag: ClassTag[T]): Boolean = {
+                       (implicit tag: ClassTag[T]): Boolean = {
     ReflectionUtils.getAllDeclaredMethods(n.getClass).exists(
       m => m.getName == methodName && m.getParameterCount == 0 && {
-      //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
-      tag.runtimeClass.isAssignableFrom(m.getReturnType)
-    })
+        //println(s"tag=${tag.runtimeClass},rt=${m.getReturnType}")
+        tag.runtimeClass.isAssignableFrom(m.getReturnType)
+      })
   }
 }

@@ -80,7 +80,7 @@ class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = N
   private def notifyListenersOfMatchResult(eventNode: GraphNode, h: EventHandler, rugContext: RugContext) = {
     h match {
       case jsh: JavaScriptEventHandler =>
-        rugContext.pathExpressionEngine.ee.evaluate(JavaScriptEventHandler.rootNodeFor(eventNode), jsh.pathExpression, rugContext.typeRegistry) match {
+        rugContext.pathExpressionEngine.ee.evaluate(JavaScriptEventHandler.rootNodeFor(eventNode), jsh.pathExpression, rugContext) match {
           case Right(nodes) =>
             //println(s"Results for [${jsh.pathExpressionStr}] were ${nodes}")
             for (l <- listeners)

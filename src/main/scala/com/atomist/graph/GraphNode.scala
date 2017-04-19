@@ -30,6 +30,8 @@ trait GraphNode extends Visitable {
   @ExportFunction(readOnly = true, description = "Tags attached to the node")
   def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
+  def hasTag(tag: String): Boolean = nodeTags.contains(tag)
+
   override def accept(v: Visitor, depth: Int): Unit = {
     if (v.visit(this, depth))
       relatedNodes.foreach(_.accept(v, depth + 1))

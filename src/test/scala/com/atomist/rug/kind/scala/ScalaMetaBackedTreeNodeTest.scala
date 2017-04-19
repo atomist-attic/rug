@@ -29,7 +29,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       """
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
-    ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName", DefaultTypeRegistry) match {
+    ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName") match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         assert(nodes.head.asInstanceOf[TreeNode].value === "bar")
@@ -43,7 +43,7 @@ class ScalaMetaBackedTreeNodeTest extends FlatSpec with Matchers {
       """
     val str: Parsed[Source] = source.parse[Source]
     val tn = new ScalaMetaTreeBackedTreeNode(str.get)
-    ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName", DefaultTypeRegistry) match {
+    ee.evaluate(tn, "//termParam[/typeName[@value='String']]/termName") match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         val tn: PositionedTreeNode = nodes.head.asInstanceOf[PositionedTreeNode]

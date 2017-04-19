@@ -1,14 +1,12 @@
 package com.atomist.rug.kind.scala
 
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, TreeNodeOperations}
-import com.atomist.tree.pathexpression.PathExpressionParser
+import com.atomist.tree.pathexpression.{PathExpression, PathExpressionParser}
 import com.atomist.tree.utils.TreeNodeUtils
-import com.atomist.tree.{MutableTreeNode, TreeNode, UpdatableTreeNode}
+import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
@@ -17,7 +15,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   override val typeBeingTested = new ScalaFileType
 
-  it should "ignore ill-formed file without error" in {
+  "Scala file type" should "ignore ill-formed file without error" in {
     val scalas = typeBeingTested.findAllIn(projectWithBogusScala)
     // Should have silently ignored the bogus file
     assert(scalas.size === 1)
@@ -47,8 +45,8 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
   }
 
   it should "find hello world using path expression" in {
-    val expr = "//ScalaFile()"
-    val rtn = expressionEngine.evaluate(helloWorldProject, expr, DefaultTypeRegistry)
+    val expr: PathExpression = "//ScalaFile()"
+    val rtn = expressionEngine.evaluate(helloWorldProject, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -58,7 +56,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val scalaFileNode = scalas.get.head
 
     val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
-    expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(scalaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         assert(nodes.head.asInstanceOf[TreeNode].value === "ThePlaneHasFlownIntoTheMountain")
@@ -77,7 +75,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val newException = "MicturationException"
 
     val expr = "//termTryWithCases/case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
-    expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(scalaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[UpdatableTreeNode]
@@ -100,7 +98,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val path = proj.pathTo(Exceptions.path, "ScalaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1)
     assert(path.contains("ScalaFile"))
     //println(s"Running path " + path)
-    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(proj, path) match {
       case Right(nodes) if nodes.size == 1 =>
         val found = nodes.head.asInstanceOf[TreeNode]
         assert(found.value === tn.value)
@@ -113,7 +111,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val expectedValue = "ThePlaneHasFlownIntoTheMountain"
     val proj = exceptionsProject
     val expr = s"//ScalaFile()//case//typeName[@value='$expectedValue']"
-    expressionEngine.evaluate(proj, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(proj, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 2)
         val tn = nodes.head.asInstanceOf[OverwritableTextTreeNode]
@@ -131,7 +129,6 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "find path to specific exception catch" in {
     val proj = exceptionsProject
-
     val path = proj.pathTo(exceptionsProject.files.get(0).path, "ScalaFile", 9, 5)
     //println(s"Path=$path")
     assert(path.contains(exceptionsProject.files.get(0).path))
@@ -140,7 +137,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     evaluatePathExpression(proj, path) match {
       case nodes if nodes.size == 1 =>
         //println(nodes)
-      case _ => fail
+      case x => fail(s"Unexpected: $x")
     }
   }
 
@@ -153,7 +150,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     val newException = "MicturationException"
 
     val expr = "//case//typeName[@value='ThePlaneHasFlownIntoTheMountain']"
-    expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(scalaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 2)
         nodes.foreach {
@@ -182,7 +179,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
     //println(TreeNodeUtils.toShorterString(scalaFileNode))
 
     val expr = "//termTryWithCases/case[//typeName[@value='ThePlaneHasFlownIntoTheMountain']]"
-    expressionEngine.evaluate(scalaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(scalaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[UpdatableTreeNode]

@@ -3,6 +3,7 @@ package com.atomist.tree.content.text.microgrammar.dsl
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.SimpleExecutionContext
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
@@ -142,7 +143,8 @@ object ExercisePathExpression extends FlatSpec with Matchers {
       new UsageSpecificTypeRegistry(DefaultTypeRegistry,
         Seq(new MicrogrammarTypeProvider(microgrammar)))
 
-    new PathExpressionEngine().evaluate(pmv, pathExpression, typeRegistryWithMicrogrammar)
+    new PathExpressionEngine().evaluate(pmv, pathExpression,
+      SimpleExecutionContext(typeRegistryWithMicrogrammar))
   }
 
   def exerciseFailingPathExpression(microgrammar: Microgrammar, pathExpressionString: String, input: String): String = {

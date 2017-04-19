@@ -2,7 +2,6 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.rug.RugCompilerTest
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.java.JavaClassOrInterfaceMutableView
 import com.atomist.rug.kind.pom.PomMutableView
@@ -23,7 +22,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/DoesntExist()"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Left(err) => assert(err.contains("DoesntExist"))
       case wtf => fail(s"Should have returned an error, not $wtf")
     }
@@ -33,7 +32,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "//DoesntExist()"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Left(err) => assert(err.contains("DoesntExist"))
       case wtf => fail(s"Should have returned an error, not $wtf")
     }
@@ -43,7 +42,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()/@path"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Right(nodes) =>
         assert(nodes.size === proj.files.size)
       case wtf => fail(s"Should have returned files, not $wtf")
@@ -54,7 +53,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()/@lineCount"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Right(nodes) =>
         assert(nodes.size === proj.files.size)
         nodes.foreach(n =>
@@ -68,7 +67,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()/@isWellFormed"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Right(nodes) =>
         assert(nodes.size === proj.files.size)
         nodes.foreach(n =>
@@ -82,7 +81,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()/@toString"
-    ee.evaluate(pmv, expr, DefaultTypeRegistry) match {
+    ee.evaluate(pmv, expr) match {
       case Left(errMessage) =>
         assert(errMessage.contains("toString"))
       case wtf => fail(s"Should have failed, not returned $wtf")
@@ -96,7 +95,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NonSpringBootMavenProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/foo"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get === Seq())
   }
 
@@ -104,10 +103,10 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.nonEmpty === true)
     val expr2 = "/src/main/java"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pmv, expr2)
     assert(rtn2.right.get.nonEmpty === true)
   }
 
@@ -115,7 +114,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()[@name='pom.xml']/Line()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.nonEmpty === true)
     assert(rtn.right.get.size === proj.findFile("pom.xml").get.content.count(_ == '\n'))
   }
@@ -124,12 +123,12 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/File()[@name='pom.xml']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     val pomFile = rtn.right.get.head.asInstanceOf[FileArtifactBackedMutableView]
     assert(pomFile.nodeTags.contains("File"))
     val expr2 = "//Line()"
-    val rtn2 = ee.evaluate(pomFile, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pomFile, expr2)
     assert(rtn2.right.get.nonEmpty === true)
     assert(rtn2.right.get.size > 10)
   }
@@ -138,7 +137,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src//*[@name='application.properties']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -146,7 +145,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/resources/*[@name='application.properties']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -156,7 +155,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     )
     val pmv = new ProjectMutableView(proj)
     val expr3 = "/JavaType()"
-    val rtn3 = ee.evaluate(pmv, expr3, DefaultTypeRegistry)
+    val rtn3 = ee.evaluate(pmv, expr3)
     // We have left out test classes
     assert(rtn3.right.get.size === 1)
     rtn3.right.get.foreach {
@@ -171,7 +170,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     )
     val pmv = new ProjectMutableView(proj)
     val expr3 = "/SpringBootProject()"
-    val rtn3 = ee.evaluate(pmv, expr3, DefaultTypeRegistry)
+    val rtn3 = ee.evaluate(pmv, expr3)
     // We have left out test classes
     assert(rtn3.right.get.size === 0)
     //    rtn3.right.get.foreach {
@@ -183,7 +182,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     // We have left out test classes
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
@@ -196,7 +195,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/File()[@name='DemoApplication.java']/JavaType()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
@@ -208,7 +207,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src//JavaType()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
@@ -220,7 +219,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val pexp = "//*"
     val proj = RugCompilerTest.JavaAndText
     val pmv = new ProjectMutableView(proj)
-    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, pexp)
     assert(rtn.right.get.size === 6)
   }
 
@@ -228,7 +227,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val pexp = "//*/File()"
     val proj = RugCompilerTest.JavaAndText
     val pmv = new ProjectMutableView(proj)
-    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, pexp)
     assert(rtn.right.get.size === 1)
   }
 
@@ -236,16 +235,31 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val pexp = "//File()"
     val proj = RugCompilerTest.JavaAndText
     val pmv = new ProjectMutableView(proj)
-    val rtn = ee.evaluate(pmv, pexp, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, pexp)
     assert(rtn.right.get.size === 3)
-    //rtn.right.get.map(_.)
+  }
+
+  // This is currently not legal. . can be used later, however
+  it should "#361: NOT support navigation into directories starting with ." in pendingUntilFixed(
+    fileNavUnder(".atomist")
+  )
+
+  it should "support navigation into directories containing special characters" in
+    Seq("atomist.home", "123#1", "$atomist", "-atomist", "_atomis_t").foreach(fileNavUnder)
+
+  private def fileNavUnder(directory: String) {
+    val pexp = s"/$directory//File()"
+    val proj = RugCompilerTest.JavaAndText.withPathAbove(directory)
+    val pmv = new ProjectMutableView(proj)
+    val rtn = ee.evaluate(pmv, pexp)
+    assert(rtn.right.get.size === 3)
   }
 
   it should "double descend into Java type with superfluous but valid File() type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src//File()/JavaType()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
@@ -257,7 +271,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java//File()/JavaType()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
@@ -269,7 +283,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr2 = "/src//File()/JavaType()[@name='DemoApplication']"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pmv, expr2)
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
@@ -281,11 +295,11 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr2 = "/src/main/java/com/example/JavaType()[@name='DemoApplication' and @type='JavaType']"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pmv, expr2)
     assert(rtn2.right.get.size === 1)
     rtn2.right.get.foreach {
       case j: JavaClassOrInterfaceMutableView =>
-
+      case x => fail(s"Unexpected: $x")
     }
   }
 
@@ -293,9 +307,8 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
-    // Second filter is really a no op
     val expr2 = "/src//JavaType()/*[@type='JavaType' and .isAbstract()]"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pmv, expr2)
     assert(rtn2.right.get.size === 0)
   }
 
@@ -305,31 +318,17 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     )
     val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
-    // Second filter is really a no op
     val expr = "/*[@name='license.txt' or @name='foo']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
-
-  //  it should "find files irrespective of case" in {
-  //    val proj = SimpleFileBasedArtifactSource(
-  //      StringFileArtifact("license.txt", "The blah blah license")
-  //    )
-  //    val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-  //
-  //    // Second filter is really a no op
-  //    val expr = "/[name='license.txt' or name='foo']"
-  //    val rtn = ee.evaluate(pmv, expr)
-  //    rtn.right.get.size should be (1)
-  //  }
 
   it should "jump into Java type and test on name" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     // Second filter is really a no op
-    // Second filter is really a no op
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and .pkg()='com.example']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -337,7 +336,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/File()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     rtn.right.get.size should be > 0
   }
 
@@ -348,7 +347,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     )
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/File()[@name='thing']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -356,7 +355,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.example')]"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.isEmpty)
   }
 
@@ -364,7 +363,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[@type='JavaType' and not(.pkg()='com.wrong')]"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -372,7 +371,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/src/main/java/com/example/JavaType()[.pkg()='com.example']"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -384,7 +383,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     // Second filter is really a no op
     for (nestedType <- types) {
       val expr2 = s"/src//File()[$nestedType()]"
-      val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+      val rtn2 = ee.evaluate(pmv, expr2)
       val nodes = rtn2.right.get
       nodes.size should be > 1
       nodes.forall(n => n.nodeTags.contains("File")) should be(true)
@@ -397,7 +396,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     // Second filter is really a no op
     // Second filter is really a no op
     val expr2 = s"/src//File()[/ElmModule()]"
-    val rtn2 = ee.evaluate(pmv, expr2, DefaultTypeRegistry)
+    val rtn2 = ee.evaluate(pmv, expr2)
     val nodes = rtn2.right.get
     assert(nodes.isEmpty === true)
   }
@@ -406,7 +405,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)
     val expr = "//mvnw"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: FileArtifactBackedMutableView =>
@@ -419,7 +418,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.MultiPomProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/Pom()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case _: PomMutableView =>
@@ -432,7 +431,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.MultiPomProject
     val pmv = new ProjectMutableView(proj)
     val expr = "//Pom()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 3)
     rtn.right.get.foreach {
       case _: PomMutableView =>
@@ -445,7 +444,7 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     val proj = ParsingTargets.MultiPomProject
     val pmv = new ProjectMutableView(proj)
     val expr = "/EveryPom()"
-    val rtn = ee.evaluate(pmv, expr, DefaultTypeRegistry)
+    val rtn = ee.evaluate(pmv, expr)
     assert(rtn.right.get.size === 3)
     rtn.right.get.foreach {
       case _: PomMutableView =>

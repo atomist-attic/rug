@@ -12,19 +12,27 @@ import com.atomist.util.scalaparsing.CommonTypesParser
   */
 trait PathExpressionParser extends CommonTypesParser {
 
-  private def nodeName: Parser[String] = identifierRefString(Set(), ident)
+  /**
+    * We allow - and _ in navigation axis, as they are valid in
+    * GitHub branch names, and . as it may be used in files
+    */
+  private def legalNavigationOrChild: Parser[String] =
+    """[\.a-zA-Z0-9_\-\$#]+""".r
 
-  private def functionName: Parser[String] = identifierRefString(Set(), "[a-zA-Z][a-zA-Z0-9\\-]+".r)
+  private def nodeName: Parser[String] = identifierRefString(Set.empty, legalNavigationOrChild)
 
-  private def objectType: Parser[String] = identifierRefString(Set(), ident)
+  private def functionName: Parser[String] = identifierRefString(Set.empty, "[a-zA-Z][a-zA-Z0-9\\-]+".r)
+
+  private def objectType: Parser[String] = identifierRefString(Set.empty, ident)
 
   private def child: Parser[AxisSpecifier] = opt(s"$ChildAxis::") ^^ {
     case Some(_) => Child
     case _ => Child
   }
 
-  private def navigationAxis: Parser[AxisSpecifier] = identifierRefString(StandardAxes, ident) <~ "::" ^^
-    (s => NavigationAxis(s))
+  private def navigationAxis: Parser[AxisSpecifier] =
+    identifierRefString(StandardAxes, legalNavigationOrChild) <~ "::" ^^
+      (s => NavigationAxis(s))
 
   private def nodeTypeTest: Parser[NodesWithTag] = objectType <~ "()" ^^ (p => NodesWithTag(p))
 
@@ -64,7 +72,7 @@ trait PathExpressionParser extends CommonTypesParser {
       )
 
   private def relativePathFunctionArg: Parser[RelativePathFunctionArg] =
-    (nonEmptyRelativePathExpression) ^^ (
+    nonEmptyRelativePathExpression ^^ (
       s => RelativePathFunctionArg(s)
       )
 

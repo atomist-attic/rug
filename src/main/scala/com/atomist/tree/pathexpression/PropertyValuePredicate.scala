@@ -1,6 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
@@ -14,7 +15,7 @@ case class PropertyValuePredicate(property: String, expectedValue: String)
   override def evaluate(n: GraphNode,
                         returnedNodes: Seq[GraphNode],
                         ee: ExpressionEngine,
-                        typeRegistry: TypeRegistry,
+                        executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean = {
     if (property == "value") {
       // Treat the value property specially

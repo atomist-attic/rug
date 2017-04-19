@@ -115,10 +115,12 @@ object TestUtils extends Matchers {
   }
 
   def requiredFileInPackage(caller: AnyRef, name: String, pathAbove: String = ""): FileArtifact =
-    fileInPackage(caller, name, pathAbove).getOrElse(throw new IllegalArgumentException(s"Cannot find file [$name] in [${caller.getClass.getPackage.getName}]"))
+    fileInPackage(caller, name, pathAbove).getOrElse(
+      throw new IllegalArgumentException(s"Cannot find file [$name] in [${caller.getClass.getPackage.getName}]")
+    )
 
   def contentOf(caller: AnyRef, name: String): String =
-    requiredFileInPackage(this, name).content
+    requiredFileInPackage(caller, name).content
 
   def rugsInSideFile(caller: AnyRef, names: String*): Rugs = {
     val as = rugsInSideFileAsArtifactSource(caller, names: _*)

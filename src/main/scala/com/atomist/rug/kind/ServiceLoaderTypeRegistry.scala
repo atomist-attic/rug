@@ -13,8 +13,8 @@ import com.atomist.util.ServiceLoaderBackedExtensionProvider
   *
   * @see [[Type]]
   */
-class ServiceLoaderTypeRegistry(keyProvider: (Typed) => String = (r) => r.name)
-  extends ServiceLoaderBackedExtensionProvider[Typed] (keyProvider)
+class ServiceLoaderTypeRegistry(keyProvider: Typed => String = r => r.name)
+  extends ServiceLoaderBackedExtensionProvider[Typed](keyProvider)
     with TypeRegistry {
 
   override def findByName(kind: String): Option[Typed] = providerMap.get(kind)

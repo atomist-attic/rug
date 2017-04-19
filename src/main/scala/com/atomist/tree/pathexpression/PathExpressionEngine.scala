@@ -1,8 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.runtime.js.{DefaultExecutionContext, ExecutionContext}
 import com.atomist.tree.pathexpression.ExecutionResult._
 
 /**
@@ -14,16 +13,15 @@ class PathExpressionEngine extends ExpressionEngine {
 
   override def evaluate(node: GraphNode,
                         parsed: PathExpression,
-                        typeRegistry: TypeRegistry = DefaultTypeRegistry,
+                        executionContext: ExecutionContext = DefaultExecutionContext,
                         nodePreparer: Option[NodePreparer]): ExecutionResult = {
-    val (result, report) = evaluateAndReport(node, parsed, typeRegistry, nodePreparer)
-    // println("Evaluate Report:\n" + report.mkString("\n"))
+    val (result, report) = evaluateAndReport(node, parsed, executionContext, nodePreparer)
     result
   }
 
   private def evaluateAndReport(node: GraphNode,
                                 parsed: PathExpression,
-                                typeRegistry: TypeRegistry,
+                                executionContext: ExecutionContext,
                                 nodePreparer: Option[NodePreparer]): (ExecutionResult, Seq[String]) = {
     val report = Seq[String]()
 
@@ -35,7 +33,7 @@ class PathExpressionEngine extends ExpressionEngine {
       val nextNodes: ExecutionResult = nodesToApplyNextStepTo match {
         case Right(n :: Nil) =>
           // say("why bother with a special case")
-          val next: ExecutionResult = locationStep.follow(n, this, typeRegistry, nodePreparer.getOrElse(n => n))
+          val next: ExecutionResult = locationStep.follow(n, this, executionContext, nodePreparer.getOrElse(n => n))
           next
         case Right(s) if s.isEmpty =>
           ExecutionResult(Nil)
@@ -43,7 +41,7 @@ class PathExpressionEngine extends ExpressionEngine {
           say(s"checking ${seq.size} nodes for matches")
           val results: Seq[ExecutionResult] = seq
             .map(kid =>
-              locationStep.follow(kid, this, typeRegistry, nodePreparer.getOrElse(n => n)))
+              locationStep.follow(kid, this, executionContext, nodePreparer.getOrElse(n => n)))
           if (results.exists(_.isLeft)) {
             // If there are failures, use the first
             results.find(_.isLeft).head

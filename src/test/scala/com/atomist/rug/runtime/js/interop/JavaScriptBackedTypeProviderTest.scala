@@ -32,7 +32,8 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case sm: SuccessfulModification =>
         sm.result.allFiles.exists(f => f.name.endsWith(".java") && f.content.startsWith("I am evil!"))
-      case _ => ???
+      case x =>
+        fail(s"Unexpected: $x")
     }
   }
 

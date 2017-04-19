@@ -1,7 +1,8 @@
 package com.atomist.tree.marshal
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.ts.Cardinality
-import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
+import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
@@ -10,7 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Deserialize a tree from JSON.
   */
-object LinkedJsonTreeDeserializer extends LazyLogging {
+object LinkedJsonGraphDeserializer extends LazyLogging {
 
   private val NodeId = "nodeId"
   private val StartNodeId = "startNodeId"
@@ -28,7 +29,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
   /**
     * Deserialize from JSON.
     */
-  def fromJson(json: String): ContainerTreeNode = {
+  def fromJson(json: String): GraphNode = {
     val l = toListOfMaps(json)
     nodeify(l)
   }
@@ -37,7 +38,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
     mapper.readValue(json, classOf[List[Map[String, Object]]])
   }
 
-  private def nodeify(l: List[Map[String, Object]]): ContainerTreeNode = {
+  private def nodeify(l: List[Map[String, Object]]): GraphNode = {
     // Pass 1: Get all nodes individually and put them in a map
     var idToNode: Map[String, LinkableContainerTreeNode] = Map()
     val nodes: Seq[LinkableContainerTreeNode] =
@@ -96,7 +97,7 @@ object LinkedJsonTreeDeserializer extends LazyLogging {
       }
     }
 
-    if (nodes.nonEmpty) nodes.head else new EmptyLinkableContainerTreeNode
+    if (nodes.nonEmpty) nodes.head else new EmptyContainerGraphNode
   }
 
   private def requiredStringEntry(m: Map[String,Any], key: String): String =

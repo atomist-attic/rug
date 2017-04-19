@@ -46,7 +46,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "find hello world using path expression" in {
     val expr = "//JavaFile()"
-    val rtn = expressionEngine.evaluate(helloWorldProject, expr, DefaultTypeRegistry)
+    val rtn = expressionEngine.evaluate(helloWorldProject, expr)
     assert(rtn.right.get.size === 1)
   }
 
@@ -56,7 +56,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val javaFileNode = javas.get.head
 
     val expr = "//catchClause//catchType[@value='ThePlaneHasFlownIntoTheMountain']"
-    expressionEngine.evaluate(javaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(javaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         assert(nodes.head.asInstanceOf[TreeNode].value === "ThePlaneHasFlownIntoTheMountain")
@@ -72,7 +72,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val path = proj.pathTo(Exceptions.path, "JavaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1)
     assert(path.contains("JavaFile"))
     //println(s"Running path " + path)
-    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(proj, path) match {
       case Right(nodes) if nodes.size == 1 =>
         val found = nodes.head.asInstanceOf[TreeNode]
         assert(found.value === tn.value)
@@ -88,7 +88,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val path = proj.pathTo(Exceptions.path, "JavaFile", fi.start.lineNumberFrom1, fi.start.columnNumberFrom1 - 5)
     assert(path.contains("JavaFile"))
     //println(s"Running path " + path)
-    expressionEngine.evaluate(proj, path, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(proj, path) match {
       case Right(nodes) if nodes.size == 1 =>
         val found = nodes.head.asInstanceOf[TreeNode]
         val catchesFromCatchType = significantParent(tn.parent.asInstanceOf[ParentAwareTreeNode])
@@ -116,7 +116,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val expectedValue = "ThePlaneHasFlownIntoTheMountain"
     val proj = exceptionsProject
     val expr = s"//JavaFile()//catchClause//catchType[@value='$expectedValue']"
-    expressionEngine.evaluate(proj, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(proj, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         val tn = nodes.head.asInstanceOf[OverwritableTextTreeNode]
@@ -141,7 +141,7 @@ class JavaFileTypeTest extends AbstractTypeUnderFileTest {
     val newException = "MicturationException"
 
     val expr = "//catchClause//catchType[@value='ThePlaneHasFlownIntoTheMountain']"
-    expressionEngine.evaluate(javaFileNode, expr, DefaultTypeRegistry) match {
+    expressionEngine.evaluate(javaFileNode, expr) match {
       case Right(nodes) if nodes.nonEmpty =>
         assert(nodes.size === 1)
         val mut = nodes.head.asInstanceOf[OverwritableTextTreeNode]

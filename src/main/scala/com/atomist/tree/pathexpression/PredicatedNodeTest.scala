@@ -1,7 +1,7 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.spi.TypeRegistry
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
 
@@ -12,10 +12,12 @@ import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
   */
 abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends NodeTest {
 
-  final override def follow(tn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult =
-    sourceNodes(tn, axis, typeRegistry) match {
+  final override def follow(tn: GraphNode, axis: AxisSpecifier,
+                            ee: ExpressionEngine,
+                            executionContext: ExecutionContext): ExecutionResult =
+    sourceNodes(tn, axis, executionContext) match {
       case Right(nodes) =>
-        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes, ee, typeRegistry, None)))
+        ExecutionResult(nodes.filter(tn => predicate.evaluate(tn, nodes, ee, executionContext, None)))
       case failure => failure
     }
 
@@ -23,7 +25,7 @@ abstract class PredicatedNodeTest(name: String, predicate: Predicate) extends No
     * Subclasses can override this to provide a more efficient implementation.
     * This one works but can be expensive.
     */
-  protected def sourceNodes(tn: GraphNode, axis: AxisSpecifier, typeRegistry: TypeRegistry): ExecutionResult = axis match {
+  protected def sourceNodes(tn: GraphNode, axis: AxisSpecifier, executionContext: ExecutionContext): ExecutionResult = axis match {
     case Self => ExecutionResult(List(tn))
     case Child =>
       val kids = tn.relatedNodes.filter {

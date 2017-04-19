@@ -19,7 +19,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/File()[@name='pom.xml']/XmlFile()"
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
       case n: ContainerTreeNode =>
@@ -31,7 +31,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "//XmlFile()/project/dependencies/dependency"
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     assert(rtn.right.get.size === 2)
     rtn.right.get.foreach {
       case n: TreeNode if n.value.nonEmpty =>
@@ -52,7 +52,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
   private  def drillToGroupIds(expr: String, filter: GraphNode => Boolean = tn => true): Unit = {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     val results = rtn.right.get.filter(filter)
     assert(results.size === 5)
     // TODO note that we can't presently rely on ordering
@@ -68,7 +68,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/*[@name='pom.xml']/XmlFile()/project/groupId"
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
 
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
@@ -82,7 +82,7 @@ class XmlFileTypeTest extends FlatSpec with Matchers {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/*[@name='pom.xml']/XmlFile()/project/dependencies/dependency/scope//TEXT"
-    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     //println(TreeNodeUtils.toShortString(rtn.right.get.head))
     assert(rtn.right.get.size === 1)
     assert(rtn.right.get.head.asInstanceOf[TreeNode].value === "test")

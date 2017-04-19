@@ -1,14 +1,10 @@
 package com.atomist.rug.kind.csharp
 
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
-import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.ConsoleMatchListener
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine, PathExpressionParser}
-import org.scalatest.{FlatSpec, Matchers}
 
 object CSharpFileTypeTest {
 
@@ -100,7 +96,7 @@ class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
 
   val typeBeingTested = new CSharpFileType
 
-  it should "ignore ill-formed file without error" in {
+  "C# type" should "ignore ill-formed file without error" in {
     val cs = new CSharpFileType
     val csharps = cs.findAllIn(projectWithBogusCSharp)
     // Should have silently ignored the bogus file
@@ -132,7 +128,7 @@ class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
 
   it should "find hello world using path expression" in {
     val expr = "/src//CSharpFile()"
-    val rtn = ee.evaluate(helloWorldProject, PathExpressionParser.parseString(expr), DefaultTypeRegistry)
+    val rtn = ee.evaluate(helloWorldProject, PathExpressionParser.parseString(expr))
     assert(rtn.right.get.size === 1)
   }
 
@@ -142,20 +138,20 @@ class CSharpFileTypeTest extends AbstractTypeUnderFileTest {
     val csharpFileNode = csharps.get.head
 
     val expr = "//specific_catch_clause//class_type[@value='IndexOutOfRangeException']"
-    ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
+    ee.evaluate(csharpFileNode, PathExpressionParser.parseString(expr)) match {
       case Right(nodes) if nodes.nonEmpty =>
     
     }
-
     assert(csharpFileNode.value === Exceptions)
   }
 
   it should "find file that catches exception class" in {
     val project = new ProjectMutableView(EmptyArtifactSource(), exceptionProject)
     val expr = "/src//*[CSharpFile()//specific_catch_clause//class_type[@value='IndexOutOfRangeException']]"
-    ee.evaluate(project, PathExpressionParser.parseString(expr), DefaultTypeRegistry) match {
+    ee.evaluate(project, PathExpressionParser.parseString(expr)) match {
       case Right(Seq(fileCatchingIndexOutOfRange: FileArtifactBackedMutableView)) =>
         assert(fileCatchingIndexOutOfRange.path === exceptionProject.allFiles.head.path)
+      case x => fail(s"Unexpected: $x")
     }
   }
 }

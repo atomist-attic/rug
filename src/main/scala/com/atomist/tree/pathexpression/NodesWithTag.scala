@@ -2,6 +2,7 @@ package com.atomist.tree.pathexpression
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
+import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExecutionResult.ExecutionResult
@@ -35,29 +36,47 @@ case class NodesWithTag(tag: String)
       case _ =>
         // With dynamic nodes we can't know this is invalid. A TreeMaterializer backed path expression
         // that doesn't match and thus had no kids is a valid case and it won't be able to define types
-        if (gn.nodeTags.contains(TreeNode.Dynamic)) {
+        if (gn.hasTag(TreeNode.Dynamic)) {
           None
-        } else {
+        }
+        else {
           // Type is unknown. This is an error
           throw NoSuchTypeException
         }
     }
 
-  private val eligibleNode: GraphNode => Boolean = n => n.nodeTags.contains(tag) || n.nodeName == tag
+  private val eligibleNode: GraphNode => Boolean =
+    n => n.hasTag(tag) || n.nodeName == tag
 
-  // Attempt to find nodes of the require type under the given node
-  private def findMeUnder(gn: GraphNode, typeRegistry: TypeRegistry): Seq[GraphNode] =
-    gn.relatedNodes.filter(eligibleNode) match {
+  // Attempt to find nodes of the required type under the given node
+  private def findMeUnder(gn: GraphNode, ec: ExecutionContext, edgeName: Option[String]): Seq[GraphNode] = {
+    // Filter for node name if we're following an edge
+    val nameFilter: GraphNode => Boolean = edgeName match {
+      case None | Some("*") => _ => true
+      case Some(name) => n => n.nodeName == name
+    }
+    val r = gn.relatedNodes.filter(eligibleNode).filter(nameFilter) match {
       case Nil =>
-        childResolver(typeRegistry, gn) match {
-          case Some(cr) => cr.findAllIn(gn).getOrElse(Nil)
+        childResolver(ec.typeRegistry, gn) match {
+          case Some(cr) => edgeName match {
+            case None =>
+              cr.findAllIn(gn).getOrElse(Nil)
+            case Some(name) =>
+              cr.navigate(gn, name, ec).getOrElse(Nil)
+          }
           case None =>
             Nil
         }
-      case kids => kids
+      case kids =>
+        kids
     }
+    logger.debug(s"$this Returned $r for edgeName=$edgeName below $gn")
+    r
+  }
 
-  override def follow(gn: GraphNode, axis: AxisSpecifier, ee: ExpressionEngine, typeRegistry: TypeRegistry): ExecutionResult = {
+  override def follow(gn: GraphNode, axis: AxisSpecifier,
+                      ee: ExpressionEngine,
+                      executionContext: ExecutionContext): ExecutionResult = {
     try {
       axis match {
         case NavigationAxis(propertyName) =>
@@ -65,15 +84,21 @@ case class NodesWithTag(tag: String)
           val nodes = gn.followEdge(propertyName).filter(eligibleNode)
           if (nodes.nonEmpty)
             ExecutionResult(nodes)
-          else
-            ExecutionResult(gn.relatedNodesNamed(propertyName).filter(eligibleNode))
+          else {
+            ExecutionResult(gn.relatedNodesNamed(propertyName).filter(eligibleNode)) match {
+              case Right(Nil) =>
+                ExecutionResult(findMeUnder(gn, executionContext, Some(propertyName)))
+              case l => l
+            }
+          }
         case Self =>
           ExecutionResult(List(gn).filter(eligibleNode))
         case Child =>
-          ExecutionResult(findMeUnder(gn, typeRegistry))
+          ExecutionResult(findMeUnder(gn, executionContext, None))
         case Descendant =>
           val allDescendants = Descendant.selfAndAllDescendants(gn)
-          val found: Seq[GraphNode] = allDescendants.flatMap(d => findMeUnder(d, typeRegistry))
+          val found: Seq[GraphNode] = allDescendants.flatMap(d =>
+            findMeUnder(d, executionContext, None))
           ExecutionResult(found)
         case x => throw new UnsupportedOperationException(s"Unsupported axis $x in ${getClass.getSimpleName}")
       }

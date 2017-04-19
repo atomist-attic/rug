@@ -5,6 +5,7 @@ import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.runtime.js.SimpleExecutionContext
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, MicrogrammarTypeProvider}
@@ -58,15 +59,15 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
     val matches = mg.findMatches(proj.findFile("pom.xml").get.content)
     assert(matches.length === 1)
 
-    val tr = new UsageSpecificTypeRegistry(DefaultTypeRegistry,
-      Seq(new MicrogrammarTypeProvider(mg))
+    val ec = SimpleExecutionContext(new UsageSpecificTypeRegistry(DefaultTypeRegistry,
+      Seq(new MicrogrammarTypeProvider(mg)))
     )
-    val rtn = ee.evaluate(pmv, findFile, tr)
+    val rtn = ee.evaluate(pmv, findFile, ec)
     assert(rtn.right.get.size === 1)
 
     val modelVersion = findFile + "/pom()/modelVersion()"
 
-    val grtn = ee.evaluate(pmv, modelVersion, tr)
+    val grtn = ee.evaluate(pmv, modelVersion, ec)
     assert(grtn.right.get.size === 1)
     (pmv, grtn.right.get)
   }

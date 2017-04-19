@@ -32,7 +32,7 @@ class ProxyAgainstDeserializedNodeTest extends FlatSpec with Matchers {
     handleSimpleCase(DefaultTypeRegistry + TypeScriptStubClassGeneratorTest.cortexTypeRegistry)
 
   private def handleSimpleCase(tr: TypeRegistry): Unit = {
-    val gn: GraphNode = LinkedJsonTreeDeserializer.fromJson(IssueNode)
+    val gn: GraphNode = LinkedJsonGraphDeserializer.fromJson(IssueNode)
     val proxy = new jsSafeCommittingProxy(gn, tr)
     proxy.getMember("number") match {
       case x => assert(x.toString === "307")

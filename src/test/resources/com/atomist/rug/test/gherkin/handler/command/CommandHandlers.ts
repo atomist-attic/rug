@@ -1,4 +1,4 @@
-import { HandleCommand, Instruction, Response, HandlerContext, Plan, ResponseMessage } from '@atomist/rug/operations/Handlers'
+import { HandleCommand, Instruction, Response, HandlerContext, CommandPlan, ResponseMessage } from '@atomist/rug/operations/Handlers'
 import { CommandHandler, Secrets, Parameter, Tags, Intent } from '@atomist/rug/operations/Decorators'
 import { Project } from "@atomist/rug/model/Project"
 
@@ -10,8 +10,8 @@ import * as node from "./Nodes"
 @Secrets("atomist/user_token", "atomist/showmethemoney")
 class ReturnsEmptyPlanCommandHandler implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan();
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan();
         // result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}}});
         return result;
     }
@@ -25,8 +25,8 @@ export const command1 = new ReturnsEmptyPlanCommandHandler();
 @Secrets("atomist/user_token", "atomist/showmethemoney")
 class ReturnsOneMessageCommandHandler implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan()
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan()
         if (ctx.teamId == null)
             throw new Error("Cannot get at team id")
 
@@ -42,8 +42,8 @@ export const command2 = new ReturnsOneMessageCommandHandler();
 @Tags("path_expression")
 class RunsPathExpressionCommandHandler implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan()
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan()
         let eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
@@ -64,8 +64,8 @@ export const command3 = new RunsPathExpressionCommandHandler();
 @Tags("path_expression")
 class RunsMatchingPathExpressionCommandHandler implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan()
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan()
         const eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
@@ -84,8 +84,8 @@ export const command4 = new RunsMatchingPathExpressionCommandHandler();
 @Tags("path_expression")
 class GoesOffGraph implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan()
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan()
         const eng = ctx.pathExpressionEngine
 
         const findPerson = "/Commit/Person()[@name='Ebony']"
@@ -106,8 +106,8 @@ export const command5 = new GoesOffGraph();
 @Tags("path_expression")
 class LooksInProjects implements HandleCommand {
 
-    handle(ctx: HandlerContext): Plan {
-        let result = new Plan()
+    handle(ctx: HandlerContext): CommandPlan {
+        let result = new CommandPlan()
         const eng = ctx.pathExpressionEngine
 
         // Find all Maven projects

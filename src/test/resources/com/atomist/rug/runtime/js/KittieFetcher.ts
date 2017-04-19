@@ -1,4 +1,4 @@
-import {HandleCommand, Instruction, Response, HandlerContext, Plan, DirectedMessage, ResponseMessage, LifecycleMessage, ChannelAddress} from '@atomist/rug/operations/Handlers'
+import {HandleCommand, Instruction, Response, HandlerContext, CommandPlan, DirectedMessage, ResponseMessage, LifecycleMessage, ChannelAddress} from '@atomist/rug/operations/Handlers'
 import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
@@ -9,13 +9,13 @@ class KittieFetcher implements HandleCommand {
   @Parameter({description: "his dudeness", pattern: "^.*$"})
   name: string
 
-  handle(ctx: HandlerContext) : Plan {
+  handle(ctx: HandlerContext) : CommandPlan {
     let pxe = ctx.pathExpressionEngine
 
     if(this.name != "el duderino") {
       throw new Error("This will not stand");
     }
-    let result = new Plan()
+    let result = new CommandPlan()
     result.add({ instruction: {
                  kind: "execute",
                  name: "HTTP",

@@ -1,4 +1,4 @@
-import {HandleCommand, Instruction, Response, HandlerContext, Plan, ResponseMessage} from '@atomist/rug/operations/Handlers'
+import {HandleCommand, Instruction, Response, HandlerContext, CommandPlan, ResponseMessage} from '@atomist/rug/operations/Handlers'
 import {CommandHandler, Parameter, MappedParameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
@@ -9,12 +9,12 @@ class KittieFetcher implements HandleCommand{
   @MappedParameter("atomist/repo")
   name: string
 
-  handle(ctx: HandlerContext) : Plan {
+  handle(ctx: HandlerContext) : CommandPlan {
 
     if(this.name != "el duderino") {
       throw new Error("This will not stand");
     }
-    let result = new Plan()
+    let result = new CommandPlan()
     return result;
   }
 }

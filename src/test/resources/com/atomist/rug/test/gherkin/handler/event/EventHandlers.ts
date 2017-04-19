@@ -1,4 +1,4 @@
-import { HandleEvent, Plan, DirectedMessage, ChannelAddress } from '@atomist/rug/operations/Handlers'
+import { HandleEvent, EventPlan, DirectedMessage, ChannelAddress } from '@atomist/rug/operations/Handlers'
 import { GraphNode, Match, PathExpression } from '@atomist/rug/tree/PathExpression'
 
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
@@ -11,7 +11,7 @@ import * as node from "./Nodes"
 class ReturnsEmptyPlanEventHandler implements HandleEvent<GraphNode, GraphNode> {
 
     handle(event: Match<GraphNode, GraphNode>) {
-        return new Plan();
+        return new EventPlan();
     }
 }
 export const handler = new ReturnsEmptyPlanEventHandler()
@@ -22,7 +22,7 @@ export const handler = new ReturnsEmptyPlanEventHandler()
 class ReturnsEmptyPlanEventHandler2 implements HandleEvent<GraphNode, GraphNode> {
 
     handle(event: Match<GraphNode, GraphNode>) {
-        return new Plan();
+        return new EventPlan();
     }
 }
 export const handler2 = new ReturnsEmptyPlanEventHandler2();
@@ -36,7 +36,7 @@ class ReturnsEmptyPlanEventHandler2a implements HandleEvent<GraphNode, GraphNode
     handle(m: Match<node.Commit, node.Person>) {
         let peep = m.matches()[0];
         // console.log(`Match ${m}: peep=${peep}`);
-        return new Plan();
+        return new EventPlan();
     }
 }
 export const handler2a = new ReturnsEmptyPlanEventHandler2a();
@@ -53,7 +53,7 @@ class ReturnsEmptyPlanEventHandler3 implements HandleEvent<node.Commit, node.Git
         if (ghid.id != "gogirl") throw new Error(`Unexpected github id ${ghid.id}`)
         //if (ghid.address != "/madeBy/gitHubId") throw new Error(`Unexpected address [${ghid.address}]`)
 
-        return new Plan();
+        return new EventPlan();
     }
 }
 export const handler3 = new ReturnsEmptyPlanEventHandler3();
@@ -65,7 +65,7 @@ export const handler3 = new ReturnsEmptyPlanEventHandler3();
 class ReturnsAMessage implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
-        return new Plan().add(new DirectedMessage("Hello there!",
+        return new EventPlan().add(new DirectedMessage("Hello there!",
         new ChannelAddress("test-channel")))
     }
 }
@@ -80,7 +80,7 @@ class AngryHandler implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<GraphNode, GraphNode>) {
         if (23 > 0) throw new Error("I hate y'all")
-        return new Plan().add(new DirectedMessage("Hello there!",
+        return new EventPlan().add(new DirectedMessage("Hello there!",
         new ChannelAddress("test-channel")))
     }
 }

@@ -28,7 +28,7 @@ object JavaScriptEventHandlerTest {
 
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, LifecycleMessage, DirectedMessage, MessageMimeTypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, EventPlan, LifecycleMessage, DirectedMessage, MessageMimeTypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -37,7 +37,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
        |    let issue = event.root
-       |    let plan = new Plan()
+       |    let plan = new EventPlan()
        |
        |    const message = new DirectedMessage("message1", new ChannelAddress("w00t"))
        |
@@ -52,8 +52,8 @@ object JavaScriptEventHandlerTest {
        |               onError: {body: "No kitties for you today!", kind: "directed", contentType: MessageMimeTypes.PLAIN_TEXT, usernames: ["w00t"]}
        |             });
        |
-       |    const anEmptyPlan = new Plan()
-       |    const aPlansPlan = new Plan()
+       |    const anEmptyPlan = new EventPlan()
+       |    const aPlansPlan = new EventPlan()
        |    aPlansPlan.add(new DirectedMessage("this is a plan that is in another plan", new ChannelAddress("w00t")))
        |
        |    aPlansPlan.add({ instruction: {
@@ -79,7 +79,7 @@ object JavaScriptEventHandlerTest {
 
   val noPlanBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, EventPlan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -88,7 +88,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
        |    let issue = event.root
-       |    return new Plan();
+       |    return new EventPlan();
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -96,7 +96,7 @@ object JavaScriptEventHandlerTest {
 
   val nodesWithTagBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, EventPlan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -105,7 +105,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
        |    let issue = event.root
-       |    return new Plan();
+       |    return new EventPlan();
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -113,7 +113,7 @@ object JavaScriptEventHandlerTest {
 
   val eventHandlerWithTreeNode = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, EventPlan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -122,7 +122,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |
        |  handle(event: Match<TreeNode, TreeNode>) {
-       |     return new Plan().add(new LifecycleMessage(event.root(), "123"));
+       |     return new EventPlan().add(new LifecycleMessage(event.root(), "123"));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -130,7 +130,7 @@ object JavaScriptEventHandlerTest {
 
   val eventHandlerWithEmptyMatches = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {HandleEvent, Plan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
+       |import {HandleEvent, EventPlan, LifecycleMessage} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
@@ -138,7 +138,7 @@ object JavaScriptEventHandlerTest {
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
-       |     return new Plan().add(new LifecycleMessage(event.root(), "123"));
+       |     return new EventPlan().add(new LifecycleMessage(event.root(), "123"));
        |  }
        |}
        |export let handler = new SimpleHandler();

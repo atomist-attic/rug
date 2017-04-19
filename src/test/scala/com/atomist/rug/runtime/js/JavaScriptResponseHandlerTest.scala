@@ -17,7 +17,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
   val kittyDesc = "Prints out kitty urls"
   val simpleResponseHandler =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-      |import {Respond, Instruction, Response, Plan, DirectedMessage, UserAddress} from '@atomist/rug/operations/Handlers'
+      |import {Respond, Instruction, Response, CommandPlan, DirectedMessage, UserAddress} from '@atomist/rug/operations/Handlers'
       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
       |import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
       |import {Project} from '@atomist/rug/model/Core'
@@ -36,7 +36,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
       |    if(results != "woot") {
       |       throw new Error("This will not stand");
       |    }
-      |    return new Plan().add(new DirectedMessage("https://www.youtube.com/watch?v=fNodQpGVVyg", new UserAddress("bob")));
+      |    return new CommandPlan().add(new DirectedMessage("https://www.youtube.com/watch?v=fNodQpGVVyg", new UserAddress("bob")));
       |  }
       |}
       |
@@ -46,7 +46,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
 
   val simpleResponseHandlerWithJsonCoercion =  StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
-       |import {Respond, Instruction, Response, Plan} from '@atomist/rug/operations/Handlers'
+       |import {Respond, Instruction, Response, CommandPlan} from '@atomist/rug/operations/Handlers'
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, ParseJson, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
        |import {Project} from '@atomist/rug/model/Core'
@@ -54,7 +54,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
        |
        |@ResponseHandler("$kitties", "$kittyDesc")
        |class KittiesResponder implements HandleResponse<any>{
-       | handle(@ParseJson response: Response<any>) : Plan {
+       | handle(@ParseJson response: Response<any>) : CommandPlan {
        |    let results = response.body as any;
        |
        |    let stringed = "Thing " + response;
@@ -63,7 +63,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
        |
        |    if(results.yaml != "is more annoying than json") { throw new Error("Rats: " + results.yaml)}
        |    results.reasons.map(reason => reason.main.length)
-       |    return new Plan();
+       |    return new CommandPlan();
        |  }
        |}
        |

@@ -1,4 +1,4 @@
-import {HandleCommand, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+import {HandleCommand, Instruction, Response, HandlerContext, CommandPlan} from '@atomist/rug/operations/Handlers'
 import {CommandHandler, Secrets, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 
 @CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
@@ -7,9 +7,9 @@ import {CommandHandler, Secrets, Parameter, Tags, Intent} from '@atomist/rug/ope
 @Secrets("atomist/user_token", "atomist/showmethemoney")
 class KittieFetcher implements HandleCommand{
 
-  handle(ctx: HandlerContext) : Plan {
+  handle(ctx: HandlerContext) : CommandPlan {
 
-    let result = new Plan()
+    let result = new CommandPlan()
     result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}}})
     return result;
   }

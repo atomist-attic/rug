@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Event and Command Handlers must return EventPlan and Command Plan
+    respectively to remove confusion as to the different capabilities
 -   **BREAKING** Removed ability to add `command` instructions to the Plans 
 -   Project test steps can now return `void`, as for handlers.
 

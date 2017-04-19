@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.25.3...HEAD
 
+### Added
+
+-   New optional typings (EventPlan and CommandPlan) for handler responses
+
 ### Changed
 
 -   **BREAKING** Removed ability to add `command` instructions to the Plans 

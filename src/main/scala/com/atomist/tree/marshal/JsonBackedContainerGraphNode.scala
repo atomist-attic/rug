@@ -24,7 +24,7 @@ class JsonBackedContainerGraphNode(val innerNode: GraphNode,
 
   override def relatedNodeTypes: Set[String] = innerNode.relatedNodeTypes
 
-  override def relatedNodesNamed(key: String): Seq[GraphNode] = ???
+  override def relatedNodesNamed(key: String): Seq[GraphNode] = innerNode.relatedNodesNamed(key)
 
   def jsonRepresentation: String = backingJson
 }

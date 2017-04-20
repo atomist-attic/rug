@@ -1,8 +1,7 @@
 package com.atomist.tree.content.text
 
 import com.atomist.rug.kind.core.FileArtifactBackedMutableView
-import com.atomist.rug.spi.{ExportFunction, MutableView, TypeProvider, Typed}
-import com.atomist.source.FileArtifact
+import com.atomist.rug.spi.{ExportFunction, TypeProvider, Typed}
 import com.atomist.tree.TreeNode.{Noise, Signal}
 import com.atomist.tree._
 
@@ -177,8 +176,10 @@ class OverwritableTextTreeNode(name: String,
   override def toString: String =
     if (state == Unready)
       s"unready ${super.toString}"
-    else
-      s"OverwritableTextTreeNode[length=${value.length}][name=${name}]"
+    else {
+      val showValue = if (childCount == 0) s"value=[$value]" else s"length=${value.length}"
+      s"OverwritableTextTreeNode:$showValue;name=[$name]"
+    }
 
   /* mine */
   private def requireReady[T](result: => T): T =

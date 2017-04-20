@@ -84,7 +84,14 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
               nestedPlanExecutionOption
           }
         }
-        Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, response)))).flatten.flatten
+        //ensure handled errors don't return failure https://github.com/atomist/rug/issues/531
+        (response, callbackResults) match {
+          case (Response(Failure,_,_,_), Some(logs)) if !PlanResultInterpreter.hasLogFailure(logs) =>
+            val handled = Response(Status.Handled, response.msg, response.code, response.body)
+            Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, handled)))).flatten.flatten
+          case _ =>
+            Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, response)))).flatten.flatten
+        }
     }
   }
 

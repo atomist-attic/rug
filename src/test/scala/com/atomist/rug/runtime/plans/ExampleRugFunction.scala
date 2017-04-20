@@ -11,7 +11,11 @@ class ExampleRugFunction
   extends RugFunction
   with SecretSupport {
 
-  override def parameters = Seq(new Parameter("thingy"))
+  val failure = new Parameter("fail")
+  failure.setRequired(false)
+  failure.setDefaultValue("false")
+
+  override def parameters = Seq(new Parameter("thingy"), failure)
 
   override def secrets: Seq[Secret] = {
     if (ExampleRugFunction.clearSecrets) {
@@ -26,7 +30,11 @@ class ExampleRugFunction
     */
   override def run(parameters: ParameterValues): FunctionResponse = {
     validateParameters(parameters)
-    FunctionResponse(Status.Success,Some("It worked! :p"), Some(204), StringBodyOption(parameters.parameterValues.head.getValue.toString))
+    if(parameters.parameterValueMap.contains("fail") && parameters.parameterValueMap("fail").getValue == "true"){
+      FunctionResponse(Status.Failure,Some("Something went wrong :("), Some(500), StringBodyOption(parameters.parameterValueMap("fail").getValue.toString))
+    }else{
+      FunctionResponse(Status.Success,Some("It worked! :p"), Some(204), StringBodyOption(parameters.parameterValueMap("thingy").getValue.toString))
+    }
   }
 
   /**

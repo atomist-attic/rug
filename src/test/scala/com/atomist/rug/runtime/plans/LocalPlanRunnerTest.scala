@@ -1,11 +1,16 @@
 package com.atomist.rug.runtime.plans
 
-import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
-import com.atomist.project.archive.DefaultAtomistConfig
+import com.atomist.param._
+import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor}
+import com.atomist.rug.SimpleRugResolver
+import com.atomist.rug.TestUtils.contentOf
+import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.js.{JavaScriptCommandHandlerFinder, JavaScriptContext}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
+import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.mockito.Matchers._
@@ -142,7 +147,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
     val expectedPlanLog = Set(
-      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, Some("edit2"), Some(0), None))
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Handled, Some("edit2"), Some(0), None))
     )
     assert(actualPlanResult.log.toSet == expectedPlanLog)
 
@@ -241,5 +246,34 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verify(logger).error(expected( "Failed to invoke Plan[channels: , usernames: , type: text/plain, body: fail] after Edit edit() - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, logger)
+  }
+
+  val atomistConfig: AtomistConfig = DefaultAtomistConfig
+
+  val handlerThatHandlersAnError = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "HandlerThatHandlesAnError.ts"))
+
+  it("should not return failure for handled errors") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerThatHandlersAnError))
+    val resolver = SimpleRugResolver(rugArchive)
+
+    val handlers = resolver.resolvedDependencies.resolvedRugs
+    val handler = handlers.collect{case i: CommandHandler => i}.head
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(handlers.head, null, null, new TestSecretResolver(handler) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] =  {
+        assert(secrets.size === 1)
+        assert(secrets.head.name === "very")
+        assert(secrets.head.path === "/secret/thingy")
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }, rugResolver = Some(resolver)))
+
+    val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
+    val results = result.log.collect{case i: InstructionResult => i}
+    assert(results.head.instruction.detail.name === "HandleIt")
+    assert(results.head.response.status === Status.Success)
+    assert(results(1).instruction.detail.name === "ExampleFunction")
+    assert(results(1).response.status === Status.Handled)
+    assert(PlanResultInterpreter.interpret(result).status === Status.Success)
   }
 }

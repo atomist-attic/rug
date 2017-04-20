@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Response.Status of instructions whose failure is handled by a ResponseHandler
+    now have a status of `Handled` instead of `Failed`
 -   **BREAKING** Event and Command Handlers must return EventPlan and Command Plan
     respectively to remove confusion as to the different capabilities
 -   **BREAKING** Removed ability to add `command` instructions to the Plans 

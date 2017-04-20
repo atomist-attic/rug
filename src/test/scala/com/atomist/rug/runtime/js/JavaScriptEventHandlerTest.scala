@@ -13,6 +13,7 @@ import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.marshal.{EmptyContainerGraphNode, JsonBackedContainerGraphNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
+import com.typesafe.scalalogging.Logger
 import org.scalatest.{DiagrammedAssertions, FlatSpec, Matchers}
 
 import scala.concurrent.Await

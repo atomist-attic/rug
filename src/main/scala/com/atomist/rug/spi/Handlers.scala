@@ -176,10 +176,13 @@ object Handlers {
 
     case object Failure extends Status
 
+    case object Handled extends Status
+
     def from(name: String): Status = {
       name match {
         case "success" => Success
         case "failure" => Failure
+        case "handled" => Handled
         case _ => throw new IllegalArgumentException(s"Cannot derive Status from '$name'.")
       }
     }

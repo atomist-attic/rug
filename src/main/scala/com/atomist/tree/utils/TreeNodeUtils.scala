@@ -82,9 +82,7 @@ object TreeNodeUtils {
     case tn => s"${tn.nodeName}:[${tn.nodeTags.mkString(", ")}]"
   }
 
-  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode => String): Seq[String]
-
-  = {
+  private def toShorterStringInternal(tn: TreeNode, nodeStringifier: TreeNode => String): Seq[String] = {
     val shorterString = nodeStringifier(tn)
     val lines = shorterString +:
       tn.childNodes.flatMap(tn => toShorterStringInternal(tn, nodeStringifier))

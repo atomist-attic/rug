@@ -23,6 +23,10 @@ public class GreetingController {
                 String.format(template, name));
     }
 
+    public notAnnotated() {
+
+    }
+
     // These lines get uncommented in some tests for contract evolution
 //2    @RequestMapping("/greeting2")
 //2    public Greeting greeting2(@RequestParam(value="name", defaultValue="World") String name) {

@@ -6,7 +6,7 @@ import {DecoratingPathExpressionEngine} from '@atomist/rug/ast/DecoratingPathExp
 import {RichTextTreeNode} from '@atomist/rug/ast/TextTreeNodeOps'
 import {Parameter, Reviewer} from '@atomist/rug/operations/Decorators'
 
-import * as java from '@atomist/rug/ast/java/Types'
+import * as java from '@atomist/rug/ast/java/Expressions'
 
 export class CatchThrowable implements ProjectReviewer {
 

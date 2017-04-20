@@ -11,6 +11,7 @@ import com.atomist.tree.utils.NodeUtils
 import com.atomist.util.lang.JavaScriptArray
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.ScriptRuntime
 
 /**
   * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
@@ -122,15 +123,11 @@ class jsSafeCommittingProxy(
   }
 
   private def invokeGivenNoMatchingOperationInTypeInformation(name: String, st: Typed): AnyRef = {
-    if (node.nodeTags.contains(TreeNode.Dynamic)) name match {
+    if (node.hasTag(TreeNode.Dynamic)) name match {
       case navigation if node.relatedNodeNames.contains(navigation) =>
         nodeNavigationPropertyAccess(node, navigation)
       case _ =>
-        throw new UnsupportedOperationException(
-          s"""Function [$name] cannot be evaluated on node with name [${node.nodeName}]
-             |Check that the function is defined on type [${node.nodeTags.headOption.getOrElse("???")}] and that the relationship is materialized
-             |""".stripMargin +
-            s"Type information=[$st]")
+        ScriptRuntime.UNDEFINED
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
@@ -200,13 +197,13 @@ class jsSafeCommittingProxy(
         throw new RugRuntimeException(name,
           s"No children or function found for property '$name' on $node")
       case null :: Nil => null
-      case (ttn: TerminalTreeNode) :: Nil if ttn.nodeTags.contains(Cardinality.One2Many) =>
+      case (ttn: TerminalTreeNode) :: Nil if ttn.hasTag(Cardinality.One2Many) =>
         // Pull out the value and put in an array
         JavaScriptArray.fromSeq(Seq(ttn.value))
       case (ttn: TerminalTreeNode) :: Nil =>
         // Pull out the value
         ttn.value
-      case head :: Nil if !head.nodeTags.contains(Cardinality.One2Many) =>
+      case head :: Nil if !head.hasTag(Cardinality.One2Many) =>
         // Only one entry and we know it's not marked as an array
         wrapOne(head)
       case more => new JavaScriptArray(wrapIfNecessary(more, typeRegistry))

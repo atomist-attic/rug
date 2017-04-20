@@ -1,4 +1,4 @@
-import {HandleCommand, Instruction, Response, HandlerContext, Plan, DirectedMessage, UserAddress} from '@atomist/rug/operations/Handlers'
+import {HandleCommand, Instruction, Response, HandlerContext, CommandPlan, DirectedMessage, UserAddress} from '@atomist/rug/operations/Handlers'
 import {CommandHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
 import {Build} from "@atomist/rug/cortex/stub/Build"
 
@@ -14,7 +14,7 @@ class SameConfig implements HandleCommand{
   bar: number
 
   handle(ctx: HandlerContext) {
-      return new Plan();
+      return new CommandPlan();
   }
 }
 

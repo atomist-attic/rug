@@ -1,4 +1,4 @@
-import { HandleEvent, ChannelAddress, DirectedMessage, LifecycleMessage, MessageMimeTypes, ResponseMessage, Plan } from '@atomist/rug/operations/Handlers'
+import { HandleEvent, ChannelAddress, DirectedMessage, LifecycleMessage, MessageMimeTypes, ResponseMessage, EventPlan } from '@atomist/rug/operations/Handlers'
 import { GraphNode, Match, PathExpression } from '@atomist/rug/tree/PathExpression'
 import { EventHandler, Tags } from '@atomist/rug/operations/Decorators'
 import { K8Pod } from "@atomist/rug/cortex/stub/K8Pod"
@@ -23,7 +23,7 @@ import { ChatChannel } from "@atomist/rug/cortex/ChatChannel"
 @Tags("kubernetes")
 class Pulled implements HandleEvent<K8Pod, K8Pod> {
 
-    handle(event: Match<K8Pod, K8Pod>): Plan {
+    handle(event: Match<K8Pod, K8Pod>): EventPlan {
         const pod: K8Pod = event.root() as K8Pod
         const image: DockerImage = pod.images[0]
         const commit: Commit = image.tag.commit
@@ -32,7 +32,7 @@ class Pulled implements HandleEvent<K8Pod, K8Pod> {
         const lifecycleId: string = "commit_event/" + repo.owner + "/" + repo.name + "/" + commit.sha
         let message: LifecycleMessage = new LifecycleMessage(pod, lifecycleId)
 
-        return Plan.ofMessage(message)
+        return EventPlan.ofMessage(message)
     }
 }
 

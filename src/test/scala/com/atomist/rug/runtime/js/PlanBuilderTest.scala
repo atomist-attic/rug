@@ -20,7 +20,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
   val simpleCommandWithObjectInstructionParamAsJson =
     StringFileArtifact(DefaultAtomistConfig.handlersRoot + "/Handler.ts",
       """
-        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, CommandPlan} from '@atomist/rug/operations/Handlers'
         |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
         |
         |@CommandHandler("ShowMeTheKitties","Search Youtube for kitty videos and post results to slack")
@@ -28,9 +28,9 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         |@Intent("show me kitties","cats please")
         |class KittieFetcher implements HandleCommand{
         |
-        |  handle(ctx: HandlerContext) : Plan {
+        |  handle(ctx: HandlerContext) : CommandPlan {
         |
-        |    let result = new Plan()
+        |    let result = new CommandPlan()
         |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {jsonparam: {mucho: "coolness"}}}});
         |    return result;
         |  }
@@ -43,7 +43,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
   val simpleCommandHandlerWithNullAndUndefinedParameterValues =
     StringFileArtifact(DefaultAtomistConfig.handlersRoot + "/Handler.ts",
       s"""
-        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, Plan} from '@atomist/rug/operations/Handlers'
+        |import {HandleCommand, HandleResponse, Instruction, Response, HandlerContext, CommandPlan} from '@atomist/rug/operations/Handlers'
         |import {CommandHandler, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
         |
         |@CommandHandler("show-me-the-kitties","Search Youtube for kitty videos and post results to slack")
@@ -51,8 +51,8 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         |@Intent("show me kitties","cats please")
         |class KittieFetcher implements HandleCommand{
         |
-        |  handle(ctx: HandlerContext) : Plan {
-        |    let result = new Plan()
+        |  handle(ctx: HandlerContext) : CommandPlan {
+        |    let result = new CommandPlan()
         |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "blah"}},
         |                onSuccess: {name: "simple-response-handler", kind: "respond", parameters: {one: null, two: undefined}} });
         |    return result;
@@ -68,7 +68,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         |  @Parameter({description: "blah", pattern: "@any", required: false})
         |  two: string
         |
-        |  handle(response: Response<string>) : Plan {
+        |  handle(response: Response<string>) : CommandPlan {
         |
         |    if(this.one != null) {
         |       throw new Error("One is not null: " + this.one)
@@ -77,7 +77,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
         |    if(this.two != undefined) {
         |       throw new Error("Two is not undefined: " + this.two)
         |    }
-        |    return new Plan();
+        |    return new CommandPlan();
         |  }
         |}
         |

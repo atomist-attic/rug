@@ -3,6 +3,10 @@ package com.atomist.rug.kind.core
 import com.atomist.rug.spi.{ExportFunction, MutableView}
 import com.atomist.source.DirectoryArtifact
 
+/**
+  * Operations on a directory within a project
+  * @param parent owning project
+  */
 class DirectoryMutableView(
                             originalBackingObject: DirectoryArtifact,
                             override val parent: ProjectMutableView)

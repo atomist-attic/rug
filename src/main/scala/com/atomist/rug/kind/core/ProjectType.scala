@@ -14,6 +14,8 @@ import com.atomist.tree.utils.NodeUtils
   */
 class ProjectType extends Type with ReflectivelyTypedType {
 
+  import ProjectType.extractOwnerAndRepoFromAssociatedRepo
+
   override def description: String = "Type for a project. Supports global operations. " +
     "Consider using file and other lower types by preference as project" +
     "operations can be inefficient."
@@ -30,7 +32,7 @@ class ProjectType extends Type with ReflectivelyTypedType {
     )
 
     context match {
-      case n if n.hasTag("Repo") =>
+      case repo if repo.hasTag("Repo") =>
         val owner = NodeUtils.requiredKeyValue(context, "owner")
         val name = NodeUtils.requiredKeyValue(context, "name")
         val projectSources =
@@ -38,7 +40,7 @@ class ProjectType extends Type with ReflectivelyTypedType {
           else repoResolver.resolveBranch(owner, name, edgeName)
         val pmv = new ProjectMutableView(projectSources)
         Some(Seq(pmv))
-      case n if n.hasTag("Commit") =>
+      case commit if commit.hasTag("Commit") =>
         // Commit has a sha and associated Repo
         // We don't care about the edge name, although there should be one
         val sha = NodeUtils.requiredKeyValue(context, "sha")
@@ -51,13 +53,6 @@ class ProjectType extends Type with ReflectivelyTypedType {
     }
   }
 
-  private def extractOwnerAndRepoFromAssociatedRepo(n: GraphNode): (String,String) = {
-    val repo = NodeUtils.requiredNodeOfType(n, "Repo")
-    val owner = NodeUtils.requiredKeyValue(repo, "owner")
-    val name = NodeUtils.requiredKeyValue(repo, "name")
-    (owner, name)
-  }
-
   private def isSha(s: String) =
     s.matches("[a-fA-F0-9]{40}")
 }
@@ -68,4 +63,12 @@ object ProjectType {
     * File containing provenance information in root of edited projects
     */
   val ProvenanceFilePath = ".atomist.yml"
+
+  def extractOwnerAndRepoFromAssociatedRepo(n: GraphNode): (String,String) = {
+    val repo = NodeUtils.requiredNodeOfType(n, "Repo",
+      customMessage = Some(s"Commit node must expose Repo to find Project. Did you materialize it with a predicate? Raw node was $n"))
+    val owner = NodeUtils.requiredKeyValue(repo, "owner")
+    val name = NodeUtils.requiredKeyValue(repo, "name")
+    (owner, name)
+  }
 }

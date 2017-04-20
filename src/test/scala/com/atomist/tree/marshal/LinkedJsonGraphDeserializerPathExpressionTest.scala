@@ -86,6 +86,24 @@ class LinkedJsonGraphDeserializerPathExpressionTest extends FlatSpec with Matche
     }
   }
 
+  it should "produce appropriate error message against real Push data missing commit" in {
+    val sha = "d6cd1e2bd19e03a81132a23b2025920577f84e37"
+    val as = ParsingTargets.NewStartSpringIoProject
+    val ec = SimpleExecutionContext(DefaultTypeRegistry,
+      Some(FixedShaRepoResolver("owner", "repo-name", sha, as)))
+    val json = TestUtils.contentOf(this, "realPushWithoutCommitToRepo.json")
+    val node = LinkedJsonGraphDeserializer.fromJson(json)
+    val pex: PathExpression = s"/Push()/after::Commit()/source::Project()"
+    try {
+      pe.evaluate(SimpleContainerGraphNode("root", node), pex, ec)
+      fail()
+    }
+    catch {
+      case ex: IllegalArgumentException =>
+        assert(ex.getMessage.contains("Commit") && ex.getMessage.contains("Repo"))
+    }
+  }
+
 }
 
 

@@ -10,6 +10,10 @@ com.atomist.rug.kind.docker.DockerFileType
 
 com.atomist.rug.kind.core.DirectoryType
 
+com.atomist.rug.kind.impact.ImpactType
+com.atomist.rug.kind.impact.FileAdditionTypeProvider
+com.atomist.rug.kind.impact.FileUpdateTypeProvider
+
 com.atomist.rug.kind.java.JavaTypeType
 com.atomist.rug.kind.java.JavaSourceType
 com.atomist.rug.kind.java.JavaProjectType

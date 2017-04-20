@@ -27,7 +27,7 @@ abstract class TypeUnderFile
     */
   def isOfType(f: FileArtifact): Boolean
 
-  override def runtimeClass: Class[_] = classOf[MutableContainerMutableView]
+  override def runtimeClass: Class[_ <: GraphNode] = classOf[MutableContainerMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
       case pmv: ProjectMutableView =>

@@ -21,7 +21,7 @@ object PlanResultInterpreter {
   }
 
   @tailrec
-  def hasLogFailure(log: Seq[PlanLogEvent]): Boolean = {
+  private def hasLogFailure(log: Seq[PlanLogEvent]): Boolean = {
     log.headOption match {
       case Some(head) =>
         head match {
@@ -35,4 +35,5 @@ object PlanResultInterpreter {
       case None => false
     }
   }
+
 }

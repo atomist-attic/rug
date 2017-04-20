@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.25.3...HEAD
 
+### Added
+
+-   Added ability to resolve `Project` objects from `Repo` or `Commit`, if a `RepoResolver` is provided
+    by the runtime
+-   Added `Impact` object to enable drilling into the changes in a `Push` in a path expression, extracting
+    old and new files.
+
 ### Changed
 
 -   **BREAKING** Removed ability to add `command` instructions to the Plans 
@@ -31,7 +38,7 @@ Parameter release
 
 Signature release
 
-### Add
+### Added
 
 -   Add GPG signing of published artifacts
 

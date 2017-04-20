@@ -85,8 +85,8 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
           }
         }
         //ensure handled errors don't return failure https://github.com/atomist/rug/issues/531
-        (response, callbackResults) match {
-          case (Response(Failure,_,_,_), Some(logs)) if !PlanResultInterpreter.hasLogFailure(logs) =>
+        (response, callbackResults, callbackOption) match {
+          case (Response(Failure,_,_,_), Some(logs), Some(callback)) if !PlanResultInterpreter.hasLogFailure(logs) && callback.isInstanceOf[Respond] =>
             val handled = Response(Status.Handled, response.msg, response.code, response.body)
             Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, handled)))).flatten.flatten
           case _ =>

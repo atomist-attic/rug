@@ -2,26 +2,24 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor}
+import com.atomist.project.edit.ProjectEditor
 import com.atomist.rug.SimpleRugResolver
 import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.{JavaScriptCommandHandlerFinder, JavaScriptContext}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
-import com.atomist.source.{ArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.mockito.Matchers._
+import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import org.mockito.Matchers.{eq => expected, _}
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest._
+import org.scalatest.mockito.MockitoSugar
 import org.slf4j.Logger
-import org.mockito.Matchers.{eq => expected}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -37,7 +35,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
   val planRunner = new LocalPlanRunner(messageDeliverer, instructionRunner, Some(nestedPlanRunner), Some(logger))
 
-  it ("should run empty plan") {
+  it("should run empty plan") {
     val plan = Plan(null, Nil, Nil, Nil)
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
@@ -47,34 +45,34 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
 
-  it ("should run a fully populated plan") {
+  it("should run a fully populated plan") {
     val plan = Plan(
-        Some(editor),
-        Nil,
-        Seq(LocallyRenderedMessage("message1", "text/plain", Nil, Nil)),
-        Seq(
-          Respondable(
-            Edit(Detail("edit1", None, Nil, None)),
-            None,
-            None
-          ),
-          Respondable(
-            Edit(Detail("edit2", None, Nil, None)),
-            Some(LocallyRenderedMessage("pass", "text/plain", Nil, Nil)),
-            Some(LocallyRenderedMessage("fail", "text/plain", Nil, Nil))
-          ),
-          Respondable(
-            Edit(Detail("edit3", None, Nil, None)),
-            Some(Respond(Detail("respond1", None, Nil, None))),
-            None
-          ),
-          Respondable(
-            Edit(Detail("edit4", None, Nil, None)),
-            Some(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil)),
-            None
-          )
+      Some(editor),
+      Nil,
+      Seq(LocallyRenderedMessage("message1", "text/plain", Nil, Nil)),
+      Seq(
+        Respondable(
+          Edit(Detail("edit1", None, Nil, None)),
+          None,
+          None
+        ),
+        Respondable(
+          Edit(Detail("edit2", None, Nil, None)),
+          Some(LocallyRenderedMessage("pass", "text/plain", Nil, Nil)),
+          Some(LocallyRenderedMessage("fail", "text/plain", Nil, Nil))
+        ),
+        Respondable(
+          Edit(Detail("edit3", None, Nil, None)),
+          Some(Respond(Detail("respond1", None, Nil, None))),
+          None
+        ),
+        Respondable(
+          Edit(Detail("edit4", None, Nil, None)),
+          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil)),
+          None
         )
       )
+    )
     val instructionNameAsSuccessResponseBody = new Answer[Response]() {
       def answer(invocation: InvocationOnMock) = {
         val input = invocation.getArgumentAt(0, classOf[Instruction]).detail.name
@@ -92,10 +90,10 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Success, Some("edit2"), Some(0), None)),
       InstructionResult(Edit(Detail("edit3", None, Nil, None)), Response(Success, Some("edit3"), Some(0), None)),
       InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, Some("edit4"), Some(0), None)),
-      InstructionResult(Respond(Detail("respond1", None, Nil, None)),Response(Success, Some("respond1"), Some(0), None)),
+      InstructionResult(Respond(Detail("respond1", None, Nil, None)), Response(Success, Some("respond1"), Some(0), None)),
       NestedPlanRun(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil),
         Future(PlanResult(List(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil), null)))))
-      )
+    )
 
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
@@ -127,7 +125,45 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verifyNoMoreInteractions(messageDeliverer, instructionRunner, nestedPlanRunner, logger)
   }
 
-  it ("should run a plan with failing response") {
+  it("should run a plan with handled failing response") {
+    val plan = Plan(Some(editor), Nil, Nil,
+      Seq(
+        Respondable(
+          Edit(Detail("edit2", None, Nil, None)),
+          None,
+          Some(Respond(Detail("respond1", None, Nil, None)))
+        )
+      )
+    )
+    val failure = new Answer[Response]() {
+      def answer(invocation: InvocationOnMock) = {
+        Response(Failure, Some("edit2"), Some(0), None)
+      }
+    }
+
+    val success = new Answer[Response]() {
+      def answer(invocation: InvocationOnMock) = {
+        Response(Success, Some("respond1"), None, None)
+      }
+    }
+
+    when(instructionRunner.run(Edit(Detail("edit2", None, Nil, None)), None)).thenAnswer(failure)
+    when(instructionRunner.run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Failure, Some("edit2"), Some(0), None)))).thenAnswer(success)
+
+    val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
+    val expectedPlanLog = Set(
+      InstructionResult(Respond(Detail("respond1", None, List(), None)), Response(Success, Some("respond1"), None, None)),
+      InstructionResult(Edit(Detail("edit2", None, List(), None)), Response(Handled, Some("edit2"), Some(0), None))
+    )
+    assert(actualPlanResult.log.toSet == expectedPlanLog)
+
+    val inOrder = Mockito.inOrder(messageDeliverer, instructionRunner, nestedPlanRunner)
+    inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
+
+    verify(logger).debug("Ran Edit edit2() and then Failure:0:edit2")
+  }
+
+  it("should run a plan with failing response and dispatch messages") {
     val plan = Plan(Some(editor), Nil, Nil,
       Seq(
         Respondable(
@@ -147,7 +183,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
     val expectedPlanLog = Set(
-      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Handled, Some("edit2"), Some(0), None))
+      InstructionResult(Edit(Detail("edit2", None, Nil, None)), Response(Failure, Some("edit2"), Some(0), None))
     )
     assert(actualPlanResult.log.toSet == expectedPlanLog)
 
@@ -172,7 +208,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     case CallbackError(c, e) => (c, e.getMessage)
   }
 
-  it ("should handle error during message delivery") {
+  it("should handle error during message delivery") {
     val plan = Plan(Some(editor), Nil,
       Seq(
         LocallyRenderedMessage(
@@ -197,7 +233,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verifyNoMoreInteractions(instructionRunner, nestedPlanRunner, logger)
   }
 
-  it ("should handle error during respondable instruction execution") {
+  it("should handle error during respondable instruction execution") {
     val plan = Plan(None, Nil,
       Nil,
       Seq(
@@ -221,13 +257,13 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verifyNoMoreInteractions(messageDeliverer, nestedPlanRunner, logger)
   }
 
-  it ("should handle failing respondable callback") {
+  it("should handle failing respondable callback") {
     val plan = Plan(None, Nil,
       Nil,
       Seq(
         Respondable(
           Edit(Detail("edit", None, Nil, None)),
-          Some(Plan(None,Nil,Seq(LocallyRenderedMessage("fail", "text/plain", Nil, Nil)), Nil)),
+          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("fail", "text/plain", Nil, Nil)), Nil)),
           None
         )
       )
@@ -243,7 +279,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     assert(makeEventsComparable(actualPlanResult.log.toSet) === makeEventsComparable(expectedPlanLog))
 
     verify(logger).debug("Ran Edit edit() and then Success")
-    verify(logger).error(expected( "Failed to invoke Plan[channels: , usernames: , type: text/plain, body: fail] after Edit edit() - Uh oh!"), any(classOf[Throwable]))
+    verify(logger).error(expected("Failed to invoke Plan[channels: , usernames: , type: text/plain, body: fail] after Edit edit() - Uh oh!"), any(classOf[Throwable]))
 
     verifyNoMoreInteractions(messageDeliverer, logger)
   }
@@ -258,9 +294,9 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     val resolver = SimpleRugResolver(rugArchive)
 
     val handlers = resolver.resolvedDependencies.resolvedRugs
-    val handler = handlers.collect{case i: CommandHandler => i}.head
+    val handler = handlers.collect { case i: CommandHandler => i }.head
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(handlers.head, null, null, new TestSecretResolver(handler) {
-      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] =  {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
         assert(secrets.size === 1)
         assert(secrets.head.name === "very")
         assert(secrets.head.path === "/secret/thingy")
@@ -269,7 +305,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     }, rugResolver = Some(resolver)))
 
     val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
-    val results = result.log.collect{case i: InstructionResult => i}
+    val results = result.log.collect { case i: InstructionResult => i }
     assert(results.head.instruction.detail.name === "HandleIt")
     assert(results.head.response.status === Status.Success)
     assert(results(1).instruction.detail.name === "ExampleFunction")

@@ -27,7 +27,6 @@ object PlanUtils {
     val op = i match {
       case Generate(_) => "Generate"
       case Edit(_) => "Edit"
-      case Review(_) => "Review"
       case Execute(_) => "Execute"
       case Respond(_) => "Respond"
     }

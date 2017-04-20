@@ -122,8 +122,6 @@ object Handlers {
 
     case class Edit(detail: Detail) extends RespondableInstruction
 
-    case class Review(detail: Detail) extends RespondableInstruction
-
     case class Execute(detail: Detail) extends RespondableInstruction
 
     case class Respond(detail: Detail) extends NonrespondableInstruction with Callback

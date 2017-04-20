@@ -122,8 +122,6 @@ object Handlers {
 
     case class Edit(detail: Detail) extends RespondableInstruction
 
-    case class Review(detail: Detail) extends RespondableInstruction
-
     case class Execute(detail: Detail) extends RespondableInstruction
 
     case class Respond(detail: Detail) extends NonrespondableInstruction with Callback
@@ -176,10 +174,13 @@ object Handlers {
 
     case object Failure extends Status
 
+    case object Handled extends Status
+
     def from(name: String): Status = {
       name match {
         case "success" => Success
         case "failure" => Failure
+        case "handled" => Handled
         case _ => throw new IllegalArgumentException(s"Cannot derive Status from '$name'.")
       }
     }

@@ -1,11 +1,13 @@
 package com.atomist.rug.runtime.plans
 
+import java.util
+
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.rug.SimpleRugResolver
 import com.atomist.rug.TestUtils.contentOf
-import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.runtime.{CommandHandler, Rug}
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status._
 import com.atomist.rug.spi.Handlers._
@@ -311,5 +313,38 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     assert(results(1).instruction.detail.name === "ExampleFunction")
     assert(results(1).response.status === Status.Handled)
     assert(PlanResultInterpreter.interpret(result).status === Status.Success)
+  }
+
+  val handlerWithMessageOnError = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "HandlerWithMessageOnError.ts"))
+
+  it("should dispatch message onError") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerWithMessageOnError))
+    val resolver = SimpleRugResolver(rugArchive)
+
+    val handlers = resolver.resolvedDependencies.resolvedRugs
+    val handler = handlers.collect { case i: CommandHandler => i }.head
+    val deliverer = new CachingDeliverer()
+    val runner = new LocalPlanRunner(deliverer, new LocalInstructionRunner(handlers.head, null, null, new TestSecretResolver(handler) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
+        assert(secrets.size === 1)
+        assert(secrets.head.name === "very")
+        assert(secrets.head.path === "/secret/thingy")
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }, rugResolver = Some(resolver)))
+
+    val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
+    assert(PlanResultInterpreter.interpret(result).status === Status.Failure)
+    assert(deliverer.messages.size() == 1)
+  }
+}
+
+class CachingDeliverer extends MessageDeliverer {
+
+  val messages = new util.ArrayList[Message]
+
+  override def deliver(currentRug: Rug, message: Message, callbackInput: Option[Response]): Unit = {
+    messages.add(message)
   }
 }

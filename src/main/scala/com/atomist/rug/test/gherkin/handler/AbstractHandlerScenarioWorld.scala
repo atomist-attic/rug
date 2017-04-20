@@ -7,11 +7,11 @@ import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
-import com.atomist.rug.spi.Handlers.Instruction.{Edit, Generate, Review}
+import com.atomist.rug.spi.Handlers.Instruction.{Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, ScenarioWorld}
-import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{TreeMaterializer, TreeNode}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -19,43 +19,27 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
   */
 abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener])
-  extends ScenarioWorld(definitions, rugs)
-    with RepoResolver {
+  extends ScenarioWorld(definitions, rugs) {
 
   // Handler name to plan
   private var recordedPlans = Map[String, Plan]()
 
+  private val repoResolver = new MutableRepoResolver
+
   protected def createRugContext(tm: TreeMaterializer): RugContext =
-    new FakeRugContext("team_id", tm, Some(this))
+    new FakeRugContext("team_id", tm, Some(repoResolver))
 
   private var rootContext: SimpleContainerGraphNode =
     SimpleContainerGraphNode.empty("root", TreeNode.Dynamic)
 
   private case class ProjectId(owner: String, repoName: String, sha: String)
 
-  private var definedRepos: Map[ProjectId, ArtifactSource] = Map()
-
-  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
-    val pid = ProjectId(owner, repoName, branch)
-    definedRepos.getOrElse(ProjectId(owner, repoName, branch),
-      throw new IllegalArgumentException(s"Repo not found [$pid]")
-    )
-  }
-
-  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
-    val pid = ProjectId(owner, repoName, sha)
-    definedRepos.getOrElse(ProjectId(owner, repoName, sha),
-      throw new IllegalArgumentException(s"Repo not found [$pid]")
-    )
-  }
-
   def emptyProject(name: String): ProjectMutableView = {
     new ProjectMutableView(originalBackingObject = EmptyArtifactSource(name = name))
   }
 
-  def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit = {
-    definedRepos += (ProjectId(owner, name, branchOrSha) -> p.currentBackingObject)
-  }
+  def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit =
+    repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)
 
   /**
     * Return the editor with the given name or throw an exception

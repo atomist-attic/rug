@@ -11,7 +11,7 @@ class DirectoryType
 
   override def description = "Type for a directory within a project."
 
-  override def runtimeClass: Class[_] = classOf[DirectoryMutableView]
+  override def runtimeClass = classOf[DirectoryMutableView]
 
   override def findAllIn(context: GraphNode): Option[Seq[MutableView[_]]] = context match {
       case pmv: ProjectMutableView =>

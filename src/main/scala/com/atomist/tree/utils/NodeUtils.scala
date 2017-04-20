@@ -26,8 +26,8 @@ object NodeUtils {
     * @param customMessage error message to use if desired
     */
   def requiredKeyValue(gn: GraphNode, key: String, customMessage: Option[String] = None): String = {
-    gn.relatedNodesNamed(key).headOption match {
-      case Some(tn: TreeNode) => tn.value
+    requiredKey(gn, key, customMessage) match {
+      case tn: TreeNode => tn.value
       case _ => throw new IllegalArgumentException(
         customMessage.getOrElse(s"No key named [$key] on $gn")
       )

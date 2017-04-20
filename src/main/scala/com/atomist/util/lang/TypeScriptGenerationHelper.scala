@@ -41,7 +41,10 @@ class TypeScriptGenerationHelper(indent: String = "    ")
       case "java.util.List<com.atomist.rug.kind.java.support.PackageInfo>" => "any[]" //TODO
       case "java.util.List<com.atomist.rug.kind.service.ServiceMutableView>" => "any[]"
       case "java.util.List<com.atomist.tree.TreeNode>" => "any[]"
-      case "interface com.atomist.tree.TreeNode" => "TreeNode" // is this right?
+      case "interface com.atomist.graph.GraphNode" =>
+        // TODO for some reason, the correct return of "GraphNode" won't compile although it's imported
+        "TreeNode"
+      case "interface com.atomist.tree.TreeNode" => "TreeNode"
       case "List" => "any[]" // TODO improve this
       case "FileArtifactMutableView" => "File" // TODO this is nasty
       case "scala.collection.immutable.Set<java.lang.String>" => "string[]" // Nasty

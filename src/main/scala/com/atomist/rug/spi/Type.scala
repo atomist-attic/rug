@@ -1,18 +1,19 @@
 package com.atomist.rug.spi
 
+import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.dynamic.ChildResolver
 
 /**
-  * Support for a new Rug "kind" or "type" that can be used in `with` or `from` comprehensions, such
-  * as a Java class or Elm module.
-  * When kinds are nested, the context should be the mutable view of
-  * the outer kind.
+  * Support for a new Rug "kind" or "type" that can be used in path expressions
+  * and resolved in a context.
   */
 abstract class Type
   extends ChildResolver
     with Typed {
 
-  /** Describe the MutableView subclass to allow for reflective function export */
-  def runtimeClass:Class[_]
+  /**
+    * Describe the GraphNode or MutableView subclass to allow for reflective function export
+    */
+  def runtimeClass: Class[_ <: GraphNode]
 
 }

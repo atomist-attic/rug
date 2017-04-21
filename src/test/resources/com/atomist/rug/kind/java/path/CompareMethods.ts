@@ -37,7 +37,7 @@ export class CompareMethods implements ProjectEditor {
 
       eng.with<File>(project, "//File()[/JavaFile()]", f => {
          const methods = springExportedMethodsIn(eng, f);
-         console.log(JSON.stringify(methods));
+         //console.log(JSON.stringify(methods));
       });
 
       //for (let m of methodsA) {

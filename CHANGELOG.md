@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.25.3...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/0.26.0...HEAD
+
+## [0.26.0] - 2017-04-21
+
+[0.26.0]: https://github.com/atomist/rug/compare/0.25.3...0.26.0
+
+Election Release
 
 ### Added
 
@@ -23,7 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Response.Status of instructions whose failure is handled by a ResponseHandler
     now have a status of `Handled` instead of `Failed`
--   **BREAKING** Event and Command Handlers must return EventPlan and Command Plan
+-   **BREAKING** Event and Command Handlers must return EventPlan and CommandPlan
     respectively to remove confusion as to the different capabilities 
 -   Project test steps can now return `void`, as for handlers.
 

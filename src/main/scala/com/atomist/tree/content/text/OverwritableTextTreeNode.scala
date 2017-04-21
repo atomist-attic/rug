@@ -178,7 +178,7 @@ class OverwritableTextTreeNode(name: String,
       s"unready ${super.toString}"
     else {
       val showValue = if (childCount == 0) s"value=[$value]" else s"length=${value.length}"
-      s"OverwritableTextTreeNode:$showValue;name=[$name]"
+      s"OverwritableTextTreeNode:name=[$name];$showValue"
     }
 
   /* mine */

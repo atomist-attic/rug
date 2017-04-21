@@ -426,7 +426,7 @@
                                 </goals>
                                 <configuration>
                                     <!-- Pin versions to things we know are working. TS things tend to break! -->
-                                    <arguments>install --save-dev typescript@2.1.6 @types/node@7.0.5 typedoc@0.5.7 gulp@3.9.1 gulp-typedoc@2.0.2  @types/lodash@4.14.56</arguments>
+                                    <arguments>install --save-dev typescript@2.2.2 @types/node@7.0.13 typedoc@0.5.10 gulp@3.9.1 gulp-typedoc@2.0.2  @types/lodash@4.14.62</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
@@ -577,32 +577,36 @@
                             </execution>
                         </executions>
                     </plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-site-plugin</artifactId>
-						<version>3.3</version>
-						<configuration>
-							<reportPlugins>
-								<plugin>
-									<artifactId>maven-project-info-reports-plugin</artifactId>
-									<version>2.7</version>
-								</plugin>
-								<plugin>
-									<groupId>net.alchim31.maven</groupId>
-									<artifactId>scala-maven-plugin</artifactId>
-									<version>3.2.2</version>
-									<configuration>
-										<jvmArgs>
-											<jvmArg>-Xms64m</jvmArg>
-											<jvmArg>-Xmx1024m</jvmArg>
-										</jvmArgs>
-									</configuration>
-								</plugin>
-							</reportPlugins>
-						</configuration>
-					</plugin>
                 </plugins>
             </build>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <version>3.3</version>
+                        <configuration>
+                            <reportPlugins>
+                                <plugin>
+                                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                                    <version>2.7</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>net.alchim31.maven</groupId>
+                                    <artifactId>scala-maven-plugin</artifactId>
+                                    <version>3.2.2</version>
+                                    <configuration>
+                                        <jvmArgs>
+                                            <jvmArg>-Xms64m</jvmArg>
+                                            <jvmArg>-Xmx1024m</jvmArg>
+                                        </jvmArgs>
+                                    </configuration>
+                                </plugin>
+                            </reportPlugins>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
     </profiles>
 </project>

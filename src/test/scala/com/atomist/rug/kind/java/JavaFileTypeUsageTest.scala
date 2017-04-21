@@ -28,9 +28,7 @@ class JavaFileTypeUsageTest extends AbstractTypeUnderFileTest {
   //    assert(extracted === exceptionToSearchFor)
 
   it should "compare methods" in {
-    val exceptionToSearchFor = "ThePlaneHasFlownIntoTheMountain"
-    val result = editorInSideFile(this, "CompareMethods.ts").modify(ParsingTargets.SpringIoGuidesRestServiceSource)
-
+    editorInSideFile(this, "CompareMethods.ts").modify(ParsingTargets.SpringIoGuidesRestServiceSource)
   }
 
 

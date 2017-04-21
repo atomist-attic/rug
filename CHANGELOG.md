@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     by the runtime
 -   Added `Impact` object to enable drilling into the changes in a `Push` in a path expression, extracting
     old and new files.
+-   Added `stringify` function on `TreeHelper.ts` to help dump hierarchy of AST nodes when debugging.
+-   `jsSafeCommittingProxy` now returns `undefined` on unknown properties on dynamic nodes 
+    rather than throwing an exceptions
 
 ### Changed
 

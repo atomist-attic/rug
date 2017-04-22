@@ -6,6 +6,9 @@ import com.atomist.tree.content.text.grammar.antlr.FromGrammarAstNodeCreationStr
 
 /**
   * Path-expression oriented Java type built on JavaParser.
+  * Please refer to the ANTLR grammar for Java 8 for the
+  * production names, which are used unchanged in path expression.
+  * https://github.com/antlr/grammars-v4/blob/master/java8/Java8.g4
   */
 class JavaFileType
   extends AntlrRawFileType("compilationUnit",

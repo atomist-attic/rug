@@ -7,6 +7,14 @@ import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Represents a Java source file.
+  * Note: This is the first generation, verb-oriented Java type.
+  * It supports path expressions into itself but no deeper. Use
+  * the ANTLR-based JavaFileType if you wish to use path expressions throughout
+  * the Java AST.
+  *
+  * This type may be deleted in a future version of Rug, if the JavaFileType
+  * and TypeScript helpers prove capable of replacing all its functionality
+  * in a convenient manner.
   */
 class JavaSourceType
   extends Type

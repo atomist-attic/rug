@@ -173,11 +173,16 @@ class OverwritableTextTreeNode(name: String,
   def file: FileArtifactBackedMutableView =
     rootNode.fileView
 
+  private def maxLengthToRender = 32
+
   override def toString: String =
     if (state == Unready)
       s"unready ${super.toString}"
     else {
-      val showValue = if (childCount == 0) s"value=[$value]" else s"length=${value.length}"
+      val showValue =
+        if (value.length < maxLengthToRender) s"value=[$value]"
+      else
+        s"length=${value.length}[${value.take(5)}...${value.takeRight(5)}}]"
       s"OverwritableTextTreeNode:name=[$name];$showValue"
     }
 

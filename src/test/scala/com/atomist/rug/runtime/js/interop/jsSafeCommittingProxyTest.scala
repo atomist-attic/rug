@@ -2,13 +2,13 @@ package com.atomist.rug.runtime.js.interop
 
 import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.kind.core.FileMutableView
+import com.atomist.rug.kind.core.{FileMutableView, ProjectMutableView}
 import com.atomist.rug.runtime.js.SimpleContainerGraphNode
 import com.atomist.rug.ts.Cardinality
-import com.atomist.source.StringFileArtifact
+import com.atomist.source.{EmptyArtifactSource, StringFileArtifact}
 import com.atomist.tree.{SimpleTerminalTreeNode, TreeNode}
 import com.atomist.util.lang.JavaScriptArray
-import jdk.nashorn.api.scripting.JSObject
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.scalatest.{FlatSpec, Matchers}
 
 class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
@@ -73,6 +73,24 @@ class jsSafeCommittingProxyTest extends FlatSpec with Matchers {
        //assert(jsa.lyst === util.Arrays.asList("baz", "baz2"))
       case x => fail(s"Unexpected: $x")
     }
+  }
+
+  it should "produce valid JSON toString for simple structure" in {
+    val c = new SimpleContainerGraphNode("root",
+      Seq(SimpleTerminalTreeNode("bar", "baz"),
+        SimpleTerminalTreeNode("bar", "baz2")),
+      Set(TreeNode.Dynamic)
+    )
+    val sc = new jsSafeCommittingProxy(c, DefaultTypeRegistry)
+    val s = sc.toString
+    assert(s.contains("baz2"))
+  }
+
+  it should "produce useful toString for project node" in {
+    val p = new ProjectMutableView(EmptyArtifactSource())
+    val sc = new jsSafeCommittingProxy(p, DefaultTypeRegistry)
+    val s = sc.toString
+    assert(s.contains(classOf[ProjectMutableView].getSimpleName))
   }
 
 }

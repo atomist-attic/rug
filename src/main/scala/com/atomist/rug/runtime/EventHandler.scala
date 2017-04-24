@@ -2,6 +2,7 @@ package com.atomist.rug.runtime
 
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Plan
+import com.atomist.rug.spi.SecretAwareRug
 
 /**
   * System event, such as a new issue
@@ -19,7 +20,7 @@ case class SystemEvent(
 /**
   * Event implemented by EventHandlers
   */
-trait EventHandler extends Rug {
+trait EventHandler extends SecretAwareRug {
 
   /**
     * Return the name of the the root node that this handler is interested in,

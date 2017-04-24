@@ -2,10 +2,9 @@ package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.MissingSecretException
-import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.spi.Secret
+import com.atomist.rug.spi.{Secret, SecretAwareRug}
 
-class TestSecretResolver(handler: CommandHandler)
+class TestSecretResolver(handler: SecretAwareRug)
   extends SecretResolver(Some(handler)) {
 
   /**

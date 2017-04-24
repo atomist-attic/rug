@@ -9,6 +9,7 @@ import jdk.nashorn.internal.runtime.ScriptRuntime
 
 import scala.collection.JavaConverters._
 
+
 object NashornMapBackedGraphNode {
 
   /**
@@ -57,7 +58,7 @@ object NashornMapBackedGraphNode {
 private[interop] class NodeRegistry {
 
   private var reg: Map[String, NashornMapBackedGraphNode] = Map()
-  private var somReg: Map[ScriptObjectMirror,NashornMapBackedGraphNode] = Map()
+  private var somReg: Map[ScriptObjectMirror, NashornMapBackedGraphNode] = Map()
 
   def register(gn: NashornMapBackedGraphNode): Unit = {
     gn.nodeId.foreach(id => {
@@ -83,10 +84,11 @@ import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode._
   * Handles cycles if references are provided.
   */
 class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
-                                        nodeRegistry: NodeRegistry)
-  extends GraphNode {
+                                nodeRegistry: NodeRegistry)
+  extends GraphNode
+    with JsonableProxy {
 
-  protected val relevantPropertiesAndValues: Map[String, Object] = relevantPropertyValues(scriptObject)
+  protected val relevantPropertiesAndValues: Map[String, AnyRef] = relevantPropertyValues(scriptObject)
 
   val nodeId: Option[String] = relevantPropertiesAndValues.get(NodeIdField).map(id => "" + id)
   nodeRegistry.register(this)
@@ -109,6 +111,8 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
       case _ => Set()
     }
   }
+
+  override protected def propertyMap: Map[String, Any] = relevantPropertiesAndValues
 
   override lazy val relatedNodes: Seq[GraphNode] =
     relevantPropertiesAndValues.keySet.diff(Set(NodeNameField, NodeTagsField, NodeIdField))
@@ -159,16 +163,11 @@ class NashornMapBackedGraphNode(val scriptObject: ScriptObjectMirror,
     }
   }
 
-  override def toString: String = s"${getClass.getSimpleName}#$hashCode: name=[$nodeName];id=$nodeId;props=${relevantPropertiesAndValues}"
-
 }
 
 private class NashornMapBackedAddressableGraphNode(
                                                     som: ScriptObjectMirror,
                                                     nodeRegistry: NodeRegistry,
                                                     val address: String)
-  extends NashornMapBackedGraphNode(som, nodeRegistry) with AddressableGraphNode {
-
-  override def toString: String = s"${super.toString}; address=[$address]"
-
-}
+  extends NashornMapBackedGraphNode(som, nodeRegistry)
+    with AddressableGraphNode

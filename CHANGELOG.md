@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.26.0...HEAD
 
+### Changed
+
+-  Improved JVM `toString` behavior for JavaScript proxies
+-  Added reducer to allow JSON.stringify to be used with JVM-backed nodes
+
 ## [0.26.0] - 2017-04-21
 
 [0.26.0]: https://github.com/atomist/rug/compare/0.25.3...0.26.0

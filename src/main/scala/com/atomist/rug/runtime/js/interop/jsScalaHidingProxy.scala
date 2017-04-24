@@ -26,22 +26,10 @@ class jsScalaHidingProxy private(
                                   methodsToHide: Set[String],
                                   methodValidator: MethodValidator,
                                   returnNotToProxy: Any => Boolean
-                                ) extends AbstractJSObject {
-
-  override def getDefaultValue(hint: Class[_]): AnyRef = {
-    if (hint == classOf[String]) {
-      toString()
-    }
-    else if (hint == null)
-      toString()
-    else
-      throw new UnsupportedOperationException("No conversion for " + hint)
-  }
+                                ) extends AbstractJSProxy {
 
   override def getMember(name: String): AnyRef = {
     val r = name match {
-      case "toString" =>
-        toString
       case _ if methodsToHide.contains(name) =>
         // Make JavaScript folks feel at home.
         ScriptRuntime.UNDEFINED

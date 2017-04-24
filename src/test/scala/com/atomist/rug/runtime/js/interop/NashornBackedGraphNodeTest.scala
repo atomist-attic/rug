@@ -1,9 +1,10 @@
 package com.atomist.rug.runtime.js.interop
 
-import com.atomist.graph.AddressableGraphNode
+import com.atomist.graph.{AddressableGraphNode, GraphNode}
 import com.atomist.rug.runtime.js.SimpleContainerGraphNode
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionEngine}
+import com.fasterxml.jackson.databind.ObjectMapper
 import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -299,6 +300,32 @@ class NashornBackedGraphNodeTest extends FlatSpec with Matchers {
     val s = gn.followEdge("raisedBy")
     assert(s.size === 1)
     assert(s.head.relatedNodeNames.contains("name"))
+  }
+
+  private def casparTheGangster: GraphNode = {
+    val rootName = "Gangster"
+    val n = engine.eval(
+      s"""
+         |{
+         |   var x = { nodeName: '$rootName', forename: 'Johnny', surname: 'Caspar',
+         |     associates: [
+         |      { nodeName: 'Leo', forename: 'Leo', nodeTags: ["Irish"]},
+         |      { nodeName: 'Tom', forename: 'Tom', nodeTags: ["Irish"]}
+         |     ],
+         |     nodeTags: ["tag1", "tag2"]};
+         |   x
+         |}
+      """.stripMargin
+    )
+    toGraphNode(n).get
+  }
+
+  it should "produce valid JSON toString from nested node" in {
+    val caspar = casparTheGangster
+    val json = caspar.toString
+    val om = new ObjectMapper()
+    // Check it doesn't blow up
+    val obj = om.readValue(json, classOf[AnyRef])
   }
 
 }

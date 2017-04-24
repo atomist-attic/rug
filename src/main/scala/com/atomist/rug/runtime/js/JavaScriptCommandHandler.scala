@@ -64,18 +64,6 @@ class JavaScriptCommandHandlerFinder
       case _ => Seq()
     }
   }
-  /**
-    * Fetch any secrets decorated on the handler
-    */
-  protected def secrets(someVar: ScriptObjectMirror) : Seq[Secret] = {
-    someVar.getMember("__secrets") match {
-      case som: ScriptObjectMirror =>
-        som.values().asScala.collect {
-          case s: String => Secret(s,s)
-        }.toSeq
-      case _ => Nil
-    }
-  }
 }
 
 /**

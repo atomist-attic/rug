@@ -1,12 +1,14 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
-import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
+import com.atomist.param.{ParameterValue, SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugArchiveReader
+import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime.SystemEvent
-import com.atomist.rug.runtime.plans.{LocalInstructionRunner, LocalPlanRunner}
+import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
+import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -25,6 +27,26 @@ object JavaScriptEventHandlerTest {
   val reOpenIssueHandlerName = "ClosedIssueReopener"
 
   val reOpenIssueHandlerDesc = "Reopens closed issues"
+
+  val simpleEventHandlerWithSecrets = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    s"""
+       |import {HandleEvent, EventPlan} from '@atomist/rug/operations/Handlers'
+       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
+       |import {EventHandler, Tags, Secrets} from '@atomist/rug/operations/Decorators'
+       |
+       |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/issue"))
+       |@Tags("github", "build")
+       |@Secrets("atomist/user_token", "atomist/showmethemoney")
+       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
+       |  handle(event: Match<TreeNode, TreeNode>){
+       |    let issue = event.root;
+       |    let result = new EventPlan();
+       |    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot"}}})
+       |    return result;
+       |  }
+       |}
+       |export let handler = new SimpleHandler();
+      """.stripMargin)
 
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
@@ -236,6 +258,30 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     assert(actualPlan.get.messages.size === 1)
     val msg = actualPlan.get.lifecycle.head
     assert(msg.node != null)
+  }
+
+  it should "resolve secrets from the secret resolver" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleEventHandlerWithSecrets))
+    val finder = new JavaScriptEventHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val fn = DefaultRugFunctionRegistry.find("ExampleFunction").get.asInstanceOf[ExampleRugFunction]
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(fn, null, null, new TestSecretResolver(handlers.head) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
+        assert(secrets.size === 1)
+        assert(secrets.head.name === "very")
+        assert(secrets.head.path === "/secret/thingy")
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }))
+    val actualPlan = handlers.head.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
+    assert(actualPlan.nonEmpty)
+    Await.result(runner.run(actualPlan.get, None), 10.seconds).log.foreach {
+      case i:
+        InstructionResult =>
+        assert(i.response.status === Status.Success)
+      case i => println(i.getClass)
+    }
   }
 
   it should "it should not invoke the actual handler if there matches are empty" in {

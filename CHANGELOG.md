@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.26.0...HEAD
 
+### Added
+
+-  Added support for resolution of Secrets from Event Handlers. NOTE:
+   it's up to secret resolver implementations to make sense of what
+   this means in the particular context!
+
 ### Changed
 
 -  Improved JVM `toString` behavior for JavaScript proxies

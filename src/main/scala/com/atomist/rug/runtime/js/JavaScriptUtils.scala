@@ -5,6 +5,7 @@ import javax.script.{ScriptContext, SimpleBindings}
 import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
+import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 import scala.collection.JavaConverters._
@@ -118,6 +119,19 @@ trait JavaScriptUtils {
           case (_, details: ScriptObjectMirror) => parameterVarToParameter(someVar, details)
         }.toSeq
       case _ => Seq()
+    }
+  }
+
+  /**
+    * Fetch any secrets decorated on the handler
+    */
+  protected def secrets(someVar: ScriptObjectMirror) : Seq[Secret] = {
+    someVar.getMember("__secrets") match {
+      case som: ScriptObjectMirror =>
+        som.values().asScala.collect {
+          case s: String => Secret(s,s)
+        }.toSeq
+      case _ => Nil
     }
   }
 

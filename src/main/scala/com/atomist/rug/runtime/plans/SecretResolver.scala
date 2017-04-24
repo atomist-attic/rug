@@ -1,9 +1,8 @@
 package com.atomist.rug.runtime.plans
 
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
-import com.atomist.rug.{InvalidSecretException, MissingSecretException}
-import com.atomist.rug.runtime.{CommandHandler, Rug}
-import com.atomist.rug.spi.Secret
+import com.atomist.rug.runtime.Rug
+import com.atomist.rug.spi.{Secret, SecretAwareRug}
 
 /**
   * Used by PlanRunner implementations to resolve secrets declared by CommandHandlers
@@ -23,7 +22,7 @@ abstract class SecretResolver (rug: Option[Rug]) {
     */
   def replaceSecretTokens(parameters: Seq[ParameterValue]): Seq[ParameterValue] = {
     rug match {
-      case Some(handler: CommandHandler) =>
+      case Some(handler: SecretAwareRug) =>
         parameters.map { param =>
           param.getValue match {
             case s: String =>

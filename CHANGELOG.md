@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   project.findFile now works on paths starting with a '/'
+    https://github.com/atomist/rug/issues/523
+    
 -   Rug Function exceptions are now passed to error handlers.
     Maybe: Response now passed to handlers when unknown Rug Functions are encountered
     https://github.com/atomist/rug/issues/536

@@ -34,7 +34,7 @@ export const handler2 = new ReturnsEmptyPlanEventHandler2();
 class ReturnsEmptyPlanEventHandler2a implements HandleEvent<GraphNode, GraphNode> {
 
     handle(m: Match<node.Commit, node.Person>) {
-        let peep = m.matches()[0];
+        let peep = m.matches[0];
         // console.log(`Match ${m}: peep=${peep}`);
         return new EventPlan();
     }
@@ -49,7 +49,7 @@ export const handler2a = new ReturnsEmptyPlanEventHandler2a();
 class ReturnsEmptyPlanEventHandler3 implements HandleEvent<node.Commit, node.GitHubId> {
 
     handle(m: Match<node.Commit, node.GitHubId>) {
-        let ghid: node.GitHubId = m.matches()[0]
+        let ghid: node.GitHubId = m.matches[0]
         if (ghid.id != "gogirl") throw new Error(`Unexpected github id ${ghid.id}`)
         //if (ghid.address != "/madeBy/gitHubId") throw new Error(`Unexpected address [${ghid.address}]`)
 

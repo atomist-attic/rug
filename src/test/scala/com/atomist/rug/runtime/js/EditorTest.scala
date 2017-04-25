@@ -4,7 +4,7 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
 import com.atomist.project.ProjectOperation
 import com.atomist.project.common.IllformedParametersException
 import com.atomist.project.edit._
-import com.atomist.rug.{RugArchiveReader, SimpleRugResolver}
+import com.atomist.rug.{RugArchiveReader, SimpleRugResolver, TestUtils}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
@@ -248,8 +248,8 @@ object EditorTest {
         |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         |      let m = eng.evaluate<Project,File>(project, new PomFile())
         |
-        |      let t: string = `param=${this.packageName},filecount=${m.root().fileCount}`
-        |      for (let n of m.matches()) {
+        |      let t: string = `param=${this.packageName},filecount=${m.root.fileCount}`
+        |      for (let n of m.matches) {
         |        t += `Matched file=${n.path}`;
         |        n.append("randomness")
         |        }
@@ -266,77 +266,10 @@ object EditorTest {
         | """.stripMargin
 
   val EditorInjectedWithPathExpression: String =
-    """import {Project, File} from '@atomist/rug/model/Core'
-      |import {Match, PathExpression, PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
-      |
-      |@Tags("java", "maven")
-      |@Editor("Constructed", "A nice little editor")
-      |class ConstructedEditor {
-      |
-      |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |    packageName: string
-      |
-      |    edit(project: Project) {
-      |
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
-      |      let pe = new PathExpression<Project,File>(`/File()[@name='pom.xml']`)
-      |      let m: Match<Project,File> = eng.evaluate(project, pe)
-      |
-      |      var t: string = `param=${this.packageName},filecount=${m.root().fileCount}`
-      |      for (let n of m.matches()) {
-      |        t += `Matched file=${n.path}`;
-      |        n.append("randomness")
-      |        }
-      |
-      |        var s: string = ""
-      |
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        for (let f of project.files)
-      |            s = s + `File [${f.path}] containing [${f.content}]\n`
-      |    }
-      |  }
-      |  export let myeditor = new ConstructedEditor()
-      | """.stripMargin
+    TestUtils.contentOf(this, "EditorInjectedWithPathExpression.ts")
 
   val EditorInjectedWithPathExpressionUsingWith: String =
-    """import {Project} from '@atomist/rug/model/Core'
-      |import {PathExpression} from '@atomist/rug/tree/PathExpression'
-      |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
-      |import {Match} from '@atomist/rug/tree/PathExpression'
-      |import {File} from '@atomist/rug/model/Core'
-      |import {Editor, Parameter, Tags} from '@atomist/rug/operations/Decorators'
-      |
-      |
-      |@Tags("java", "maven")
-      |@Editor("Constructed", "A nice little editor")
-      |class ConstructedEditor {
-      |
-      |    @Parameter({description: "The Java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
-      |    packageName: string
-      |
-      |    edit(project: Project) {
-      |      let eng: PathExpressionEngine = project.context.pathExpressionEngine;
-      |      project.files.filter(t => false)
-      |      var t: string = `param=${this.packageName},filecount=${project.fileCount}`
-      |
-      |      eng.with<File>(project, "/*[@name='pom.xml']", n => {
-      |        t += `Matched file=${n.path}`;
-      |        n.append("randomness")
-      |      })
-      |
-      |        var s: string = ""
-      |
-      |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        for (let f of project.files)
-      |            s = s + `File [${f.path}] containing [${f.content}]\n`
-      |
-      |        //`${t}\n\nEdited Project containing ${project.fileCount} files: \n${s}`)
-      |    }
-      |  }
-      |
-      |  export let myeditor = new ConstructedEditor()
-      | """.stripMargin
+    TestUtils.contentOf(this, "EditorInjectedWithPathExpressionUsingWith.ts")
 
   val EditorInjectedWithPathExpressionUsingWithTypeJump: String =
 
@@ -518,7 +451,6 @@ class EditorTest extends FlatSpec with Matchers {
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>
-      //sm.comment.contains("OK") should be(true)
         sm.result.findFile("pom.xml").get.content.contains("randomness") should be (true)
         (jsed, sm)
       case _ => ???
@@ -530,8 +462,6 @@ class EditorTest extends FlatSpec with Matchers {
 
     val jsed = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
     assert(jsed.name === "SimpleGenerator")
-
-//    jsed.addToArchiveContext(others)
 
     val prj = jsed.generate("woot", SimpleParameterValues( Map("content" -> "Anders Hjelsberg is God")))
     assert(prj.id.name === "woot")

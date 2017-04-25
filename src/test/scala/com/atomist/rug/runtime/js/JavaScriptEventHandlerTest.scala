@@ -144,7 +144,7 @@ object JavaScriptEventHandlerTest {
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |
        |  handle(event: Match<TreeNode, TreeNode>) {
-       |     return new EventPlan().add(new LifecycleMessage(event.root(), "123"));
+       |     return new EventPlan().add(new LifecycleMessage(event.root, "123"));
        |  }
        |}
        |export let handler = new SimpleHandler();
@@ -160,7 +160,7 @@ object JavaScriptEventHandlerTest {
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){
-       |     return new EventPlan().add(new LifecycleMessage(event.root(), "123"));
+       |     return new EventPlan().add(new LifecycleMessage(event.root, "123"));
        |  }
        |}
        |export let handler = new SimpleHandler();

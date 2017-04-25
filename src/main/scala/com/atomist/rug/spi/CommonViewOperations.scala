@@ -10,10 +10,6 @@ import com.typesafe.scalalogging.LazyLogging
 trait CommonViewOperations[T] extends MutableView[T] with LazyLogging {
 
   @ExportFunction(readOnly = false,
-    description = "Evaluate, i.e., compile and execute, JavaScript code.")
-  final def eval(o: Object) {}
-
-  @ExportFunction(readOnly = false,
     description = "Cause the operation to fail with a fatal error")
   final def fail(@ExportFunctionParameterDescription(name = "msg",
     description = "The message to be displayed")

@@ -2,6 +2,31 @@ package com.atomist.rug.kind.core
 
 import com.atomist.rug.spi._
 import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
+import com.atomist.tree.TreeNode
+
+trait ArtifactContainerView[T <: ArtifactContainer] extends TreeNode {
+
+  @ExportFunction(readOnly = true,
+    exposeAsProperty = true,
+    description = "The total number of files in this project or directory")
+  def totalFileCount: Int
+
+  @ExportFunction(readOnly = true, description = "Find file with the given path. Return null if not found.")
+  def findFile(@ExportFunctionParameterDescription(name = "path",
+    description = "Path of the file we want")
+               path: String): FileMutableView
+
+  @ExportFunction(readOnly = true, description = "Does a file with the given path exist?")
+  def fileExists(@ExportFunctionParameterDescription(name = "path",
+    description = "The path to use")
+                 path: String): Boolean
+
+  @ExportFunction(readOnly = true, description = "Does a directory with the given path exist?")
+  def directoryExists(@ExportFunctionParameterDescription(name = "path",
+    description = "The path to use")
+                      path: String): Boolean
+}
+
 
 /**
   * Extended by project and directory views
@@ -9,7 +34,8 @@ import com.atomist.source.{ArtifactContainer, DirectoryArtifact, FileArtifact}
 abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
                                                                      originalBackingObject: T,
                                                                      parent: MutableView[_])
-  extends ViewSupport[T](originalBackingObject, parent) {
+  extends ViewSupport[T](originalBackingObject, parent)
+    with ArtifactContainerView[T] {
 
   val FileTypeName: String = Typed.typeToTypeName(classOf[FileMutableView])
 
@@ -31,8 +57,8 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
     case maybeContainedArtifactName =>
       val arts = currentBackingObject.artifacts.filter(_.name == maybeContainedArtifactName)
       arts.map {
-        case d : DirectoryArtifact => new DirectoryMutableView(d, parent)
-        case f : FileArtifact => new FileMutableView(f, parent)
+        case d: DirectoryArtifact => new DirectoryMutableView(d, parent)
+        case f: FileArtifact => new FileMutableView(f, parent)
       }
   }
 
@@ -44,7 +70,7 @@ abstract class ArtifactContainerMutableView[T <: ArtifactContainer](
   @ExportFunction(readOnly = true, description = "Find file with the given path. Return null if not found.")
   def findFile(@ExportFunctionParameterDescription(name = "path",
     description = "Path of the file we want")
-                 path: String): FileMutableView = {
+               path: String): FileMutableView = {
     val parent: ProjectMutableView = this match {
       case pmv: ProjectMutableView => pmv
       case dmv: DirectoryMutableView => dmv.parent

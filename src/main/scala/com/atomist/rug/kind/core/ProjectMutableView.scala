@@ -49,6 +49,7 @@ class ProjectMutableView(
                           ctx: RugContext = LocalRugContext,
                           rugResolver: Option[RugResolver] = None)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
+    with ProjectView
     with ChangeLogging[ArtifactSource] {
 
   // We need this, rather than merely a default, for Java subclasses

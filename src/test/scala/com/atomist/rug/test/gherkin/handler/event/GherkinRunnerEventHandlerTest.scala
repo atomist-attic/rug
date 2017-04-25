@@ -234,6 +234,22 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "navigate into Project from Push" in {
+    val steps517 = requiredFileInPackage(this, "PushProjectSteps.ts", ".atomist/tests/handlers/event")
+    val feature517 = requiredFileInPackage(this, "PushProject.feature", ".atomist/tests/handlers/event")
+    val handlerFile = requiredFileInPackage(this, "PushProject.ts", ".atomist/handlers/event")
+    val as = SimpleFileBasedArtifactSource(feature517, handlerFile, steps517)
+
+    val cas = TypeScriptBuilder.compileWithExtendedModel(as)
+
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Some(RugArchiveReader(cas)))
+    val run = grt.execute()
+    run.result match {
+      case Passed =>
+      case wtf => fail(s"Unexpected: $wtf")
+    }
+  }
+
 }
 
 

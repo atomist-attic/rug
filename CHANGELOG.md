@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** TypeScript `Match` now uses property access, not function
 
+### Fixed
+
+-   Rug Function exceptions are now passed to error handlers.
+    Maybe: Response now passed to handlers when unknown Rug Functions are encountered
+    https://github.com/atomist/rug/issues/536
+
 ## [0.26.1] - 2017-04-24
 
 [0.26.1]: https://github.com/atomist/rug/compare/0.26.0...0.26.1

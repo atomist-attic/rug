@@ -24,7 +24,7 @@ import { ChatChannel } from "@atomist/rug/cortex/ChatChannel"
 class Pulled implements HandleEvent<K8Pod, K8Pod> {
 
     handle(event: Match<K8Pod, K8Pod>): EventPlan {
-        const pod: K8Pod = event.root() as K8Pod
+        const pod: K8Pod = event.root as K8Pod
         const image: DockerImage = pod.images[0]
         const commit: Commit = image.tag.commit
         const repo: Repo = commit.repo

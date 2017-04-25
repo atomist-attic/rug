@@ -16,7 +16,7 @@ import {Push} from "@atomist/rug/cortex/Push"
 class ReturnsEmptyPlanEventHandlerGen1 implements HandleEvent<GraphNode, Build> {
 
     handle(m: Match<GraphNode, Build>) {
-        let b: Build = m.matches()[0]
+        let b: Build = m.matches[0]
         b.status + ""   // Evaluate this stringification doesn't break
         return new EventPlan();
     }
@@ -30,7 +30,7 @@ export const handler1 = new ReturnsEmptyPlanEventHandlerGen1();
 class ReturnsEmptyPlanEventHandlerGenWithArrays implements HandleEvent<GraphNode, Push> {
 
     handle(m: Match<GraphNode, Push>) {
-        let p: Push = m.matches()[0]
+        let p: Push = m.matches[0]
 
         if (p.commits.length != 1) throw new Error("No commits")
 

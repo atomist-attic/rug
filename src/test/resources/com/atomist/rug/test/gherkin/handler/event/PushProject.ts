@@ -13,9 +13,9 @@ import { Push } from "@atomist/rug/cortex/Push";
 @Tags("github", "push")
 class NewPushAS implements HandleEvent<Push, Project> {
     public handle(event: Match<Push, Project>): EventPlan {
-        //console.log(`Handler matched ${event.root()}`);
+        //console.log(`Handler matched ${event.root}`);
 
-        const project: Project = event.matches()[0];
+        const project: Project = event.matches[0];
         const messageBody = `Found project with name ${project.name} with ${project.fileCount} files`;
         const channel = new ChannelAddress("#flood");
         const message = new DirectedMessage(messageBody, channel, "text/plain");

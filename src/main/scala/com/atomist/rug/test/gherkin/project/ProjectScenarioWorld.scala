@@ -17,12 +17,13 @@ import com.atomist.source.EmptyArtifactSource
   */
 class ProjectScenarioWorld(
                             definitions: Definitions,
-                            rugs: Option[Rugs] = None)
-  extends ScenarioWorld(definitions, rugs) {
+                            rugs: Option[Rugs],
+                            config: GherkinRunnerConfig)
+  extends ScenarioWorld(definitions, rugs, config) {
 
   private var editorResults: Seq[Either[Throwable, ModificationAttempt]] = Nil
 
-  val project = new ProjectMutableView(rugAs = definitions.jsc.rugAs, originalBackingObject = EmptyArtifactSource("project-scenario-world"))
+  private var project = new ProjectMutableView(rugAs = definitions.jsc.rugAs, originalBackingObject = EmptyArtifactSource("project-scenario-world"))
 
   override def target: AnyRef = project
 
@@ -39,6 +40,10 @@ class ProjectScenarioWorld(
         }
       case _ => throw new RugNotFoundException("No context provided")
     }
+  }
+
+  def setProject(p: ProjectMutableView): Unit = {
+    project = p
   }
 
   /**

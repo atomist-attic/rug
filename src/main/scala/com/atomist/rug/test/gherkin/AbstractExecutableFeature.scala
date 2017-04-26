@@ -17,7 +17,8 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
                                                               val definition: FeatureDefinition,
                                                               val definitions: Definitions,
                                                               val rugs: Option[Rugs],
-                                                              listeners: Seq[GherkinExecutionListener] = Nil)
+                                                              listeners: Seq[GherkinExecutionListener],
+                                                              config: GherkinRunnerConfig)
   extends LazyLogging {
 
   def execute(): FeatureResult = {

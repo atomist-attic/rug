@@ -6,7 +6,7 @@ import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.runtime.js.{JavaScriptEventHandler, RugContext}
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
-import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, PathExpressionEvaluation}
+import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, PathExpressionEvaluation}
 import com.atomist.rug.test.gherkin.handler.AbstractHandlerScenarioWorld
 import com.atomist.tree.TreeMaterializer
 import com.atomist.tree.pathexpression.PathExpression
@@ -17,8 +17,8 @@ import scala.collection.mutable.ListBuffer
   * World implementation for testing event handlers. Allows us to pump in events
   * and test the reaction
   */
-class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None, listeners: Seq[GherkinExecutionListener] = Nil)
-  extends AbstractHandlerScenarioWorld(definitions, rugs, listeners) {
+class EventHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs] = None, listeners: Seq[GherkinExecutionListener], config: GherkinRunnerConfig)
+  extends AbstractHandlerScenarioWorld(definitions, rugs, listeners, config) {
 
   private val registeredHandlers = ListBuffer.empty[EventHandler]
 

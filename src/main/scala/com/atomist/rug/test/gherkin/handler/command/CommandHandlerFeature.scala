@@ -1,7 +1,7 @@
 package com.atomist.rug.test.gherkin.handler.command
 
 import com.atomist.project.archive.Rugs
-import com.atomist.rug.test.gherkin.{AbstractExecutableFeature, Definitions, FeatureDefinition, GherkinExecutionListener}
+import com.atomist.rug.test.gherkin._
 import com.atomist.source.ArtifactSource
 
 class CommandHandlerFeature(
@@ -9,10 +9,11 @@ class CommandHandlerFeature(
                       definitions: Definitions,
                       rugArchive: ArtifactSource,
                       rugs: Option[Rugs],
-                      listeners: Seq[GherkinExecutionListener])
-  extends AbstractExecutableFeature[CommandHandlerScenarioWorld](definition, definitions, rugs, listeners) {
+                      listeners: Seq[GherkinExecutionListener],
+                      config: GherkinRunnerConfig)
+  extends AbstractExecutableFeature[CommandHandlerScenarioWorld](definition, definitions, rugs, listeners, config) {
 
   override protected def createWorldForScenario(): CommandHandlerScenarioWorld = {
-    new CommandHandlerScenarioWorld(definitions, rugs, listeners)
+    new CommandHandlerScenarioWorld(definitions, rugs, listeners, config)
   }
 }

@@ -4,9 +4,11 @@ import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.Rugs
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
+import com.atomist.source.git.{GitArtifactSourceIdentifier, GitRepositoryCloner}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 object ScenarioWorld {
@@ -19,9 +21,9 @@ object ScenarioWorld {
   * Standard world for a scenario that lets us add bindings
   * and subclasses attach further state and helper methods.
   */
-abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
+abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], config: GherkinRunnerConfig) {
 
-  private var bindings: Map[String,Object] = Map()
+  private var bindings: Map[String, Object] = Map()
 
   private var abortedBy: Option[String] = None
 
@@ -81,6 +83,28 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs]) {
         NashornUtils.extractProperties(som)
     }
     SimpleParameterValues(m)
+  }
+
+  protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])
+
+  def cloneRepo(cloneInfo: AnyRef): ProjectMutableView = {
+    val rid = extractRepoId(cloneInfo)
+    val cloner = new GitRepositoryCloner(oAuthToken = config.oAuthToken.getOrElse(""))
+    val as = cloner.clone(rid.name, rid.owner, rid.branch, rid.sha)
+    new ProjectMutableView(as)
+  }
+
+  import NashornUtils._
+
+  protected def extractRepoId(o: AnyRef): RepoIdentification = o match {
+    case som: ScriptObjectMirror =>
+      val owner = stringProperty(som, "owner")
+      val name = stringProperty(som, "name")
+      val branch = stringProperty(som, "branch")
+      val sha = stringProperty(som, "sha")
+      RepoIdentification(owner, name, Option(branch), Option(sha))
+    case x =>
+      throw new IllegalArgumentException(s"Required JavaScript object repo ID, not $x")
   }
 
 }

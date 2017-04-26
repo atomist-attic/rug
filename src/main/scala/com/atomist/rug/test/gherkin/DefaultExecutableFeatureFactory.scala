@@ -17,18 +17,14 @@ object DefaultExecutableFeatureFactory extends ExecutableFeatureFactory {
 
   private val atomistConfig = DefaultAtomistConfig
 
-  override def executableFeatureFor(f: FeatureDefinition,
-                                    definitions: Definitions,
-                                    rugAs: ArtifactSource,
-                                    rugs: Option[Rugs],
-                                    listeners: Seq[GherkinExecutionListener]): AbstractExecutableFeature[_] = {
+  override def executableFeatureFor(f: FeatureDefinition, definitions: Definitions, rugAs: ArtifactSource, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener], config: GherkinRunnerConfig): AbstractExecutableFeature[_] = {
     // TODO clean up name of test directory
     if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/project"))
-      new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners)
+      new ProjectManipulationFeature(f, definitions, rugAs, rugs, listeners, config)
     else if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/${atomistConfig.handlersDirectory}/command"))
-      new CommandHandlerFeature(f, definitions, rugAs, rugs, listeners)
+      new CommandHandlerFeature(f, definitions, rugAs, rugs, listeners, config)
     else if (f.definition.path.contains(s"${atomistConfig.testsDirectory}/${atomistConfig.handlersDirectory}/event"))
-      new EventHandlerFeature(f, definitions, rugAs, rugs, listeners)
+      new EventHandlerFeature(f, definitions, rugAs, rugs, listeners, config)
     else {
       throw new IllegalArgumentException(s"Cannot handle path [${f.definition.path}]: Paths must be of form [${atomistConfig.testsDirectory}/project] or [${atomistConfig.testsDirectory}/handlers]")
     }

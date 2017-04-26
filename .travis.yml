@@ -43,7 +43,6 @@ deploy:
     tags: true
     condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(m|rc)\.[0-9]+)?$
 after_deploy:
-- bash src/main/scripts/npm-publish.bash $TRAVIS_TAG rug
 - bash src/main/scripts/gh-publish.bash $TRAVIS_REPO_SLUG
 before_install:
 - openssl aes-256-cbc -K $encrypted_10f102c6edb5_key -iv $encrypted_10f102c6edb5_iv

@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.2...HEAD
+
+## [1.0.0-m.2] - 2017-04-26
+
+[1.0.0-m.2]: https://github.com/atomist/rug/compare/1.0.0-m.1...1.0.0-m.2
+
+Initial milestone 2 release
+
+### Changed
+
+-   Fix NPM publish for milestone and release candidate releases
+-   Consolidate NPM publish for dev and release versions
 
 ## [1.0.0-m.1] - 2017-04-26
 

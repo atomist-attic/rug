@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** TypeScript `Match` now uses property access, not function
 
+-   Updated to artifact-source 0.26.0
+
 ### Fixed
 
--   project.findFile now works on paths starting with a '/'
+-   `project.findFile now works on paths starting with a '/'
     https://github.com/atomist/rug/issues/523
     
 -   Rug Function exceptions are now passed to error handlers.

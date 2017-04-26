@@ -26,6 +26,8 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+    on_cancel: always
+    on_error: always
     urls:
     - https://webhook.atomist.com/travis
 cache:
@@ -39,7 +41,7 @@ deploy:
     secure: deidUzd/Dlvw9O1FtEDK5hDO6gkE35aEnCQpNLHjSsvZ11rrBe12XFRBp3Vh2w+YrjeiewYgZYgyqc+0U1NFkk5dE/CwrCnoUf2NJ2qrJlELFtaMb/hVck70Egp/ZM51tjG9nSFNv5D/0mFe+5IjNp5wMYMJklK3JSnEKllum8m7XI9CnIRJgaHcSII1Z9tLEyuIr7v0iL8kZWiM0STsRuR4Mnxi6cvUpyzoEIiYpHSUnRwZDd0FWDP3Onyn9DjgFBEmVDPEnzQuNNJwWpyjNr7ZLn1M0RVGju5LtpQKoi6lwqqkNjX4argnN7C6nmZLyhOD/LdB2MBX2Muh17A3ioU7Zem10K5EJXK9X4ymLa+wBBgEYTfe/9bEd6OyDcX3yQZozt8XAoJ4DxUSMN5jlFw9usj3habvKkfxnMvR6Gu+zz2Z948zQYuAfOf5U6Ers1dbD+KB8j4D6J/3RPdrkzm1GKGJ9IbkqWqgHMge9pS67bqLHA3dzb0TLAi5vjKsj3EXxL27fsu1uQkok/KKlyyBfHEHp02AmuaqORyfjQyRElcFGtNJK/SLDuLRcb6TsDHN5LWQrY8+uyjymJXOt7lVDw9JZXqMP+BvG/KH+ASqifrBNirRYZyLHC6ItqNe4RnHmlGcHvagztbHsiFjfOXIJX4eUzAX7hS5cEnsdPM=
   on:
     tags: true
-    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(m|rc)\.[0-9]+)?$
 after_deploy:
 - bash src/main/scripts/npm-publish.bash $TRAVIS_TAG rug
 - bash src/main/scripts/gh-publish.bash $TRAVIS_REPO_SLUG

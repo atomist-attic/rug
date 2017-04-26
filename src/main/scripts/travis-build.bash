@@ -19,7 +19,7 @@ function main() {
 
     local mvn="mvn --settings .settings.xml -B -V -P npm-release"
     local project_version
-    if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-m\.[0-9]+)?$ ]]; then
+    if [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(m|rc)\.[0-9]+)$ ]]; then
         if ! $mvn build-helper:parse-version versions:set -DnewVersion="$TRAVIS_TAG" versions:commit; then
             err "failed to set project version"
             return 1
@@ -49,7 +49,7 @@ function main() {
         return 0
     fi
 
-    if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-m\.[0-9]+)?$ ]]; then
+    if [[ $TRAVIS_BRANCH == master || $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(m|rc)\.[0-9]+)$ ]]; then
         msg "version is $project_version"
         local mvn_deploy_args
         if [[ $TRAVIS_BRANCH == master ]]; then

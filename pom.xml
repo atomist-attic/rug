@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
     <artifactId>rug</artifactId>
-    <version>0.27.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
     <description>Rug Runtime</description>
@@ -22,7 +22,7 @@
             <dependency>
                 <groupId>com.atomist</groupId>
                 <artifactId>atomist-bom</artifactId>
-                <version>0.11.0</version>
+                <version>1.0.0-m.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -39,14 +39,14 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>0.26.0</version>
+            <version>1.0.0-m.1</version>
         </dependency>
         <!-- For now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
              when running rug install etc. This has to become part of the language <-> runtime version mapping -->
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-typescript-compiler</artifactId>
-            <version>0.14.1</version>
+            <version>1.0.0-m.1</version>
         </dependency>
         <dependency>
             <groupId>com.coveo</groupId>

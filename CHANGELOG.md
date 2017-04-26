@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Updated to artifact-source 0.26.0
 
+-   Handlers are now picked up from arrays as well as regular `vars`
+
 ### Fixed
 
 -   `project.findFile now works on paths starting with a '/'

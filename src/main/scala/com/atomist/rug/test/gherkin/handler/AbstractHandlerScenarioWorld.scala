@@ -10,7 +10,7 @@ import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.TypeRegistry
-import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, ScenarioWorld}
+import com.atomist.rug.test.gherkin.{Definitions, GherkinExecutionListener, GherkinRunnerConfig, ScenarioWorld}
 import com.atomist.source.EmptyArtifactSource
 import com.atomist.tree.{TreeMaterializer, TreeNode}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -18,8 +18,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 /**
   * Superclass for Handler worlds. Handles plan capture and exposing to JavaScript
   */
-abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener])
-  extends ScenarioWorld(definitions, rugs) {
+abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Option[Rugs], listeners: Seq[GherkinExecutionListener], config: GherkinRunnerConfig)
+  extends ScenarioWorld(definitions, rugs, config) {
 
   // Handler name to plan
   private var recordedPlans = Map[String, Plan]()
@@ -40,6 +40,13 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
   def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit =
     repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)
+
+  def defineRepo(repoIdentification: AnyRef, p: ProjectMutableView): Unit = {
+    val ri = extractRepoId(repoIdentification)
+    repoResolver.defineRepo(ri.owner, ri.name, ri.branch.orElse(ri.sha).getOrElse(
+      throw new IllegalArgumentException("Repo branch or sha must be supplied")
+    ), p.currentBackingObject)
+  }
 
   /**
     * Return the editor with the given name or throw an exception

@@ -118,8 +118,13 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "verify path expression drilling into projects" in {
-    val stepsFile = "LooksInProjectsSteps.ts"
+  it should "verify path expression drilling into projects" in
+    drillIntoProject("LooksInProjectsSteps.ts")
+
+  it should "verify path expression drilling into projects with cloning" in
+    drillIntoProject("LooksInRealProjectsSteps.ts")
+
+    private def drillIntoProject(stepsFile: String) {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, stepsFile)
     val passingFeature1StepsFile = passingFeature1Steps.withPath(

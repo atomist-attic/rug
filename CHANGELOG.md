@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/0.26.1...HEAD
 
+### Added
+
+-   Support for cloning a repo from GitHub in Gherkin tests, via `ScenarioWorld`
+
 ### Changed
 
 -   **BREAKING** TypeScript `Match` now uses property access, not function

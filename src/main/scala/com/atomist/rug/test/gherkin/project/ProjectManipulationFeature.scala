@@ -13,10 +13,11 @@ class ProjectManipulationFeature(
                                   definitions: Definitions,
                                   rugArchive: ArtifactSource,
                                   rugs: Option[Rugs],
-                                  listeners: Seq[GherkinExecutionListener] = Nil)
-  extends AbstractExecutableFeature[ProjectScenarioWorld](definition, definitions, rugs, listeners) {
+                                  listeners: Seq[GherkinExecutionListener],
+                                  config: GherkinRunnerConfig)
+  extends AbstractExecutableFeature[ProjectScenarioWorld](definition, definitions, rugs, listeners, config) {
 
-  override protected def createWorldForScenario: ScenarioWorld = {
-    new ProjectScenarioWorld(definitions, rugs)
+  override protected def createWorldForScenario(): ScenarioWorld = {
+    new ProjectScenarioWorld(definitions, rugs, config)
   }
 }

@@ -11,7 +11,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import com.atomist.tree.marshal.{EmptyContainerGraphNode, JsonBackedContainerGraphNode}
 import com.atomist.tree.pathexpression.PathExpression
 import com.atomist.tree.{TerminalTreeNode, TreeMaterializer}
@@ -23,10 +23,6 @@ import scala.concurrent.duration._
 object JavaScriptEventHandlerTest {
 
   val atomistConfig: AtomistConfig = DefaultAtomistConfig
-
-  val reOpenIssueHandlerName = "ClosedIssueReopener"
-
-  val reOpenIssueHandlerDesc = "Reopens closed issues"
 
   val simpleEventHandlerWithSecrets = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
@@ -49,55 +45,10 @@ object JavaScriptEventHandlerTest {
       """.stripMargin)
 
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    s"""
-       |import {HandleEvent, EventPlan, LifecycleMessage, DirectedMessage, MessageMimeTypes, ChannelAddress} from '@atomist/rug/operations/Handlers'
-       |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
-       |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
-       |
-       |@EventHandler("$reOpenIssueHandlerName", "$reOpenIssueHandlerDesc", new PathExpression<TreeNode,TreeNode>("/issue"))
-       |@Tags("github", "issues")
-       |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
-       |  handle(event: Match<TreeNode, TreeNode>){
-       |    let issue = event.root
-       |    let plan = new EventPlan()
-       |
-       |    const message = new DirectedMessage("message1", new ChannelAddress("w00t"))
-       |
-       |    plan.add(message);
-       |
-       |    plan.add({ instruction: {
-       |                 kind: "execute",
-       |                 name: "HTTP",
-       |                 parameters: {method: "GET", url: "http://youtube.com?search=kitty&safe=true", as: "JSON"}
-       |               },
-       |               onSuccess: {kind: "respond", name: "Kitties"},
-       |               onError: {body: "No kitties for you today!", kind: "directed", contentType: MessageMimeTypes.PLAIN_TEXT, usernames: ["w00t"]}
-       |             });
-       |
-       |    const anEmptyPlan = new EventPlan()
-       |    const aPlansPlan = new EventPlan()
-       |    aPlansPlan.add(new DirectedMessage("this is a plan that is in another plan", new ChannelAddress("w00t")))
-       |
-       |    aPlansPlan.add({ instruction: {
-       |                       kind: "generate",
-       |                       name: "createSomething"
-       |                     },
-       |                     onSuccess: anEmptyPlan
-       |                   })
-       |
-       |    plan.add({ instruction: {
-       |                 kind: "edit",
-       |                 name: "modifySomething",
-       |                 parameters: {message: "planception"}
-       |               },
-       |               onSuccess: aPlansPlan,
-       |               onError: {body: "error", kind: "directed", contentType: MessageMimeTypes.PLAIN_TEXT, usernames: ["w00t"]}
-       |             });
-       |    return plan;
-       |  }
-       |}
-       |export let handler = new SimpleHandler();
-      """.stripMargin)
+    contentOf(this, "ReopenIssueHandler.ts"))
+
+  val reOpenCloseIssueProgramInArray = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ReopenIssueHandlerInArray.ts"))
 
   val noPlanBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
@@ -172,18 +123,23 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
 
   import JavaScriptEventHandlerTest._
 
-  it should "extract and run an event handler" in {
+  it should "extract and run an event handler" in
+    extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgram)
+
+  it should "extract and run an event handler in array" in
+    extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgramInArray)
+
+  private def extractAndRunEventHandler(f: FileArtifact): Unit = {
     val rugArchive = TypeScriptBuilder.compileWithModel(
-      SimpleFileBasedArtifactSource(
-        JavaScriptEventHandlerTest.reOpenCloseIssueProgram))
+      SimpleFileBasedArtifactSource(f))
     val finder = new JavaScriptEventHandlerFinder()
     val handlers = finder.find(new JavaScriptContext(rugArchive))
     handlers.size should be(1)
     val handler = handlers.head
     handler.rootNodeName should be("issue")
     handler.tags.size should be(2)
-    handler.name should be(reOpenIssueHandlerName)
-    handler.description should be(reOpenIssueHandlerDesc)
+    handler.name should be("ClosedIssueReopener")
+    handler.description should be("Reopens closed issues")
     handler.pathExpression should not be null
 
     val expectedMessages = Seq(
@@ -194,12 +150,10 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     )
     val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
 
-
     actualPlan shouldBe defined
     assert(actualPlan.get.messages == expectedMessages)
 
     // TODO this will no longer match as Plan can now expose a native object
-
   }
 
   it should "return the right failure if a rug is not found" in {

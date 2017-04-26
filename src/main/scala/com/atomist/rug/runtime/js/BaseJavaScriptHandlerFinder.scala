@@ -4,6 +4,7 @@ import com.atomist.param.{Parameter, Tag}
 import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.Rug
 import jdk.nashorn.api.scripting.ScriptObjectMirror
+import scala.collection.JavaConverters._
 
 /**
   * Some common things used to extract handlers from nashorn
@@ -13,14 +14,25 @@ abstract class BaseJavaScriptHandlerFinder[T <: Rug]
     with JavaScriptRugFinder[T] {
 
   override def find(jsc: JavaScriptContext, resolver: Option[RugResolver] = None): Seq[T] = {
-    jsc.vars.collect {
-      case Var(_, handler) if isValidHandler(handler) && handler.getMember("__kind") == kind => extractHandler(jsc,handler)
-    }.flatten
+    def isHandler(handler: ScriptObjectMirror) =
+      isValidHandler(handler) && handler.getMember("__kind") == kind
+
+    jsc.vars.flatMap {
+      case Var(_, handler) if isHandler(handler) =>
+        extractHandler(jsc, handler)
+      case Var(_, arr) if arr.isArray =>
+        arr.values().asScala.collect {
+          case som: ScriptObjectMirror if isHandler(som) => som
+        }
+          .flatMap(extractHandler(jsc, _))
+      case _ => None
+    }
   }
 
   /**
     *
     * The value of kind in JS
+    *
     * @return
     */
   def kind: String

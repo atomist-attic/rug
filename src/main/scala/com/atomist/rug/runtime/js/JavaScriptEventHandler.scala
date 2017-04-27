@@ -21,12 +21,10 @@ class JavaScriptEventHandlerFinder
   override def kind = "event-handler"
 
   override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror): Option[JavaScriptEventHandler] = {
-    if (someVar.hasMember("__expression")) {
-      val expression: String = someVar.getMember("__expression").asInstanceOf[String]
-      Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar)))
-    } else {
-      Option.empty
-    }
+    Option(someVar.getMember("__expression")).map(v => {
+      val expression: String = v.asInstanceOf[String]
+      new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
+    })
   }
 }
 

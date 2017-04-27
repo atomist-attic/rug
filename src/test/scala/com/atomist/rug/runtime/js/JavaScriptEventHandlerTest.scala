@@ -50,6 +50,9 @@ object JavaScriptEventHandlerTest {
   val reOpenCloseIssueProgramInArray = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ReopenIssueHandlerInArray.ts"))
 
+  val reOpenCloseIssueProgramInArrayCreatedByFunction = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ReopenIssueHandlerInArrayCreatedByFunction.ts"))
+
   val noPlanBuildHandler = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     s"""
        |import {HandleEvent, EventPlan} from '@atomist/rug/operations/Handlers'
@@ -123,11 +126,14 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
 
   import JavaScriptEventHandlerTest._
 
-  it should "extract and run an event handler" in
+  "JavaScriptEventHandler support" should "extract and run an event handler" in
     extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgram)
 
   it should "extract and run an event handler in array" in
     extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgramInArray)
+
+  it should "extract and run an event handler in array created by function" in
+    extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgramInArrayCreatedByFunction)
 
   private def extractAndRunEventHandler(f: FileArtifact): Unit = {
     val rugArchive = TypeScriptBuilder.compileWithModel(

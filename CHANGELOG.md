@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.2...HEAD
 
+### Fixed
+
+-   Fix StackOverflow when calling toString on LinkableContainerTreeNode.
+    Can't recurse as this is a graph not a tree. 
+
 ## [1.0.0-m.2] - 2017-04-26
 
 [1.0.0-m.2]: https://github.com/atomist/rug/compare/1.0.0-m.1...1.0.0-m.2

@@ -8,6 +8,7 @@ import com.atomist.tree.{ParentAwareTreeNode, SimpleTerminalTreeNode, TreeNode}
 
 /**
   * Represents the impact of one or more changes to a project.
+  * Allows finding file deltas ("files"), and the changed (new or updated) files ("changed")
   */
 class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
   extends TreeNode {
@@ -37,10 +38,19 @@ class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
         case fdd: FileDeletionDelta =>
           new FileDeletion(this, new FileMutableView(fdd.oldFile, beforeProject))
       }
+    case "changed" =>
+      val filesToInclude =
+        deltas.deltas collect {
+          case fad: FileAdditionDelta =>
+            fad.newFile
+          case fud: FileUpdateDelta =>
+            fud.updatedFile
+        }
+      Seq(new ProjectMutableView(new SimpleFileBasedArtifactSource(after.id, filesToInclude)))
     case _ => Nil
   }
 
-  override val childNodeNames: Set[String] = Set("files")
+  override val childNodeNames: Set[String] = Set("files", "changed")
 
   override val childNodeTypes: Set[String] = Set("FileImpact", "FileAddition", "FileUpdate", "FileDeletion")
 
@@ -111,9 +121,9 @@ class FileUpdate(_parent: Impact, oldFile: FileMutableView, newFile: FileMutable
     case "path" =>
       Seq(SimpleTerminalTreeNode("path", path))
     case "old" =>
-      ???
+      Seq(old)
     case "new" =>
-      ???
+      Seq(now)
     case _ => Nil
   }
 

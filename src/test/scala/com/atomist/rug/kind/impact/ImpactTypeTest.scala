@@ -1,6 +1,7 @@
 package com.atomist.rug.kind.impact
 
 import com.atomist.rug.kind.DefaultTypeRegistry
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.{SimpleContainerGraphNode, SimpleExecutionContext}
 import com.atomist.rug.test.gherkin.handler.MutableRepoResolver
 import com.atomist.source._
@@ -41,8 +42,25 @@ class ImpactTypeTest extends FlatSpec with Matchers {
   it should "resolve file update under Push matching name and type with predicate" in
     resolveUpdatedFile("/Push()[/Repo()]/with::Impact()/files::FileUpdate()[@path='README.md']")
 
+  it should "resolve file update under Push matching name and type with predicates" in
+    resolveUpdatedFile("/Push()[/Repo()]/with::Impact()/files::FileUpdate()[@path='README.md']" +
+      "[/old::File()[@path='README.md']][/new::File()[@path='README.md']]")
+
   it should "resolve file deletion under Push" in
     resolveDeletedFile("/Push()[/Repo()]/with::Impact()/files::FileDeletion()")
+
+  it should "drill into changed as project" in {
+    val oldAs = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "<xml></xml>"))
+    val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
+    eval(oldAs, newAs, "/Push()[/Repo()]/with::Impact()/changed::Project()") match {
+      case Right(l) =>
+        assert(l.size === 1)
+        val changedAsProject = l.head.asInstanceOf[ProjectMutableView]
+        assert(changedAsProject.totalFileCount === 1)
+        changedAsProject.findFile("README.md") should not be null
+      case x => fail(s"Unexpected: $x")
+    }
+  }
 
   private def resolveNewFile(expr: String): Unit = {
     val oldAs = SimpleFileBasedArtifactSource()

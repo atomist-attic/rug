@@ -164,20 +164,6 @@ class PathExpressionsAgainstProjectTest extends FlatSpec with Matchers with Asse
     }
   }
 
-  it should "jump straight into Spring Boot type" in {
-    val proj = SimpleFileBasedArtifactSource(
-      StringFileArtifact("Test.java", "public class Test {}")
-    )
-    val pmv = new ProjectMutableView(proj)
-    val expr3 = "/SpringBootProject()"
-    val rtn3 = ee.evaluate(pmv, expr3)
-    // We have left out test classes
-    assert(rtn3.right.get.size === 0)
-    //    rtn3.right.get.foreach {
-    //      case j: JavaClassOrInterfaceView =>
-    //    }
-  }
-
   it should "jump into Java type" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(proj)

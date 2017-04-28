@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.2...HEAD
 
+### Changed
+
+-   **BREAKING** Removed Spring and Spring project types. These don't belong in
+    `rug` and will resurface in a separate project.
+
 ### Fixed
 
 -   Fix StackOverflow when calling toString on LinkableContainerTreeNode.

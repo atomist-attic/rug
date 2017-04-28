@@ -72,7 +72,7 @@ class JsonTypeUsageTest extends FlatSpec with Matchers {
 
   import JsonTypeUsageTest._
 
-  it should "update node value, going via file and path expression" in {
+  "JSON type" should "update node value, going via file and path expression" in {
     val edited = updateWith("Rename.ts")
     edited should equal(packageJson.replace("foobar", "absquatulate"))
   }

@@ -19,7 +19,7 @@ trait TypeRegistry {
 
   def +(that: TypeRegistry): TypeRegistry = this.add(that)
 
-  override def toString: String = s"${getClass.getSimpleName}: Types=${typeNames.mkString(",")}"
+  override def toString: String = s"${getClass.getSimpleName}: Types=${typeNames.toList.sorted.mkString(",")}"
 
 }
 

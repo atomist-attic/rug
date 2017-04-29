@@ -129,7 +129,7 @@ private trait Prop {
 
 private case class SimpleProp(name: String, typ: String) extends Prop {
 
-  def toType: ParameterOrReturnType = SimpleParameterOrReturnType(typ)
+  def toType: ParameterOrReturnType = SimpleParameterOrReturnType(typ, isArray = false)
 }
 
 private case class EnumProp(name: String, legalValues: Seq[String]) extends Prop {
@@ -163,7 +163,7 @@ private class JsonBackedTyped(
           readOnly = false,
           parameters = Nil,
           returnType = rel.cardinality match {
-            case OneToOne => SimpleParameterOrReturnType(rel.right)
+            case OneToOne => SimpleParameterOrReturnType(rel.right, isArray = false)
             case OneToM => SimpleParameterOrReturnType(rel.right, isArray = true)
           },
           definedOn = null,

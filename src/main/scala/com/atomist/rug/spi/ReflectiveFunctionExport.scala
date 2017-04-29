@@ -1,6 +1,6 @@
 package com.atomist.rug.spi
 
-import java.lang.reflect.Method
+import java.lang.reflect.{AnnotatedElement, Method}
 
 import org.springframework.util.ReflectionUtils
 
@@ -26,7 +26,7 @@ object ReflectiveFunctionExport {
         TypeOperation(m.getName, a.description(),
           a.readOnly(),
           params,
-          SimpleParameterOrReturnType(m.getGenericReturnType.toString),
+          SimpleParameterOrReturnType.fromJavaType(m.getGenericReturnType),
           m.getDeclaringClass,
           a.example() match {
             case "" => None
@@ -40,10 +40,13 @@ object ReflectiveFunctionExport {
     m.getParameters.map(p =>
       if (p.isAnnotationPresent(classOf[ExportFunctionParameterDescription])) {
         val annotation = p.getDeclaredAnnotation(classOf[ExportFunctionParameterDescription])
-        TypeParameter(annotation.name(), SimpleParameterOrReturnType(p.getParameterizedType.toString),
+        TypeParameter(annotation.name(),
+          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType),
           Some(annotation.description()))
-      } else
-        TypeParameter(p.getName, SimpleParameterOrReturnType(p.getParameterizedType.toString),
+      }
+      else
+        TypeParameter(p.getName,
+          SimpleParameterOrReturnType.fromJavaType(p.getParameterizedType),
           None)
     )
   }

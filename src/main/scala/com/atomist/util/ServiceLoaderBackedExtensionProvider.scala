@@ -15,7 +15,7 @@ import scala.reflect.{ClassTag, _}
 class ServiceLoaderBackedExtensionProvider[T: ClassTag](val keyProvider: T => String)
   extends LazyLogging {
 
-  def providerMap: Map[String, T] = {
+  val providerMap: Map[String, T] = {
     ServiceLoader.load(classTag[T].runtimeClass).asScala.map {
       case t: T =>
         val key = keyProvider.apply(t)

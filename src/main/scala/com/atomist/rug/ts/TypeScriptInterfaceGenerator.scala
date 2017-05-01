@@ -67,8 +67,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
       if (exposeAsProperty) {
         // Emit property only
         s"${comment(indent)}${indent}readonly $name: $returnType;"
-      }
-      else {
+      } else {
         // Emit function
         s"${comment(indent)}$indent$name(${params.mkString(", ")}): $returnType;"
       }

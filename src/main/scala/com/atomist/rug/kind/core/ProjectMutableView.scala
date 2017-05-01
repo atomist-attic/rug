@@ -423,7 +423,7 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     exposeAsProperty = true,
     description = "Files in this project")
-  def files: java.util.List[FileMutableView] = {
+  def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
     val allFiles = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
     allFiles.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]

@@ -425,8 +425,8 @@ class ProjectMutableView(
     description = "Files in this archive")
   def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
-    val files = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
-    files.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
+    val allFiles = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
+    allFiles.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
   }
 
   /**

@@ -23,13 +23,13 @@ class NavigateTree implements ProjectEditor {
       eng.with<TextTreeNode>(project, catchClause, cc => {
         //console.log(`The catch clause was '${cc.value()} at ${cc.formatInfo}'`)
         if (cc.formatInfo == null)
-          throw new Error(`Format info was null for ${cc.nodeName()}`)
+          throw new Error(`Format info was null for ${cc.nodeName}`)
         if (cc.formatInfo.start.lineNumberFrom1 < 5 || cc.formatInfo.start.lineNumberFrom1 > 100)
           throw new Error(`Format info values are wacky in ${cc.formatInfo}`)
         let c2 = cc as any // We need to do this to get to the children using functions
         let classType = c2.class_type
         if (classType.parent().value() != cc.value())
-          throw new Error(`Unexpected value for parent of ${classType.nodeName()}: ${classType.parent()}`)
+          throw new Error(`Unexpected value for parent of ${classType.nodeName}: ${classType.parent()}`)
 
         let inFile: File = treeHelper.findAncestorWithTag<File>(classType, "File")
         if (inFile != null) {

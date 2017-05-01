@@ -11,10 +11,10 @@ export class Commit implements GraphNode {
 
     private _sha: string
 
-    nodeName(): string {  return "Commit" }
+    nodeName: string = "Commit"
 
     // Node we need -dynamic to allow dispatch in the proxy
-    nodeTags(): string[] { return [ "Commit", "-dynamic" ] }
+    nodeTags: string[] = [ "Commit", "-dynamic" ]
 
     withMadeBy(p: Person): Commit {
         this._madeBy = p 
@@ -39,9 +39,9 @@ export class Person implements GraphNode {
     constructor(private _name: string) {} 
 
     // Intentionally make this different to the name, to test
-    nodeName(): string {  return "A person" }
+    nodeName: string = "A person";
 
-    nodeTags(): string[] { return [ "Person", "-dynamic" ] }
+    nodeTags: string[] = [ "Person", "-dynamic" ];
 
     get name(): string {  return this._name }
 
@@ -56,12 +56,10 @@ export class Person implements GraphNode {
 
 export class GitHubId implements GraphNode {
 
-    constructor(private _id: string) {}
+    constructor(public id: string) {}
 
-    nodeName(): string {  return this._id }
+    nodeName: string = this.id;
 
-    nodeTags(): string[] { return [ "GitHubId", "-dynamic" ] }
-
-    get id(): string {  return this._id }
+    nodeTags: string[] = [ "GitHubId", "-dynamic" ];
 
 }

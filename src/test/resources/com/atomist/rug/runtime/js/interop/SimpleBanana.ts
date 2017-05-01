@@ -20,9 +20,9 @@ class Banana implements TreeNode {
 
   parent() { return null }
 
-  nodeName(): string { return "banana" }
+  nodeName: string = "banana";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   value(): string { return "yellow" }
 

@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** `nodeName` and `nodeTags` on `GraphNode` TypeScript interface are now
+    properties. 
+-   **BREAKING** Removed deprecated `nodeType` function on `GraphNode` interface
 -   **BREAKING** Removed Spring and Spring project types. These don't belong in
     `rug` and will resurface in a separate project.
 

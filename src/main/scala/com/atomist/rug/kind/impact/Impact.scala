@@ -22,7 +22,7 @@ class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
   @ExportFunction(readOnly = true, description = "Parent of the impact")
   def parent: GraphNode = _parent
 
-  @ExportFunction(readOnly = true, description = "Name of the node")
+  @ExportFunction(readOnly = true, description = "Name of the node", exposeAsProperty = true)
   override def nodeName: String = "impact"
 
   @ExportFunction(readOnly = true, description = "Node content")
@@ -67,7 +67,7 @@ abstract class FileImpact(_parent: TreeNode) extends ParentAwareTreeNode {
   @ExportFunction(readOnly = true, description = "Node content")
   override def value: String = ???
 
-  @ExportFunction(readOnly = true, description = "Name of the node")
+  @ExportFunction(readOnly = true, description = "Name of the node", exposeAsProperty = true)
   override def nodeName: String = getClass.getSimpleName
 
 }

@@ -32,9 +32,9 @@ class Fruiterer implements TreeNode {
 
   parent() { return null}
 
-  nodeName(): string { return "fruiterer" }
+  nodeName: string = "fruiterer";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   value(): string { return "" }
 
@@ -48,9 +48,9 @@ class Banana implements TreeNode {
 
   parent() { return null}
 
-  nodeName(): string { return "banana" }
+  nodeName: string = "banana";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   value(): string { return "yellow" }
 
@@ -62,9 +62,9 @@ class Pear implements TreeNode {
 
   parent() { return null}
 
-  nodeName(): string { return "pear" }
+  nodeName: string = "pear";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   value(): string { return "green" }
 

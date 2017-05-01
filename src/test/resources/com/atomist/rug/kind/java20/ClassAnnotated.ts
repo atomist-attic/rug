@@ -15,7 +15,7 @@ class ClassAnnotated implements EditProject {
         eng.with<JavaSource>(project, '//JavaSource()', j => {
             eng.with<JavaType>(j, '//JavaType()', jt => {
                 jt.children()
-                .filter(n => n.nodeName() == "JavaConstructor")
+                .filter(n => n.nodeName == "JavaConstructor")
                 .forEach(k => {
                     let ctor = k as JavaConstructor
                     if (ctor.parametersSize() == 1 ) {

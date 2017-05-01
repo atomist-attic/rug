@@ -1,6 +1,6 @@
 package com.atomist.rug.kind.core
 
-import java.util.Objects
+import java.util.{Collections, Objects}
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
@@ -49,6 +49,7 @@ class ProjectMutableView(
                           ctx: RugContext = LocalRugContext,
                           rugResolver: Option[RugResolver] = None)
   extends ArtifactContainerMutableView[ArtifactSource](originalBackingObject, null)
+    with ProjectView
     with ChangeLogging[ArtifactSource] {
 
   // We need this, rather than merely a default, for Java subclasses
@@ -416,11 +417,16 @@ class ProjectMutableView(
   }
 
   @ExportFunction(readOnly = false,
+    description = "Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.")
+  def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
+      
+  @ExportFunction(readOnly = false,
     exposeAsProperty = true,
     description = "Files in this project")
-  def files: java.util.List[FileMutableView] = {
+  def files: java.util.List[FileArtifactBackedMutableView] = {
     import scala.collection.JavaConverters._
-    currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
+    val allFiles = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
+    allFiles.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
   }
 
   /**

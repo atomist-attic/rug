@@ -204,15 +204,11 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo
 
-  protected def allGeneratedTypes(allTypes: Seq[Typed]): Seq[GeneratedType] =
-    (allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op))).groupBy(_.name) map {
-      case (_, l) => l.head
-    }).toSeq.sortBy(_.name)
-
   private def emitTypes(poa: ParameterValues): Seq[FileArtifact] = {
     val tsClassOrInterfaces = ListBuffer.empty[StringFileArtifact]
     val alreadyGenerated = ListBuffer.empty[GeneratedType]
-    val generatedTypes = allGeneratedTypes(typeRegistry.types.sortWith(typeSort))
+    val allTypes = typeRegistry.types.sortWith(typeSort)
+    val generatedTypes = allTypes.flatMap(t => t.operations.flatMap(op => getGeneratedTypes(t, op)))
     val pathParam = poa.stringParamValue(OutputPathParam)
     val path = if (pathParam.contains("/")) StringUtils.substringBeforeLast(pathParam, "/") + "/" else ""
 
@@ -234,12 +230,15 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       alreadyGenerated += t
     }
 
+    // Core.ts
     val output = new StringBuilder(config.licenseHeader)
     output ++= config.separator
-    output ++= alreadyGenerated.map(t =>
-      s"""import { ${t.name} } from "./${t.name}";""").mkString("\n")
+    val uniqueGeneratedTypes = (alreadyGenerated.groupBy(_.name) map {
+      case (_, l) => l.head
+    }).toSeq.sortBy(_.name)
+    output ++= uniqueGeneratedTypes.map(t => s"""import { ${t.name} } from "./${t.name}";""").mkString("\n")
     output ++= config.separator
-    output ++= alreadyGenerated.map(t => s"\nexport { ${t.name} };").mkString("")
+    output ++= uniqueGeneratedTypes.map(t => s"\nexport { ${t.name} };").mkString("")
     tsClassOrInterfaces += StringFileArtifact(pathParam, output.toString())
 
     tsClassOrInterfaces
@@ -250,6 +249,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
       .flatMap(t => currentType.methods.map(m => StringUtils.removeEnd(m.returnType, "[]"))
         .filter(currentType.name != t.name && _ == t.name))
       .toList
+
     (currentType.parent.toList ::: imports)
       .distinct
       .filterNot(_ == currentType.root)

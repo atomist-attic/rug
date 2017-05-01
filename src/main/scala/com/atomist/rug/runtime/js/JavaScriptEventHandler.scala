@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
-import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy}
+import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
 import com.atomist.rug.spi.{Secret, TypeRegistry}
@@ -21,12 +21,10 @@ class JavaScriptEventHandlerFinder
   override def kind = "event-handler"
 
   override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror): Option[JavaScriptEventHandler] = {
-    if (someVar.hasMember("__expression")) {
-      val expression: String = someVar.getMember("__expression").asInstanceOf[String]
-      Some(new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar)))
-    } else {
-      Option.empty
-    }
+    Option(someVar.getMember("__expression")).map(v => {
+      val expression: String = v.asInstanceOf[String]
+      new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
+    })
   }
 }
 
@@ -68,7 +66,11 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           wrapOne(targetNode, ctx.typeRegistry),
           wrap(matches, ctx.typeRegistry),
           teamId = e.teamId)
-        invokeMemberFunction(jsc, handler, "handle", jsMatch(cm)) match {
+        invokeMemberFunction(jsc,
+          handler,
+          "handle",
+          jsScalaHidingProxy(cm, returnNotToProxy = _ => true)
+        ) match {
           case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
           case other => throw new InvalidHandlerResultException(s"$name EventHandler returned an invalid response ($other) when handling $pathExpressionStr")
         }
@@ -92,16 +94,3 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
     new JavaScriptArray(nodes.map(wrapOne(_, typeRegistry)).asJava)
 }
 
-/**
-  * Represents an event that drives a handler.
-  *
-  * @param cm the root node in the tree
-  */
-private case class jsMatch(cm: jsContextMatch) {
-
-  def root(): AnyRef = cm.root
-
-  def matches(): java.util.List[AnyRef] = cm.matches
-
-  override def toString: String = cm.toString
-}

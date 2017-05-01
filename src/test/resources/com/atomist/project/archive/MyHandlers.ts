@@ -8,7 +8,7 @@ import {Project} from '@atomist/rug/model/Core'
 @Tags("github", "issues")
 class SimpleHandler implements HandleEvent<Issue,Issue>{
   handle(match: Match<Issue,Issue>): EventPlan {
-    let issue = match.root()
+    let issue = match.root
     let reopen = issue.reopen
     reopen.onSuccess = new DirectedMessage("blah", new ChannelAddress("#blah"))
     return new EventPlan().add(reopen)
@@ -63,7 +63,7 @@ class IssueLister implements HandleCommand{
 
   handle(ctx: HandlerContext) {
     var match: Match<Issue,Issue>; // ctx.pathExpressionEngine().evaluate<Issue,Issue>("/Repo()/Issue[@raisedBy='kipz']")
-    let issues = match.matches();
+    let issues = match.matches;
     if (issues.length > 0) {
               let attachments = `{"attachments": [` + issues.map(i => {
                  let text = JSON.stringify(`#${i.number}: ${i.title}`)

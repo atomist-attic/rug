@@ -1,5 +1,5 @@
 import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
-import {Project,SpringBootProject,Pair} from '@atomist/rug/model/Core'
+import {Project,Pair} from '@atomist/rug/model/Core'
 import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
 
 class Rename3 implements ProjectEditor {
@@ -17,4 +17,4 @@ class Rename3 implements ProjectEditor {
     }
 }
 
-export let finder = new Rename3()
+export const rename3 = new Rename3();

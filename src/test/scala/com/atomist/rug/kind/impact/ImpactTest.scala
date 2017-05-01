@@ -5,11 +5,12 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ImpactTest extends FlatSpec with Matchers {
 
-  "Impact" should "allow descemt" in {
+  "Impact" should "allow descent" in {
     val oldAs = SimpleFileBasedArtifactSource()
     val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
     val impact = new Impact(null, oldAs, newAs)
     assert(impact.hasTag("Impact"))
+    assert(impact.childNodeNames.contains("files"))
   }
 
 }

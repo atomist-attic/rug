@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.atomist</groupId>
     <artifactId>rug</artifactId>
-    <version>0.27.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>rug</name>
     <description>Rug Runtime</description>
@@ -22,7 +22,7 @@
             <dependency>
                 <groupId>com.atomist</groupId>
                 <artifactId>atomist-bom</artifactId>
-                <version>0.11.0</version>
+                <version>1.0.0-m.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -39,14 +39,14 @@
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>artifact-source</artifactId>
-            <version>0.20.0</version>
+            <version>1.0.0-m.1</version>
         </dependency>
         <!-- For now the TS compiler needs to stay as runtime dependency to make sure it gets brought into the CLI
              when running rug install etc. This has to become part of the language <-> runtime version mapping -->
         <dependency>
             <groupId>com.atomist</groupId>
             <artifactId>rug-typescript-compiler</artifactId>
-            <version>0.14.1</version>
+            <version>1.0.0-m.1</version>
         </dependency>
         <dependency>
             <groupId>com.coveo</groupId>
@@ -79,7 +79,6 @@
             <artifactId>gherkin</artifactId>
             <version>4.0.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.scalameta</groupId>
             <artifactId>scalameta_${scala.binary.version}</artifactId>
@@ -155,14 +154,17 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-access</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -255,6 +257,28 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-test-resource</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/typescript</directory>
+                                    <targetPath>src/main/typescript</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.2.2</version>
@@ -332,7 +356,6 @@
             <id>atlassian</id>
             <name>Atlassian</name>
             <url>https://maven.atlassian.com/content/repositories/atlassian-public/</url>
-
         </repository>
     </repositories>
     <distributionManagement>

@@ -7,6 +7,9 @@ import com.atomist.rug.spi.{ReflectivelyTypedType, Type}
 import com.atomist.tree.TreeNode
 import com.atomist.tree.utils.NodeUtils
 
+/**
+  * Type representing change to a project in a Push
+  */
 class ImpactType extends Type with ReflectivelyTypedType {
 
   import NodeUtils._

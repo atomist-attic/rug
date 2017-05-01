@@ -419,11 +419,11 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.")
   def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
-
+      
   @ExportFunction(readOnly = false,
     exposeAsProperty = true,
-    description = "Files in this archive")
-  def files: java.util.List[FileArtifactBackedMutableView] = {
+    description = "Files in this project")
+  def files: java.util.List[FileMutableView] = {
     import scala.collection.JavaConverters._
     val allFiles = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
     allFiles.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]

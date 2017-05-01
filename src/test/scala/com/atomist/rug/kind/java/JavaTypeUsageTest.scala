@@ -81,15 +81,7 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
   import JavaTypeUsageTest._
 
-  it should "find boot package" in {
-    TestUtils.editorInSideFile(this, "PackageFinder.ts").modify(NewSpringBootProject) match {
-      case nmn: NoModificationNeeded => // Ok
-       // Ok
-      case _ => ???
-    }
-  }
-
-  it should "annotate class using function" in {
+  "Java type" should "annotate class using function" in {
     val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java1/ClassAnnotated.ts").withPathAbove(".atomist/editors")
     annotateClass(program)
   }

@@ -8,9 +8,12 @@ import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.RugContext
 import com.atomist.rug.spi.Handlers.Instruction._
 import com.atomist.rug.spi.Handlers.Status.{Failure, Success}
-import com.atomist.rug.spi.Handlers.{Instruction, Response}
+import com.atomist.rug.spi.Handlers.{Instruction, Response, Status}
 import com.atomist.rug.spi.{Body, RugFunctionRegistry}
 import com.atomist.rug.{BadPlanException, BadRugFunctionResponseException}
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
 
 /**
   * Run instructions synchronously in this JVM
@@ -23,8 +26,11 @@ class LocalInstructionRunner(currentRug: Rug,
                              rugContext: RugContext,
                              secretResolver: SecretResolver,
                              rugFunctionRegistry: RugFunctionRegistry = DefaultRugFunctionRegistry,
-                             rugResolver: Option[RugResolver] = None)
+                             rugResolver: Option[RugResolver] = None,
+                             loggerOption: Option[Logger] = None)
   extends InstructionRunner {
+
+  private val logger: Logger = loggerOption.getOrElse(LoggerFactory getLogger getClass.getName)
 
   private def doWithProjectName(instruction: Instruction, action: (String) => Response) = {
     instruction.detail.projectName match {
@@ -41,17 +47,27 @@ class LocalInstructionRunner(currentRug: Rug,
           case Some(fn) =>
             val replaced = secretResolver.replaceSecretTokens(detail.parameters)
             val resolved = SimpleParameterValues(replaced ++ secretResolver.resolveSecrets(fn.secrets))
-            val response = fn.run(resolved)
-
-            //ensure the body is String or byte[]!
-            val thedata = response.body match {
-              case Some(Body(Some(str), None)) => Some(str)
-              case Some(Body(None, Some(bytes))) => Some(bytes)
-              case Some(Body(_,_)) => throw new BadRugFunctionResponseException(s"Function `${fn.name}` should return a string body or a byte array, but not both")
-              case _ => None
+            Try {
+              fn.run(resolved)
+            } match {
+              case ScalaSuccess(response) =>
+                //ensure the body is String or byte[]!
+                val thedata = response.body match {
+                  case Some(Body(Some(str), None)) => Some(str)
+                  case Some(Body(None, Some(bytes))) => Some(bytes)
+                  case Some(Body(_, _)) => throw new BadRugFunctionResponseException(s"Function `${fn.name}` should return a string body or a byte array, but not both")
+                  case _ => None
+                }
+                Response(response.status, response.msg, response.code, thedata)
+              case ScalaFailure(throwaball) =>
+                val msg = s"Rug Function ${detail.name} threw exception: ${throwaball.getMessage}"
+                logger.warn(msg, throwaball)
+                Response(Status.Failure, Some(msg), None, Some(throwaball))
             }
-            Response(response.status, response.msg, response.code, thedata)
-          case _ => throw new BadPlanException(s"Cannot find Rug Function ${detail.name}")
+          case _ =>
+            val msg = s"Cannot find Rug Function ${detail.name}"
+            logger.warn(msg)
+            Response(Status.Failure, Some(msg), None, None)
         }
       case _ =>
         rugResolver match {
@@ -60,13 +76,13 @@ class LocalInstructionRunner(currentRug: Rug,
               case Some(rug: ProjectGenerator) =>
                 doWithProjectName(instruction, (projectName: String) => {
                   projectManagement.generate(rug, parameters, projectName)
-                  Response(Success)//TODO serialize the response?
+                  Response(Success) //TODO serialize the response?
                 })
               case Some(rug: ProjectEditor) =>
                 doWithProjectName(instruction, (projectName: String) => {
-                  projectManagement.edit(rug,parameters, projectName) match {
+                  projectManagement.edit(rug, parameters, projectName) match {
                     case _: SuccessfulModification => Response(Success)
-                    case success: NoModificationNeeded => Response(Success,Some(success.comment))
+                    case success: NoModificationNeeded => Response(Success, Some(success.comment))
                     case failure: FailedModificationAttempt => Response(Failure, Some(failure.failureExplanation))
                   }
                 })
@@ -81,17 +97,17 @@ class LocalInstructionRunner(currentRug: Rug,
                   case c =>
                     throw new BadPlanException(s"Callback input was not recognized: $c")
                 }
-              case Some(rug) => throw new BadPlanException(s"Unrecognized rug: $rug")
+              case Some(rug) => throw new BadPlanException(s"Unrecognized rug type: $rug")
               case None => throw new BadPlanException(s"Could not find rug with name: ${instruction.detail.name}")
             }
           case _ => throw new IllegalArgumentException(s"Could not find rug with name: ${instruction.detail.name} because no RugResolver supplied")
         }
-
     }
   }
 
   /**
     * Convert Instruction.Detail name/coords to a string for resolver
+    *
     * @param detail
     * @return
     */

@@ -209,6 +209,29 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     assert(run.result.isInstanceOf[Failed])
   }
 
+  it should "access a real project" in
+    edit("real_edit.feature")
+
+  it should "access a branch of a real project" in
+    edit("real_edit_with_branch.feature")
+
+  private def edit(feature: String): Unit = {
+    val el = new TestExecutionListener
+    val as = SimpleFileBasedArtifactSource(
+      StringFileArtifact(
+        ".atomist/tests/project/RealEditSteps.ts",
+        TestUtils.contentOf(this, "RealEditSteps.ts")),
+      StringFileArtifact(
+        ".atomist/tests/project/real_edit.feature",
+        TestUtils.contentOf(this, feature))
+    )
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas), Option(RugArchiveReader(cas)), Seq(el))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    assert(run.result === Passed)
+  }
+
   class TestExecutionListener extends GherkinExecutionListenerAdapter {
 
     var fsCount = 0

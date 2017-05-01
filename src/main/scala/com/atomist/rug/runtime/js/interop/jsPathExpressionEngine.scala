@@ -5,10 +5,9 @@ import java.util.Collections
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.dynamic.ChildResolver
-import com.atomist.rug.runtime.js.{RugContext, SimpleExecutionContext}
 import com.atomist.rug.runtime.js.interop.NashornUtils._
+import com.atomist.rug.runtime.js.{RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
 import com.atomist.tree.content.text.microgrammar._
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
@@ -19,12 +18,12 @@ import scala.collection.JavaConverters._
 
 /**
   * Represents a Match from executing a PathExpression, exposed
-  * to JavaScript/TypeScript.
+  * to JavaScript/TypeScript behind a jsScalaHidingProxy
   *
   * @param root    root we evaluated path from
   * @param matches matches
   */
-case class jsMatch(root: GraphNode,
+private case class Match(root: GraphNode,
                    matches: _root_.java.util.List[GraphNode])
 
 /**
@@ -95,7 +94,12 @@ class jsPathExpressionEngine(
     *             The latter allows us to define TypeScript classes.
     * @return a Match
     */
-  def evaluate(root: GraphNode, pe: Object): jsMatch =
+  def evaluate(root: GraphNode, pe: Object): AnyRef = {
+    val raw = evaluateInternal(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
+    jsScalaHidingProxy(raw, returnNotToProxy = _=> true)
+  }
+
+  private def evaluateInternal(root: GraphNode, pe: Object): Match =
     evaluateParsed(root, jsPathExpressionEngine.pathExpressionFromObject(pe))
 
   private def evaluateParsed(root: GraphNode, parsed: PathExpression) = {
@@ -104,10 +108,10 @@ class jsPathExpressionEngine(
       SimpleExecutionContext(typeRegistry, rugContext.repoResolver)
     ) match {
       case Right(nodes) =>
-        val m = jsMatch(root, wrap(nodes, typeRegistry))
+        val m = Match(root, wrap(nodes, typeRegistry))
         m
       case Left(_) =>
-        jsMatch(root, Collections.emptyList())
+        Match(root, Collections.emptyList())
     }
   }
 
@@ -127,7 +131,7 @@ class jsPathExpressionEngine(
     */
   def `with`(root: GraphNode, pexpr: Object, f: Object): Unit = f match {
     case som: ScriptObjectMirror =>
-      val r = evaluate(root, pexpr)
+      val r = evaluateInternal(root, pexpr)
       r.matches.asScala.foreach(m => {
         val args = Seq(m)
         // println(s"I am calling ${som} with value ${m}")
@@ -144,7 +148,7 @@ class jsPathExpressionEngine(
     * @param pe   path expression of object
     */
   def scalar(root: GraphNode, pe: Object): GraphNode = {
-    val res = evaluate(root, pe)
+    val res = evaluateInternal(root, pe)
     val ms = res.matches
     ms.size() match {
       // TODO use more specific exception type
@@ -233,5 +237,7 @@ object jsPathExpressionEngine {
       PathExpressionParser.parsePathExpression(expr)
     case expr: String =>
       PathExpressionParser.parsePathExpression(expr)
+    case pe: PathExpression =>
+      pe
   }
 }

@@ -27,10 +27,12 @@ private class LinkableContainerTreeNode(
   override def childrenNamed(key: String): Seq[TreeNode] =
     fieldValues.filter(n => n.nodeName.equals(key))
 
+  // WARNING - this is a graph not a tree. We should expect cycles. As such it's not safe
+  // to call toString on our child nodes
   override def toString: String = {
     getClass.getSimpleName + s": (${nodeTags.mkString(",")}); " +
       childNodeNames.map(childName => {
-        childName + ":[" + childrenNamed(childName).mkString(",") + "]"
+        childName + ":[" + childNodeNames.mkString(",") + "]"
       }).mkString("; ")
   }
 }

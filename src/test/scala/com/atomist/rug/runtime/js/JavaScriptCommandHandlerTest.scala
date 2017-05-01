@@ -3,15 +3,14 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
-import com.atomist.rug.{RugArchiveReader, SimpleRugResolver}
 import com.atomist.rug.runtime.ResponseHandler
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{RugArchiveReader, RugRuntimeException, SimpleRugResolver}
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
-import org.slf4j.LoggerFactory
 import org.slf4j.helpers.NOPLogger
 
 import scala.concurrent.Await
@@ -75,10 +74,10 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       commandHandler.handle(null, SimpleParameterValues.Empty)
       fail("Should have failed with exception")
     }
-     catch {
-       case ex: Throwable =>
-         assert(ex.getMessage.contains("stub"))
-     }
+    catch {
+      case ex: Throwable =>
+        assert(ex.getMessage.contains("stub"))
+    }
   }
 
   it should "be able to schedule an Execution and handle its response" in {
@@ -88,9 +87,9 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val com = rugs.commandHandlers.head
     val responseHandler = rugs.responseHandlers.head
 
-    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    val plan = com.handle(null, SimpleParameterValues.Empty).get
     val runner = new LocalPlanRunner(null, new LocalInstructionRunner(responseHandler, null, null, new TestSecretResolver(null) {
-      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] =  {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
         assert(secrets.size === 1)
         assert(secrets.head.name === "very")
         assert(secrets.head.path === "/secret/thingy")
@@ -100,9 +99,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val results = Await.result(runner.run(plan, None), 10.seconds)
     val single = PlanResultInterpreter.interpret(results)
     assert(single.status == Status.Success)
-
   }
-
 
   it should "extract and run a command handler" in {
     val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(simpleCommandHandler))
@@ -175,7 +172,51 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithNullDefault))
     val rugs = RugArchiveReader(rugArchive)
     val com = rugs.commandHandlers.head
-    val plan = com.handle(null,SimpleParameterValues.Empty).get
+    val plan = com.handle(null, SimpleParameterValues.Empty).get
+  }
+
+  val instructionWithNonExistentRugFunction =
+    StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+      contentOf(this, "CommandHandlerWithNonExistentRugFunction.ts"))
+
+  it should "return error responses if rug function is not found" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(instructionWithNonExistentRugFunction))
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
+    val com = rugs.commandHandlers.head
+    val responseHandler = rugs.responseHandlers.head
+
+    val plan = com.handle(null, SimpleParameterValues.Empty).get
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(responseHandler, null, null, new TestSecretResolver(null) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = Nil
+    }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
+    val results = Await.result(runner.run(plan, None), 10.seconds)
+    val msg = results.log(1).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[Plan].local(0).body
+    assert(msg.contains("Cannot find Rug Function NonExistent"))
+  }
+
+  val handlerWithFailingRugFunction =
+    StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+      contentOf(this, "HandlerWithFailingRugFunction.ts"))
+
+  it should "return error responses if rug function throws exceptions" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerWithFailingRugFunction))
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
+    val com = rugs.commandHandlers.head
+
+    val plan = com.handle(null, SimpleParameterValues.Empty).get
+    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(com, null, null, new TestSecretResolver(null) {
+      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
+        assert(secrets.size === 1)
+        assert(secrets.head.name === "very")
+        assert(secrets.head.path === "/secret/thingy")
+        Seq(SimpleParameterValue("very", "cool"))
+      }
+    }, rugResolver = Some(resolver)), loggerOption = Some(NOPLogger.NOP_LOGGER))
+    val results = Await.result(runner.run(plan, None), 10.seconds)
+    val msg = results.log(0).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[RugRuntimeException].getMessage
+    assert(msg.contains("uh oh"))
   }
 }
 
@@ -187,7 +228,7 @@ class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
 
   override def name: String = r.name
 
-  override def description: String =r.description
+  override def description: String = r.description
 
   override def tags: Seq[Tag] = r.tags
 

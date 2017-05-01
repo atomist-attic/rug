@@ -7,7 +7,56 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/0.26.1...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.2...HEAD
+
+### Changed
+
+-   **BREAKING** Removed Spring and Spring project types. These don't belong in
+    `rug` and will resurface in a separate project.
+
+### Fixed
+
+-   Fix StackOverflow when calling toString on LinkableContainerTreeNode.
+    Can't recurse as this is a graph not a tree. 
+
+## [1.0.0-m.2] - 2017-04-26
+
+[1.0.0-m.2]: https://github.com/atomist/rug/compare/1.0.0-m.1...1.0.0-m.2
+
+Initial milestone 2 release
+
+### Changed
+
+-   Fix NPM publish for milestone and release candidate releases
+-   Consolidate NPM publish for dev and release versions
+
+## [1.0.0-m.1] - 2017-04-26
+
+[1.0.0-m.1]: https://github.com/atomist/rug/compare/0.26.1...1.0.0-m.1
+
+Initial milestone 1 release
+
+### Added
+
+-   Support for cloning a repo from GitHub in Gherkin tests, via
+    `ScenarioWorld`
+
+### Changed
+
+-   **BREAKING** TypeScript `Match` now uses property access, not function
+-   Updated all Atomist dependencies to 1.0.0-m.1 versions
+-   Handlers are now picked up from arrays as well as regular `vars`
+
+### Fixed
+
+-   `project.findFile` now works on paths starting with a
+    '/' [#523][523]
+-   Rug Function exceptions are now passed to error handlers.  Maybe:
+    Response now passed to handlers when unknown Rug Functions are
+    encountered [#536][536]
+
+[523]: https://github.com/atomist/rug/issues/523
+[536]: https://github.com/atomist/rug/issues/536
 
 ## [0.26.1] - 2017-04-24
 
@@ -39,7 +88,7 @@ Election Release
 -   Added `Impact` object to enable drilling into the changes in a `Push` in a path expression, extracting
     old and new files.
 -   Added `stringify` function on `TreeHelper.ts` to help dump hierarchy of AST nodes when debugging.
--   `jsSafeCommittingProxy` now returns `undefined` on unknown properties on dynamic nodes 
+-   `jsSafeCommittingProxy` now returns `undefined` on unknown properties on dynamic nodes
     rather than throwing an exceptions
 
 ### Changed
@@ -47,7 +96,7 @@ Election Release
 -   Response.Status of instructions whose failure is handled by a ResponseHandler
     now have a status of `Handled` instead of `Failed`
 -   **BREAKING** Event and Command Handlers must return EventPlan and CommandPlan
-    respectively to remove confusion as to the different capabilities 
+    respectively to remove confusion as to the different capabilities
 -   Project test steps can now return `void`, as for handlers.
 
 ## [0.25.3] - 2017-04-13

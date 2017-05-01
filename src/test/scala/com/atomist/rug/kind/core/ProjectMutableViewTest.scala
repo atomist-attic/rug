@@ -476,6 +476,17 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     assert(path.contains("classDeclaration"))
   }
 
+  it should "find files in the root with /" in {
+    val pmv = new ProjectMutableView(SimpleFileBasedArtifactSource(
+      StringFileArtifact("Foo.java",
+        """
+          |public class Foo {
+          |}
+        """.stripMargin)
+    ))
+    assert(pmv.findFile("/Foo.java") != null)
+  }
+
   private def moveAFileAndVerifyNotFoundAtFormerAddress(stuffToDoLater: ProjectMutableView => Unit) = {
     val project = JavaTypeUsageTest.NewSpringBootProject
     val pmv = new ProjectMutableView(backingTemplates, project)

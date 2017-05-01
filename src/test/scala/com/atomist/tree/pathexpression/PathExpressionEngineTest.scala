@@ -1,5 +1,6 @@
 package com.atomist.tree.pathexpression
 
+import com.atomist.rug.spi.ExportFunction
 import com.atomist.tree.content.text.OffsetInputPosition._
 import com.atomist.tree.content.text.{LineHoldingOffsetInputPosition, MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleMutableContainerTreeNode}
 import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode, TreeNode}
@@ -412,5 +413,58 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     parent.addField(issue)
     val rtn = ee.evaluate(parent, expr)
     assert(rtn.right.get === Seq(issue))
+  }
+
+  private class RecursiveNode(kids: RecursiveNode*) extends TreeNode {
+
+    @ExportFunction(readOnly = true, description = "Node content")
+    override def value: String = ???
+
+    override def childrenNamed(key: String): Seq[TreeNode] = key match {
+      case "recurse" => kids
+      case _ => Nil
+    }
+
+    override def childNodeNames: Set[String] = Set("recurse")
+
+    override def childNodeTypes: Set[String] = Set("RecursiveNode")
+
+    @ExportFunction(readOnly = true, description = "Name of the node")
+    override def nodeName: String = "recurse"
+  }
+
+  it should "test potentially recursive node with no children" in {
+    val recursiveNode = new RecursiveNode()
+    val parent = new ContainerTreeNodeImpl("parent", "Parent")
+    parent.addField(recursiveNode)
+    val rtn = ee.evaluate(parent, "/recurse")
+    assert(rtn.right.get === Seq(recursiveNode))
+    val rtn2 = ee.evaluate(parent, "//recurse")
+    assert(rtn2.right.get === Seq(recursiveNode))
+  }
+
+  it should "test potentially recursive node with child" in {
+    val kid = new RecursiveNode()
+    val recursiveNode = new RecursiveNode(kid)
+    val parent = new ContainerTreeNodeImpl("parent", "Parent")
+    parent.addField(recursiveNode)
+    val rtn = ee.evaluate(parent, "/recurse")
+    assert(rtn.right.get === Seq(recursiveNode))
+    val rtn2 = ee.evaluate(parent, "//recurse")
+    assert(rtn2.right.get.toSet === Set(recursiveNode, kid))
+  }
+
+  it should "test potentially recursive node with grandchild" in {
+    val grandkid = new RecursiveNode()
+    val kid = new RecursiveNode(grandkid)
+    val recursiveNode = new RecursiveNode(kid)
+    val parent = new ContainerTreeNodeImpl("parent", "Parent")
+    parent.addField(recursiveNode)
+    val root = new ContainerTreeNodeImpl("root", "Root")
+    root.addField(parent)
+    val rtn = ee.evaluate(root, "/Parent()/recurse")
+    assert(rtn.right.get === Seq(recursiveNode))
+    val rtn2 = ee.evaluate(root, "/Parent()//recurse")
+    assert(rtn2.right.get.toSet === Set(recursiveNode, kid, grandkid))
   }
 }

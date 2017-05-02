@@ -44,8 +44,8 @@ class PlanBuilder {
         }
     }
 
-    val lifecycle = messages.collect{case o: LifecycleMessage => o}
-    val local = messages.collect{case o: LocallyRenderedMessage => o}
+    val lifecycle = messages.collect { case o: LifecycleMessage => o }
+    val local = messages.collect { case o: LocallyRenderedMessage => o }
 
     Plan(returningRug, lifecycle, local, instructions, nativeObject = Some(jsPlan))
   }
@@ -77,7 +77,7 @@ class PlanBuilder {
         }
         LocallyRenderedMessage(messageBody, contentType, channelNames, usernames)
 
-      case "lifecycle"=>
+      case "lifecycle" =>
         val instructions = jsMessage.getMember("instructions") match {
           case _: Undefined => Nil
           case jsInstructions: ScriptObjectMirror =>
@@ -100,7 +100,7 @@ class PlanBuilder {
           case s: String => s
           case _ => throw new InvalidHandlerResultException("Lifecycle messages must contain a lifecycleId")
         }
-        LifecycleMessage(node,instructions,id)
+        LifecycleMessage(node, instructions, id)
 
       case _: Undefined => throw new InvalidHandlerResultException(s"A message must have a kind: $jsMessage")
     }
@@ -144,7 +144,6 @@ class PlanBuilder {
 
   def constructInstructionDetail(jsInstruction: ScriptObjectMirror): Instruction.Detail = {
     val parameters: Seq[ParameterValue] = jsInstruction.getMember("parameters") match {
-      case u: Undefined => Nil
       case o: ScriptObjectMirror =>
         val filtered = o.keySet().toArray.filter(key => {
           val name = key.asInstanceOf[String]
@@ -164,6 +163,7 @@ class PlanBuilder {
               case o => JsonUtils.toJson(o)
             })
         }
+      case _ => Nil
     }
 
     val (name, coordinates) = jsInstruction.getMember("name") match {
@@ -175,6 +175,7 @@ class PlanBuilder {
           o.getMember("group").asInstanceOf[String],
           o.getMember("artifact").asInstanceOf[String])
         (name, Some(coordinates))
+      case x => throw new InvalidHandlerResultException(s"Instruction name cannot be $x")
     }
 
     val project_name = jsInstruction.getMember("project") match {
@@ -186,20 +187,20 @@ class PlanBuilder {
 
   def constructCallback(callback: Object, returningRug: Option[Rug]): Option[Callback] = {
     callback match {
-      case u: Undefined => None
       case jsOnSuccess: ScriptObjectMirror =>
         val callback = jsOnSuccess.getMember("kind") match {
           case "response" | "lifecycle" | "directed" => constructMessage(jsOnSuccess)
           case _: String => Respond(constructInstructionDetail(jsOnSuccess))
           case _ =>
             if (jsOnSuccess.hasMember("messages") || jsOnSuccess.hasMember("instructions")) {
-            constructPlan(jsOnSuccess, returningRug)
-          }
-          else {
-            throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
-          }
+              constructPlan(jsOnSuccess, returningRug)
+            }
+            else {
+              throw new InvalidHandlerResultException(s"Cannot create CallBack from: $jsOnSuccess")
+            }
         }
         Option(callback)
+      case _ => None
     }
   }
 }

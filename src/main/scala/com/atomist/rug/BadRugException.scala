@@ -84,6 +84,10 @@ class BadPlanException(msg: String)
 class MissingRugException(msg: String)
   extends BadRugException(msg)
 
+class DuplicateRugException(msg: String, knownRugs: Seq[Rug])
+   extends BadRugException(msg) {
+}
+
 class EditorNotFoundException(msg: String)
   extends BadRugException(msg) {
   def this(requestedEditorName: String, knownRugs: Seq[Rug]) = {

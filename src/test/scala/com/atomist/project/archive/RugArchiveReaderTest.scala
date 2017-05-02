@@ -2,7 +2,7 @@ package com.atomist.project.archive
 
 import com.atomist.param.SimpleParameterValues
 import com.atomist.project.edit._
-import com.atomist.rug.RugArchiveReader
+import com.atomist.rug.{DuplicateRugException, RugArchiveReader}
 import com.atomist.rug.runtime.lang.js.NashornConstructorTest
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.file.ClassPathArtifactSource
@@ -108,6 +108,20 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
     invokeAndVerifySimple(
       Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor)
       ), deps)
+  }
+
+  it should "throw exceptions if there are duplicate rugs in an archive https://github.com/atomist/rug/issues/561" in {
+    val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(
+      StringFileArtifact(s".atomist/editors/Other.ts", SimpleEditorInvokingOtherEditor),
+      StringFileArtifact(s".atomist/editors/Other2.ts", SimpleEditorInvokingOtherEditorViaGa)))
+    val coords = Coordinate("com.atomist.rugs","common-rugs", "1.2.3")
+    val deps = Seq(Dependency(as, Some(coords), Nil))
+
+    assertThrows[DuplicateRugException]{
+      invokeAndVerifySimple(
+        Seq(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditor)
+        ), deps)
+    }
   }
 
   private  def invokeAndVerifySimple(tsf: Seq[FileArtifact], dependencies: Seq[Dependency] = Nil): ProjectEditor = {

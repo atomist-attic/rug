@@ -73,6 +73,32 @@ object EditorTest {
        |export let myeditor = new SimpleEditor()
     """.stripMargin
 
+  val SimpleEditorWithBasicNameParameterWithOldStyleFunctionCall =
+    s"""
+       |import {Project} from '@atomist/rug/model/Core'
+       |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
+       |
+       |@Editor("Simple", "My simple editor")
+       |class SimpleEditor {
+       |
+       |    @Parameter({description: "Name", pattern: "^.*$$"})
+       |    name: string = "Not reserved"
+       |
+       |    @Parameter({description: "Description", pattern: "^.*$$"})
+       |    description: string = "Not reserved"
+       |
+       |    edit(project: Project)  {
+       |        let untypedProj = project as any;
+       |        untypedProj.nodeName();
+       |
+       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
+       |        if(this.name !== "Not reserved") throw new Error("Darn - name is reserved it seems");
+       |        if(this.description !== "Not reserved") throw new Error("Darn - description is reserved it seems");
+       |    }
+       |}
+       |export let myeditor = new SimpleEditor()
+    """.stripMargin
+
   val SimpleLetStyleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core'
@@ -314,8 +340,12 @@ class EditorTest extends FlatSpec with Matchers {
 
   import EditorTest._
 
-  it should "allow use of name/description fields if we are using annotations" in {
+  "EditorTest" should "allow use of name/description fields if we are using annotations" in {
     invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBasicNameParameter))
+  }
+
+  it should "gracefully handle old style function call for nodeName()" in {
+    invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithBasicNameParameterWithOldStyleFunctionCall))
   }
 
   it should "run simple editor compiled from TypeScript without parameters using support class" in {
@@ -481,7 +511,7 @@ class EditorTest extends FlatSpec with Matchers {
       case sm: SuccessfulModification =>
         assert(sm.result.totalFileCount === 2)
         sm.result.findFile("src/from/typescript").get.content.contains("Anders") should be(true)
-      case _ => ???
+      case x => fail(s"Expected SuccessfulModification, not $x")
     }
     jsed
   }

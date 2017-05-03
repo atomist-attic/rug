@@ -43,6 +43,9 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerReturningMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningMessage.ts"))
 
+  val simpleCommandHandlerReturningDirectedMessageWithInstructions = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructions.ts"))
+
   val simpleCommandHandlerReturningEmptyMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningEmptyMessage.ts"))
 
@@ -218,6 +221,18 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val msg = results.log(0).asInstanceOf[InstructionResult].response.body.get.asInstanceOf[RugRuntimeException].getMessage
     assert(msg.contains("uh oh"))
   }
+
+  it should "return plan with DirectedMessage containing instructions" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(simpleCommandHandlerReturningDirectedMessageWithInstructions))
+    val rugs = RugArchiveReader(rugArchive)
+    val com = rugs.commandHandlers.head
+    val plan = com.handle(null, SimpleParameterValues.Empty).get
+    assert(plan.messages.length === 1)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.length === 1)
+    assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.head.id.get === "123")
+  }
+
 }
 
 class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {

@@ -49,7 +49,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     val plan = Plan(
       Some(editor),
       Nil,
-      Seq(LocallyRenderedMessage("message1", "text/plain", Nil, Nil)),
+      Seq(LocallyRenderedMessage("message1", "text/plain")),
       Seq(
         Respondable(
           Edit(Detail("edit1", None, Nil, None)),
@@ -58,8 +58,8 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
         ),
         Respondable(
           Edit(Detail("edit2", None, Nil, None)),
-          Some(LocallyRenderedMessage("pass", "text/plain", Nil, Nil)),
-          Some(LocallyRenderedMessage("fail", "text/plain", Nil, Nil))
+          Some(LocallyRenderedMessage("pass", "text/plain")),
+          Some(LocallyRenderedMessage("fail", "text/plain"))
         ),
         Respondable(
           Edit(Detail("edit3", None, Nil, None)),
@@ -68,7 +68,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
         ),
         Respondable(
           Edit(Detail("edit4", None, Nil, None)),
-          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil)),
+          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain")), Nil)),
           None
         )
       )
@@ -81,7 +81,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     }
     when(instructionRunner.run(any(), any())).thenAnswer(instructionNameAsSuccessResponseBody)
     when(nestedPlanRunner.run(any(), any())).thenReturn(Future {
-      PlanResult(Seq(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil), null)))
+      PlanResult(Seq(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain"), null)))
     })
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 120.seconds)
@@ -91,23 +91,23 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       InstructionResult(Edit(Detail("edit3", None, Nil, None)), Response(Success, Some("edit3"), Some(0), None)),
       InstructionResult(Edit(Detail("edit4", None, Nil, None)), Response(Success, Some("edit4"), Some(0), None)),
       InstructionResult(Respond(Detail("respond1", None, Nil, None)), Response(Success, Some("respond1"), Some(0), None)),
-      NestedPlanRun(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil),
-        Future(PlanResult(List(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil), null)))))
+      NestedPlanRun(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain")), Nil),
+        Future(PlanResult(List(MessageDeliveryError(LocallyRenderedMessage("nested plan", "text/plain"), null)))))
     )
 
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
     verify(messageDeliverer).deliver(
       editor,
-      LocallyRenderedMessage("message1", "text/plain", Nil, Nil),
+      LocallyRenderedMessage("message1", "text/plain"),
       None)
     verify(instructionRunner).run(Edit(Detail("edit1", None, Nil, None)), None)
     verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
-    verify(messageDeliverer).deliver(editor, LocallyRenderedMessage("pass", "text/plain", Nil, Nil), Some(Response(Success, Some("edit2"), Some(0), None)))
+    verify(messageDeliverer).deliver(editor, LocallyRenderedMessage("pass", "text/plain"), Some(Response(Success, Some("edit2"), Some(0), None)))
     verify(instructionRunner).run(Edit(Detail("edit3", None, Nil, None)), None)
     verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Success, Some("edit3"), Some(0), None)))
     verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), None)
-    verify(nestedPlanRunner).run(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain", Nil, Nil)), Nil), Some(Response(Success, Some("edit4"), Some(0), None)))
+    verify(nestedPlanRunner).run(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain")), Nil), Some(Response(Success, Some("edit4"), Some(0), None)))
 
 
     verify(logger).debug("Delivered message channels: , usernames: , type: text/plain, body: message1")
@@ -168,8 +168,8 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       Seq(
         Respondable(
           Edit(Detail("edit2", None, Nil, None)),
-          Some(LocallyRenderedMessage("pass", "text/plain", Nil, Nil)),
-          Some(LocallyRenderedMessage("fail", "text/plain", Nil, Nil))
+          Some(LocallyRenderedMessage("pass", "text/plain")),
+          Some(LocallyRenderedMessage("fail", "text/plain"))
         )
       )
     )
@@ -189,7 +189,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val inOrder = Mockito.inOrder(messageDeliverer, instructionRunner, nestedPlanRunner)
     inOrder.verify(instructionRunner).run(Edit(Detail("edit2", None, Nil, None)), None)
-    inOrder.verify(messageDeliverer).deliver(editor, LocallyRenderedMessage("fail", "text/plain", Nil, Nil), Some(Response(Failure, Some("edit2"), Some(0), None)))
+    inOrder.verify(messageDeliverer).deliver(editor, LocallyRenderedMessage("fail", "text/plain"), Some(Response(Failure, Some("edit2"), Some(0), None)))
 
     verify(logger).debug("Ran Edit edit2() and then Failure:0:edit2")
     verify(logger).debug("Delivered message channels: , usernames: , type: text/plain, body: fail")
@@ -213,9 +213,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       Seq(
         LocallyRenderedMessage(
           "message1",
-          "text/plain",
-          Nil,
-          Nil
+          "text/plain"
         )
       ),
       Nil
@@ -224,7 +222,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
-      MessageDeliveryError(LocallyRenderedMessage("message1", "text/plain", Nil, Nil), new IllegalArgumentException("Uh oh!"))
+      MessageDeliveryError(LocallyRenderedMessage("message1", "text/plain"), new IllegalArgumentException("Uh oh!"))
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) == makeEventsComparable(expectedPlanLog))
 
@@ -263,7 +261,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
       Seq(
         Respondable(
           Edit(Detail("edit", None, Nil, None)),
-          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("fail", "text/plain", Nil, Nil)), Nil)),
+          Some(Plan(None, Nil, Seq(LocallyRenderedMessage("fail", "text/plain")), Nil)),
           None
         )
       )
@@ -274,7 +272,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     val actualPlanResult = Await.result(planRunner.run(plan, None), 10.seconds)
     val expectedPlanLog = Set(
       InstructionResult(Edit(Detail("edit", None, Nil, None)), Response(Success, None, None, None)),
-      CallbackError(Plan(None, Nil, List(LocallyRenderedMessage("fail", "text/plain", Nil, Nil)), Nil), new IllegalArgumentException("Uh oh!"))
+      CallbackError(Plan(None, Nil, List(LocallyRenderedMessage("fail", "text/plain")), Nil), new IllegalArgumentException("Uh oh!"))
     )
     assert(makeEventsComparable(actualPlanResult.log.toSet) === makeEventsComparable(expectedPlanLog))
 

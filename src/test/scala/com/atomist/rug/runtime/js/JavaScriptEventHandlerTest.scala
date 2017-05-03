@@ -151,8 +151,7 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     val expectedMessages = Seq(
       LocallyRenderedMessage("message1",
         "text/plain",
-        Seq("w00t"),
-        Nil)
+        Seq("w00t"))
     )
     val actualPlan = handler.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
 

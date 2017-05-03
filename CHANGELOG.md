@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** Removed Spring and Spring project types. These don't belong in
     `rug` and will resurface in a separate project.
+    
+-   Add instructions to DirectedMessage and ResponseMessage.  Add optional id to
+    Presentable instruction.
 
 ### Fixed
 

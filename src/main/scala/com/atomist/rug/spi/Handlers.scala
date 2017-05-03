@@ -56,11 +56,11 @@ object Handlers {
     * @param contentType
     * @param usernames
     */
-  case class LocallyRenderedMessage(
-                              body: String,
-                              contentType: String,
-                              channelNames: Seq[String],
-                              usernames: Seq[String])
+  case class LocallyRenderedMessage(body: String,
+                                    contentType: String,
+                                    channelNames: Seq[String] = Nil,
+                                    usernames: Seq[String] = Nil,
+                                    instructions: Seq[Presentable] = Nil)
     extends Callback
       with Message {
 
@@ -84,7 +84,7 @@ object Handlers {
 
   case class Nonrespondable(instruction: NonrespondableInstruction) extends Plannable
 
-  case class Presentable(instruction: Instruction, label: Option[String])
+  case class Presentable(instruction: Instruction, label: Option[String], id: Option[String])
 
   //likely to change
 

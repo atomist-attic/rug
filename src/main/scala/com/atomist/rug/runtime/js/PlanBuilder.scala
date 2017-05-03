@@ -75,7 +75,14 @@ class PlanBuilder {
           case channelNames: ScriptObjectMirror =>
             channelNames.values().toArray.toSeq.asInstanceOf[Seq[String]]
         }
-        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames)
+        val instructions = jsMessage.getMember("instructions") match {
+          case _: Undefined => Nil
+          case jsInstructions: ScriptObjectMirror =>
+            jsInstructions.values().toArray.toList.map { presentable =>
+              constructPresentable(presentable.asInstanceOf[ScriptObjectMirror])
+            }
+        }
+        LocallyRenderedMessage(messageBody, contentType, channelNames, usernames, instructions)
 
       case "lifecycle" =>
         val instructions = jsMessage.getMember("instructions") match {
@@ -115,7 +122,11 @@ class PlanBuilder {
       case x: String => Some(x)
       case _ => None
     }
-    Presentable(instruction, label)
+    val id = jsPresentable.getMember("id") match {
+      case x: String => Some(x)
+      case _ => None
+    }
+    Presentable(instruction, label, id)
   }
 
   def constructRespondable(jsRespondable: ScriptObjectMirror, returningRug: Option[Rug]): Plannable = {

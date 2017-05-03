@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   Throw exceptions if there is more than one Rug with the same name
+    in an archive https://github.com/atomist/rug/issues/561
+
 -   Fix StackOverflow when calling toString on LinkableContainerTreeNode.
     Can't recurse as this is a graph not a tree. 
 

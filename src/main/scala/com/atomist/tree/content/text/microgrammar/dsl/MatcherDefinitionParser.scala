@@ -66,7 +66,7 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   private def matcherExpression: Parser[Matcher] =
     opt(whitespaceSep) ~> (concatenation | matcherTerm) <~ opt(whitespaceSep) ^^ {
-       term => Concat(Concat(Whitespace.?(), term), Whitespace.?())
+       term => Concat(Whitespace.?(), term)
     }
 
   /**

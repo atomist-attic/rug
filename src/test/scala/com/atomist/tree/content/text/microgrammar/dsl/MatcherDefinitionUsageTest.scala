@@ -1,7 +1,8 @@
 package com.atomist.tree.content.text.microgrammar.dsl
 
 import com.atomist.parse.java.ParsingTargets
-import com.atomist.tree.content.text.microgrammar.{InputState, MatcherMicrogrammar, MatcherMicrogrammarTest}
+import com.atomist.tree.content.text.microgrammar.matchers.Break
+import com.atomist.tree.content.text.microgrammar.{InputState, MatcherMicrogrammar, MatcherMicrogrammarTest, Regex}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
@@ -12,7 +13,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val matcher = mgp.parseMatcher("foo", "def foo")
     matcher.matchPrefix(InputState("def foo thing")) match {
       case Right(pm) =>
-      
+
       case _ => ???
     }
   }
@@ -29,7 +30,7 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
     val input = "def foo bar"
     matcher.matchPrefix(InputState(input)) match {
       case Right(pm) =>
-      
+
       case _ => ???
     }
     assert(mg.findMatches(input).size === 1)
@@ -64,15 +65,19 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
 
     val mg = new MatcherMicrogrammar(
       mgp.parseMatcher("emoji",
-        """<tr class="emoji_row">¡<span data-original="¡$emojiUrl:§https://[^\"]+§" class="$name:§[\sa-zA-Z0-9_\-]*§"""
-      ))
+        """<tr class="emoji_row">$beforeEmoji $emojiUrl" class="$name"""
+      ), submatchers =
+        Map("beforeEmoji" -> Break(mgp.parseAnonymous("""<span data-original="""")),
+          "emojiUrl" -> Regex("https://[^\"]+"),
+          "name" -> Regex("[\\sa-zA-Z0-9_\\-]*")
+        ))
 
     val matches = MatcherMicrogrammarTest.readyMatchesFromString(mg.findMatches(html), html)
     assert(matches.size === 1)
 
     withClue(matches) {
-      assert(matches.head.childNodes.head.value === "https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
-      assert(matches.head.childNodes(1).value === "lazy emoji-wrapper")
+      assert(matches.head.childrenNamed("emojiUrl").head.value === "https://emoji.slack-edge.com/T024F4A92/666/5b9d8b4d571e51c5.jpg")
+      assert(matches.head.childrenNamed("name").head.value === "lazy emoji-wrapper")
     }
   }
 

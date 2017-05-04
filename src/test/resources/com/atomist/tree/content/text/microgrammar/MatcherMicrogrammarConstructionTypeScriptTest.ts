@@ -38,8 +38,11 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
             e.params.update("int qty")
         })
 
-        let shouldExist = eng.scalar<File>(project, "/unmatchingFile")
-        if (shouldExist == null) {
+        let exists = false
+        eng.with<any>(project, "/unmatchingFile", e => {
+            exists = true;
+        })
+        if (!exists) {
             throw "the unmatching file needs to be here so I can be sure it didn't match"
         }
 

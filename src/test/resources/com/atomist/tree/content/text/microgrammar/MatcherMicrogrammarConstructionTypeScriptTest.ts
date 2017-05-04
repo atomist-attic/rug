@@ -1,7 +1,7 @@
 import { Project } from '@atomist/rug/model/Core'
 import { Editor } from '@atomist/rug/operations/Decorators'
 import { Microgrammar, TextTreeNode } from '@atomist/rug/tree/PathExpression'
-import { Or, Optional, Regex, Repeat } from '@atomist/rug/tree/Microgrammars'
+import { Or, Optional, Regex, Repeat, Literal } from '@atomist/rug/tree/Microgrammars'
 
 
 @Editor("MatcherMicrogrammarConstructionTypeScriptTest", "Uses MatcherMicrogrammarConstruction from TypeScript")
@@ -9,14 +9,15 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
 
     edit(project: Project) {
 
-        let mg = new Microgrammar("testMe", `public $returnType $functionName($params)`, {
+        let mg = new Microgrammar("testMe", `public $returnType $functionName($params)$pickyFormattedReturn`, {
             returnType: Or(["Banana", "Fruit"]),
             functionName: "$javaIdentifier",
             params: Repeat("$param"),
             param: "$javaType $javaIdentifier $comma ",
             comma: Optional(","),
             javaType: Regex("[A-Za-z0-9_]+"),
-            javaIdentifier: Regex("[a-zA-Z0-9]+")
+            javaIdentifier: Regex("[a-zA-Z0-9]+"),
+            pickyFormattedReturn: Literal(": Precise")
         });
 
         let eng = project.context.pathExpressionEngine.addType(mg);

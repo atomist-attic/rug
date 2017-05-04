@@ -37,12 +37,12 @@ class MatcherMicrogrammarConstructionTypeScriptTest extends FlatSpec with Matche
    */
 
   val inputFile =
-    """public Banana pick(String color, int spots) {
+    """public Banana pick(String color, int spots): Precise {
       |   // and then some stuff
       |}
       |""".stripMargin
   val modifiedFile =
-    """public Fruit grow(int qty) {
+    """public Fruit grow(int qty): Precise {
       |   // and then some stuff
       |}
       |""".stripMargin

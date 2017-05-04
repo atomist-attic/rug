@@ -48,6 +48,15 @@ object MatcherMicrogrammarConstruction {
     Optional(e)
   }
 
+  def constructStrictLiteral(properties: Map[String, Any]): Matcher = {
+    val expressionProperty = properties.getOrElse("content", throw new RuntimeException("a strict literal should have a content"))
+    val e = expressionProperty match {
+      case m: String => m
+      case _ => throw new RuntimeException("expected a string for content")
+    }
+    Literal(e)
+  }
+
   def interpretAnonymousMatcher(m: Any): Matcher = m match {
     case grammar: String => matcherParser.parseAnonymous(grammar)
     case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
@@ -58,6 +67,8 @@ object MatcherMicrogrammarConstruction {
       constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
     case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
       constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "strict-literal" =>
+      constructStrictLiteral(micromatcher.asInstanceOf[Map[String, Any]])
     case _ => throw new RuntimeException(s"Unrecognized object provided for a matcher ${m}")
 
   }
@@ -72,6 +83,8 @@ object MatcherMicrogrammarConstruction {
       constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
     case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
       constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "strict-literal" =>
+      constructStrictLiteral(micromatcher.asInstanceOf[Map[String, Any]])
     case _ => throw new RuntimeException(s"Unrecognized object provided for submatcher $name")
 
   }

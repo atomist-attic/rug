@@ -99,7 +99,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, stepsFile)
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      s".atomist/test/handlers/command/$stepsFile")
+      s".atomist/tests/handlers/command/$stepsFile")
 
     val handlerName = "RunsMatchingPathExpressionCommandHandler.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)
@@ -128,7 +128,7 @@ class GherkinRunnerCommandHandlerTest extends FlatSpec with Matchers {
     val passingFeature1Steps =
       TestUtils.requiredFileInPackage(this, stepsFile)
     val passingFeature1StepsFile = passingFeature1Steps.withPath(
-      s".atomist/test/handlers/command/$stepsFile")
+      s".atomist/tests/handlers/command/$stepsFile")
 
     val handlerName = "LooksInProjects.ts"
     val handlerFile = requiredFileInPackage(this, "CommandHandlers.ts").withPath(atomistConfig.handlersRoot + "/command/" + handlerName)

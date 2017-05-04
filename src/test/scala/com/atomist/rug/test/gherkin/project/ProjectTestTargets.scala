@@ -6,18 +6,18 @@ import com.atomist.source.{FileArtifact, StringFileArtifact}
 object ProjectTestTargets {
 
   val PassingSimpleTsFile: FileArtifact =
-    TestUtils.requiredFileInPackage(this, "PassingSimple.ts").withPath(".atomist/test/project/Simple_definitions.ts")
+    TestUtils.requiredFileInPackage(this, "PassingSimple.ts").withPath(".atomist/tests/project/Simple_definitions.ts")
 
   val FailingSimpleTsFile: FileArtifact =
-    TestUtils.requiredFileInPackage(this, "FailingSimple.ts").withPath(".atomist/test/project/Simple_definitions.ts")
+    TestUtils.requiredFileInPackage(this, "FailingSimple.ts").withPath(".atomist/tests/project/Simple_definitions.ts")
 
-  val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+  val EditorWithoutParametersTsFile = StringFileArtifact(".atomist/tests/project/Simple_definitions.ts",
     TestUtils.requiredFileInPackage(this, "EditorWithoutParametersSteps.ts").content)
 
-  val EditorWithParametersStepsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+  val EditorWithParametersStepsFile = StringFileArtifact(".atomist/tests/project/Simple_definitions.ts",
     TestUtils.requiredFileInPackage(this, "EditorWithParametersSteps.ts").content)
 
-  val EditorWithBadParametersStepsFile = StringFileArtifact(".atomist/test/project/Simple_definitions.ts",
+  val EditorWithBadParametersStepsFile = StringFileArtifact(".atomist/tests/project/Simple_definitions.ts",
     TestUtils.requiredFileInPackage(this, "EditorWithBadParametersSteps.ts").content)
 
   val CorruptionFeature =

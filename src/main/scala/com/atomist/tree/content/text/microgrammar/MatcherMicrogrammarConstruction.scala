@@ -21,7 +21,7 @@ object MatcherMicrogrammarConstruction {
     val componentProperty = properties.getOrElse("components", throw new RuntimeException("an Or should have components"))
     // I have no idea why the array comes in as a map of indices to values but it does
     val components = componentProperty match {
-      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher(_))
+      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher)
       case _ => throw new RuntimeException("expected an array of 'or' components, as a Map[Number, Any]")
     }
     components.reduce(_.alternate(_))
@@ -31,7 +31,7 @@ object MatcherMicrogrammarConstruction {
     val componentProperty = properties.getOrElse("components", throw new RuntimeException("a Concat should have components"))
     // I have no idea why the array comes in as a map of indices to values but it does
     val components = componentProperty match {
-      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher(_))
+      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher)
       case _ => throw new RuntimeException("expected an array of 'concat' components, as a Map[Number, Any]")
     }
     components.reduce(_.concat(_))

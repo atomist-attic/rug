@@ -1,6 +1,7 @@
 package com.atomist.tree.content.text.microgrammar
 
 import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
+import com.atomist.tree.content.text.microgrammar.matchers.Break
 
 object MatcherMicrogrammarConstruction {
 
@@ -20,20 +21,25 @@ object MatcherMicrogrammarConstruction {
   def constructOr(properties: Map[String, Any]): Matcher = {
     val componentProperty = properties.getOrElse("components", throw new RuntimeException("an Or should have components"))
     // I have no idea why the array comes in as a map of indices to values but it does
-    val components = componentProperty match {
-      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher)
-      case _ => throw new RuntimeException("expected an array of 'or' components, as a Map[Number, Any]")
-    }
+    val components = jsArrayToList(componentProperty).map(interpretAnonymousMatcher)
     components.reduce(_.alternate(_))
   }
+
+  private def jsArrayToList(a: Any) =
+    a match {
+      case m: Map[_, _] => m.toList.sortBy(
+        {case (n: Number, _) => n.intValue()
+        case (s: String, _) => s.toInt // why, Nashorn, why??
+        case (wat, _) => throw new RuntimeException(s"This is a ${wat.getClass}: ${wat}")}
+      ).map(_._2)
+      case _ => throw new RuntimeException("expected an array, as a Map[Number, Any]")
+    }
+
 
   def constructConcat(properties: Map[String, Any]): Matcher = {
     val componentProperty = properties.getOrElse("components", throw new RuntimeException("a Concat should have components"))
     // I have no idea why the array comes in as a map of indices to values but it does
-    val components = componentProperty match {
-      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher)
-      case _ => throw new RuntimeException("expected an array of 'concat' components, as a Map[Number, Any]")
-    }
+    val components = jsArrayToList(componentProperty).map(interpretAnonymousMatcher)
     components.reduce(_.concat(_))
   }
 
@@ -56,6 +62,12 @@ object MatcherMicrogrammarConstruction {
     val expressionProperty = properties.getOrElse("what", throw new RuntimeException("an Optional should have a what"))
     val e = interpretAnonymousMatcher(expressionProperty)
     Optional(e)
+  }
+
+  def constructBreak(properties: Map[String, Any]): Matcher = {
+    val expressionProperty = properties.getOrElse("to", throw new RuntimeException("a Break should have a to"))
+    val e = interpretAnonymousMatcher(expressionProperty)
+    Break(e)
   }
 
   def constructStrictLiteral(properties: Map[String, Any]): Matcher = {
@@ -81,6 +93,7 @@ object MatcherMicrogrammarConstruction {
        case "optional" => constructOptional(js)
        case "strict-literal" => constructStrictLiteral(js)
        case "concat" => constructConcat(js)
+       case "break" => constructBreak(js)
        case k => throw new RuntimeException(s"Unrecognized kind of matcher: ${k}")
      }
 

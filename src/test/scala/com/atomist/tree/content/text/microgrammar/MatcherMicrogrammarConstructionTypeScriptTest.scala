@@ -43,7 +43,7 @@ class MatcherMicrogrammarConstructionTypeScriptTest extends FlatSpec with Matche
       |""".stripMargin
   val modifiedFile =
     """public Fruit grow(int qty): Precise {
-      |   // and then some stuff
+      |    // yo yo yo
       |}
       |""".stripMargin
 

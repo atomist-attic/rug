@@ -21,31 +21,15 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   private def whitespaceSep: Parser[String] = """\s*""".r
 
-  private def delimitedLiteral: Parser[Literal] =
-    (StrictLiteralOpen ~ s"[^$StrictLiteralClose]*".r ~ StrictLiteralClose) ^^ {
-      case _ ~ l ~ _ => Literal(l)
-    }
-
   private def singleWordLiteral: Parser[Literal] =
     AnythingButReservedCharacters ^^ (l => Literal(l))
 
-  private def literal: Parser[Literal] = delimitedLiteral | singleWordLiteral
-
   private def rex: Parser[Regex] =
-    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken), escape(BreakOpenToken))) <~ RegexpCloseToken ^^ (r => Regex(r))
-
-  /**
-    * Skip till this clause
-    *
-    * @return
-    */
-  private def break: Parser[Break] =
-    BreakOpenToken ~> matcherExpression <~ BreakCloseToken ^^ (m => Break(m))
+    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken))) <~ RegexpCloseToken ^^ (r => Regex(r))
 
   private def matcherTerm: Parser[Matcher] =
     rex |
-      break |
-      literal |
+      singleWordLiteral |
       inlineReference
 
   private def concatenation: Parser[Matcher] =
@@ -102,8 +86,6 @@ object MatcherDefinitionParser {
   val PredicateOpenToken = "["
   val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
-  val StrictLiteralOpen = "⟦"
-  val StrictLiteralClose = "⟧"
 
   private def escape(token: String) = """\""" + token
 
@@ -117,7 +99,6 @@ object MatcherDefinitionParser {
       """\s""", // whitespace
       escape(PredicateOpenToken),
       escape(PredicateCloseToken),
-      escape(BreakOpenToken), // didn't include BreakCloseToken because they're currently identical
       escape(RegexpOpenToken),  // didn't include RegexpCloseToken because they're currently identical
       VariableDeclarationToken
     ))

@@ -19,6 +19,8 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
 
   override def name: String = named.getOrElse("break")
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"...${breakToMatcher.shortDescription(knownMatchers)}"
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
       var currentInputState = inputState

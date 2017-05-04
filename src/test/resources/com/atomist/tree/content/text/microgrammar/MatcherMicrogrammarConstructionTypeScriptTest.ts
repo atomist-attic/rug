@@ -9,16 +9,14 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
 
     edit(project: Project) {
 
-        let mg = new Microgrammar("testMe", `public $returnType $typeParameters $functionName($params)`, {
+        let mg = new Microgrammar("testMe", `public $returnType $functionName($params)`, {
             returnType: Or(["Banana", "Fruit"]),
-            typeParameters: Optional("<$typeVariable>"),
-            typeVariable: Regex("[A-Z]\w*"),
             functionName: "$javaIdentifier",
             params: Repeat("$param"),
             param: "$javaType $javaIdentifier $comma",
             comma: Optional(","),
-            javaType: Regex("[A-Za-z0-9_]_+"),
-            javaIdentifier: Regex("[a-z]\w*")
+            javaType: Regex("[A-Za-z0-9_]+"),
+            javaIdentifier: Regex("[a-zA-Z0-9]+")
         });
 
         let eng = project.context.pathExpressionEngine.addType(mg);

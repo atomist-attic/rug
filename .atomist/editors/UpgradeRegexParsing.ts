@@ -1,7 +1,8 @@
-import { Project } from '@atomist/rug/model/Core'
+import { Project, File } from '@atomist/rug/model/Core'
 import { PathExpressionEngine, Microgrammar } from '@atomist/rug/tree/PathExpression'
 import { Editor } from '@atomist/rug/operations/Decorators'
 import { Regex, SkipAhead, Literal } from '@atomist/rug/tree/Microgrammars'
+import * as TreeHelper from '@atomist/rug/tree/TreeHelper'
 
 /*
  * This is a single-use editor
@@ -48,10 +49,13 @@ class UpgradeRegexParsing {
         let count = 1;
 
         eng.with<any>(project, editMe, e => {
-            console.log("Found one: " + e)
+            let f: File = e.parent();
+            console.log("Found one in: " + f)
+
             let submatcherName = e.interestingBit.subName.value();
+            console.log("looks like: " + TreeHelper.stringify(e.interestingBit))
             let regexContent = e.interestingBit.embeddedRegex.regexContent.value()
-            e.endOfMG.update(` { ${submatcherName}: Regex(${regexContent}) } )`)
+            e.endOfMG.update(`, { ${submatcherName}: Regex('${regexContent}') } )`)
             e.interestingBit.embeddedRegex.update('');
         });
 

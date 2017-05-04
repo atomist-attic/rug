@@ -256,3 +256,81 @@ editor:
   parameters:
     - "class_under_test": "com.atomist.tree.content.text.microgrammar.MultipleUseOfSubmatcher"
 
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+
+---
+kind: "operation"
+client: "rug-cli 1.0.0-m.1"
+editor:
+  name: "UpgradeRegexParsing"
+  group: "atomist"
+  artifact: "rug"
+  version: "0.3.0"
+  origin:
+    repo: "git@github.com:atomist/rug"
+    branch: "master"
+    sha: "5a191bd*"
+

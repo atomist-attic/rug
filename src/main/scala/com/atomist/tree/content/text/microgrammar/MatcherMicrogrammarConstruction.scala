@@ -12,7 +12,7 @@ object MatcherMicrogrammarConstruction {
     val parsedMatcher = matcherParser.parseMatcher(name, grammar)
 
     val knownMatchers: Map[String, Matcher] = submatchers.map {
-      case (name, matcher) => (name, interpretMatcher(matcher, name))
+      case (name, matcher) => (name, interpretAnonymousMatcher(matcher))
     }
 
     new MatcherMicrogrammar(parsedMatcher, name, knownMatchers)

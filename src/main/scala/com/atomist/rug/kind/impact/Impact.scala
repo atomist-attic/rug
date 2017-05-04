@@ -19,35 +19,42 @@ class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
 
   private lazy val afterProject = new ProjectMutableView(after)
 
-  @ExportFunction(readOnly = true, description = "Parent of the impact")
+  @ExportFunction(readOnly = true, description = "Parent of the impact", exposeAsProperty = true)
   def parent: GraphNode = _parent
 
-  @ExportFunction(readOnly = true, description = "Name of the node")
   override def nodeName: String = "impact"
 
-  @ExportFunction(readOnly = true, description = "Node content")
   override def value: String = ???
 
   override def childrenNamed(key: String): Seq[TreeNode] = key match {
     case "files" =>
+      files
+    case "changed" =>
+      Seq(changed)
+    case _ => Nil
+  }
+
+  @ExportFunction(readOnly = true, description = "File impacts in this commit", exposeAsProperty = true)
+  def files: Seq[FileImpact] =
+    deltas.deltas collect {
+      case fad: FileAdditionDelta =>
+        new FileAddition(this, new FileMutableView(fad.newFile, afterProject))
+      case fud: FileUpdateDelta =>
+        new FileUpdate(this, new FileMutableView(fud.oldFile, beforeProject), new FileMutableView(fud.updatedFile, afterProject))
+      case fdd: FileDeletionDelta =>
+        new FileDeletion(this, new FileMutableView(fdd.oldFile, beforeProject))
+    }
+
+  @ExportFunction(readOnly = true, description = "Virtual project composed of files changed in this commit", exposeAsProperty = true)
+  def changed: ProjectMutableView = {
+    val filesToInclude =
       deltas.deltas collect {
         case fad: FileAdditionDelta =>
-          new FileAddition(this, new FileMutableView(fad.newFile, afterProject))
+          fad.newFile
         case fud: FileUpdateDelta =>
-          new FileUpdate(this, new FileMutableView(fud.oldFile, beforeProject), new FileMutableView(fud.updatedFile, afterProject))
-        case fdd: FileDeletionDelta =>
-          new FileDeletion(this, new FileMutableView(fdd.oldFile, beforeProject))
+          fud.updatedFile
       }
-    case "changed" =>
-      val filesToInclude =
-        deltas.deltas collect {
-          case fad: FileAdditionDelta =>
-            fad.newFile
-          case fud: FileUpdateDelta =>
-            fud.updatedFile
-        }
-      Seq(new ProjectMutableView(new SimpleFileBasedArtifactSource(after.id, filesToInclude)))
-    case _ => Nil
+    new ProjectMutableView(new SimpleFileBasedArtifactSource(after.id, filesToInclude))
   }
 
   override val childNodeNames: Set[String] = Set("files", "changed")
@@ -58,16 +65,14 @@ class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
 
 abstract class FileImpact(_parent: TreeNode) extends ParentAwareTreeNode {
 
-  @ExportFunction(readOnly = true, description = "Path of the file")
+  @ExportFunction(readOnly = true, description = "Path to the file", exposeAsProperty = true)
   def path: String
 
-  @ExportFunction(readOnly = true, description = "Parent")
+  @ExportFunction(readOnly = true, description = "Parent", exposeAsProperty = true)
   override def parent: TreeNode = _parent
 
-  @ExportFunction(readOnly = true, description = "Node content")
   override def value: String = ???
 
-  @ExportFunction(readOnly = true, description = "Name of the node")
   override def nodeName: String = getClass.getSimpleName
 
 }
@@ -80,10 +85,9 @@ class FileAdditionTypeProvider extends TypeProvider(classOf[FileAddition]) {
 class FileAddition(_parent: Impact, newFile: FileMutableView)
   extends FileImpact(_parent) {
 
-  @ExportFunction(readOnly = true, description = "Path of the file")
   override def path: String = newFile.path
 
-  @ExportFunction(readOnly = true, description = "File")
+  @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)
   def file: FileMutableView = newFile
 
   override def childrenNamed(key: String): Seq[TreeNode] = key match {
@@ -108,13 +112,12 @@ class FileUpdateTypeProvider extends TypeProvider(classOf[FileUpdate]) {
 class FileUpdate(_parent: Impact, oldFile: FileMutableView, newFile: FileMutableView)
   extends FileImpact(_parent) {
 
-  @ExportFunction(readOnly = true, description = "Path of the file")
   override def path: String = oldFile.path
 
-  @ExportFunction(readOnly = true, description = "File")
+  @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)
   def old: FileMutableView = oldFile
 
-  @ExportFunction(readOnly = true, description = "File")
+  @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)
   def now: FileMutableView = newFile
 
   override def childrenNamed(key: String): Seq[TreeNode] = key match {
@@ -142,10 +145,9 @@ class FileDeletionTypeProvider extends TypeProvider(classOf[FileDeletion]) {
 class FileDeletion(_parent: Impact, oldFile: FileMutableView)
   extends FileImpact(_parent) {
 
-  @ExportFunction(readOnly = true, description = "Path of the file")
   override def path: String = oldFile.path
 
-  @ExportFunction(readOnly = true, description = "File")
+  @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)
   def file: FileMutableView = oldFile
 
   override def childrenNamed(key: String): Seq[TreeNode] = key match {

@@ -35,15 +35,9 @@ case class Break(breakToMatcher: Matcher, named: Option[String] = None)
         case Left(no) =>
           Left(no.andSo("not anywhere in the rest of the input"))
         case Right(terminatingMatch) =>
-          val significance = if (named.isDefined) TreeNode.Signal else TreeNode.Noise
-          val (eaten, resultingIs) = inputState.take(terminatingMatch.endPosition.offset - inputState.offset)
-          val returnedMatch = PatternMatch(
-              new MutableTerminalTreeNode(name, eaten, inputState.inputPosition, significance = significance),
-            eaten,
-            terminatingMatch.resultingInputState,
-            this.toString)
-          logger.debug(s"terminatingMatch=[$terminatingMatch],eaten=[$eaten], matched=$returnedMatch")
-          Right(returnedMatch)
+          val (eaten, _) = inputState.take(terminatingMatch.endPosition.offset - inputState.offset)
+          logger.debug(s"terminatingMatch=[$terminatingMatch],eaten=[$eaten]")
+          Right(terminatingMatch)
       }
     }
     else

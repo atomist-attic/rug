@@ -8,7 +8,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.SimpleExecutionContext
 import com.atomist.rug.spi.UsageSpecificTypeRegistry
 import com.atomist.source.EmptyArtifactSource
-import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, MicrogrammarTypeProvider}
+import com.atomist.tree.content.text.microgrammar.{MatcherMicrogrammar, MicrogrammarTypeProvider, Regex}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import com.atomist.tree.{MutableTreeNode, TreeNode, UpdatableTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
@@ -54,7 +54,7 @@ class MicrogrammarUsageInPathExpressionTest extends FlatSpec with Matchers {
 
     val mg: MatcherMicrogrammar = new MatcherMicrogrammar(
       mgp.parseMatcher("pom",
-        "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"), "pom")
+        "<modelVersion>$modelVersion</modelVersion>"), "pom", Map("modelVersion" -> Regex("[a-zA-Z0-9_\\.]+")))
 
     val matches = mg.findMatches(proj.findFile("pom.xml").get.content)
     assert(matches.length === 1)

@@ -141,5 +141,5 @@ case class PatternMatch(
   override def endPosition: InputPosition = resultingInputState.inputPosition
 
   def remainder: CharSequence = resultingInputState.input.subSequence(remainderOffset, resultingInputState.input.length())
-
+  
 }

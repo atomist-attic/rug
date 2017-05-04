@@ -8,14 +8,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
-  it should "reject null string" in {
-    val bogusInputs = Seq(null, "", "$", "[")
-    for (bad <- bogusInputs)
-      withClue(s"[$bad] is not a valid microgrammar definition") {
-        an[BadRugException] should be thrownBy mgp.parseMatcher("x", bad)
-      }
-  }
-
   it should "accept valid literal" in {
     val validLiterals = Seq("a", "aa", "a&a", "woiurwieur", "def")
     for {v <- validLiterals

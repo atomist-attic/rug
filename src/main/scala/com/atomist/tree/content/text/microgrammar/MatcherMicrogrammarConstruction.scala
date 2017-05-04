@@ -12,7 +12,7 @@ object MatcherMicrogrammarConstruction {
 
     val knownMatchers: Map[String, Matcher] = submatchers.map {
       case (name, matcher) => (name, interpretMatcher(matcher, name))
-      }
+    }
 
     new MatcherMicrogrammar(parsedMatcher, name, knownMatchers)
   }
@@ -29,7 +29,6 @@ object MatcherMicrogrammarConstruction {
 
   def constructRegex(properties: Map[String, Any]): Matcher = {
     val expressionProperty = properties.getOrElse("regularExpression", throw new RuntimeException("a Regex should have a regularExpression"))
-    // I have no idea why the array comes in as a map of indices to values but it does
     val e = expressionProperty match {
       case m: String => m
       case _ => throw new RuntimeException("expected a string for regularExpression")
@@ -37,12 +36,28 @@ object MatcherMicrogrammarConstruction {
     Regex(e)
   }
 
+  def constructRepeat(properties: Map[String, Any]): Matcher = {
+    val expressionProperty = properties.getOrElse("what", throw new RuntimeException("a Repeat should have a what"))
+    val e = interpretMatcher(expressionProperty)
+    Rep(e)
+  }
+
+  def constructOptional(properties: Map[String, Any]): Matcher = {
+    val expressionProperty = properties.getOrElse("what", throw new RuntimeException("an Optional should have a what"))
+    val e = interpretMatcher(expressionProperty)
+    Optional(e)
+  }
+
   def interpretMatcher(m: Any, name: String = "anonymous") = m match {
     case grammar: String => matcherParser.parseMatcher(name, grammar)
-    case micromatcher: Map[String, Any] @unchecked if micromatcher("kind") == "or" =>
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
       constructOr(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any] @unchecked if micromatcher("kind") == "regex" =>
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "regex" =>
       constructRegex(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "repeat" =>
+      constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
+      constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
     case _ => throw new RuntimeException(s"Unrecognized object provided for submatcher $name")
 
   }

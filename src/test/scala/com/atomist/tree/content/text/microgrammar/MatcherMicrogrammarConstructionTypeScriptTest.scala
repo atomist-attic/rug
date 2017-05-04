@@ -10,10 +10,44 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class MatcherMicrogrammarConstructionTypeScriptTest extends FlatSpec with Matchers {
 
-  val inputFile = "I like broccoli. I like carrots. I like bananas."
-  val modifiedFile = "I like broccoli (which is a vegetable). I like carrots (which is a vegetable). I like bananas."
+  /*
+   The matchers we can construct are:
+   - regex
+   - or (alternate)
+   - optional (0 or 1)
+   - repeat (0 or more)
 
-  def singleFileArtifactSource(name: String, content:String):ArtifactSource =
+   These can be combined with concatenation in a string that references submatchers.
+   */
+
+  /*
+   The microgrammar is in the TypeScript file. Let's make it look like this.
+
+   `public $returnType $typeParameters $functionName($params)`, {
+       returnType: "$javaType",
+       typeParameters: Optional("<$typeVariable>"),
+       typeVariable: Regex("[A-Z]\w*"),
+       functionName: "$javaIdentifier",
+       params: Repeat("$param"),
+       param: "$javaType $javaIdentifier$comma",
+       comma: Optional(","),
+       javaType: Regex("[A-Za-z0-9_]_+"),
+       javaIdentifier: Regex("[a-z]\w*")
+   }
+   */
+
+  val inputFile =
+    """public Banana pick(String color, int spots) {
+      |   // and then some stuff
+      |}
+      |""".stripMargin
+  val modifiedFile =
+    """public Fruit grow(int qty) {
+      |   // and then some stuff
+      |}
+      |""".stripMargin
+
+  def singleFileArtifactSource(name: String, content: String): ArtifactSource =
     new SimpleFileBasedArtifactSource("whatever", Seq(StringFileArtifact(name, content)))
 
   it should "use MatcherMicrogrammarConstruction from TypeScript" in {

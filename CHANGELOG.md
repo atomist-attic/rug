@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+-   Improve archive loading performance by creating new ArtifactSource with only
+    Rug content, instead of filtering all files in original archive
+
 -   Throw exceptions if there is more than one Rug with the same name
     in an archive https://github.com/atomist/rug/issues/561
 

@@ -235,23 +235,23 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
 
   it should "run simple editor and throw an exception for default parameter value not matching pattern" in {
     assertThrows[InvalidRugParameterDefaultValue] {
-      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts",
+      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
         SimpleEditorWithInvalidDefaultParameterValuePattern))
     }
   }
 
   it should "run simple editor compiled from TypeScript and validate the default from allowed values correctly" in {
-    invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorWithValidDefaultParameterValueFromAlternation))
+    invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithValidDefaultParameterValueFromAlternation))
   }
 
   it should "run simple editor and throw an exception for default parameter value not in list" in {
     assertThrows[InvalidRugParameterDefaultValue] {
-      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorWithInvalidDefaultParameterValueAlternation))
+      invokeAndVerifyEditorWithDefaults(StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorWithInvalidDefaultParameterValueAlternation))
     }
   }
 
   it should "create two separate js objects for each operation" in {
-    val tsf = StringFileArtifact(s".atomist/reviewers/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
+    val tsf = StringFileArtifact(s".atomist/editors/SimpleEditor.ts", SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters)
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     val v1 = jsed.cloneVar(jsed.jsc, jsed.jsVar)

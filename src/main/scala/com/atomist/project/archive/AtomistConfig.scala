@@ -31,26 +31,9 @@ trait AtomistConfig {
   def testsDirectory: String
 
   /**
-    * Reviewers directory under Atomist root or root of archive.
-    */
-  def reviewersDirectory: String
-
-  /**
-    * Executors directory under Atomist root or root of archive.
-    */
-  def executorsDirectory: String
-
-  /**
     * Handlers directory under Atomist root or root of archive.
     */
   def handlersDirectory: String
-
-  /**
-    * Extension for Rug files.
-    */
-  def rugExtension: String
-
-  def testExtension: String
 
   def jsExtension: String
 
@@ -60,70 +43,52 @@ trait AtomistConfig {
 
   def templatesRoot = s"$atomistRoot/$templatesDirectory"
 
-  def reviewersRoot = s"$atomistRoot/$reviewersDirectory"
-
-  def executorsRoot = s"$atomistRoot/$executorsDirectory"
-
   def handlersRoot = s"$atomistRoot/$handlersDirectory"
 
   def testsRoot = s"$atomistRoot/$testsDirectory"
 
-  val defaultRugFileBase = "default"
-
-  /**
-    * Default path of Rug program to create when a string is passed in.
-    */
-  def defaultRugFilepath = s"$editorsRoot/$defaultRugFileBase$rugExtension"
-
-  /**
-    * Default path of TypeScript program to create when a string is passed in.
-    */
-  def defaultTypeScriptFilepath = s"$editorsRoot/$defaultRugFileBase.ts"
 
   /**
     * Return the atomist content only
+    *
     * @param rugArchive artifact source
     * @return only the Atomist content from the archive
     */
-  def atomistContent(rugArchive: ArtifactSource): ArtifactSource =
-    rugArchive.filter(d => d.path.startsWith(atomistRoot), f => f.path.startsWith(atomistRoot))
+  def atomistContent(rugArchive: ArtifactSource): ArtifactSource = {
 
-  def isRugSource(f: FileArtifact): Boolean = {
-    f.name.endsWith(rugExtension) && isAtomistSource(f)
+    //find files in dir (if any)
+    def files(dir: String): Seq[FileArtifact] = {
+      rugArchive.findDirectory(dir) match {
+        case Some(found) => found.allFiles
+        case _ => Nil
+      }
+    }
 
+    val atomistFiles = files(editorsRoot) ++ files(generatorsRoot) ++ files(handlersRoot) ++ files(testsRoot)
+    ArtifactSource.fromFiles(atomistFiles: _*)
   }
 
-  def isJsSource(f:FileArtifact): Boolean = {
+
+  def isJsSource(f: FileArtifact): Boolean = {
     f.name.endsWith(jsExtension) && isAtomistSource(f)
   }
 
-  def isJsTest(f:FileArtifact): Boolean = {
+  def isJsTest(f: FileArtifact): Boolean = {
     // TODO fix hard coding
     f.name.endsWith(jsExtension) && f.path.startsWith(s"$atomistRoot/test")
   }
 
   def isAtomistSource(f: FileArtifact): Boolean = {
-      f.path.startsWith(editorsRoot) ||
+    f.path.startsWith(editorsRoot) ||
       f.path.startsWith(generatorsRoot) ||
-      f.path.startsWith(reviewersRoot) ||
-      f.path.startsWith(executorsRoot) ||
       f.path.startsWith(handlersRoot) ||
       f.path.startsWith(handlersDirectory) ||
       f.path.startsWith(editorsDirectory) ||
-      f.path.startsWith(generatorsDirectory) ||
-      f.path.startsWith(reviewersDirectory) ||
-      f.path.startsWith(executorsDirectory)
-  }
-
-  def isRugTest(f: FileArtifact): Boolean = {
-    f.name.endsWith(testExtension) && (
-      f.path.startsWith(testsRoot) ||
-        f.path.startsWith(testsDirectory)
-      )
+      f.path.startsWith(generatorsDirectory)
   }
 
   def isJsHandler(f: FileArtifact): Boolean = {
-    f.name.endsWith(jsExtension) &&  (f.path.startsWith(handlersRoot) ||
+    f.name.endsWith(jsExtension) && (f.path.startsWith(handlersRoot) ||
       f.path.startsWith(handlersDirectory))
   }
 
@@ -142,17 +107,9 @@ object DefaultAtomistConfig extends AtomistConfig {
 
   override val templatesDirectory = "templates"
 
-  override val reviewersDirectory = "reviewers"
-
-  override val executorsDirectory = "executors"
-
   override val handlersDirectory = "handlers"
 
   override val testsDirectory = "tests"
 
-  override val rugExtension = ".rug"
-
   override val jsExtension = ".js"
-
-  override def testExtension: String = ".rt"
 }

@@ -13,7 +13,7 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
             returnType: Or(["Banana", "Fruit"]),
             functionName: "$javaIdentifier",
             params: Repeat("$param"),
-            param: "$javaType $javaIdentifier $comma",
+            param: "$javaType $javaIdentifier $comma ",
             comma: Optional(","),
             javaType: Regex("[A-Za-z0-9_]+"),
             javaIdentifier: Regex("[a-zA-Z0-9]+")

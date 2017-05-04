@@ -125,16 +125,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "parse strict string literals" in {
-    val f = s"""${StrictLiteralOpen}xxxx$StrictLiteralClose"""
-    val parsed = mgp.parseMatcher("f", f)
-    parsed.name should be("f")
-    val matchingInput = InputState("xxxx")
-    val notMatchingInput = InputState(" xxxx")
-    assert(parsed.matchPrefix(matchingInput).isRight)
-    assert(parsed.matchPrefix(notMatchingInput).isLeft)
-  }
-
   it should "accept valid break in string using strict literals" in {
     val f = s"""$StrictLiteralOpen<tr class="emoji_row">$StrictLiteralClose$BreakOpenToken<span data-original="${BreakCloseToken}"""
     mgp.parseMatcher("f", f) match {
@@ -179,12 +169,23 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       """
       |<parent>
       |<groupId>$groupId</groupId>
-      |<artifactId>$artifactId</artifactId>
-      |<version>$version</version>
       |</parent>
       |""".stripMargin
 
-    mgp.parseMatcher("Martha", input)
+    val m = mgp.parseMatcher("Martha", input)
+
+    val matchingInputWithWhitespace = " <parent> <groupId>whatever</groupId> </parent>"
+    val km = Map("groupId" -> Regex("[a-z]+"))
+    val res = m.matchPrefix(InputState(matchingInputWithWhitespace, knownMatchers = km))
+
+    res match {
+      case Right(r) => //yay
+      case Left(dr) =>
+        println(m.shortDescription(km))
+        println(DismatchReport.detailedReport(dr, matchingInputWithWhitespace))
+        fail("That should match")
+    }
+
   }
 
 }

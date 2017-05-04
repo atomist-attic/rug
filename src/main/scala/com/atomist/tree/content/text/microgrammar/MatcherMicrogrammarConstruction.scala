@@ -18,13 +18,23 @@ object MatcherMicrogrammarConstruction {
   }
 
   def constructOr(properties: Map[String, Any]): Matcher = {
-    val componentProperty = properties.getOrElse("components", throw new RuntimeException("an Or should have a component"))
+    val componentProperty = properties.getOrElse("components", throw new RuntimeException("an Or should have components"))
     // I have no idea why the array comes in as a map of indices to values but it does
     val components = componentProperty match {
       case m: Map[_, _] => m.values.map(interpretAnonymousMatcher(_))
       case _ => throw new RuntimeException("expected an array of 'or' components, as a Map[Number, Any]")
     }
     components.reduce(_.alternate(_))
+  }
+
+  def constructConcat(properties: Map[String, Any]): Matcher = {
+    val componentProperty = properties.getOrElse("components", throw new RuntimeException("a Concat should have components"))
+    // I have no idea why the array comes in as a map of indices to values but it does
+    val components = componentProperty match {
+      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher(_))
+      case _ => throw new RuntimeException("expected an array of 'concat' components, as a Map[Number, Any]")
+    }
+    components.reduce(_.concat(_))
   }
 
   def constructRegex(properties: Map[String, Any]): Matcher = {
@@ -69,7 +79,8 @@ object MatcherMicrogrammarConstruction {
        case "regex" => constructRegex(js)
        case "repeat" => constructRepeat(js)
        case "optional" => constructOptional(js)
-       case  "strict-literal" => constructStrictLiteral(js)
+       case "strict-literal" => constructStrictLiteral(js)
+       case "concat" => constructConcat(js)
        case k => throw new RuntimeException(s"Unrecognized kind of matcher: ${k}")
      }
 

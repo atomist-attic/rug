@@ -1,7 +1,7 @@
 import { Project, File } from '@atomist/rug/model/Core'
 import { Editor } from '@atomist/rug/operations/Decorators'
 import { Microgrammar, TextTreeNode } from '@atomist/rug/tree/PathExpression'
-import { Or, Optional, Regex, Repeat, Literal } from '@atomist/rug/tree/Microgrammars'
+import { Or, Optional, Regex, Repeat, Literal, Concat } from '@atomist/rug/tree/Microgrammars'
 
 
 @Editor("MatcherMicrogrammarConstructionTypeScriptTest", "Uses MatcherMicrogrammarConstruction from TypeScript")
@@ -17,7 +17,7 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
             comma: Optional(","),
             javaType: Regex("[A-Za-z0-9_]+"),
             javaIdentifier: Regex("[a-zA-Z0-9]+"),
-            pickyFormattedReturn: Literal(": Precise")
+            pickyFormattedReturn: Concat([Literal(": "), Regex("[A-Za-z0-9_]+")])
         });
 
         let eng = project.context.pathExpressionEngine.addType(mg);

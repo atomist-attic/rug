@@ -59,34 +59,24 @@ object MatcherMicrogrammarConstruction {
 
   def interpretAnonymousMatcher(m: Any): Matcher = m match {
     case grammar: String => matcherParser.parseAnonymous(grammar)
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
-      constructOr(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "regex" =>
-      constructRegex(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "repeat" =>
-      constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
-      constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "strict-literal" =>
-      constructStrictLiteral(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked  => parseMicromatcher(micromatcher.asInstanceOf[Map[String, Any]])
     case _ => throw new RuntimeException(s"Unrecognized object provided for a matcher ${m}")
-
   }
+
+  def parseMicromatcher(js: Map[String, Any]): Matcher =
+     js("kind") match {
+       case "or" => constructOr(js)
+       case "regex" => constructRegex(js)
+       case "repeat" => constructRepeat(js)
+       case "optional" => constructOptional(js)
+       case  "strict-literal" => constructStrictLiteral(js)
+       case k => throw new RuntimeException(s"Unrecognized kind of matcher: ${k}")
+     }
 
   def interpretMatcher(m: Any, name: String): Matcher = m match {
     case grammar: String => matcherParser.parseMatcher(name, grammar)
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
-      constructOr(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "regex" =>
-      constructRegex(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "repeat" =>
-      constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
-      constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
-    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "strict-literal" =>
-      constructStrictLiteral(micromatcher.asInstanceOf[Map[String, Any]])
-    case _ => throw new RuntimeException(s"Unrecognized object provided for submatcher $name")
-
+    case micromatcher: Map[String, Any]@unchecked  => parseMicromatcher(micromatcher.asInstanceOf[Map[String, Any]])
+    case _ => throw new RuntimeException(s"Unrecognized object provided for submatcher called $name")
   }
 
 }

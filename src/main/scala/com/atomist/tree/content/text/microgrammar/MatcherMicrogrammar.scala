@@ -9,7 +9,9 @@ import scala.collection.mutable.ListBuffer
 /**
   * Uses our PatternMatch mechanism for SNOBOL-style composable pattern matching
   */
-class MatcherMicrogrammar(val matcher: Matcher, val name: String = "MySpecialMicrogrammar", submatchers: Map[String, Matcher] = Map()) extends Microgrammar {
+class MatcherMicrogrammar(val matcher: Matcher,
+                          val name: String = "MySpecialMicrogrammar",
+                          submatchers: Map[String, Matcher] = Map()) extends Microgrammar {
 
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[PositionedTreeNode] = {
     val (matches, dismatches) = findMatchesInternal(input, l)

@@ -1,15 +1,16 @@
 import { Project, File } from '@atomist/rug/model/Core'
 import { Editor } from '@atomist/rug/operations/Decorators'
 import { PathExpressionEngine, Microgrammar } from '@atomist/rug/tree/PathExpression'
+import { Regex } from '@atomist/rug/tree/Microgrammars'
 
 @Editor("MultipleUseOfSubmatcherTypeScriptTest", "Uses MultipleUseOfSubmatcher from TypeScript")
 class MultipleUseOfSubmatcherTypeScriptTest {
 
     edit(project: Project) {
         let mg = new Microgrammar('things', 'I like $something, $something, $something, and $something.',
-            { something: '§[a-z]+§'});
+            { something: Regex("[a-z]+") });
 
-        let eng : PathExpressionEngine = project.context.pathExpressionEngine.addType(mg);
+        let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg);
 
         eng.with<any>(project, `/File()[@name="targetFile"]/things()`, things => {
 

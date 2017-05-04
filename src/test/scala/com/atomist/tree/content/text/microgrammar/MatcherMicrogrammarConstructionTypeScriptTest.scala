@@ -47,6 +47,13 @@ class MatcherMicrogrammarConstructionTypeScriptTest extends FlatSpec with Matche
       |}
       |""".stripMargin
 
+  // testing explicit concat and literal: two spaces after colon should not match
+  val unmatchingInput =
+    """public Banana pick(String color, int spots):  Precise {
+      |   // and then some stuff
+      |}
+      |""".stripMargin
+
   def singleFileArtifactSource(name: String, content: String): ArtifactSource =
     new SimpleFileBasedArtifactSource("whatever", Seq(StringFileArtifact(name, content)))
 
@@ -55,7 +62,7 @@ class MatcherMicrogrammarConstructionTypeScriptTest extends FlatSpec with Matche
     val tsEditorResource = "com/atomist/tree/content/text/microgrammar/MatcherMicrogrammarConstructionTypeScriptTest.ts"
     val parameters = SimpleParameterValues.Empty
     val fileThatWillBeModified = "targetFile"
-    val target = singleFileArtifactSource(fileThatWillBeModified, inputFile)
+    val target = singleFileArtifactSource(fileThatWillBeModified, inputFile) + singleFileArtifactSource("unmatchingFile", unmatchingInput)
 
     // construct the Rug archive
     val artifactSourceWithEditor = ClassPathArtifactSource.toArtifactSource(tsEditorResource).withPathAbove(".atomist/editors")

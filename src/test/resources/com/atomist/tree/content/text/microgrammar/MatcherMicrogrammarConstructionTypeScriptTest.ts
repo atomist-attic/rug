@@ -1,4 +1,4 @@
-import { Project } from '@atomist/rug/model/Core'
+import { Project, File } from '@atomist/rug/model/Core'
 import { Editor } from '@atomist/rug/operations/Decorators'
 import { Microgrammar, TextTreeNode } from '@atomist/rug/tree/PathExpression'
 import { Or, Optional, Regex, Repeat, Literal } from '@atomist/rug/tree/Microgrammars'
@@ -25,13 +25,26 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
         let shouldMatch = project.findFile("targetFile").content;
         console.log("should match:" + shouldMatch);
         let result: any = project.context.microgrammarHelper.strictMatch(mg, shouldMatch);
-        console.log("Result:" + result);
-
+        // I don't think instanceof is right here, I think the operator for built-in types is different
+        if (result instanceof String) { console.log("Result:" + result); }
 
         eng.with<any>(project, "/targetFile/testMe()", e => {
 
             console.log("Found " + e.returnType.value())
             e.returnType.update("Fruit");
+
+            e.functionName.update("grow")
+
+            e.params.update("int qty")
+        })
+
+        let shouldExist = eng.scalar<File>(project, "/unmatchingFile")
+        if (shouldExist == null) {
+            throw "the unmatching file needs to be here so I can be sure it didn't match"
+        }
+
+        eng.with<any>(project, "/unmatchingFile/testMe()", e => {
+            throw "That should not have matched"
         })
 
     }

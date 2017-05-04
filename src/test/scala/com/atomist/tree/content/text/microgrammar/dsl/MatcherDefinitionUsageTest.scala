@@ -25,10 +25,10 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
   }
 
   it should "match regex using microgrammar" in {
-    val matcher = mgp.parseMatcher("l", "def $foo:§f.o§")
-    val mg = new MatcherMicrogrammar(matcher)
+    val matcher = mgp.parseMatcher("l", "def $foo")
+    val mg = new MatcherMicrogrammar(matcher, submatchers = Map("foo" -> Regex("f.o")))
     val input = "def foo bar"
-    matcher.matchPrefix(InputState(input)) match {
+    matcher.matchPrefix(InputState(input, knownMatchers = Map("foo" -> Regex("f.o")))) match {
       case Right(pm) =>
 
       case _ => ???
@@ -39,7 +39,8 @@ class MatcherDefinitionUsageTest extends FlatSpec with Matchers {
   it should "match regex in Maven POM" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val mg = new MatcherMicrogrammar(
-      mgp.parseMatcher("m", "<modelVersion>$modelVersion:§[a-zA-Z0-9_\\.]+§</modelVersion>"))
+      mgp.parseMatcher("m", "<modelVersion>$modelVersion</modelVersion>"),
+    submatchers = Map("modelVersion" -> Regex("[a-zA-Z0-9_\\.]+")))
     val pom = proj.findFile("pom.xml").get.content
     val matches = mg.findMatches(pom)
     assert(matches.size === 1)

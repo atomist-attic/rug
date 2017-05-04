@@ -24,13 +24,8 @@ class MatcherDefinitionParser extends CommonTypesParser {
   private def singleWordLiteral: Parser[Literal] =
     AnythingButReservedCharacters ^^ (l => Literal(l))
 
-  private def rex: Parser[Regex] =
-    RegexpOpenToken ~> anythingBut(Set(escape(RegexpCloseToken))) <~ RegexpCloseToken ^^ (r => Regex(r))
-
   private def matcherTerm: Parser[Matcher] =
-    rex |
-      singleWordLiteral |
-      inlineReference
+      singleWordLiteral | inlineReference
 
   private def concatenation: Parser[Matcher] =
     matcherTerm ~ opt(whitespaceSep) ~ matcherExpression ^^ {
@@ -43,9 +38,8 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
   // $name:[.*]
   private def inlineReference: Parser[Matcher] =
-    VariableDeclarationToken ~> variableName ~ opt(":" ~ rex) ^^ {
-      case newName ~ Some(_ ~ regex) => Wrap(regex, newName)
-      case matcherName ~ None => Reference(matcherName)
+    VariableDeclarationToken ~> variableName ^^ {
+      case matcherName => Reference(matcherName)
     }
 
   private def matcherExpression: Parser[Matcher] =
@@ -79,12 +73,6 @@ class MatcherDefinitionParser extends CommonTypesParser {
 
 object MatcherDefinitionParser {
 
-  val BreakOpenToken = "¡"
-  val BreakCloseToken = "¡"
-  val RegexpOpenToken = "§"
-  val RegexpCloseToken = "§"
-  val PredicateOpenToken = "["
-  val PredicateCloseToken = "]"
   val VariableDeclarationToken = "$"
 
   private def escape(token: String) = """\""" + token
@@ -97,9 +85,6 @@ object MatcherDefinitionParser {
   val AnythingButReservedCharacters: ScalaRegex =
     anythingBut(Set(
       """\s""", // whitespace
-      escape(PredicateOpenToken),
-      escape(PredicateCloseToken),
-      escape(RegexpOpenToken),  // didn't include RegexpCloseToken because they're currently identical
       VariableDeclarationToken
     ))
 }

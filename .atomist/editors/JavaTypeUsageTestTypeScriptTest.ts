@@ -1,6 +1,7 @@
 import {Project} from '@atomist/rug/model/Core'
 import { PathExpressionEngine , Microgrammar } from '@atomist/rug/tree/PathExpression'
 import {Editor} from '@atomist/rug/operations/Decorators'
+import {Regex, SkipAhead} from '@atomist/rug/tree/Microgrammars'
 
 /*
  * This is a single-use editor
@@ -15,8 +16,9 @@ class JavaTypeUsageTestTypeScriptTest {
 
     edit(project: Project) {
 
-        let mg = new Microgrammar("tripleQuotedEditor", `§s{0,1}§"""¡"""¡.stripMargin`,
-            {});
+        let mg = new Microgrammar("tripleQuotedEditor", `$possibleS """$endTripleQuotes .stripMargin`,
+            {possibleS: Regex("s{0,1}"),
+            endTripleQuotes: SkipAhead(`"""`)});
 
         let eng = project.context.pathExpressionEngine.addType(mg);
 

@@ -8,8 +8,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
 
   val mgp = new MatcherDefinitionParser
 
-  import MatcherDefinitionParser._
-
   it should "reject null string" in {
     val bogusInputs = Seq(null, "", "$", "[")
     for (bad <- bogusInputs)
@@ -26,34 +24,6 @@ class MatcherDefinitionParserTest extends FlatSpec with Matchers {
       assert(m.name === "a_nice_literal")
       assert(m.matchPrefix(InputState(v)).isRight)
       assert(m.matchPrefix(InputState("something else")).isLeft)
-    }
-  }
-
-  it should "accept valid regex" in {
-    val validLiterals = Seq(
-      s"${RegexpOpenToken}y$RegexpCloseToken",
-      s"$RegexpOpenToken.*$RegexpCloseToken",
-      s"$RegexpOpenToken[.y]$RegexpCloseToken")
-    val matchingInput = InputState("y")
-    for {v <- validLiterals
-         m = mgp.parseMatcher("y", v)}  {
-      assert(m.name === "y")
-      assert(m.matchPrefix(matchingInput).isRight, s"${matchingInput.input} didn't match $v")
-    }
-  }
-
-  it should "accept valid inline regex" in {
-    val validLiteralsWithMatchingAndUnmatchinExamples = Seq(
-      (s"${VariableDeclarationToken}foo:${RegexpOpenToken}a$RegexpCloseToken", "alala", "bababoo"),
-      (s"${VariableDeclarationToken}foo:$RegexpOpenToken.*f$RegexpCloseToken", "oh look i have an f in me", "none here"),
-      (s"${VariableDeclarationToken}foo:$RegexpOpenToken^.$$$RegexpCloseToken", "a", "aa"))
-    for {(v, matches, matchesNot) <- validLiteralsWithMatchingAndUnmatchinExamples
-         m = mgp.parseMatcher("x", v)}
-    {
-      assert(m.name === "x")
-      val matchingIS = InputState(matches)
-      assert(m.matchPrefix(matchingIS).isRight, s"$v did not match $matches")
-      assert(m.matchPrefix(InputState(matchesNot)).isLeft)
     }
   }
 

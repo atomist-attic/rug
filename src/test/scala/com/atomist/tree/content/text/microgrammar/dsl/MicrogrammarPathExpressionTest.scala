@@ -16,7 +16,7 @@ class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
 
   it should "let me write the microgrammar this pretty way" in {
     val stringRegex =
-      s"""${MatcherDefinitionParser.RegexpOpenToken}"[^"]*"${MatcherDefinitionParser.RegexpOpenToken}""" // this is not complete. valid Java string
+      s""""[^"]*"""" // this is not complete. valid Java string
 
     /* Story: I have this case class (really it was Regex but that's confusing here
      * so let's call it MyFunction) with 2 string args, name and regex.
@@ -28,10 +28,11 @@ class MicrogrammarPathExpressionTest extends FlatSpec with Matchers {
       """MyFunction($nameArg, $reArg)"""
 
     val inners = Map(
-      "nameArg" -> stringRegex,
-      "reArg" -> stringRegex)
+      "nameArg" -> Regex(stringRegex),
+      "reArg" -> Regex(stringRegex))
 
-    val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar("myFunctionCall", topLevelGrammar, inners)
+    val mgp = new MatcherDefinitionParser()
+    val mg = new MatcherMicrogrammar(mgp.parseAnonymous(topLevelGrammar), "myFunctionCall", inners)
 
     val pathExpression = "//File()/myFunctionCall()"
 

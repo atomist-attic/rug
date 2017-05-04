@@ -67,6 +67,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
       |import {Match} from '@atomist/rug/tree/PathExpression'
       |import {Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Regex} from '@atomist/rug/tree/Microgrammars'
       |
       |class MgEditor implements ProjectEditor {
       |    name: string = "Constructed"
@@ -74,7 +75,7 @@ class TypeScriptMicrogrammarTest extends FlatSpec with Matchers {
       |
       |    edit(project: Project) {
       |      let mg2 = new Microgrammar('modelVersion', `<modelVersion>$mv1</modelVersion`,
-      |                  { mv1 : '§[a-zA-Z0-9_\\.]+§' } )
+      |                  { mv1 : Regex('[a-zA-Z0-9_\\.]+') } )
       |      let eng: PathExpressionEngine = project.context.pathExpressionEngine.addType(mg2)
       |
       |      eng.with<TextTreeNode>(project, "/*[@name='pom.xml']/modelVersion()/mv1()", n => {

@@ -1,6 +1,7 @@
 import {Project} from '@atomist/rug/model/Core'
 import {Editor} from '@atomist/rug/operations/Decorators'
 import {Microgrammar, PathExpressionEngine, PathExpression, TextTreeNode} from '@atomist/rug/tree/PathExpression'
+import {Regex} from '@atomist/rug/tree/Microgrammars'
 
 /*
  * Used in com/atomist/tree/content/text/OverwritableTextTreeNodeChild.scala
@@ -12,10 +13,6 @@ class OverwritableTextTreeNodeTypeScriptTest {
 
         let pom = project.findFile('pom.xml');
 
-        let regex = function(rex: string) {
-            return `§${rex}§`
-        }
-
         let mg = new Microgrammar('parent',
             `
 <parent>
@@ -25,10 +22,10 @@ class OverwritableTextTreeNodeTypeScriptTest {
 $whateverElse
 </parent>
 `,
-            { groupId: regex('[a-z.]+'),
-              artifactId: regex('[a-z-]+'),
-              version: regex('[0-9]+\.[0-9]+\.[0-9]+[.A-Za-z-_]*'),
-              whateverElse: regex('.*')
+            { groupId: Regex('[a-z.]+'),
+              artifactId: Regex('[a-z-]+'),
+              version: Regex('[0-9]+\.[0-9]+\.[0-9]+[.A-Za-z-_]*'),
+              whateverElse: Regex('.*')
             }
           );
 

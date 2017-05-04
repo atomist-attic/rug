@@ -2,6 +2,7 @@ import {Project} from '@atomist/rug/model/Core'
 import {Editor} from '@atomist/rug/operations/Decorators'
 import {Microgrammar} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
+import {Regex} from '@atomist/rug/tree/Microgrammars'
 
 
 /* I used this to refactor a test.
@@ -20,10 +21,8 @@ class MicrogrammarTypeScriptSampleEditor {
 
     edit(project: Project) {
 
-        function regex(s: String) { return `§${s}§` }
-
-        let lowercaseIdentifier = regex('[a-z][A-Za-z_]*');
-        let javaString = regex('"[^"]*"');
+        let lowercaseIdentifier = Regex('[a-z][A-Za-z_]*');
+        let javaString = Regex('"[^"]*"');
 
         let mg = new Microgrammar('strictMatchCall',
             'val Right($outputVar) = $mg.strictMatch($inputString)',

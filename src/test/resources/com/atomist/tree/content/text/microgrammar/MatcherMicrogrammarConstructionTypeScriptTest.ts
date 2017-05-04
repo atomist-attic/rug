@@ -23,7 +23,14 @@ class MatcherMicrogrammarConstructionTypeScriptTest {
 
         let eng = project.context.pathExpressionEngine.addType(mg);
 
+        let shouldMatch = project.findFile("targetFile").content;
+        console.log("should match:" + shouldMatch);
+        let result: any = project.context.microgrammarHelper.strictMatch(mg, shouldMatch);
+        console.log("Result:" + result);
+
+
         eng.with<any>(project, "/targetFile/testMe()", e => {
+
             console.log("Found " + e.returnType.value())
             e.returnType.update("Fruit");
         })

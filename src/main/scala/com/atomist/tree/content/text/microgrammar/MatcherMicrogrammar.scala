@@ -21,7 +21,7 @@ class MatcherMicrogrammar(val matcher: Matcher,
   }
 
   def strictMatch(input: CharSequence, l: Option[MatchListener] = None): Either[DismatchReport, PositionedTreeNode] = {
-    matcher.matchPrefix(InputState(input)).right.map(outputNode(input))
+    matcher.matchPrefix(InputState(input, knownMatchers = submatchers)).right.map(outputNode(input))
   }
 
   /* create the match node, named after the microgrammar */

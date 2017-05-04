@@ -65,13 +65,8 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar", "submatchers") =>
-      // It's a microgrammar
-      val name = stringProperty(som, "name")
-      val grammar = stringProperty(som, "grammar")
-      val submatchers = toJavaMap(som.getMember("submatchers"))
-      // println(s"Parsing $name=$grammar with ${matcherRegistry}")
-      val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar, submatchers)
+    case som: ScriptObjectMirror if jsMicrogrammarHelper.looksLikeAMicrogrammar(som) =>
+      val mg = jsMicrogrammarHelper.parseMicrogrammar(som)
       new MicrogrammarTypeProvider(mg)
     case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
       // It's a type provider coded in JavaScript

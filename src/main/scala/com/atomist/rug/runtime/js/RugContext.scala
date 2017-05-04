@@ -2,7 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.kind.DefaultTypeRegistry
-import com.atomist.rug.runtime.js.interop.jsPathExpressionEngine
+import com.atomist.rug.runtime.js.interop.{jsMicrogrammarHelper, jsPathExpressionEngine}
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 
@@ -15,6 +15,8 @@ import com.atomist.tree.{IdentityTreeMaterializer, TreeMaterializer}
 trait RugContext extends ExecutionContext {
 
   def pathExpressionEngine: jsPathExpressionEngine
+
+  def microgrammarHelper: jsMicrogrammarHelper
 
   /**
     * Used to hydrate nodes before running a path expression
@@ -51,6 +53,8 @@ class BaseRugContext extends RugContext {
   override def teamId: String = "LOCAL_CONTEXT"
 
   override def contextRoot(): GraphNode = null
+
+  override def microgrammarHelper: jsMicrogrammarHelper = new jsMicrogrammarHelper(this)
 }
 
 object LocalRugContext extends BaseRugContext {

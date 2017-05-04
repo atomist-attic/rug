@@ -556,6 +556,8 @@ class ProjectContext(ctx: RugContext) extends RugContext {
 
   override def pathExpressionEngine: jsPathExpressionEngine = ctx.pathExpressionEngine
 
+  override def microgrammarHelper: jsMicrogrammarHelper = new jsMicrogrammarHelper(ctx);
+
   /**
     * Id of the team we're working on behalf of
     */

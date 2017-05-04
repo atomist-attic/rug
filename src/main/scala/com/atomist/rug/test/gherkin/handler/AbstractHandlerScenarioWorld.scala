@@ -5,7 +5,7 @@ import com.atomist.project.archive.Rugs
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.CommandHandler
-import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsPathExpressionEngine, jsScalaHidingProxy}
+import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsMicrogrammarHelper, jsPathExpressionEngine, jsScalaHidingProxy}
 import com.atomist.rug.runtime.js.{RugContext, SimpleContainerGraphNode}
 import com.atomist.rug.spi.Handlers.Instruction.{Command, Edit, Generate}
 import com.atomist.rug.spi.Handlers.Plan
@@ -147,6 +147,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
 
     override def contextRoot(): GraphNode = rootContext
 
+    override def microgrammarHelper: jsMicrogrammarHelper = ???
   }
 
 }

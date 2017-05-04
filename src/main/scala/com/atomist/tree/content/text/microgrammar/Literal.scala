@@ -72,7 +72,7 @@ case class Reference(name: String) extends Matcher {
           matched.copy(node = wrappedNode)
         }
       case _ =>
-        throw new IllegalStateException(s"Could not find matcher '$name'.")
+        throw new IllegalStateException(s"Could not find matcher '$name'. I know about ${inputState.knownMatchers.keySet.mkString(",")}")
     }
 
   }

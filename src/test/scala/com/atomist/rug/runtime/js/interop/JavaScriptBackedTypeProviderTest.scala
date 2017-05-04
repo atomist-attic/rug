@@ -8,12 +8,12 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
 
-  it should "invoke tree finder with one level only" in {
+  "JavaScriptTypeProvider" should "invoke tree finder with one level only" in {
     val jsed = TestUtils.editorInSideFile(this, "SimpleBanana.ts")
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleParameterValues.Empty) match {
       case _: NoModificationNeeded =>
-      case _ => ???
+      case x => fail(s"Unexpectd: $x")
     }
   }
 
@@ -21,8 +21,8 @@ class JavaScriptBackedTypeProviderTest extends FlatSpec with Matchers {
     val jsed = TestUtils.editorInSideFile(this, "TwoLevel.ts")
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     jsed.modify(target, SimpleParameterValues.Empty) match {
-      case nmn: NoModificationNeeded =>
-      case _ => ???
+      case _: NoModificationNeeded =>
+      case x => fail(s"Unexpectd: $x")
     }
   }
 

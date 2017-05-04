@@ -13,12 +13,8 @@ import com.atomist.util.{Visitable, Visitor}
   */
 trait GraphNode extends Visitable {
 
-  @ExportFunction(readOnly = true, description = "Name of the node")
+  @ExportFunction(readOnly = true, description = "Name of the node", exposeAsProperty = true)
   def nodeName: String
-
-  @deprecated("Please don't use this", "0.10.0")
-  @ExportFunction(readOnly = true, description = "Tags attached to the node")
-  def nodeType: Set[String] = nodeTags
 
   /**
     * Tags for the node, such as "File" or "JavaType". There may be multiple
@@ -27,7 +23,7 @@ trait GraphNode extends Visitable {
     *
     * @return tags for the node.
     */
-  @ExportFunction(readOnly = true, description = "Tags attached to the node")
+  @ExportFunction(readOnly = true, description = "Tags attached to the node", exposeAsProperty = true)
   def nodeTags: Set[String] = Set(Typed.typeToTypeName(getClass))
 
   def hasTag(tag: String): Boolean = nodeTags.contains(tag)

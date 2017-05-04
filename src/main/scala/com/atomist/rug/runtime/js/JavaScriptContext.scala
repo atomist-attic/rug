@@ -6,6 +6,7 @@ import javax.script._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.RugJavaScriptException
 import com.atomist.rug.runtime.js.JavaScriptContext.EngineInitializer
+import com.atomist.rug.runtime.js.migrations.{BringUpToDate, Migration}
 import com.atomist.source.{ArtifactSource, ArtifactSourceUtils, FileArtifact}
 import com.coveo.nashorn_modules.{AbstractFolder, Folder, Require}
 import com.typesafe.scalalogging.LazyLogging
@@ -48,13 +49,15 @@ object JavaScriptContext {
   * One of these per rug please, or else they may stomp on one-another
   *
   * @param initializer function to initialize the engine:
-  *                          for example, binding objects or evaluating standard scripts
+  *                    for example, binding objects or evaluating standard scripts
   */
-class JavaScriptContext(val rugAs: ArtifactSource,
+class JavaScriptContext(private val _rugAs: ArtifactSource,
                         val atomistConfig: AtomistConfig = DefaultAtomistConfig,
                         bindings: Bindings = new SimpleBindings(),
                         initializer: EngineInitializer = JavaScriptContext.redirectConsoleToSysOut)
   extends LazyLogging {
+
+  private val migration: Migration = BringUpToDate.Migration
 
   val engine: NashornScriptEngine =
     new NashornScriptEngineFactory()
@@ -63,7 +66,10 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
 
-   initializer(engine)
+  initializer(engine)
+
+  // Run migrations
+  val rugAs = migration.migrate(_rugAs, s => println(s))
 
   try {
     Require.enable(engine, new ArtifactSourceBasedFolder(rugAs))
@@ -78,13 +84,16 @@ class JavaScriptContext(val rugAs: ArtifactSource,
   // Require all the Atomist stuff
   atomistContent
     .filter(_ => true, atomistConfig.isJsSource)
-    .allFiles.foreach(evaluate)
+    .allFiles
+    .foreach(evaluate)
+
 
   /**
     * Evaluate the given file, with proper exports handling.
     * NB: Must be a file from atomistContent.
     */
   def evaluate(f: FileArtifact): Unit = {
+    require(!f.content.contains("nodeName()"))
     val varName = f.path.dropRight(3).replaceAll("/", "_").replaceAll("\\.", "\\$")
     try {
       // Because otherwise the loader doesn't know about the paths and can't resolve relative modules
@@ -163,9 +172,11 @@ class JavaScriptContext(val rugAs: ArtifactSource,
 
   override def toString: String =
     s"${getClass.getSimpleName} backed by ArtifactSource with ${rugAs.totalFileCount} artifacts\n" +
-    s"User JS files=${ArtifactSourceUtils.prettyListFiles(atomistContent.filter(_ => true, f =>
-      atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))}\n" +
-    s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
+      s"User JS files=${
+        ArtifactSourceUtils.prettyListFiles(atomistContent.filter(_ => true, f =>
+          atomistConfig.isJsSource(f) || atomistConfig.isJsTest(f)))
+      }\n" +
+      s" - test features [${atomistContent.allFiles.filter(f => f.name.endsWith(".feature"))}]"
 
 }
 

@@ -429,7 +429,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
     override def childNodeTypes: Set[String] = Set("RecursiveNode")
 
-    @ExportFunction(readOnly = true, description = "Name of the node")
+    @ExportFunction(readOnly = true, description = "Name of the node", exposeAsProperty = true)
     override def nodeName: String = "recurse"
   }
 

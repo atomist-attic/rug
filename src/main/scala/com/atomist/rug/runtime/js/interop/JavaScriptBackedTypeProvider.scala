@@ -35,7 +35,7 @@ class JavaScriptBackedTypeProvider(
   */
 class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
 
-  override def nodeName: String = stringFunction(som, "nodeName")
+  override def nodeName: String = stringProperty(som, "nodeName")
 
   lazy val kids: Seq[TreeNode] =
     toScalaSeq(som.callMember("children")) map {
@@ -43,7 +43,7 @@ class ScriptObjectBackedTreeNode(som: ScriptObjectMirror) extends TreeNode {
     }
 
   override def nodeTags: Set[String] =
-    toScalaSeq(som.callMember("nodeTags")).map(s => Objects.toString(s)).toSet
+    toScalaSeq(som.get("nodeTags")).map(s => Objects.toString(s)).toSet
 
   override def value: String = stringFunction(som, "value")
 

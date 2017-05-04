@@ -78,18 +78,11 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
   private def graphNodeImpl(name: String): String = {
     // Create fields to make JSON stringification more revealing
     helper.indented(
-      s"""|private _nodeName = "$name";
-          |private _nodeTags = [ "$name", "-dynamic" ];
+      s"""|nodeName: string = "$name";
           |
-          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-          |nodeName(): string {
-          |${indent}return this._nodeName;
-          |}
+          |nodeTags: string[] = [ "$name", "-dynamic" ];
           |
-          |${helper.toJsDoc(GraphNodeMethodImplementationDoc)}
-          |nodeTags(): string[] {
-          |${indent}return this._nodeTags;
-          |}""".stripMargin, 1)
+          |""".stripMargin, 1)
   }
 
   private def toFieldName(m: MethodInfo): String = "_" + m.name

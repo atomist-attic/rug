@@ -32,9 +32,9 @@ class Fruiterer implements TreeNode {
 
   parent() { return this.file }
 
-  nodeName(): string { return "fruiterer" }
+  nodeName: string = "fruiterer";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   children() { return [ new MutatingBanana(this.file), new Pear() ] }
 
@@ -46,9 +46,9 @@ class MutatingBanana implements TreeNode {
 
   parent() { return this.file }
 
-  nodeName(): string { return "mutatingBanana" }
+  nodeName: string = "mutatingBanana";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   children() { return [] }
 
@@ -61,9 +61,9 @@ class Pear implements TreeNode {
 
   parent() { return null }
 
-  nodeName(): string { return "pear" }
+  nodeName: string = "pear";
 
-  nodeTags(): string[] { return [ this.nodeName()] }
+  nodeTags: string[] = [ this.nodeName];
 
   children() { return [] }
 

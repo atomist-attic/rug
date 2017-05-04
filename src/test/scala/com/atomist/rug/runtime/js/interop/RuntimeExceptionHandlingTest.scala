@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {
 
-  it should "report correct position for null pointer exception in single file" in {
+  "runtime exception handling" should "report correct position for null pointer exception in single file" in {
     val jsed = TestUtils.editorInSideFile(this, "DeliberateNpe.ts")
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     try {

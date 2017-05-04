@@ -84,6 +84,8 @@ class MatcherDefinitionParser extends CommonTypesParser {
       Wrap(m, name)
   }
 
+  def parseAnonymous(matcherDef: String): Matcher = parseTo(StringFileArtifact("<input>", matcherDef), phrase(matcherExpression))
+
 }
 
 object MatcherDefinitionParser {

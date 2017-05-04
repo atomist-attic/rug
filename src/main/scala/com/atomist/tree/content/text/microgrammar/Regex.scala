@@ -16,6 +16,8 @@ case class Regex(regex: String, givenName: Option[String] = None, config: Matche
 
   val name: String = givenName.getOrElse(".regex")
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"/${regex}/"
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     if (!inputState.exhausted) {
       rex.anchored.findPrefixMatchOf(inputState.remainder) match {

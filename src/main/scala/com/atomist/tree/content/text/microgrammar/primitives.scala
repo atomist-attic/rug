@@ -13,6 +13,8 @@ import com.atomist.tree.utils.TreeNodeUtils
   */
 case class Alternate(a: Matcher, b: Matcher, name: String = "alternate") extends Matcher {
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"${a.shortDescription(knownMatchers)}|${b.shortDescription(knownMatchers)}"
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     a.matchPrefix(inputState) match {
       case Left(noFromA) =>
@@ -31,6 +33,8 @@ case class Alternate(a: Matcher, b: Matcher, name: String = "alternate") extends
   */
 case class Discard(m: Matcher, name: String = "discard") extends Matcher {
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = m.shortDescription(knownMatchers)
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState).right.map(matched => matched.copy(node = new MutableTerminalTreeNode(name, matched.node.value, matched.node.startPosition, significance = TreeNode.Noise)))
 
@@ -44,6 +48,8 @@ case class Discard(m: Matcher, name: String = "discard") extends Matcher {
   */
 case class Wrap(m: Matcher, name: String)
   extends Matcher {
+
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"$name=${m.shortDescription(knownMatchers)}"
 
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult =
     m.matchPrefix(inputState).right.map {
@@ -65,6 +71,8 @@ case class Optional(m: Matcher, name: String = Optional.DefaultOptionalName) ext
           Right(there)
       }
   }
+
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"Opt(${m.shortDescription(knownMatchers)})"
 }
 object Optional {
   val DefaultOptionalName = ".optional"

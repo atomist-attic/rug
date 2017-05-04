@@ -15,6 +15,8 @@ trait Matcher {
 
   def name: String
 
+  def shortDescription(knownMatchers: Map[String, Matcher]): String = this.toString
+
   /**
     * Match this string at the present offset. Return None
     * in event of failure

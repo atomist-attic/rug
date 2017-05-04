@@ -13,6 +13,8 @@ class MatcherMicrogrammar(val matcher: Matcher,
                           val name: String = "MySpecialMicrogrammar",
                           submatchers: Map[String, Matcher] = Map()) extends Microgrammar {
 
+  def shortDescription = matcher.shortDescription(submatchers)
+
   override def findMatches(input: CharSequence, l: Option[MatchListener]): Seq[PositionedTreeNode] = {
     val (matches, dismatches) = findMatchesInternal(input, l)
     val processedNodes = matches.map(outputNode(input))

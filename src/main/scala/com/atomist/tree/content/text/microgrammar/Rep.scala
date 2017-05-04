@@ -17,6 +17,8 @@ case class Rep(m: Matcher, givenName: Option[String] = None, separator: Option[M
 
   def name: String = givenName.getOrElse(".rep")
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"Rep(${m.shortDescription(knownMatchers)})"
+
   private val secondaryMatch: Matcher = separator match {
     case None => m
     case Some(sep) => Discard(sep) ~? m

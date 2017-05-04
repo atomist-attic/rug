@@ -21,7 +21,7 @@ object MatcherMicrogrammarConstruction {
     val componentProperty = properties.getOrElse("components", throw new RuntimeException("an Or should have a component"))
     // I have no idea why the array comes in as a map of indices to values but it does
     val components = componentProperty match {
-      case m: Map[_, _] => m.values.map(interpretMatcher(_))
+      case m: Map[_, _] => m.values.map(interpretAnonymousMatcher(_))
       case _ => throw new RuntimeException("expected an array of 'or' components, as a Map[Number, Any]")
     }
     components.reduce(_.alternate(_))
@@ -38,17 +38,31 @@ object MatcherMicrogrammarConstruction {
 
   def constructRepeat(properties: Map[String, Any]): Matcher = {
     val expressionProperty = properties.getOrElse("what", throw new RuntimeException("a Repeat should have a what"))
-    val e = interpretMatcher(expressionProperty)
+    val e = interpretAnonymousMatcher(expressionProperty)
     Rep(e)
   }
 
   def constructOptional(properties: Map[String, Any]): Matcher = {
     val expressionProperty = properties.getOrElse("what", throw new RuntimeException("an Optional should have a what"))
-    val e = interpretMatcher(expressionProperty)
+    val e = interpretAnonymousMatcher(expressionProperty)
     Optional(e)
   }
 
-  def interpretMatcher(m: Any, name: String = "anonymous") = m match {
+  def interpretAnonymousMatcher(m: Any): Matcher = m match {
+    case grammar: String => matcherParser.parseAnonymous(grammar)
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
+      constructOr(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "regex" =>
+      constructRegex(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "repeat" =>
+      constructRepeat(micromatcher.asInstanceOf[Map[String, Any]])
+    case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "optional" =>
+      constructOptional(micromatcher.asInstanceOf[Map[String, Any]])
+    case _ => throw new RuntimeException(s"Unrecognized object provided for a matcher ${m}")
+
+  }
+
+  def interpretMatcher(m: Any, name: String): Matcher = m match {
     case grammar: String => matcherParser.parseMatcher(name, grammar)
     case micromatcher: Map[String, Any]@unchecked if micromatcher("kind") == "or" =>
       constructOr(micromatcher.asInstanceOf[Map[String, Any]])

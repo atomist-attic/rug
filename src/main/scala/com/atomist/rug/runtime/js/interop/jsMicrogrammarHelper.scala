@@ -18,18 +18,17 @@ class jsMicrogrammarHelper(rugContext: RugContext) {
 
   import jsMicrogrammarHelper._
 
+  def describe(microgrammar: Object): String =
+    parseOrThrow(microgrammar).shortDescription
+
+
   /**
     * Evaluate the microgrammar; it must match starting at the first character.
     * @return a GraphNode that is a match, or a DismatchReport
     */
   def strictMatch(microgrammar: Object, string: String): AnyRef = {
-    val mg = microgrammar match {
-      case som: ScriptObjectMirror => parseMicrogrammar(som)
-      case x =>
-        throw new RugRuntimeException(null, s"Unrecognized dynamic type $x")
-
-    }
-    println(s"I am looking for ${mg}")
+    val mg = parseOrThrow(microgrammar)
+    println(s"I am looking for ${mg.shortDescription}")
     val result = mg.strictMatch(string)
     result match {
       case Left(r) => DismatchReport.detailedReport(r, string)
@@ -37,6 +36,12 @@ class jsMicrogrammarHelper(rugContext: RugContext) {
     }
   }
 
+  private def parseOrThrow(microgrammar: Object): MatcherMicrogrammar =
+    microgrammar match {
+    case som: ScriptObjectMirror => parseMicrogrammar(som)
+    case x =>
+      throw new RugRuntimeException(null, s"Not a microgrammar $x")
+  }
 }
 
 object jsMicrogrammarHelper {
@@ -44,7 +49,7 @@ object jsMicrogrammarHelper {
     hasDefinedProperties(som, "name", "grammar", "submatchers")
   }
 
-  def parseMicrogrammar(som: ScriptObjectMirror) = {
+  def parseMicrogrammar(som: ScriptObjectMirror): MatcherMicrogrammar = {
     val name = stringProperty(som, "name")
     val grammar = stringProperty(som, "grammar")
     val submatchers = toJavaMap(som.getMember("submatchers"))

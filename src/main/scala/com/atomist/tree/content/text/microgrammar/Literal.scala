@@ -15,6 +15,8 @@ case class Literal(literal: String, named: Option[String] = None) extends Matche
 
   override def name: String = named.getOrElse(LiteralDefaultName)
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"‛$literal’"
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val (matched, is) = inputState.take(literal.length)
     if (matched == literal) {
@@ -62,18 +64,21 @@ case class RestOfLine(name: String = "restOfLine") extends Matcher {
   */
 case class Reference(name: String) extends Matcher {
 
-  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
-    val matcherOpt = inputState.knownMatchers.get(name)
-    matcherOpt match {
-      case Some(matcher) =>
-        matcher.matchPrefix(inputState).right.map{ matched =>
-          val wrappedNode =
-            SimpleMutableContainerTreeNode.wrap(name, matched.node)
-          matched.copy(node = wrappedNode)
-        }
-      case _ =>
-        throw new IllegalStateException(s"Could not find matcher '$name'. I know about ${inputState.knownMatchers.keySet.mkString(",")}")
-    }
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"${name}:${findSelf(knownMatchers).shortDescription(knownMatchers)}"
 
+  override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
+    findSelf(inputState.knownMatchers).matchPrefix(inputState).right.map { matched =>
+      val wrappedNode =
+        SimpleMutableContainerTreeNode.wrap(name, matched.node)
+      matched.copy(node = wrappedNode)
+    }
+  }
+
+  private def findSelf(knownMatchers:  Map[String, Matcher]): Matcher = {
+    knownMatchers.get(this.name) match {
+      case Some(matcher) => matcher
+      case _ =>
+        throw new IllegalStateException(s"Could not find matcher '$name'. I know about ${knownMatchers.keySet.mkString(",")}")
+    }
   }
 }

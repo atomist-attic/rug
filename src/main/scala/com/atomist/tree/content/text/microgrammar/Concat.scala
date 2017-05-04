@@ -25,6 +25,8 @@ case class Concat(left: Matcher, right: Matcher, name: String = Concat.DefaultCo
 
   import Concat.logger
 
+  override def shortDescription(knownMatchers: Map[String, Matcher]): String = s"${left.shortDescription(knownMatchers)}${right.shortDescription(knownMatchers)}"
+
   override def matchPrefixInternal(inputState: InputState): MatchPrefixResult = {
     val l = left.matchPrefix(inputState)
     l match {

@@ -10,11 +10,12 @@ import com.atomist.tree.content.text.OutOfDateNodeException
 /**
   * Operation on an exported Rug type. Typically annotated with an [[ExportFunction]] annotation.
   *
-  * @param name        name of the type
-  * @param description description of the type. May be used in generated code
-  * @param example     optional example of usage of the operation
-  * @param definedOn   type we are defined on. May be an abstract superclass.
-  * @param exposeAsProperty    do we expose this as a property?
+  * @param name             name of the type
+  * @param description      description of the type. May be used in generated code
+  * @param example          optional example of usage of the operation
+  * @param definedOn        type we are defined on. May be an abstract superclass.
+  * @param exposeAsProperty do we expose this as a property?
+  * @param deprecated       is this operation deprecated?
   * @see ExportFunction
   * @see ExportProperty
   */
@@ -27,7 +28,8 @@ case class TypeOperation(
                           definedOn: Class[_],
                           example: Option[String],
                           exposeAsProperty: Boolean,
-                          exposeResultDirectlyToNashorn: Boolean = false) {
+                          exposeResultDirectlyToNashorn: Boolean = false,
+                          deprecated: Boolean = false) {
 
   import TypeOperation._
 

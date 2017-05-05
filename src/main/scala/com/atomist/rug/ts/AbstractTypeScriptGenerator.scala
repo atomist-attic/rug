@@ -81,12 +81,15 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
 
     def returnsArray: Boolean = returnType.contains("[")
 
+    def deprecated: Boolean
+
     /** Return the underlying type if we return an array */
     def underlyingType: String = returnType.stripSuffix("[]")
 
     def comment(indent: String): String = {
       val builder = new StringBuilder(s"$indent/**\n")
-      builder ++= s"$indent  * ${description.getOrElse("")}\n"
+      val deprecationMessage = if (deprecated) "DEPRECATED - " else ""
+      builder ++= s"$indent  * ${deprecationMessage}${description.getOrElse("")}\n"
       builder ++= s"$indent  * \n"
 
       if (exposeAsProperty) {

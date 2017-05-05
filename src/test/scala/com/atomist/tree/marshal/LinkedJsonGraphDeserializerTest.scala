@@ -62,7 +62,18 @@ class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
         assert(ur.nodeTags.contains("Unresolvable"))
       case x => fail(s"Expected Unresolvable node, not $x")
     }
+  }
 
+  it should "handle unresolvable impact events" in {
+    val json = TestUtils.contentOf(this, "withLinksAndUnresolvableImpact.json")
+    val node = LinkedJsonGraphDeserializer.fromJson(json)
+    val repo = node.relatedNodesNamed("ON").head
+    assert(repo.relatedNodesNamed("IMPACT").size === 1)
+    repo.relatedNodesNamed("IMPACT").head match {
+      case ur if Unresolvable(ur).isDefined =>
+        assert(ur.nodeTags.contains("Unresolvable"))
+      case x => fail(s"Expected Unresolvable node, not $x")
+    }
   }
 
   it should "deserialize graph with cycles and ensure toString is safe" in {

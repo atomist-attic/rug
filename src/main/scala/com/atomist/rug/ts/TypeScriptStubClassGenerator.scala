@@ -99,7 +99,8 @@ class TypeScriptStubClassGenerator(typeRegistry: TypeRegistry,
                                      params: Seq[MethodParam],
                                      returnType: String,
                                      description: Option[String],
-                                     exposeAsProperty: Boolean)
+                                     exposeAsProperty: Boolean,
+                                     deprecated: Boolean = false)
     extends MethodInfo {
 
     override def toString: String = {

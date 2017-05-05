@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.2...HEAD
 
+### Added
+
+-   Added ability to indicate in TypeScript generated interfaces when a
+    JVM method being exposed is marked as `@Deprecated`
+
 ### Changed
 
 -   **BREAKING** Removed Spring and Spring project types. These don't belong in

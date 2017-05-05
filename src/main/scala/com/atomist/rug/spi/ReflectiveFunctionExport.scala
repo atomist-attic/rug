@@ -1,6 +1,6 @@
 package com.atomist.rug.spi
 
-import java.lang.reflect.{AnnotatedElement, Method}
+import java.lang.reflect.Method
 
 import org.springframework.util.ReflectionUtils
 
@@ -33,7 +33,8 @@ object ReflectiveFunctionExport {
             case ex => Some(ex)
           },
           exposeAsProperty = a.exposeAsProperty(),
-          exposeResultDirectlyToNashorn = a.exposeResultDirectlyToNashorn())
+          exposeResultDirectlyToNashorn = a.exposeResultDirectlyToNashorn(),
+          deprecated = m.isAnnotationPresent(classOf[Deprecated]))
       })
 
   private def extractExportedParametersAndDocumentation(m: Method): Array[TypeParameter] = {

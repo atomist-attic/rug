@@ -29,6 +29,7 @@ abstract class FileArtifactBackedMutableView(originalBackingObject: FileArtifact
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "Is this file well-formed?")
+  @Deprecated
   final def isWellFormed: Boolean = wellFormed
 
   /**

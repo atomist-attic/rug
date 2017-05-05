@@ -34,11 +34,13 @@ class FileMutableView(
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "Is this a Java file?")
+  @Deprecated
   def isJava: Boolean = currentBackingObject.name.endsWith(".java")
 
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "Is this a Scala file?")
+  @Deprecated
   def isScala: Boolean = currentBackingObject.name.endsWith(".scala")
 
   @ExportFunction(readOnly = false, description = "Set entire file content to new string")
@@ -49,6 +51,7 @@ class FileMutableView(
 
   @ExportFunction(readOnly = true,
     description = "Does the file name (not path) contain the given string?")
+  @Deprecated
   def nameContains(@ExportFunctionParameterDescription(name = "what",
     description = "The string to use when looking for it in the file name or path")
                    what: String): Boolean =

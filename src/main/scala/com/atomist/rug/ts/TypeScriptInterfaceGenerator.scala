@@ -60,7 +60,8 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
                                          params: Seq[MethodParam],
                                          returnType: String,
                                          description: Option[String],
-                                         exposeAsProperty: Boolean)
+                                         exposeAsProperty: Boolean,
+                                         deprecated: Boolean)
     extends MethodInfo {
 
     override def toString: String = {
@@ -76,7 +77,7 @@ class TypeScriptInterfaceGenerator(typeRegistry: TypeRegistry = DefaultTypeRegis
 
   protected def getMethodInfo(typeName: String, op: TypeOperation, params: Seq[MethodParam]): MethodInfo =
     InterfaceMethodInfo(typeName, op.name, params, helper.rugTypeToTypeScriptType(op.returnType, typeRegistry),
-      Some(op.description), op.exposeAsProperty)
+      Some(op.description), op.exposeAsProperty, op.deprecated)
 
   override def getGeneratedTypes(t: Typed, op: TypeOperation): Seq[GeneratedType] = {
     val generatedTypes = new ListBuffer[GeneratedType]

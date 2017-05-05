@@ -19,7 +19,7 @@ function springExportedMethodsIn(eng: DecoratingPathExpressionEngine, f: File): 
             //methodDeclaration${withAnnotation('RequestMapping')}`)
             .map(md => {
                 const m = new java.Method(eng, md);
-                console.log(JSON.stringify(m, nodeReplacer()));
+                //console.log(JSON.stringify(m, nodeReplacer()));
                 //console.log(stringify(m.methodDeclaration));
                 return m;
             });

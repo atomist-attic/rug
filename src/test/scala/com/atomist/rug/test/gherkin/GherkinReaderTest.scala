@@ -72,8 +72,52 @@ object GherkinReaderTest {
       |    Then everything's done
     """.stripMargin
 
+  val NotImplementedGivenFeature =
+    """
+      |Feature: Australian political history
+      |  This is a test
+      |  to demonstrate that the Gherkin DSL
+      |  is a good fit for Rug BDD testing
+      |
+      |  Scenario: Australian politics, 1972-1991
+      |    Given an empty project
+      |    Given a visionary leader
+      |    Given rising inequality
+      |    When politics takes its course
+      |    Then parameters were valid
+      |    Then changes were made
+      |    Then one edit was made
+      |    Then the rage is maintained
+      |    Then the rage has a name
+    """.stripMargin
+
+  val NotImplementedWhenFeature =
+    """
+      |Feature: Australian political history
+      |  This is a test
+      |  to demonstrate that the Gherkin DSL
+      |  is a good fit for Rug BDD testing
+      |
+      |  Scenario: Australian politics, 1972-1991
+      |    Given an empty project
+      |    Given a visionary leader
+      |    When politics takes its course
+      |    When income disparity widens
+      |    Then parameters were valid
+      |    Then changes were made
+      |    Then one edit was made
+      |    Then the rage is maintained
+      |    Then the rage has a name
+    """.stripMargin
+
   val SimpleFeatureFile = StringFileArtifact(".atomist/tests/project/Simple.feature", Simple)
 
   val TwoScenarioFeatureFile = StringFileArtifact(".atomist/tests/project/Two.feature", TwoScenarios)
+
+  val NotImplementedGivenFeatureFile = StringFileArtifact(".atomist/tests/project/NotImplemented.feature",
+    NotImplementedGivenFeature)
+
+  val NotImplementedWhenFeatureFile = StringFileArtifact(".atomist/tests/project/NotImplemented.feature",
+    NotImplementedWhenFeature)
 
 }

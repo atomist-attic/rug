@@ -43,10 +43,8 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
         val result = step.getKeyword match {
           case "Given " if !world.aborted =>
             runGiven(world, step)
-            None
           case "When " if !world.aborted =>
             runWhen(world, step)
-            None
           case "Then " if !world.aborted =>
             Some(runThen(world, step))
           case "Then " if world.aborted =>
@@ -89,7 +87,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
     }
   }
 
-  private def runWhen(world: ScenarioWorld, step: Step): Unit = {
+  private def runWhen(world: ScenarioWorld, step: Step): Option[AssertionResult] = {
     val somo = definitions.whenFor(step.getText)
     logger.debug(s"When for [${step.getText}]=$somo")
     somo match {
@@ -98,23 +96,26 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
           case Left(ipe: InvalidParametersException) =>
             listeners.foreach(_.stepFailed(step, ipe))
             world.logInvalidParameters(ipe)
+            None
           case Left(e: Exception) if e.getCause != null && e.getCause.isInstanceOf[InvalidParametersException] =>
             // Can sometimes get this wrapped
             listeners.foreach(_.stepFailed(step, e.getCause.asInstanceOf[InvalidParametersException]))
             world.logInvalidParameters(e.getCause.asInstanceOf[InvalidParametersException])
+            None
           case Left(t) =>
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             world.abort(t.getMessage)
+            None
           case _ =>
-          // Do nothing
+            None
         }
       case None =>
-        logger.info(s"When [${step.getText}] not yet implemented")
+        Some(AssertionResult(step.getText, NotYetImplemented(step.getText)))
     }
   }
 
-  private def runGiven(world: ScenarioWorld, step: Step): Unit = {
+  private def runGiven(world: ScenarioWorld, step: Step): Option[AssertionResult] = {
     val somo = definitions.givenFor(step.getText)
     logger.debug(s"Given for [${step.getText}]=$somo")
     somo match {
@@ -124,11 +125,12 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
             world.abort(t.getMessage)
+            None
           case _ =>
-          // OK
+            None
         }
       case None =>
-        logger.info(s"Given [${step.getText}] not yet implemented")
+        Some(AssertionResult(step.getText, NotYetImplemented(step.getText)))
     }
   }
 

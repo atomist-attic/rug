@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Gherkin handler step 'parameters were invalid' renamed to
+    'handler parameters were invalid'.
+    https://github.com/atomist/rug/issues/566
+
 -   **BREAKING** Removed Spring and Spring project types. These don't belong in
     `rug` and will resurface in a separate project.
     

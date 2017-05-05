@@ -8,7 +8,7 @@ import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.spi.{TypeRegistry, Typed, UsageSpecificTypeRegistry}
 import com.atomist.rug.ts.{CortexTypeGenerator, DefaultTypeGeneratorConfig}
-import com.atomist.source.git.{GitArtifactSourceIdentifier, GitRepositoryCloner}
+import com.atomist.source.git.GitRepositoryCloner
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 object ScenarioWorld {

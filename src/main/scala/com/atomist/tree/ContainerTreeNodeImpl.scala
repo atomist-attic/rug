@@ -23,7 +23,7 @@ class ContainerTreeNodeImpl(
 
   override def childNodeTypes: Set[String] = kids.flatMap(_.nodeTags).toSet
 
-  override def childrenNamed(key: String): Seq[TreeNode] = kids.filter(_.nodeName.equals(key))
+  override def childrenNamed(key: String): Seq[TreeNode] = kids.filter(_.nodeName == key)
 
   override def value: String = s"$nodeName:${kids.mkString(",")}"
 

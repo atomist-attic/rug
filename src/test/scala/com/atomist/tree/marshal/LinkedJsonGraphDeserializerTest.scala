@@ -3,6 +3,7 @@ package com.atomist.tree.marshal
 import com.atomist.rug.TestUtils
 import com.atomist.rug.ts.Cardinality
 import com.atomist.tree.TreeNode
+import com.atomist.tree.utils.NodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
@@ -56,6 +57,8 @@ class LinkedJsonGraphDeserializerTest extends FlatSpec with Matchers {
     val json = TestUtils.contentOf(this, "withLinksAndUnresolvable.json")
     val node = LinkedJsonGraphDeserializer.fromJson(json)
     val repo = node.relatedNodesNamed("ON").head
+    assert(repo.nodeTags.contains("Repo"))
+    assert(NodeUtils.keyValue(repo, "name").contains("repo-name"))
     assert(repo.relatedNodesNamed("PROJECT").size === 1)
     repo.relatedNodesNamed("PROJECT").head match {
       case ur if Unresolvable(ur).isDefined =>

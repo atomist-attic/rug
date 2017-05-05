@@ -19,7 +19,7 @@ trait ReflectiveExportContainerTreeNode extends ContainerTreeNode {
       case null => Nil
       case tn: TreeNode => Seq(tn)
       case Seq(tn: TreeNode) => Seq(tn)
-      case x => Nil
+      case _ => Nil
     }
   }
 

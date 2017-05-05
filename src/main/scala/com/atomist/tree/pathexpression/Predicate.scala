@@ -5,6 +5,7 @@ import com.atomist.rug.runtime.js.ExecutionContext
 import com.atomist.rug.spi.TypeRegistry
 import com.atomist.tree.TreeNode
 import com.atomist.tree.pathexpression.ExpressionEngine.NodePreparer
+import com.atomist.tree.utils.NodeUtils
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
@@ -156,11 +157,7 @@ case class NodeNamePredicate(expectedName: String) extends Predicate {
                         ee: ExpressionEngine,
                         executionContext: ExecutionContext,
                         nodePreparer: Option[NodePreparer]): Boolean =
-    n.nodeName == expectedName || (
-      n.followEdge("name").toList match {
-        case List(oneElt: TreeNode) if oneElt.value == expectedName => true
-        case _ => false
-      })
+    n.nodeName == expectedName || NodeUtils.keyValue(n, "name").contains(expectedName)
 }
 
 case class NodeTypePredicate(expectedType: String) extends Predicate {

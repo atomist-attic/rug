@@ -1,6 +1,5 @@
 package com.atomist.rug.kind.java
 
-import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.spi._
 import com.github.javaparser.ast.body._
@@ -34,7 +33,7 @@ class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: 
           case f: FieldDeclaration => new JavaFieldMutableView(f, this)
         }
     case _ =>
-      throw new RugRuntimeException(null, s"No child with name '$fieldName' in ${getClass.getSimpleName}")
+      Nil
   }
 
   @ExportFunction(readOnly = true,

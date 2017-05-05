@@ -22,9 +22,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   **BREAKING** Removed Spring and Spring project types. These don't belong in
     `rug` and will resurface in a separate project.
-    
+
 -   Add instructions to DirectedMessage and ResponseMessage.  Add optional id to
     Presentable instruction.
+-   Missing implementations of Given and When steps now are returned
+    as NotYetImplemented in testing results [#570][570]
 
 ### Fixed
 
@@ -35,7 +37,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     in an archive https://github.com/atomist/rug/issues/561
 
 -   Fix StackOverflow when calling toString on LinkableContainerTreeNode.
-    Can't recurse as this is a graph not a tree. 
+    Can't recurse as this is a graph not a tree.
+
+[570]: https://github.com/atomist/rug/issues/570
 
 ## [1.0.0-m.2] - 2017-04-26
 

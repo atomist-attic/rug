@@ -46,6 +46,22 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "fail if Given step is not implemented" in {
+    val as = SimpleFileBasedArtifactSource(NotImplementedGivenFeatureFile, PassingSimpleTsFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val run = grt.execute()
+    assert(run.result.isInstanceOf[NotYetImplemented])
+  }
+
+  it should "fail if When step is not implemented" in {
+    val as = SimpleFileBasedArtifactSource(NotImplementedWhenFeatureFile, PassingSimpleTsFile)
+    val cas = TypeScriptBuilder.compileWithModel(as)
+    val grt = new GherkinRunner(new JavaScriptContext(cas))
+    val run = grt.execute()
+    assert(run.result.isInstanceOf[NotYetImplemented])
+  }
+
   it should "run an editor without parameters" in {
     val as = SimpleFileBasedArtifactSource(
       alpEditorsFile,

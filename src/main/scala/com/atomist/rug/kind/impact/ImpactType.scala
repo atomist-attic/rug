@@ -13,7 +13,7 @@ import com.atomist.tree.utils.NodeUtils
 class ImpactType extends Type with ReflectivelyTypedType {
 
   import NodeUtils._
-  import ProjectType.extractOwnerAndRepoFromAssociatedRepo
+  import ProjectType._
 
   override def description: String = "Represents an impact of a change"
 
@@ -41,6 +41,14 @@ class ImpactType extends Type with ReflectivelyTypedType {
         val beforeSources = repoResolver.resolveSha(owner, name, beforeSha)
         val afterSources = repoResolver.resolveSha(owner, name, afterSha)
         Some(Seq(new Impact(push, beforeSources, afterSources)))
+      case pr if pr.hasTag("PullRequest") =>
+        val beforeSha = extractShaFromAssociatedCommitNamed(pr, "base")
+        val afterSha = extractShaFromAssociatedCommitNamed(pr, "head")
+        val (owner, name) = extractOwnerAndRepoFromAssociatedRepo(context)
+        val beforeSources = repoResolver.resolveSha(owner, name, beforeSha)
+        val afterSources = repoResolver.resolveSha(owner, name, afterSha)
+        Some(Seq(new Impact(pr, beforeSources, afterSources)))
+
       case _ =>
         None
     }

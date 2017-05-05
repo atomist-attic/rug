@@ -71,4 +71,10 @@ object ProjectType {
     val name = NodeUtils.requiredKeyValue(repo, "name")
     (owner, name)
   }
+
+  def extractShaFromAssociatedCommitNamed(n: GraphNode, commitName: String): String = {
+    val commit = NodeUtils.requiredKey(n, commitName,
+      customMessage = Some(s"Expected a commit at key [$commitName]"))
+   NodeUtils.requiredKeyValue(commit, "sha")
+  }
 }

@@ -20,7 +20,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
   "Impact type" should "resolve Impact under Push" in {
     val oldAs = SimpleFileBasedArtifactSource()
     val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
-    eval(oldAs, newAs, "/Push()[/Repo()]/with::Impact()") match {
+    evalInPush(oldAs, newAs, "/Push()[/Repo()]/with::Impact()") match {
       case Right(l) =>
         assert(l.nonEmpty)
       case x => fail(s"Unexpected: $x")
@@ -52,7 +52,20 @@ class ImpactTypeTest extends FlatSpec with Matchers {
   it should "drill into changed as project" in {
     val oldAs = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "<xml></xml>"))
     val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
-    eval(oldAs, newAs, "/Push()[/Repo()]/with::Impact()/changed::Project()") match {
+    evalInPush(oldAs, newAs, "/Push()[/Repo()]/with::Impact()/changed::Project()") match {
+      case Right(l) =>
+        assert(l.size === 1)
+        val changedAsProject = l.head.asInstanceOf[ProjectMutableView]
+        assert(changedAsProject.totalFileCount === 1)
+        changedAsProject.findFile("README.md") should not be null
+      case x => fail(s"Unexpected: $x")
+    }
+  }
+
+  it should "resolve under PullRequest" in {
+    val oldAs = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "<xml></xml>"))
+    val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
+    evalInPullRequest(oldAs, newAs, "/PullRequest()[/Repo()]/with::Impact()/changed::Project()") match {
       case Right(l) =>
         assert(l.size === 1)
         val changedAsProject = l.head.asInstanceOf[ProjectMutableView]
@@ -65,7 +78,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
   private def resolveNewFile(expr: String): Unit = {
     val oldAs = SimpleFileBasedArtifactSource()
     val newAs = oldAs + StringFileArtifact("README.md", "Add stuff to this project")
-    eval(oldAs, newAs, expr) match {
+    evalInPush(oldAs, newAs, expr) match {
       case Right(l) =>
         assert(l.size === 1)
         val newFile = l.head
@@ -79,7 +92,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
     val oldAs = EmptyArtifactSource() + StringFileArtifact("README.md", "Add stuff to this project")
     val newAs = oldAs - "README.md"
 
-    eval(oldAs, newAs, expr) match {
+    evalInPush(oldAs, newAs, expr) match {
       case Right(l) =>
         assert(l.size === 1)
         val newFile = l.head
@@ -98,7 +111,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
         case _ => f
       }
     })
-    eval(oldAs, newAs, expr) match {
+    evalInPush(oldAs, newAs, expr) match {
       case Right(l) =>
         assert(l.size === 1)
         val newFile = l.head
@@ -108,7 +121,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
     }
   }
 
-  private def eval(oldAs: ArtifactSource, newAs: ArtifactSource, pex: PathExpression): ExecutionResult = {
+  private def evalInPush(oldAs: ArtifactSource, newAs: ArtifactSource, pex: PathExpression): ExecutionResult = {
     val (owner, repo) = ("atomist", "rug")
     val afterSha = "xxxx"
     val beforeSha = "yyyy"
@@ -131,6 +144,31 @@ class ImpactTypeTest extends FlatSpec with Matchers {
       .addEdge("before", Seq(beforeCommit))
       .addEdge("after", Seq(afterCommit))
     pe.evaluate(SimpleContainerGraphNode("root", pushNode), pex, ec)
+  }
+
+  private def evalInPullRequest(oldAs: ArtifactSource, newAs: ArtifactSource, pex: PathExpression): ExecutionResult = {
+    val (owner, repo) = ("atomist", "rug")
+    val afterSha = "xxxx"
+    val beforeSha = "yyyy"
+    val rr = new MutableRepoResolver
+    rr.defineRepo(owner, repo, beforeSha, oldAs)
+    rr.defineRepo(owner, repo, afterSha, newAs)
+
+    val ec = SimpleExecutionContext(DefaultTypeRegistry,
+      Some(rr))
+    val repoNode = SimpleContainerGraphNode.empty("Repo", "Repo")
+      .addRelatedNode(SimpleTerminalTreeNode("owner", owner))
+      .addRelatedNode(SimpleTerminalTreeNode("name", repo))
+    val beforeCommit = SimpleContainerGraphNode.empty("Commit", "Commit")
+      .addRelatedNode(SimpleTerminalTreeNode("sha", beforeSha))
+    val afterCommit = SimpleContainerGraphNode.empty("Commit", "Commit")
+      .addRelatedNode(SimpleTerminalTreeNode("sha", afterSha))
+      .addRelatedNode(repoNode)
+    val prNode = SimpleContainerGraphNode.empty("PullRequest", "PullRequest")
+      .addRelatedNode(repoNode)
+      .addEdge("base", Seq(beforeCommit))
+      .addEdge("head", Seq(afterCommit))
+    pe.evaluate(SimpleContainerGraphNode("root", prNode), pex, ec)
   }
 
 }

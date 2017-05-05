@@ -13,32 +13,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 -   Added ability to indicate in TypeScript generated interfaces when a
     JVM method being exposed is marked as `@Deprecated`
+-   Ability to test when a scenario aborts [#569][569]
 
 ### Changed
 
--   **BREAKING** Gherkin handler step 'parameters were invalid' renamed to
-    'handler parameters were invalid'.
-    https://github.com/atomist/rug/issues/566
-
--   **BREAKING** Removed Spring and Spring project types. These don't belong in
-    `rug` and will resurface in a separate project.
-
--   Add instructions to DirectedMessage and ResponseMessage.  Add optional id to
-    Presentable instruction.
+-   **BREAKING** Gherkin handler step 'parameters were invalid'
+    renamed to 'handler parameters were invalid' [#566][566]
+-   **BREAKING** Removed Spring and Spring project types, these don't
+    belong in `rug` and will resurface in a separate project
+-   Add instructions to DirectedMessage and ResponseMessage
+-   Add optional id to Presentable instruction
 -   Missing implementations of Given and When steps now are returned
     as NotYetImplemented in testing results [#570][570]
 
 ### Fixed
 
--   Improve archive loading performance by creating new ArtifactSource with only
-    Rug content, instead of filtering all files in original archive
-
+-   Improve archive loading performance by creating new ArtifactSource
+    with only Rug content, instead of filtering all files in original
+    archive
 -   Throw exceptions if there is more than one Rug with the same name
-    in an archive https://github.com/atomist/rug/issues/561
+    in an archive [#561][561]
+-   Fix StackOverflow when calling toString on
+    LinkableContainerTreeNode, can't recurse as this is a graph not a
+    tree.
 
--   Fix StackOverflow when calling toString on LinkableContainerTreeNode.
-    Can't recurse as this is a graph not a tree.
-
+[569]: https://github.com/atomist/rug/issues/569
+[566]: https://github.com/atomist/rug/issues/566
+[561]: https://github.com/atomist/rug/issues/561
 [570]: https://github.com/atomist/rug/issues/570
 
 ## [1.0.0-m.2] - 2017-04-26

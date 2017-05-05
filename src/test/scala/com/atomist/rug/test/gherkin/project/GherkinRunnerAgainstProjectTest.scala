@@ -219,10 +219,48 @@ class GherkinRunnerAgainstProjectTest extends FlatSpec with Matchers {
 
     val projTemplate = ParsingTargets.NewStartSpringIoProject
     val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
-    val grt = new GherkinRunner(new JavaScriptContext(rugArchive))
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
     val run = grt.execute()
     assert(run.testCount > 0)
     assert(run.result.isInstanceOf[Failed])
+    assert(run.result.message.contains("I hate the world"))
+  }
+
+  it should "successfully test for an aborted scenario" in {
+    val projectName = "generator-fail-test"
+    val atomistStuff: ArtifactSource =
+      SimpleFileBasedArtifactSource(
+        TestUtils.requiredFileInPackage(this, "FailingGenerator.ts").withPath(".atomist/generators/FailingGenerator.ts"),
+        GenerationFailureFeatureFile,
+        StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
+          generationTest("FailingGenerator", projectName, Map()))
+      )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    assert(run.result === Passed)
+  }
+
+  it should "fail when testing for an aborted scenario that does not" in {
+    val projectName = "generator-non-abort"
+    val atomistStuff: ArtifactSource =
+      SimpleFileBasedArtifactSource(
+        TestUtils.requiredFileInPackage(this, "SimpleGenerator.ts").withPath(".atomist/generators/SimpleGenerator.ts"),
+        GenerationFailureFeatureFile,
+        StringFileArtifact(".atomist/tests/project/GenerationSteps.ts",
+          generationTest("SimpleGenerator", projectName, Map()))
+      )
+
+    val projTemplate = ParsingTargets.NewStartSpringIoProject
+    val rugArchive = TypeScriptBuilder.compileWithModel(atomistStuff + projTemplate)
+    val grt = new GherkinRunner(new JavaScriptContext(rugArchive), Some(RugArchiveReader(rugArchive)))
+    val run = grt.execute()
+    assert(run.testCount > 0)
+    assert(run.result.isInstanceOf[Failed])
+    assert(run.result.message.contains("aborted"))
   }
 
   it should "access a real project" in

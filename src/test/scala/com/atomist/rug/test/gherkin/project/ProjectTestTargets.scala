@@ -60,6 +60,23 @@ object ProjectTestTargets {
     ".atomist/tests/project/Generation.feature",
     GenerationFeature)
 
+  val GenerationFailureFeature =
+    """
+      |Feature: Generate a new project
+      |  This is a test
+      |  to see whether
+      |  we can test project generators
+      |
+      |  Scenario: New project should have content from template
+      |    Given an empty project
+      |    When run simple generator
+      |    Then the scenario aborted
+      |""".stripMargin
+
+  val GenerationFailureFeatureFile = StringFileArtifact(
+    ".atomist/tests/project/Generation.feature",
+    GenerationFailureFeature)
+
   /**
     * @param params map to string representation of param, e.g. including "
     */

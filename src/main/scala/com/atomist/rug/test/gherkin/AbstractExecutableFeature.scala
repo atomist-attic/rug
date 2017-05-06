@@ -45,6 +45,8 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             runGiven(world, step)
           case "When " if !world.aborted =>
             runWhen(world, step)
+          case "Then " if step.getText == "the scenario aborted" =>
+            Some(AssertionResult(step.getText, Result(world.aborted, "Scenario aborted")))
           case "Then " if !world.aborted =>
             Some(runThen(world, step))
           case "Then " if world.aborted =>

@@ -23,6 +23,20 @@ class ReturnsEmptyPlanEventHandlerGen1 implements HandleEvent<GraphNode, Build> 
 }
 export const handler1 = new ReturnsEmptyPlanEventHandlerGen1();
 
+@EventHandler("ReturnsEmptyPlanEventHandlerGen1WithPathExpression", "Handles a new Commit event",
+    new PathExpression<GraphNode, Build>(
+        `/Build()`))
+@Tags("build")
+class ReturnsEmptyPlanEventHandlerGen1WithPathExpression implements HandleEvent<GraphNode, Build> {
+
+    handle(m: Match<GraphNode, Build>) {
+        let b: Build = m.matches[0];
+        let s = m.pathExpressionEngine.evaluate(b, "/anythingAtAll");
+        return new EventPlan();
+    }
+}
+export const handler1a = new ReturnsEmptyPlanEventHandlerGen1WithPathExpression();
+
 @EventHandler("ReturnsEmptyPlanEventHandlerGenWithArrays", "Handles a new Commit event",
     new PathExpression<GraphNode, Push>(
         `/Push()`))

@@ -115,6 +115,9 @@ class GherkinRunnerEventHandlerTest extends FlatSpec with Matchers {
   it should "use generated model"
     useGeneratedModel("PassingFeature1StepsAgainstGenerated.ts")
 
+  it should "use generated model and run path expression"
+  useGeneratedModel("PassingFeature1StepsAgainstGeneratedWithPathExpression.ts")
+
   it should "use generated model with enum/narrowed type"
   useGeneratedModel("PassingFeature1StepsAgainstGenerated4.ts")
 

@@ -10,14 +10,20 @@ import com.atomist.tree.{ParentAwareTreeNode, SimpleTerminalTreeNode, TreeNode}
   * Represents the impact of one or more changes to a project.
   * Allows finding file deltas ("files"), and the changed (new or updated) files ("changed")
   */
-class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
+class Impact(_parent: GraphNode, _before: ArtifactSource, _after: ArtifactSource)
   extends TreeNode {
 
-  private lazy val deltas: Deltas = after Δ before
+  private lazy val deltas: Deltas = _after Δ _before
 
-  private lazy val beforeProject = new ProjectMutableView(before)
+  private lazy val beforeProject = new ProjectMutableView(_before)
 
-  private lazy val afterProject = new ProjectMutableView(after)
+  private lazy val afterProject = new ProjectMutableView(_after)
+
+  @ExportFunction(readOnly = true, description = "Project before impact", exposeAsProperty = true)
+  def before: ProjectMutableView = beforeProject
+
+  @ExportFunction(readOnly = true, description = "Project after impact", exposeAsProperty = true)
+  def after: ProjectMutableView = afterProject
 
   @ExportFunction(readOnly = true, description = "Parent of the impact", exposeAsProperty = true)
   def parent: GraphNode = _parent
@@ -54,10 +60,10 @@ class Impact(_parent: GraphNode, before: ArtifactSource, after: ArtifactSource)
         case fud: FileUpdateDelta =>
           fud.updatedFile
       }
-    new ProjectMutableView(new SimpleFileBasedArtifactSource(after.id, filesToInclude))
+    new ProjectMutableView(new SimpleFileBasedArtifactSource(_after.id, filesToInclude))
   }
 
-  override val childNodeNames: Set[String] = Set("files", "changed")
+  override val childNodeNames: Set[String] = Set("files", "changed", "before", "after")
 
   override val childNodeTypes: Set[String] = Set("FileImpact", "FileAddition", "FileUpdate", "FileDeletion")
 
@@ -85,6 +91,7 @@ class FileAdditionTypeProvider extends TypeProvider(classOf[FileAddition]) {
 class FileAddition(_parent: Impact, newFile: FileMutableView)
   extends FileImpact(_parent) {
 
+  @ExportFunction(readOnly = true, description = "Path to the file", exposeAsProperty = true)
   override def path: String = newFile.path
 
   @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)

@@ -1,11 +1,12 @@
 package com.atomist.rug.runtime.js.interop
 
 /**
-  * Fronts JavaScript Context object
+  * Fronts JavaScript Context object passed to an EventHandler
   * Detyped as a Nashorn objects may be passed that do not implement GraphNode
   */
 case class jsContextMatch(root: AnyRef,
                           matches: _root_.java.util.List[AnyRef],
+                          pathExpressionEngine: jsPathExpressionEngine,
                           teamId: String) {
 
   import scala.collection.JavaConverters._

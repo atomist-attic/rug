@@ -65,6 +65,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
         val cm = jsContextMatch(
           wrapOne(targetNode, ctx.typeRegistry),
           wrap(matches, ctx.typeRegistry),
+          ctx.pathExpressionEngine,
           teamId = e.teamId)
         invokeMemberFunction(jsc,
           handler,

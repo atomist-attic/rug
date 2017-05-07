@@ -47,6 +47,9 @@ object JavaScriptEventHandlerTest {
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ReopenIssueHandler.ts"))
 
+  val reOpenCloseIssueProgramRunsPathExpression = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ReopenIssueHandlerRunsPathExpression.ts"))
+
   val reOpenCloseIssueProgramInArray = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ReopenIssueHandlerInArray.ts"))
 
@@ -128,6 +131,9 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
 
   "JavaScriptEventHandler support" should "extract and run an event handler" in
     extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgram)
+
+  it should "extract and run an event handler that runs a path expression" in
+    extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgramRunsPathExpression)
 
   it should "extract and run an event handler in array" in
     extractAndRunEventHandler(JavaScriptEventHandlerTest.reOpenCloseIssueProgramInArray)

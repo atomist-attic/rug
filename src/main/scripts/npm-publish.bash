@@ -3,7 +3,7 @@
 set -o pipefail
 
 declare Pkg=npm-publish
-declare Version=0.2.0
+declare Version=0.3.0
 
 function msg() {
     echo "$Pkg: $*"
@@ -31,11 +31,16 @@ function publish() {
 
     local target=target/.atomist/node_modules/@atomist/$module_name
     local package=$target/package.json
-    if ! sed "s/REPLACE_ME/$module_version/g" "$package.in" > "$package"; then
-        err "failed to set version in $package"
+    local package_version
+    package_version=$(jq --raw-output --exit-status .version "$package")
+    if [[ $? -ne 0 || ! $package_version ]]; then
+        err "failed to parse package version from $package: $package_version"
         return 1
     fi
-    rm -f "$package.in"
+    if [[ $package_version != $module_version ]]; then
+        err "version in $package ($package_version) does not match provided module version ($module_version)"
+        return 1
+    fi
 
     local registry
     if [[ $module_version =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]{14}$ ]]; then

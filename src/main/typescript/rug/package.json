@@ -1,7 +1,7 @@
 {
   "name": "@atomist/rug",
-  "version": "REPLACE_ME",
-  "description": "TypeScript model for Atomist editors, generators etc",
+  "version": "${project.version}",
+  "description": "TypeScript model for Atomist Rugs, see http://docs.atomist.com/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/atomist/rug.git"

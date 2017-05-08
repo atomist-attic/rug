@@ -4,10 +4,9 @@ import com.atomist.param._
 import com.atomist.project.archive._
 import com.atomist.rug.RugArchiveReader
 import com.atomist.rug.TestUtils.contentOf
-import com.atomist.rug.runtime._
 import com.atomist.rug.runtime.js.JavaScriptEventHandlerTest.atomistConfig
 import com.atomist.rug.runtime.plans.{LocalInstructionRunner, LocalPlanRunner, PlanResultInterpreter, TestSecretResolver}
-import com.atomist.rug.spi.Handlers.Instruction.GitHubPullRequest
+import com.atomist.rug.spi.Handlers.GitHubPullRequest
 import com.atomist.rug.spi.Handlers.Status.Success
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder

@@ -2,10 +2,10 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
-import com.atomist.rug.InvalidHandlerResultException
+import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
-import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
+import com.atomist.rug.spi.Handlers.Instruction.{GitHubPullRequest, NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -193,7 +193,22 @@ class PlanBuilder {
       case project_name: String => Some(project_name)
       case _ => None
     }
-    Instruction.Detail(name, coordinates, parameters, project_name)
+
+    val target = jsInstruction.getMember("target") match {
+      case o: ScriptObjectMirror if o.hasMember("targetBranch") =>
+        val targetBranch = o.getMember("targetBranch").asInstanceOf[String]
+        o.getMember("kind") match {
+          case "github-pull-request" =>
+            val title = if (o.hasMember("title")) Some(o.getMember("title").asInstanceOf[String]) else None
+            val body = if (o.hasMember("body")) Some(o.getMember("body").asInstanceOf[String]) else None
+            val sourceBranch = if (o.hasMember("sourceBranch")) Some(o.getMember("sourceBranch").asInstanceOf[String]) else None
+            Some(GitHubPullRequest(targetBranch, sourceBranch, title, body))
+          case k => throw new BadPlanException(s"Unsupported EditorTarget kind: $k")
+        }
+      case _ => None
+    }
+
+    Instruction.Detail(name, coordinates, parameters, project_name, target)
   }
 
   def constructCallback(callback: Object, returningRug: Option[Rug]): Option[Callback] = {

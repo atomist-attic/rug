@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.plans
 import com.atomist.param.ParameterValues
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor}
 import com.atomist.project.generate.ProjectGenerator
+import com.atomist.rug.spi.Handlers.Instruction.EditorTarget
 import com.atomist.source.ArtifactSource
 
 /**
@@ -28,6 +29,5 @@ trait ProjectManagement {
     * @param projectName
     * @return
     */
-  def edit(editor: ProjectEditor, arguments: ParameterValues, projectName: String): ModificationAttempt
-
+  def edit(editor: ProjectEditor, arguments: ParameterValues, projectName: String, target: Option[EditorTarget] = None): ModificationAttempt
 }

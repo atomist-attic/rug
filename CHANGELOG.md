@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added ability to specific `target` of an Edit Instruction so that
+    source/target branches, title and body can be specified
 -   Added ability to indicate in TypeScript generated interfaces when a
     JVM method being exposed is marked as `@Deprecated`
 -   Ability to test when a scenario aborts [#569][569]

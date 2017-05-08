@@ -193,19 +193,19 @@ abstract class JavaScriptProjectOperation(
     pPattern match {
       case s: String if s.startsWith("@") => DefaultIdentifierResolver.resolve(s.substring(1)) match {
         case Left(_) =>
-          throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern for parameter $pName: $s")
+          throw new InvalidRugParameterPatternException(s"Unable to recognize predefined validation pattern [$s] for parameter $pName in operation $name")
         case Right(pat) => parameter.setPattern(pat)
       }
       case s: String if !s.startsWith("^") || !s.endsWith("$") =>
-        throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern must contain anchors: $s")
+        throw new InvalidRugParameterPatternException(s"Parameter $pName validation pattern [$s] in operation $name must contain anchors")
       case s: String => parameter.setPattern(s)
-      case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
+      case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName in operation $name has no valid validation pattern")
     }
 
     details.get("default") match {
       case x: String =>
         if (!parameter.isValidValue(x))
-          throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $parameter")
+          throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value [$x] in operation $name is not valid: [$parameter]")
         parameter.setDefaultValue(x)
       case _ =>
     }

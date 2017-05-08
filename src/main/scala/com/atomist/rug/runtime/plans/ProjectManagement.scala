@@ -29,5 +29,5 @@ trait ProjectManagement {
     * @param projectName
     * @return
     */
-  def edit(editor: ProjectEditor, arguments: ParameterValues, projectName: String, target: Option[EditorTarget] = None): ModificationAttempt
+  def edit(editor: ProjectEditor, arguments: ParameterValues, projectName: String, target: Option[EditorTarget]): ModificationAttempt
 }

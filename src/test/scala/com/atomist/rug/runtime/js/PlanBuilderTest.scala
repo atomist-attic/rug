@@ -3,8 +3,11 @@ package com.atomist.rug.runtime.js
 import com.atomist.param._
 import com.atomist.project.archive._
 import com.atomist.rug.RugArchiveReader
+import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.runtime._
+import com.atomist.rug.runtime.js.JavaScriptEventHandlerTest.atomistConfig
 import com.atomist.rug.runtime.plans.{LocalInstructionRunner, LocalPlanRunner, PlanResultInterpreter, TestSecretResolver}
+import com.atomist.rug.spi.Handlers.Instruction.GitHubPullRequest
 import com.atomist.rug.spi.Handlers.Status.Success
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
@@ -108,5 +111,32 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     }, rugResolver = Some(resolver)))
     val result = Await.result(runner.run(plan, None), 10.seconds)
     assert(PlanResultInterpreter.interpret(result).status == Success)
+  }
+
+  val editWithTarget = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "EditInstructionWithTarget.ts"))
+
+  it ("should allow target to be set for an Editor") {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(editWithTarget))
+    val rugs = RugArchiveReader(rugArchive)
+    assert(rugs.commandHandlers.size == 3)
+    val com1 = rugs.commandHandlers.head
+    val plan1 = com1.handle(null,SimpleParameterValues.Empty).get
+    val target1 = plan1.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubPullRequest]
+    assert(target1.targetBranch == "target-branch")
+    assert(target1.body.contains("PR body"))
+    assert(target1.title.contains("PR title"))
+    assert(target1.sourceBranch.contains("source-branch"))
+
+    val com2 = rugs.commandHandlers(1)
+    val plan2 = com2.handle(null,SimpleParameterValues.Empty).get
+    val target2 = plan2.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubPullRequest]
+    assert(target2.targetBranch.contains("dev"))
+
+
+    val com3 = rugs.commandHandlers(2)
+    val plan3 = com3.handle(null,SimpleParameterValues.Empty).get
+    val target3 = plan3.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubPullRequest]
+    assert(target3.targetBranch.contains("master"))
   }
 }

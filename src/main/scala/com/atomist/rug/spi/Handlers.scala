@@ -14,9 +14,10 @@ object Handlers {
 
   /**
     * A plan in response to this event
+    *
     * @param returningRug - the rug that returned this plan
-    * @param lifecycle messages in the plan
-    * @param local messages in the plan
+    * @param lifecycle    messages in the plan
+    * @param local        messages in the plan
     * @param instructions instructions in the plan
     * @param nativeObject native object (such as a Nashorn ScriptObjectMirror)
     *                     if one is available
@@ -51,6 +52,7 @@ object Handlers {
   /**
     * Rendering/correlation is done in the handler
     * Directed & Response messages become these
+    *
     * @param body
     * @param channelNames
     * @param contentType
@@ -75,6 +77,7 @@ object Handlers {
 
   sealed trait Plannable {
     def instruction: Instruction
+
     def toDisplay: String = instruction.toDisplay
   }
 
@@ -103,7 +106,8 @@ object Handlers {
     case class Detail(name: String,
                       coordinates: Option[MavenCoordinate],
                       parameters: Seq[ParameterValue],
-                      projectName: Option[String])
+                      projectName: Option[String],
+                      editorTarget: Option[EditorTarget] = None)
 
     def from(name: String, detail: Detail): Instruction = {
       name match {
@@ -116,7 +120,32 @@ object Handlers {
       }
     }
 
+    /**
+      * Name of the target branch for an Edit
+      */
+    trait EditorTarget {
+      def targetBranch: String
+    }
+
+    /**
+      * A GitHub Pull Request for Edits
+      *
+      * @param targetBranch
+      * @param sourceBranch
+      * @param title
+      * @param body
+      */
+    case class GitHubPullRequest(
+                                  override val targetBranch: String,
+                                  sourceBranch: Option[String] = None,
+                                  title: Option[String] = None,
+                                  body: Option[String] = None
+                                )
+      extends EditorTarget {
+    }
+
     sealed trait RespondableInstruction extends Instruction
+
     sealed trait NonrespondableInstruction extends Instruction
 
     case class Generate(detail: Detail) extends RespondableInstruction
@@ -188,4 +217,5 @@ object Handlers {
       }
     }
   }
+
 }

@@ -100,6 +100,29 @@ object Handlers {
     }
   }
 
+  /**
+    * Name of the target branch for an Edit
+    */
+  trait EditorTarget {
+    def targetBranch: String
+  }
+
+  /**
+    * A GitHub Pull Request for Edits
+    *
+    * @param targetBranch
+    * @param sourceBranch
+    * @param title
+    * @param body
+    */
+  case class GitHubPullRequest(
+                                override val targetBranch: String,
+                                sourceBranch: Option[String] = None,
+                                title: Option[String] = None,
+                                body: Option[String] = None
+                              )
+    extends EditorTarget {}
+
   object Instruction {
 
     //probably makes more sense to put project_name elsewhere
@@ -118,30 +141,6 @@ object Handlers {
         case "command" => Command(detail)
         case _ => throw new IllegalArgumentException(s"Cannot derive Instruction from '$name'.")
       }
-    }
-
-    /**
-      * Name of the target branch for an Edit
-      */
-    trait EditorTarget {
-      def targetBranch: String
-    }
-
-    /**
-      * A GitHub Pull Request for Edits
-      *
-      * @param targetBranch
-      * @param sourceBranch
-      * @param title
-      * @param body
-      */
-    case class GitHubPullRequest(
-                                  override val targetBranch: String,
-                                  sourceBranch: Option[String] = None,
-                                  title: Option[String] = None,
-                                  body: Option[String] = None
-                                )
-      extends EditorTarget {
     }
 
     sealed trait RespondableInstruction extends Instruction

@@ -5,7 +5,7 @@ import com.atomist.param.{ParameterValue, SimpleParameterValue}
 import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
-import com.atomist.rug.spi.Handlers.Instruction.{GitHubPullRequest, NonrespondableInstruction, Respond, RespondableInstruction}
+import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror

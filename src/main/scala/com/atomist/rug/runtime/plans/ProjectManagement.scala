@@ -3,7 +3,7 @@ package com.atomist.rug.runtime.plans
 import com.atomist.param.ParameterValues
 import com.atomist.project.edit.{ModificationAttempt, ProjectEditor}
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.rug.spi.Handlers.Instruction.EditorTarget
+import com.atomist.rug.spi.Handlers.EditorTarget
 import com.atomist.source.ArtifactSource
 
 /**

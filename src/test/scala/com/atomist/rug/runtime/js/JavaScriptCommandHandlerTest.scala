@@ -233,6 +233,17 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.head.id.get === "123")
   }
 
+  val handlerWithoutExplicitName =
+    StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+      contentOf(this, "HandlerWithoutExplicitName.ts"))
+
+  it should "should be able to extract name from constructor" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerWithoutExplicitName))
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
+    val com = rugs.commandHandlers.head
+    assert(com.name == "FunctionKiller")
+  }
 }
 
 class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {

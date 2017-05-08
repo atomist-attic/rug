@@ -78,8 +78,8 @@ class InvalidSecretException(msg: String)
 class RugNotFoundException(msg: String)
   extends BadRugException(msg)
 
-class BadPlanException(msg: String)
-  extends BadRugException(msg)
+class BadPlanException(msg: String, rootCause: Throwable = null)
+  extends BadRugException(msg, rootCause)
 
 class MissingRugException(msg: String)
   extends BadRugException(msg)

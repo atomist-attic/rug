@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Added ability to indicate in TypeScript generated interfaces when a
     JVM method being exposed is marked as `@Deprecated`
 -   Ability to test when a scenario aborts [#569][569]
+-   Types to Gherkin well-known step callback signatures [#574][574]
 
 ### Changed
 
@@ -48,6 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [566]: https://github.com/atomist/rug/issues/566
 [561]: https://github.com/atomist/rug/issues/561
 [570]: https://github.com/atomist/rug/issues/570
+[574]: https://github.com/atomist/rug/issues/574
 
 ## [1.0.0-m.2] - 2017-04-26
 

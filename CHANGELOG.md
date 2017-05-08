@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   If the first parameter to a Rug Kind TypeScript decorator is
+    omitted, the constructor's name is used instead. E.g. it is now
+    possible to declare a command handler with:
+    `@CommandHandler("description only")`
 -   **BREAKING** Gherkin handler step 'parameters were invalid'
     renamed to 'handler parameters were invalid' [#566][566]
 -   **BREAKING** Removed Spring and Spring project types, these don't

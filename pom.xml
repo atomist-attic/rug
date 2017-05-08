@@ -17,6 +17,8 @@
         <scala.binary.version>2.11</scala.binary.version>
 		<scala.maven.plugin.version>3.2.2</scala.maven.plugin.version>
         <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
+		<maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
+		<atomist.node.modules>.atomist/node_modules/@atomist</atomist.node.modules>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -342,6 +344,80 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-typescript</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.build.directory}/${atomist.node.modules}"/>
+                                <copy todir="${project.build.directory}/${atomist.node.modules}">
+                                    <fileset dir="${basedir}/src/main/typescript"/>
+                                </copy>
+                                <copy
+									file="${basedir}/src/main/typescript/rug/package.json"
+									tofile="${project.build.directory}/${atomist.node.modules}/rug/package.json"
+									overwrite="true">
+									<filterchain>
+										<expandproperties />
+									</filterchain>
+                                </copy>
+                                <copy
+									file="${basedir}/src/main/typescript/cortex/package.json"
+									tofile="${project.build.directory}/${atomist.node.modules}/cortex/package.json"
+									overwrite="true">
+									<filterchain>
+										<expandproperties />
+									</filterchain>
+                                </copy>
+                                <mkdir dir="${project.build.directory}/${atomist.node.modules}/rug/model"/>
+                                <mkdir dir="${project.build.directory}/${atomist.node.modules}/cortex"/>
+                                <mkdir dir="${project.build.directory}/${atomist.node.modules}/cortex/stub"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-interfaces</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
+                            <arguments>
+                                <argument>${project.build.directory}/${atomist.node.modules}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-extended-model</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <mainClass>com.atomist.rug.ts.CortexTypeGeneratorApp</mainClass>
+                            <arguments>
+                                <argument>${project.build.directory}/${atomist.node.modules}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -460,7 +536,7 @@
                                     <goal>gulp</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>typedoc --gulpfile .atomist/node_modules/@atomist/rug/gulpfile.js</arguments>
+                                    <arguments>typedoc --gulpfile ${atomist.node.modules}/rug/gulpfile.js</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
@@ -470,7 +546,7 @@
                                     <goal>gulp</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>typedoc --gulpfile .atomist/node_modules/@atomist/cortex/gulpfile.js</arguments>
+                                    <arguments>typedoc --gulpfile ${atomist.node.modules}/cortex/gulpfile.js</arguments>
                                 </configuration>
                                 <phase>process-test-resources</phase>
                             </execution>
@@ -483,7 +559,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.8</version>
+                        <version>${maven.antrun.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>compile-typescript</id>
@@ -495,108 +571,13 @@
                                     <target>
                                         <exec executable="${project.build.directory}/node_modules/typescript/bin/tsc" failonerror="true">
                                             <arg value="-p"/>
-                                            <arg value="${project.build.directory}/.atomist/node_modules/@atomist/rug"/>
+                                            <arg value="${project.build.directory}/${atomist.node.modules}/rug"/>
                                         </exec>
                                         <exec executable="${project.build.directory}/node_modules/typescript/bin/tsc" failonerror="true">
                                             <arg value="-p"/>
-                                            <arg value="${project.build.directory}/.atomist/node_modules/@atomist/cortex"/>
+                                            <arg value="${project.build.directory}/${atomist.node.modules}/cortex"/>
                                         </exec>
                                     </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>mk-ts-output-dir</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>generate-sources</phase>
-                                <configuration>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/.atomist"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-ts</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>generate-sources</phase>
-                                <configuration>
-                                    <target>
-                                        <copy todir="${project.build.directory}/.atomist">
-                                            <fileset dir="src/main/typescript"/>
-                                        </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>mkdir-rug-model</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>generate-sources</phase>
-                                <configuration>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/rug/model"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>mkdir-cortex</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>generate-sources</phase>
-                                <configuration>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/cortex"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>mkdir-cortex-stub</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>generate-sources</phase>
-                                <configuration>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/.atomist/node_modules/@atomist/cortex/stub"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.5.0</version>
-                        <executions>
-                            <execution>
-                                <id>generate-interfaces</id>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <mainClass>com.atomist.rug.ts.TypeScriptInterfaceGenerator</mainClass>
-                                    <arguments>
-                                        <argument>${project.build.directory}/.atomist/node_modules/@atomist</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-extended-model</id>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <mainClass>com.atomist.rug.ts.CortexTypeGeneratorApp</mainClass>
-                                    <arguments>
-                                        <argument>${project.build.directory}/.atomist/node_modules/@atomist</argument>
-                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>

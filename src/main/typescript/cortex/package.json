@@ -1,0 +1,22 @@
+{
+  "name": "@atomist/cortex",
+  "version": "1.0.0-SNAPSHOT",
+  "description": "TypeScript typings for event model, see http://docs.atomist.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atomist/cortex.git"
+  },
+  "keywords": [
+    "Atomist",
+    "Rug"
+  ],
+  "author": "Atomist, Inc",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/atomist/cortex/issues"
+  },
+  "homepage": "https://github.com/atomist/cortex#readme",
+  "dependencies": {
+    "@atomist/rug": "${project.version}"
+  }
+}

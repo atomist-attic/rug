@@ -41,11 +41,10 @@ object TypeScriptBuilder {
     val sources = rawSources.map(_.edit(testTimeUserModel))
     val src = new FileSystemArtifactSource(FileSystemArtifactSourceIdentifier(
       new File("src/main/typescript")), new ArtifactFilter {
-      override def apply(s: String) =
-        !s.endsWith(".js")
+      override def apply(s: String) = !s.endsWith(".js")
     })
     // THIS ONLY WORKS IN TESTS NOT IN PRODUCTION BY DESIGN
-    val compiled = compiler.compile(src.underPath("node_modules/@atomist").withPathAbove(".atomist")
+    val compiled = compiler.compile(src.withPathAbove(".atomist")
       + sources.reduce((a, b) => a + b))
     compiled.underPath(".atomist").withPathAbove(".atomist/node_modules/@atomist")
   }

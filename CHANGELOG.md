@@ -44,12 +44,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Fix StackOverflow when calling toString on
     LinkableContainerTreeNode, can't recurse as this is a graph not a
     tree.
+-   Remove node_modules from TypeScript sources path [#442][442]
 
 [569]: https://github.com/atomist/rug/issues/569
 [566]: https://github.com/atomist/rug/issues/566
 [561]: https://github.com/atomist/rug/issues/561
 [570]: https://github.com/atomist/rug/issues/570
 [574]: https://github.com/atomist/rug/issues/574
+[442]: https://github.com/atomist/rug/issues/442
 
 ## [1.0.0-m.2] - 2017-04-26
 

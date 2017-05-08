@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js.interop
 
 import java.util
+import java.util.Objects
 
 import com.atomist.graph.GraphNode
 import com.atomist.rug.RugRuntimeException
@@ -93,6 +94,10 @@ class jsSafeCommittingProxy(
         super.getMember(name)
       case None if name == "toString" =>
         new AlwaysReturns(toString)
+      case None if name == "$jumpInto" =>
+        new SquirrelFunction(array = true)
+      case None if name == "$jumpIntoOne" =>
+        new SquirrelFunction(array = false)
       case _ =>
         // Invoke using navigation on underlying node or reflection
         invokeConsideringTypeInformation(name)
@@ -100,6 +105,37 @@ class jsSafeCommittingProxy(
     logger.debug(s"Returning member [$member] for $name in $this")
     member
   }
+
+  /**
+    * Type jump function
+    * @param array whether to return an array or a scalar
+    */
+  private class SquirrelFunction(array: Boolean) extends AbstractJSObject {
+
+    override def isFunction: Boolean = true
+
+    override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
+      val typeName = Objects.toString(args.head)
+      val rawSeq = (typeRegistry.findByName(typeName) match {
+        case Some(t: Type) =>
+          t.findAllIn(node)
+        case Some(_) =>
+          throw new IllegalArgumentException(s"Attempt to resolve type [$typeName], which does not support resolution under a GraphNode")
+        case None =>
+          throw new IllegalArgumentException(s"Attempt to resolve type [$typeName], which is not registered")
+      }).getOrElse(Nil)
+      if (array)
+        new JavaScriptArray(wrapIfNecessary(rawSeq, typeRegistry))
+      else {
+        require(rawSeq.size < 2, s"Needed 0 or 1 returns for type [$typeName] under $this, got ${rawSeq.size}. Call $$jumpInto to get an array")
+        val wrappedSeq = wrapIfNecessary(rawSeq, typeRegistry)
+        import scala.collection.JavaConverters._
+        wrappedSeq.asScala.headOption.orNull
+      }
+    }
+
+  }
+
 
   private def invokeConsideringTypeInformation(name: String): AnyRef = {
     val possibleOps = typ.allOperations.filter(op => name == op.name)

@@ -85,7 +85,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             AssertionResult(step.getText, Failed(t.getMessage))
         }
       case None =>
-        AssertionResult(step.getText, NotYetImplemented(step.getText))
+        AssertionResult(step.getText, NotYetImplemented("Then " + step.getText))
     }
   }
 
@@ -113,7 +113,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             None
         }
       case None =>
-        Some(AssertionResult(step.getText, NotYetImplemented(step.getText)))
+        Some(AssertionResult(step.getText, NotYetImplemented("When " + step.getText)))
     }
   }
 
@@ -132,7 +132,7 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
             None
         }
       case None =>
-        Some(AssertionResult(step.getText, NotYetImplemented(step.getText)))
+        Some(AssertionResult(step.getText, NotYetImplemented("Given " + step.getText)))
     }
   }
 

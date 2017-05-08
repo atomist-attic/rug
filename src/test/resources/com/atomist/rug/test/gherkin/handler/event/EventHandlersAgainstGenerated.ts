@@ -31,7 +31,9 @@ class ReturnsEmptyPlanEventHandlerGen1WithPathExpression implements HandleEvent<
 
     handle(m: Match<GraphNode, Build>) {
         let b: Build = m.matches[0];
-        let s = m.pathExpressionEngine.evaluate(b, "/anythingAtAll");
+        m.pathExpressionEngine.evaluate(b, "/anythingAtAll");
+        if (!m.contextRoot) throw new Error("No context root");
+        let s = m.pathExpressionEngine.evaluate(m.contextRoot, "/anythingAtAll");
         return new EventPlan();
     }
 }

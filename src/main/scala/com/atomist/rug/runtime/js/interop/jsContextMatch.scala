@@ -7,6 +7,7 @@ package com.atomist.rug.runtime.js.interop
 case class jsContextMatch(root: AnyRef,
                           matches: _root_.java.util.List[AnyRef],
                           pathExpressionEngine: jsPathExpressionEngine,
+                          contextRoot: AnyRef,
                           teamId: String) {
 
   import scala.collection.JavaConverters._

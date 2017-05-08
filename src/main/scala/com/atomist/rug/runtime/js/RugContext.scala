@@ -50,7 +50,7 @@ class BaseRugContext extends RugContext {
     */
   override def teamId: String = "LOCAL_CONTEXT"
 
-  override def contextRoot(): GraphNode = ???
+  override def contextRoot(): GraphNode = null
 }
 
 object LocalRugContext extends BaseRugContext {

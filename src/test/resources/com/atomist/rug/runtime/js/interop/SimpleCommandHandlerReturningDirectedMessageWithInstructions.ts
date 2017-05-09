@@ -25,7 +25,6 @@ class KittieFetcher implements HandleCommand {
         kind: "command",
         name: "GetKitties"
       },
-      label: "Fetch'em",
       id: "123"
     })
     plan.add(message);

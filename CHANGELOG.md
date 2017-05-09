@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Standardize use of `Object.defineProperty` in TypeScript decorators
 -   If the first parameter to a Rug Kind TypeScript decorator is
     omitted, the constructor's name is used instead. E.g. it is now
     possible to declare a command handler with:

@@ -2,11 +2,11 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValue, SimpleParameterValue}
-import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.Rug
 import com.atomist.rug.runtime.js.interop.NashornMapBackedGraphNode
 import com.atomist.rug.spi.Handlers.Instruction.{NonrespondableInstruction, Respond, RespondableInstruction}
 import com.atomist.rug.spi.Handlers._
+import com.atomist.rug.{BadPlanException, InvalidHandlerResultException}
 import com.atomist.util.JsonUtils
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import jdk.nashorn.internal.runtime.{ScriptRuntime, Undefined}
@@ -195,14 +195,20 @@ class PlanBuilder {
     }
 
     val target = jsInstruction.getMember("target") match {
-      case o: ScriptObjectMirror if o.hasMember("targetBranch") =>
-        val targetBranch = o.getMember("targetBranch").asInstanceOf[String]
+      case o: ScriptObjectMirror if o.hasMember("baseBranch") =>
+        val baseBranch = o.getMember("baseBranch").asInstanceOf[String]
         o.getMember("kind") match {
           case "github-pull-request" =>
             val title = if (o.hasMember("title")) Some(o.getMember("title").asInstanceOf[String]) else None
             val body = if (o.hasMember("body")) Some(o.getMember("body").asInstanceOf[String]) else None
-            val sourceBranch = if (o.hasMember("sourceBranch")) Some(o.getMember("sourceBranch").asInstanceOf[String]) else None
-            Some(GitHubPullRequest(targetBranch, sourceBranch, title, body))
+            val headBranch = if (o.hasMember("headBranch")) Some(o.getMember("headBranch").asInstanceOf[String]) else None
+            Some(GitHubPullRequest(baseBranch, headBranch, title, body))
+          case "github-branch" =>
+            val headBranch = o.getMember("headBranch") match {
+              case b: String => Some(b)
+              case _ => None
+            }
+            Some(GitHubBranch(baseBranch, headBranch))
           case k => throw new BadPlanException(s"Unsupported EditorTarget kind: $k")
         }
       case _ => None

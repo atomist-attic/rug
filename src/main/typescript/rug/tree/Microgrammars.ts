@@ -1,12 +1,12 @@
 
-type MicroMatcher = { kind: string } | String
+type MicroMatcher = { kind: string } | string;
 
-let Or = function(alternatives: MicroMatcher []): MicroMatcher {
-    let or = {
-        kind : "or",
-        components: alternatives
+const Or = (alternatives: MicroMatcher[]): MicroMatcher => {
+    const or = {
+        kind: "or",
+        components: alternatives,
     };
     return or;
 };
 
-export { MicroMatcher, Or }
+export { MicroMatcher, Or };

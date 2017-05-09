@@ -104,23 +104,35 @@ object Handlers {
     * Name of the target branch for an Edit
     */
   trait EditorTarget {
-    def targetBranch: String
+    def baseBranch: String
   }
 
   /**
     * A GitHub Pull Request for Edits
     *
-    * @param targetBranch
-    * @param sourceBranch
+    * @param baseBranch
+    * @param headBranch
     * @param title
     * @param body
     */
   case class GitHubPullRequest(
-                                override val targetBranch: String,
-                                sourceBranch: Option[String] = None,
+                                override val baseBranch: String,
+                                headBranch: Option[String] = None,
                                 title: Option[String] = None,
                                 body: Option[String] = None
                               )
+    extends EditorTarget {}
+
+  /**
+    * A GitHub Branch for Edits
+    *
+    * @param baseBranch
+    * @param headBranch
+    */
+  case class GitHubBranch(
+                     override val baseBranch: String,
+                     headBranch: Option[String] = None
+                   )
     extends EditorTarget {}
 
   object Instruction {

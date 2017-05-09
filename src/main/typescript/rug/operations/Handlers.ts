@@ -48,13 +48,13 @@ export interface ProjectInstruction<T extends InstructionKind> extends Instructi
   project: string | ProjectReference;
 }
 
-type EditorTargetKind = "direct" | "github-pull-request";
+type EditorTargetKind = "direct" | "github-pull-request" | "github-branch";
 /**
  * How should the `edit` be applied? PR details etc.
  */
 export interface EditorTarget<T extends EditorTargetKind> {
   kind: T;
-  targetBranch: string;
+  baseBranch: string;
 }
 
 /**
@@ -64,10 +64,17 @@ export class GitHubPullRequest implements EditorTarget<"github-pull-request"> {
   public kind: "github-pull-request" = "github-pull-request";
   public title?: string; // title of the PR
   public body?: string; // body of the PR (defaults to editor changelog)
-  public sourceBranch?: string; // name of PR source branch (default auto-generatoed)
-  constructor(public targetBranch: string = "master") {}
+  public headBranch?: string; // name of PR source branch (default auto-generated)
+  constructor(public baseBranch: string = "master") { }
 }
 
+/**
+ * Get an editor instruction to run a GitHub Pull Request
+ */
+export class GitHubBranch implements EditorTarget<"github-branch"> {
+  public kind: "github-branch" = "github-branch";
+  constructor(public baseBranch: string = "master", public headBranch?: string) { }
+}
 // tslint:disable-next-line:no-empty-interface
 export interface Edit extends ProjectInstruction<"edit"> {
   target?: EditorTarget<EditorTargetKind>;

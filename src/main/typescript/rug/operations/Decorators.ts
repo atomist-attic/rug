@@ -4,7 +4,13 @@ import { BaseParameter } from "./RugOperation";
 // used by annotation functions
 
 function set_metadata(obj: any, key: string, value: any) {
-  Object.defineProperty(obj, key, { value, writable: false, enumerable: true });
+  Object.defineProperty(obj, key,
+    {
+      value,
+      writable: false,
+      enumerable: false,
+      configurable: true,
+    });
 }
 
 function get_metadata(obj: any, key: string) {
@@ -50,7 +56,7 @@ function MappedParameter(foreignKey: string) {
 }
 
 /**
- * Decorator for editors. Use this intead of implementing the editor interface.
+ * Decorator for editors. Use this instead of implementing the editor interface.
  */
 
 function ruglike(fn: string, kind: string, msg: string) {
@@ -61,10 +67,10 @@ function ruglike(fn: string, kind: string, msg: string) {
         throw new Error(`${msg}`);
       }
       if (description === undefined) {
-        ctr.prototype.__description = nameOrDescription;
-      }else {
-        ctr.prototype.__description = description;
-        ctr.prototype.__name = nameOrDescription;
+        set_metadata(ctr.prototype, "__description", nameOrDescription);
+      } else {
+        set_metadata(ctr.prototype, "__description", description);
+        set_metadata(ctr.prototype, "__name", nameOrDescription);
       }
       ctr.prototype.__kind = kind;
     };
@@ -96,13 +102,13 @@ const EventHandler = (name: string, description: string, expression: PathExpress
     if (typeof ctr.prototype.handle !== "function") {
       throw new Error("handle must be a function with first parameter = Match<R,N>");
     }
-    ctr.prototype.__name = name;
-    ctr.prototype.__description = description;
-    ctr.prototype.__kind = "event-handler";
+    set_metadata(ctr.prototype, "__name", name);
+    set_metadata(ctr.prototype, "__description", description);
+    set_metadata(ctr.prototype, "__kind", "event-handler");
     if (typeof expression === "string") {
-      ctr.prototype.__expression = expression;
+      set_metadata(ctr.prototype, "__expression", expression);
     } else {
-      ctr.prototype.__expression = expression.expression;
+      set_metadata(ctr.prototype, "__expression", expression.expression);
     }
   };
 };
@@ -113,22 +119,23 @@ const EventHandler = (name: string, description: string, expression: PathExpress
 
 function Tags(...tags: string[]) {
   return (target: any) => {
-    target.prototype.__tags = tags;
+    set_metadata(target.prototype, "__tags", tags);
   };
 }
 
 function Intent(...intent: string[]) {
   return (target: any) => {
-    target.prototype.__intent = intent;
+    set_metadata(target.prototype, "__intent", intent);
   };
 }
 
 function Secrets(...secrets: string[]) {
   return (target: any) => {
-    if (target.prototype.__secrets == null) {
-      target.prototype.__secrets = [];
+    let current = get_metadata(target.prototype, "__secrets");
+    if (current == null) {
+      current = [];
     }
-    target.prototype.__secrets = target.prototype.__secrets.concat(secrets);
+    set_metadata(target.prototype, "__secrets", current.concat(secrets));
   };
 }
 

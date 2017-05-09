@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   `pathExpressionEngine` and `contextRoot` now available within event handlers
 -   **BREAKING** Added ability to specific `target` of an Edit Instruction
     so that source/target branches, title and body can be specified. Breaks
     the ProjectManagement Scala interface only.

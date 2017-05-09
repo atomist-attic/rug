@@ -66,6 +66,7 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           wrapOne(targetNode, ctx.typeRegistry),
           wrap(matches, ctx.typeRegistry),
           ctx.pathExpressionEngine,
+          ctx.contextRoot(),
           teamId = e.teamId)
         invokeMemberFunction(jsc,
           handler,

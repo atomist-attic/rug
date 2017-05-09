@@ -1,16 +1,15 @@
+
+import { HandlerContext } from "../operations/Handlers";
+
 /**
- *  Returned when a PathExpression is evaluated
+ *  Returned when a PathExpression is evaluated. Also the context for an event handler.
  */
-interface Match<R extends GraphNode,N extends GraphNode> {
+interface Match<R extends GraphNode,N extends GraphNode> extends HandlerContext {
 
-    root: R
+    root: R;
 
-    matches: N[]
+    matches: N[];
 
-    /**
-     * The handler can use this to run further path expressions.
-     */
-    pathExpressionEngine: PathExpressionEngine;
 }
 
 /**

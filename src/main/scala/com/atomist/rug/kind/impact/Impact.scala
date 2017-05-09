@@ -8,7 +8,7 @@ import com.atomist.tree.{ParentAwareTreeNode, SimpleTerminalTreeNode, TreeNode}
 
 /**
   * Represents the impact of one or more changes to a project.
-  * Allows finding file deltas ("files"), and the changed (new or updated) files ("changed")
+  * Allows finding file deltas ("files"), and the changed (new or updated) files ("changed").
   */
 class Impact(_parent: GraphNode, _before: ArtifactSource, _after: ArtifactSource)
   extends TreeNode {
@@ -67,6 +67,9 @@ class Impact(_parent: GraphNode, _before: ArtifactSource, _after: ArtifactSource
 
   override val childNodeTypes: Set[String] = Set("FileImpact", "FileAddition", "FileUpdate", "FileDeletion")
 
+  override def toString =
+    s"Impact: fileImpacts=${files.mkString(",")}"
+
 }
 
 abstract class FileImpact(_parent: TreeNode) extends ParentAwareTreeNode {
@@ -80,6 +83,8 @@ abstract class FileImpact(_parent: TreeNode) extends ParentAwareTreeNode {
   override def value: String = ???
 
   override def nodeName: String = getClass.getSimpleName
+
+  override def toString = s"${getClass.getSimpleName}:$path"
 
 }
 

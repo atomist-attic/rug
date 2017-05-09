@@ -107,7 +107,7 @@ class ImpactTypeTest extends FlatSpec with Matchers {
     val newAs = oldAs.edit(new FileEditor {
       override def canAffect(f: FileArtifact) = true
       override def edit(f: FileArtifact): FileArtifact = f.path match {
-        case "README.md" => StringFileArtifact("README.md", "NEW: Add stuff to this project")
+        case "README.md" => f.withContent("NEW: Add stuff to this project")
         case _ => f
       }
     })

@@ -75,8 +75,9 @@ class LocalInstructionRunner(currentRug: Rug,
             resolver.resolve(currentRug, extractName(instruction.detail)) match {
               case Some(rug: ProjectGenerator) =>
                 doWithProjectName(instruction, (projectName: String) => {
-                  projectManagement.generate(rug, parameters, projectName)
-                  Response(Success) //TODO serialize the response?
+                  val as = projectManagement.generate(rug, parameters, projectName)
+                  if (as != null) Response(Success)
+                  else Response(Failure, Some(s"failed to run generator ${rug.name} to create $projectName"))
                 })
               case Some(rug: ProjectEditor) =>
                 doWithProjectName(instruction, (projectName: String) => {

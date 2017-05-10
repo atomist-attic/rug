@@ -69,7 +69,7 @@ export class GitHubPullRequest implements EditorTarget<"github-pull-request"> {
 }
 
 /**
- * Get an editor instruction to run a GitHub Pull Request
+ * Get an editor instruction to run on a new GitHub branch
  */
 export class GitHubBranch implements EditorTarget<"github-branch"> {
   public kind: "github-branch" = "github-branch";

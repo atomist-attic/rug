@@ -4,7 +4,6 @@ import java.util
 import java.util.Objects
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.RugRuntimeException
 import com.atomist.rug.spi._
 import com.atomist.rug.ts.Cardinality
 import com.atomist.tree._
@@ -12,7 +11,7 @@ import com.atomist.tree.utils.NodeUtils
 import com.atomist.util.lang.JavaScriptArray
 import com.atomist.util.misc.SerializationFriendlyLazyLogging
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
-import jdk.nashorn.internal.runtime.ScriptRuntime
+import jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED
 
 /**
   * Proxy fronting tree nodes (including MutableView objects) exposed to JavaScript
@@ -108,6 +107,7 @@ class jsSafeCommittingProxy(
 
   /**
     * Type jump function
+    *
     * @param array whether to return an array or a scalar
     */
   private class SquirrelFunction(array: Boolean) extends AbstractJSObject {
@@ -163,7 +163,7 @@ class jsSafeCommittingProxy(
       case navigation if node.relatedNodeNames.contains(navigation) =>
         nodeNavigationPropertyAccess(node, navigation)
       case _ =>
-        ScriptRuntime.UNDEFINED
+        UNDEFINED
     }
     else node match {
       case sobtn: ScriptObjectBackedTreeNode =>
@@ -174,7 +174,7 @@ class jsSafeCommittingProxy(
           s"Attempt to invoke method [$name] on type [${typ.description}]: " +
             s"Wrapping node named ${node.nodeName}; " +
             s"No exported method with that name: Found ${st.allOperations.map(_.name).sorted}. Node tags are ${node.nodeTags}")
-        ScriptRuntime.UNDEFINED
+        UNDEFINED
     }
   }
 
@@ -190,8 +190,9 @@ class jsSafeCommittingProxy(
     override def call(thiz: scala.Any, args: AnyRef*): AnyRef = {
       possibleOps.find(op => op.parameters.size == args.size) match {
         case None =>
-          throw new RugRuntimeException(null,
+          logger.warn(
             s"Attempt to invoke method [$name] on type [${typ.description}] with ${args.size} arguments: No matching signature")
+          UNDEFINED
         case Some(op) =>
           // Reflective invocation
           val returned = op.invoke(node, args.toSeq)
@@ -231,8 +232,9 @@ class jsSafeCommittingProxy(
     val nodesAccessedThroughThisFunctionCall: Seq[GraphNode] = node.relatedNodesNamed(name)
     nodesAccessedThroughThisFunctionCall.toList match {
       case Nil =>
-        throw new RugRuntimeException(name,
+        logger.warn(name,
           s"No children or function found for property '$name' on $node")
+        UNDEFINED
       case null :: Nil => null
       case (ttn: TerminalTreeNode) :: Nil if ttn.hasTag(Cardinality.One2Many) =>
         // Pull out the value and put in an array

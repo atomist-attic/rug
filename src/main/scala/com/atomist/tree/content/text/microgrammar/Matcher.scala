@@ -134,12 +134,8 @@ case class PatternMatch(
                          matcherId: String)
   extends Positioned {
 
-  def remainderOffset: Int = resultingInputState.offset + matched.length
-
   override def startPosition: InputPosition = endPosition - matched.length
 
   override def endPosition: InputPosition = resultingInputState.inputPosition
 
-  def remainder: CharSequence = resultingInputState.input.subSequence(remainderOffset, resultingInputState.input.length())
-  
 }

@@ -44,6 +44,9 @@ object JavaScriptEventHandlerTest {
        |export let handler = new SimpleHandler();
       """.stripMargin)
 
+  val eventHandlerWithLifecycleMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "EventHandlerWithLifecycleMessage.ts"))
+
   val reOpenCloseIssueProgram = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "ReopenIssueHandler.ts"))
 
@@ -165,6 +168,20 @@ class JavaScriptEventHandlerTest extends FlatSpec with Matchers with DiagrammedA
     assert(actualPlan.get.messages == expectedMessages)
 
     // TODO this will no longer match as Plan can now expose a native object
+  }
+
+  it should "return plan with LifecycleMessage" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(
+      SimpleFileBasedArtifactSource(JavaScriptEventHandlerTest.eventHandlerWithLifecycleMessage))
+    val finder = new JavaScriptEventHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val actualPlan = handlers.head.handle(LocalRugContext(TestTreeMaterializer), SysEvent)
+    assert(actualPlan.nonEmpty)
+    assert(actualPlan.get.messages.size === 1)
+    val msg = actualPlan.get.lifecycle.head
+    assert(msg.node != null)
+    assert(msg.actions.length == 1)
   }
 
   it should "return the right failure if a rug is not found" in {

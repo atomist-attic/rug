@@ -1,3 +1,4 @@
+import { Parameter } from "./RugOperation";
 import {
   GraphNode,
   Match,
@@ -5,7 +6,6 @@ import {
   PathExpressionEngine,
   TreeNode,
 } from "../tree/PathExpression";
-import { Parameter } from "./RugOperation";
 
 export interface RugCoordinate {
   readonly name: string;
@@ -36,6 +36,11 @@ export class CommandRespondable<T extends Edit | Generate | Execute | Command> {
 export class Presentable<T extends InstructionKind> {
   public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
   public label?: string;
+  public id?: string;
+}
+
+export class Identifiable<T extends InstructionKind> {
+  public instruction: Instruction<T> | PresentableGenerate | PresentableEdit;
   public id?: string;
 }
 
@@ -222,7 +227,7 @@ abstract class LocallyRenderedMessage<T extends MessageKind> implements Message<
 
   public contentType: MessageMimeType = MessageMimeTypes.PLAIN_TEXT;
   public body: string;
-  public instructions?: Array<Presentable<any>> = [];
+  public instructions?: Array<Identifiable<any>> = [];
 
   public addAddress?(address: MessageAddress): this {
     if (address instanceof UserAddress) {
@@ -233,7 +238,7 @@ abstract class LocallyRenderedMessage<T extends MessageKind> implements Message<
     return this;
   }
 
-  public addAction?(instruction: Presentable<any>): this {
+  public addAction?(instruction: Identifiable<any>): this {
     this.instructions.push(instruction);
     return this;
   }

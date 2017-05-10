@@ -10,6 +10,11 @@ When("a visionary leader enters", world => {
    const owner = "atomist";
    const repoName = "rug";
    const p = world.emptyProject("p1");
+
+   const pc = world.projectStartingWith(p);
+   if (pc.name != p.name) throw "Project names differ";
+   if (pc.totalFileCount != p.totalFileCount) throw "Project file counts differ";
+
    p.addFile("pom.xml", "<xml></xml>")
    let repo = new cortex.Repo().withOwner(owner).withName(repoName);
    world.defineRepo(owner, repoName, "master", p);

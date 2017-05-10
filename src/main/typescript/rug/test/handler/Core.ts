@@ -33,6 +33,11 @@ export interface HandlerScenarioWorld<T extends Plan> extends ScenarioWorld {
     emptyProject(name: string): Project;
 
     /**
+     * Return a distinct project instance that contains all the files from the initial project.
+     */
+    projectStartingWith(project: Project): Project;
+
+    /**
      * Add this node to the root context so it can
      * be matched by path expressions other than event handler expressions
      */

@@ -38,6 +38,10 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     new ProjectMutableView(originalBackingObject = EmptyArtifactSource(name = name))
   }
 
+  def projectStartingWith(project: ProjectMutableView): ProjectMutableView = {
+    new ProjectMutableView(originalBackingObject = project.currentBackingObject)
+  }
+
   def defineRepo(owner: String, name: String, branchOrSha: String, p: ProjectMutableView): Unit =
     repoResolver.defineRepo(owner, name, branchOrSha, p.currentBackingObject)
 

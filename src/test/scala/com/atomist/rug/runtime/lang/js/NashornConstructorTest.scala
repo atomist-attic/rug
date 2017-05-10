@@ -13,13 +13,13 @@ object NashornConstructorTest {
       |var RugOperation_1 = require('@atomist/rug/operations/RugOperation');
       |var SimpleEditor = (function () {
       |    function SimpleEditor() {
-      |        this.name = "Simple";
-      |        this.description = "My simple editor";
-      |        this.parameters = [{"name": "content", "description": "desc", "pattern": "@any"}]
+      |        this.__kind = "editor"
+      |        this.__name = "Simple";
+      |        this.__description = "My simple editor";
+      |        this.__parameters = [{"name": "content", "description": "desc", "pattern": "@any"}]
       |    }
       |    SimpleEditor.prototype.edit = function (project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
-      |        return new RugOperation_1.Result(RugOperation_1.Status.Success, "Edited Project now containing " + project.fileCount() + " files: \n");
       |    };
       |    return SimpleEditor;
       |}());

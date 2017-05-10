@@ -1,15 +1,12 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {ReplacerClj} from '@atomist/rug/model/Core'
 
-class Replacer implements ProjectEditor {
+@Editor("Replacer")
+class Replacer  {
 
-    name: string = "Replacer"
-    
-    description: string = "Replacer"
-    
     edit(project: Project) {
         let eng: PathExpressionEngine = project.context.pathExpressionEngine;
         

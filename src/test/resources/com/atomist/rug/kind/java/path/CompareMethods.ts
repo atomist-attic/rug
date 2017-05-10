@@ -1,5 +1,5 @@
 import {Project,File} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpression,PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import { stringify, nodeReplacer } from '@atomist/rug/tree/TreeHelper'
 
@@ -25,11 +25,8 @@ function springExportedMethodsIn(eng: DecoratingPathExpressionEngine, f: File): 
             });
 }
 
-export class CompareMethods implements ProjectEditor {
-
-    name = "CompareMethods"
-
-    description = "Compare methods"
+@Editor("Compare methods")
+export class CompareMethods  {
 
     edit(project: Project) {
       const eng = new DecoratingPathExpressionEngine(project.context.pathExpressionEngine);

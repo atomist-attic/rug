@@ -1,4 +1,4 @@
-import {ProjectEditor,EditProject} from '@atomist/rug/operations/ProjectEditor'
+import {EditProject} from '@atomist/rug/operations/ProjectEditor'
 import {Project, Xml} from '@atomist/rug/model/Core'
 import { Pattern, RugOperation } from '@atomist/rug/operations/RugOperation'
 import {PathExpression,PathExpressionEngine,TextTreeNode} from '@atomist/rug/tree/PathExpression'

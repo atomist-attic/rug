@@ -83,7 +83,6 @@ object ProjectTestTargets {
   def generationTest(gen: String, projectName: String, params: Map[String,String]): String =
     s"""
        |import { Project } from "@atomist/rug/model/Core"
-       |import { ProjectGenerator } from "@atomist/rug/operations/ProjectGenerator"
        |import { Given, When, Then, ProjectScenarioWorld } from "@atomist/rug/test/project/Core"
        |
        |When("run simple generator", (p, w) => {
@@ -127,7 +126,6 @@ object ProjectTestTargets {
   def generateWithInvalidParameters(gen: String, projectName: String, params: Map[String,String]): String =
     s"""
        |import { Project } from "@atomist/rug/model/Core"
-       |import { ProjectGenerator } from "@atomist/rug/operations/ProjectGenerator"
        |import { Given, When, Then, ProjectScenarioWorld } from "@atomist/rug/test/project/Core"
        |
        |When("run simple generator", (p, w) => {

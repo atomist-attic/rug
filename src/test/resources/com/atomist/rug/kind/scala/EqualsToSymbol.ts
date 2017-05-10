@@ -1,14 +1,13 @@
 import {Project,File} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpression,PathExpressionEngine,TextTreeNode} from '@atomist/rug/tree/PathExpression'
 
 /**
  * Upgrade Scala use of Java-style "a.equals(b)" to
  * more readable and idiomatic "a == b"
  */
-class EqualsToSymbol implements ProjectEditor {
-    name: string = "ConvertEqualsToSymbol"
-    description: string = "Convert .equals to =="
+@Editor("Edits")
+class EqualsToSymbol  {
 
     edit(project: Project) {
       let eng: PathExpressionEngine = project.context.pathExpressionEngine

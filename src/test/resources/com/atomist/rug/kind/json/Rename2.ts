@@ -1,11 +1,10 @@
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+import {Editor} from "@atomist/rug/operations/Decorators"
 import {Status, Result} from "@atomist/rug/operations/RugOperation"
 import {Project,Pair} from '@atomist/rug/model/Core'
 import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
 
-class Rename2 implements ProjectEditor {
-    name: string = "Rename"
-    description: string = "Rename"
+@Editor("Rename", "Rename")
+class Rename2 {
 
     edit(project: Project) {
 

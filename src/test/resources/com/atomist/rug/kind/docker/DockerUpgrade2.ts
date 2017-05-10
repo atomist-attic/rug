@@ -1,4 +1,4 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
@@ -6,12 +6,9 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 
 import {DockerFile} from '@atomist/rug/model/Core'
 
-class DockerUpgrade2 implements ProjectEditor {
+@Editor("DockerUpgrade")
+class DockerUpgrade2  {
 
-    name: string = "DockerUpgrade"
-    
-    description: string = "DockerUpgrade"
-    
     edit(project: Project) {
     
         let eng: PathExpressionEngine = project.context.pathExpressionEngine;

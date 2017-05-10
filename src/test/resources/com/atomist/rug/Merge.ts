@@ -1,12 +1,8 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 
-
-class Merge implements ProjectEditor {
-
-    name: string = "Merge"
-    
-    description: string = "Merge file"
+@Editor("Edits")
+class Merge  {
     
     edit(project: Project) {     
         project.merge("template.vm", "dude.txt", {})

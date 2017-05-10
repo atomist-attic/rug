@@ -1,11 +1,9 @@
 import {Project} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Parameter} from '@atomist/rug/operations/Decorators'
 
-
-export class AlpEditor implements ProjectEditor {
-    name: string = "AlpEditor";
-    description: string = "ALP history";
+@Editor("edits")
+export class AlpEditor  {
 
     edit(project: Project) {
         project.addFile("Paul", "Can a souffle rise twice?");
@@ -14,10 +12,8 @@ export class AlpEditor implements ProjectEditor {
 
 export const alpEditor = new AlpEditor();
 
-
-export class AlpEditorWithParameters implements ProjectEditor {
-    name: string = "AlpEditorWithParameters"
-    description: string = "ALP history";
+@Editor("edits")
+export class AlpEditorWithParameters  {
 
     @Parameter({description: "Bold PM", pattern: "^[A-Za-z]*$"})
     heir: string;

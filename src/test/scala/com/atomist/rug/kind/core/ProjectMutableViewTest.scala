@@ -19,13 +19,13 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   val SimpleEditor: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {EditProject} from '@atomist/rug/operations/ProjectEditor'
        |import {File} from '@atomist/rug/model/Core'
        |import {Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {Editor} from '@atomist/rug/operations/Decorators'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
+       |@Editor("A nice little editor")
+       |class SimpleEditor implements EditProject {
        |    edit(project: Project) {}
        |  }
        |export let editor = new SimpleEditor()
@@ -125,7 +125,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
     val caught = intercept[EditorNotFoundException] {
       pmv.editWith("fully:qualified:Simple", None)
     }
-    assert(caught.getMessage === "Could not find editor: fully:qualified:Simple. Did you mean: Simple?")
+    assert(caught.getMessage === "Could not find editor [fully:qualified:Simple]. Known editors:\n[SimpleEditor]")
   }
 
   it should "handle path and content replace" in {

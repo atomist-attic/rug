@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.graph.GraphNode
 import com.atomist.param.Tag
+import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.js.interop.{NashornMapBackedGraphNode, jsContextMatch, jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.{EventHandler, SystemEvent}
 import com.atomist.rug.spi.Handlers.Plan
@@ -16,11 +17,19 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * Discover JavaScriptEventHandlers from a Nashorn instance
   */
 class JavaScriptEventHandlerFinder
-  extends BaseJavaScriptHandlerFinder[JavaScriptEventHandler] {
+  extends JavaScriptRugFinder[JavaScriptEventHandler]
+    with JavaScriptUtils {
 
-  override def kind = "event-handler"
+  /**
+    * Is the supplied thing valid at all?
+    */
+  def isValid(obj: ScriptObjectMirror): Boolean = {
+    obj.getMember("__kind") == "event-handler" &&
+      obj.hasMember("handle") &&
+      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
+  }
 
-  override def extractHandler(jsc: JavaScriptContext, someVar: ScriptObjectMirror): Option[JavaScriptEventHandler] = {
+  override def create(jsc: JavaScriptContext, someVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptEventHandler] = {
     Option(someVar.getMember("__expression")).map(v => {
       val expression: String = v.asInstanceOf[String]
       new JavaScriptEventHandler(jsc, someVar, expression, name(someVar), description(someVar), tags(someVar), secrets(someVar))
@@ -68,9 +77,11 @@ class JavaScriptEventHandler(jsc: JavaScriptContext,
           ctx.pathExpressionEngine,
           ctx.contextRoot(),
           teamId = e.teamId)
-        invokeMemberFunction(jsc,
+        invokeMemberFunction(
+          jsc,
           handler,
           "handle",
+          None,
           jsScalaHidingProxy(cm, returnNotToProxy = _ => true)
         ) match {
           case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))

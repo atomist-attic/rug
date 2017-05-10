@@ -50,7 +50,6 @@ interface BaseParameter {
   readonly displayable?: boolean;
   readonly maxLength?: number;
   readonly minLength?: number;
-  readonly tags?: string[];
 }
 
 interface Parameter extends BaseParameter {

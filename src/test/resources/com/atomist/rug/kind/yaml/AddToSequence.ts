@@ -1,12 +1,11 @@
 import {Project, File} from "@atomist/rug/model/Core";
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor";
+import {Editor} from "@atomist/rug/operations/Decorators";
 import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "@atomist/rug/tree/PathExpression";
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class AddToSequence implements ProjectEditor {
-    name: string = "AddToSequence"
-    description = "Add to sequence"
+@Editor("Edits")
+class AddToSequence  {
 
     edit(project: Project) {
         let eng: PathExpressionEngine =

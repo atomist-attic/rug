@@ -1,5 +1,4 @@
 import { Project } from "@atomist/rug/model/Core"
-import { ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
 import { Given, When, Then } from "@atomist/rug/test/project/Core"
 import * as helpers from "@atomist/rug/test/project/Helpers"
 

@@ -13,19 +13,22 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
 
   val EditorWithFancyListArray =
     """import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
       |import {File} from '@atomist/rug/model/Core'
       |
-      |import {Result,Status, Parameter} from '@atomist/rug/operations/RugOperation'
+      |import {Result,Status} from '@atomist/rug/operations/RugOperation'
       |
-      |class ConstructedEditor implements ProjectEditor {
-      |    name: string = "Constructed"
-      |    description: string = "A nice little editor"
-      |    parameters: Parameter[] = [{name: "packageName", description: "The java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100}]
+      |@Editor("Constructed", "A nice little editor")
+      |class ConstructedEditor  {
+      |
+      |    @Parameter({description: "The java package name", displayName: "Java Package", pattern: "^.*$", maxLength: 100})
+      |    packageName: string;
+      |
       |    lyst: string[]
-      |    edit(project: Project, {packageName, strings}: {packageName: string, strings: string[]}) {
+      |    edit(project: Project) {
       |
-      |       this.lyst = strings
+      |       this.lyst = project.files.map(f => f.content)
+      |       this.lyst[0] = "blah"
       |
       |       this.lyst[0].toString()
       |
@@ -240,9 +243,7 @@ class JavaScriptArrayTest extends FlatSpec with Matchers {
 
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
 
-    val lyzt = new util.ArrayList[String]()
-    lyzt.add("blah")
-    jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed", "strings" -> new JavaScriptArray(lyzt)))) match {
+    jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: NoModificationNeeded =>
       sm.comment.contains("OK") should be(true)
       case _ => ???

@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param._
+import com.atomist.project.archive.RugResolver
 import com.atomist.rug.InvalidHandlerResultException
 import com.atomist.rug.runtime.CommandHandler
 import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
@@ -15,12 +16,21 @@ import scala.collection.JavaConverters._
   * Finds JavaScriptCommandHandlers in Nashorn vars
   */
 class JavaScriptCommandHandlerFinder
-  extends BaseJavaScriptHandlerFinder[JavaScriptCommandHandler] {
+  extends JavaScriptRugFinder[JavaScriptCommandHandler]
+    with JavaScriptUtils {
 
-  override def kind = "command-handler"
+  /**
+    * Is the supplied thing valid at all?
+    */
+  def isValid(obj: ScriptObjectMirror): Boolean = {
+    obj.getMember("__kind") == "command-handler" &&
+      obj.hasMember("handle") &&
+      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
+  }
 
-  override def extractHandler(jsc: JavaScriptContext,
-                              handler: ScriptObjectMirror): Option[JavaScriptCommandHandler] = {
+  override def create(jsc: JavaScriptContext,
+                      handler: ScriptObjectMirror,
+                      resolver: Option[RugResolver]): Option[JavaScriptCommandHandler] = {
     Some(new JavaScriptCommandHandler(
       jsc,
       handler,
@@ -53,13 +63,13 @@ class JavaScriptCommandHandlerFinder
     * See MappedParameters in Handlers.ts for examples.
     */
   protected def mappedParameters(someVar: ScriptObjectMirror): Seq[MappedParameter] = {
-    getMember(someVar, Seq("__mappedParameters")) match {
+    getMember(someVar, "__mappedParameters") match {
       case Some(ps: ScriptObjectMirror) if !ps.isEmpty =>
         ps.asScala.collect {
           case (_, details: ScriptObjectMirror) =>
             val localKey = details.getMember("localKey").asInstanceOf[String]
             val foreignKey = details.getMember("foreignKey").asInstanceOf[String]
-            MappedParameter(localKey,foreignKey)
+            MappedParameter(localKey, foreignKey)
         }.toSeq
       case _ => Seq()
     }
@@ -79,8 +89,8 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                override val secrets: Seq[Secret],
                                override val intent: Seq[String] = Seq())
   extends CommandHandler
-  with MappedParameterSupport
-  with JavaScriptUtils {
+    with MappedParameterSupport
+    with JavaScriptUtils {
 
   /**
     * We expect all mapped parameters to also be passed in with the normal params
@@ -89,9 +99,12 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     // We need to proxy the context to allow for property access
-    invokeMemberFunction(jsc, handler, "handle",
-      jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy),
-      validated) match {
+    invokeMemberFunction(
+      jsc,
+      handler,
+      "handle",
+      Some(validated),
+      jsScalaHidingProxy(ctx, returnNotToProxy = jsSafeCommittingProxy.DoNotProxy)) match {
       case plan: ScriptObjectMirror =>
         ConstructPlan(plan, Some(this))
       case other =>

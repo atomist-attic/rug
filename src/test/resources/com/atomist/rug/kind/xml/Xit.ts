@@ -1,14 +1,11 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project, Xml} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 import {PathExpression,PathExpressionEngine,TextTreeNode} from '@atomist/rug/tree/PathExpression'
 
-class Xit implements ProjectEditor {
+@Editor("Xit")
+class Xit  {
 
-    name: string = "Xit"
-    
-    description: string = "Xit"
-    
     edit(project: Project) {
     
         let eng: PathExpressionEngine = project.context.pathExpressionEngine;

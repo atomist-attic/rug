@@ -2,6 +2,7 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
+import com.atomist.rug.TestUtils.contentOf
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -81,7 +82,7 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     handler.description should be (kittyDesc)
     handler.tags.size should be (2)
     val response = Response(Status.Success, Some("It worked! :p"), Some(204), Some("woot"))
-    val plan = handler.handle(response, SimpleParameterValues(SimpleParameterValue("name","his dudeness")))
+    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues(SimpleParameterValue("name","his dudeness")))
     //TODO validate the plan
   }
 
@@ -98,6 +99,20 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
         |  "reasons": [{"main" : "because it's hard to parse, and annoying to write"}]
         |}
       """.stripMargin))
-    val plan = handler.handle(response, SimpleParameterValues.Empty)
+    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues.Empty)
+  }
+
+
+  val responseHandlerAccessContext = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ResponseHandlerAccessingContext.ts"))
+
+  it should "pass rug context to response handlers" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerAccessContext))
+    val finder = new JavaScriptResponseHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val handler = handlers.head
+    val response = Response(Status.Success, Some("It worked! :p"), Some(204))
+    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues.Empty)
   }
 }

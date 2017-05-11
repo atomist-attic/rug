@@ -52,7 +52,7 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     with ParameterizedSupport
     with JavaScriptUtils {
 
-  override def handle(response: Response, params: ParameterValues): Option[Plan] = {
+  override def handle(ctx: RugContext, response: Response, params: ParameterValues): Option[Plan] = {
     //TODO this handle method is almost identical to the command handler - extract it
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
@@ -62,7 +62,8 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
       handler,
       "handle",
       Some(validated),
-      jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil)))) match {
+      jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))),
+      jsScalaHidingProxy(ctx)) match {
       case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }

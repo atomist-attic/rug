@@ -93,7 +93,7 @@ class LocalInstructionRunner(currentRug: Rug,
               case Some(rug: ResponseHandler) =>
                 callbackInput match {
                   case Some(response) =>
-                    val planOption = rug.handle(response, parameters)
+                    val planOption = rug.handle(rugContext, response, parameters)
                     Response(Success, None, None, planOption)
                   case c =>
                     throw new BadPlanException(s"Callback input was not recognized: $c")

@@ -248,7 +248,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
 
 class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
 
-  override def handle(response: Response, params: ParameterValues): Option[Plan] = {
+  override def handle(ctx: RugContext, response: Response, params: ParameterValues): Option[Plan] = {
     None
   }
 

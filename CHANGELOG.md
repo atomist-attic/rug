@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Added `HandlerContext` as second parameter to `ResponseHandler.handle`
+    invocations [587]
 -   Added `Identifiable` instruction that can be used for `DirectedMessage`
     and `ResponseMessage`
 
@@ -29,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Fixed handling of fields set with Object.defineProperty (now enumerable)
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
+
+[587]: https://github.com/atomist/rug/issues/587
 
 ## [1.0.0-m.3] - 2017-05-09
 

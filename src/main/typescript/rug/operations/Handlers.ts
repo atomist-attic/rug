@@ -1,4 +1,3 @@
-import { Parameter } from "./RugOperation";
 import {
   GraphNode,
   Match,
@@ -6,6 +5,7 @@ import {
   PathExpressionEngine,
   TreeNode,
 } from "../tree/PathExpression";
+import { Parameter } from "./RugOperation";
 
 export interface RugCoordinate {
   readonly name: string;
@@ -115,7 +115,7 @@ export interface HandleEvent<R extends GraphNode, M extends GraphNode> {
 }
 
 export interface HandleResponse<T> {
-  handle(response: Response<T>): EventPlan | CommandPlan;
+  handle(response: Response<T>, ctx?: HandlerContext): EventPlan | CommandPlan;
 }
 
 /**

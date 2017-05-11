@@ -2,14 +2,15 @@ package com.atomist.rug.runtime.js
 
 import javax.script.{ScriptContext, SimpleBindings}
 
-import com.atomist.param.{Parameter, ParameterValues, Tag}
-import com.atomist.rug.{InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
+import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
+import com.atomist.rug.{BadPlanException, InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
 import com.atomist.rug.spi.Secret
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
+import jdk.nashorn.internal.runtime.ScriptRuntime
 
 import scala.collection.JavaConverters._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Stuff for all JavaScript based things
@@ -24,20 +25,14 @@ trait JavaScriptUtils {
     *               appropriate JavaScript types if necessary
     * @return result of the invocation
     */
-  protected def invokeMemberFunction(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, member: String, args: Object*): Any = {
+  protected def invokeMemberFunction(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, member: String, params: Option[ParameterValues], args: Object*): Any = {
     jsc.withEnhancedExceptions {
       val clone = cloneVar(jsc, jsVar)
-
-      // Translate parameters if necessary
-      val processedArgs = args.collect {
-        case args: ParameterValues =>
-          val params = args.parameterValues.map(p => p.getName -> p.getValue).toMap
-          setParameters(clone, params)
-          params.asJava
-        case x => x
+      if(params.nonEmpty){
+        setParameters(clone, params.get.parameterValues)
       }
       //TODO wrap parameters in safe committing proxy
-      clone.asInstanceOf[ScriptObjectMirror].callMember(member, processedArgs: _*)
+      clone.asInstanceOf[ScriptObjectMirror].callMember(member, args: _*)
     }
   }
 
@@ -57,7 +52,7 @@ trait JavaScriptUtils {
   /**
     * Make sure we only set fields if they've been decorated with @Parameter or @MappedParameter
     */
-  protected def setParameters(clone: ScriptObjectMirror, params: Map[String, AnyRef]): Unit = {
+  protected def setParameters(clone: ScriptObjectMirror, params: Seq[ParameterValue]): Unit = {
     val decoratedParamNames: Set[String] = clone.get("__parameters") match {
       case ps: ScriptObjectMirror if !ps.isEmpty =>
         ps.asScala.collect {
@@ -75,30 +70,29 @@ trait JavaScriptUtils {
         }.toSet[String]
       case _ => Set()
     }
-    params.foreach {
-      case (k: String, v) =>
-        if(decoratedParamNames.contains(k)){
-          clone.put(k,v)
-        }
-        if(mappedParams.contains(k)){
-          clone.put(k,v)
-        }
-    }
+    params.foreach(p => {
+      if(decoratedParamNames.contains(p.getName)){
+        clone.put(p.getName,p.getValue)
+      }
+      if(mappedParams.contains(p.getName)){
+        clone.put(p.getName,p.getValue)
+      }
+    })
   }
 
   /**
     * Fetch a member by name.
     */
-  protected def getMember(someVar: ScriptObjectMirror, names: Seq[String]) : Option[AnyRef] = {
-    names.find(someVar.hasMember) match {
-      case Some(name) => Some(someVar.getMember(name))
+  protected def getMember(someVar: ScriptObjectMirror, name: String) : Option[AnyRef] = {
+    someVar.getMember(name) match {
+      case value if value != ScriptRuntime.UNDEFINED => Some(value)
       case _ => Option.empty
     }
   }
 
-  protected def tags(someVar: ScriptObjectMirror, names: Seq[String] = Seq("tags")): Seq[Tag] = {
+  protected def tags(someVar: ScriptObjectMirror): Seq[Tag] = {
     Try {
-      getMember(someVar, names) match {
+      getMember(someVar, "__tags") match {
         case Some(som: ScriptObjectMirror) =>
           val stringValues = som.values().asScala collect {
             case s: String => s
@@ -112,8 +106,8 @@ trait JavaScriptUtils {
   /**
     * Either read the parameters field or look for annotated parameters.
     */
-  protected def parameters(someVar: ScriptObjectMirror, names: Seq[String] = Seq("parameters")): Seq[Parameter] = {
-    getMember(someVar, names) match {
+  protected def parameters(someVar: ScriptObjectMirror): Seq[Parameter] = {
+    getMember(someVar, "__parameters") match {
       case Some(ps: ScriptObjectMirror) if !ps.isEmpty =>
         ps.asScala.collect {
           case (_, details: ScriptObjectMirror) => parameterVarToParameter(someVar, details)
@@ -178,16 +172,26 @@ trait JavaScriptUtils {
       case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
     }
 
-    details.get("default") match {
-      case x: String =>
-        if (!parameter.isValidValue(x))
-          throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($x) is not valid: $parameter")
-        parameter.setDefaultValue(x)
-      case _ =>
-    }
     if(rug.hasMember(pName) && rug.getMember(pName) != null){
+      val asString = rug.getMember(pName).toString
+      if (!parameter.isValidValue(asString))
+        throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($asString) is not valid: $parameter")
       parameter.setDefaultValue(rug.getMember(pName).toString)
     }
     parameter
   }
+  protected def name(obj: ScriptObjectMirror): String = {
+    if(obj.hasMember("__name")){
+      obj.getMember("__name").asInstanceOf[String]
+    }else{
+      Try(obj.getMember("constructor").asInstanceOf[ScriptObjectMirror].getMember("name").asInstanceOf[String]) match {
+        case Success(name) => name
+        case Failure(error) => throw new BadPlanException(s"Could not determine name of Rug", error)
+      }
+    }
+  }
+
+  protected def description(obj: ScriptObjectMirror): String = obj.getMember("__description").asInstanceOf[String]
+
+  protected def kind(obj: ScriptObjectMirror): String = obj.getMember("__kind").asInstanceOf[String]
 }

@@ -1,17 +1,14 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from "@atomist/rug/operations/Decorators";
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Properties} from '@atomist/rug/model/Core'
 
-class SetProperty implements ProjectEditor {
-
-    name: string = "PropertiesEdit"
+@Editor("PropertiesEdit")
+class SetProperty  {
 
     @Parameter({description: "Change comment to this", pattern: "^[\\s\\S]*$"})
     value: string
-    
-    description: string = "PropertiesEdit"
     
     edit(project: Project) {
     

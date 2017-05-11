@@ -116,7 +116,7 @@ object JavaScriptEventHandlerTest {
        |import {TreeNode, Match, PathExpression} from '@atomist/rug/tree/PathExpression'
        |import {EventHandler, Tags} from '@atomist/rug/operations/Decorators'
        |
-       |@EventHandler("BuildHandler", "Handles a Build event", new PathExpression<TreeNode,TreeNode>("/nomatch"))
+       |@EventHandler("Handles a Build event", new PathExpression<TreeNode,TreeNode>("/nomatch"))
        |@Tags("github", "build")
        |class SimpleHandler implements HandleEvent<TreeNode,TreeNode> {
        |  handle(event: Match<TreeNode, TreeNode>){

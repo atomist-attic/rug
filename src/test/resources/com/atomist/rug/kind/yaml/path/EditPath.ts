@@ -1,4 +1,4 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from "@atomist/rug/operations/Decorators";
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
@@ -6,11 +6,9 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 /**
  * Generic edit, path in path expression
  */
-class YamlEdit implements ProjectEditor {
 
-    name: string = "YamlEdit"
-    
-    description: string = "YamlEdit"
+@Editor("YamlEdit")
+class YamlEdit  {
 
     @Parameter({description: "Path expression", pattern: "^.*$"})
     path: string

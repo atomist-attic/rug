@@ -8,7 +8,7 @@ function set_metadata(obj: any, key: string, value: any) {
     {
       value,
       writable: false,
-      enumerable: false,
+      enumerable: true,
       configurable: true,
     });
 }
@@ -96,19 +96,32 @@ const ResponseHandler = ruglike(
   "response-handler",
   "handle must be a function with first parameter = Response<T>");
 
-const EventHandler = (name: string, description: string, expression: PathExpression<any, any> | string) => {
+const EventHandler = (
+  nameOrDescription: string,
+  descriptionOrExpression: string | PathExpression<any, any>,
+  expression?: PathExpression<any, any> | string) => {
   // tslint:disable-next-line:ban-types
   return (ctr: Function) => {
     if (typeof ctr.prototype.handle !== "function") {
       throw new Error("handle must be a function with first parameter = Match<R,N>");
     }
-    set_metadata(ctr.prototype, "__name", name);
-    set_metadata(ctr.prototype, "__description", description);
-    set_metadata(ctr.prototype, "__kind", "event-handler");
-    if (typeof expression === "string") {
-      set_metadata(ctr.prototype, "__expression", expression);
+    if (expression !== undefined) {
+      set_metadata(ctr.prototype, "__name", nameOrDescription);
+      set_metadata(ctr.prototype, "__description", descriptionOrExpression);
+      set_metadata(ctr.prototype, "__kind", "event-handler");
+      if (typeof expression === "string") {
+        set_metadata(ctr.prototype, "__expression", expression);
+      } else {
+        set_metadata(ctr.prototype, "__expression", expression.expression);
+      }
     } else {
-      set_metadata(ctr.prototype, "__expression", expression.expression);
+      set_metadata(ctr.prototype, "__description", nameOrDescription);
+      set_metadata(ctr.prototype, "__kind", "event-handler");
+      if (typeof descriptionOrExpression === "string") {
+        set_metadata(ctr.prototype, "__expression", descriptionOrExpression);
+      } else {
+        set_metadata(ctr.prototype, "__expression", descriptionOrExpression.expression);
+      }
     }
   };
 };

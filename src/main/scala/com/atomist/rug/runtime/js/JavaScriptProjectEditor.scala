@@ -15,14 +15,19 @@ import scala.util.control.NonFatal
   * Find Editors in a Nashorn.
   */
 class JavaScriptProjectEditorFinder
-  extends JavaScriptProjectOperationFinder[JavaScriptProjectEditor]{
+  extends JavaScriptRugFinder[JavaScriptProjectEditor] {
 
-  override def signatures: Set[JsRugOperationSignature] = Set(
-    JsRugOperationSignature(Set("edit"),Set("name", "description")),
-    JsRugOperationSignature(Set("edit"), Set("__name", "__description")))
+  /**
+    * Is the supplied thing valid at all?
+    */
+  def isValid(obj: ScriptObjectMirror): Boolean = {
+    obj.getMember("__kind") == "editor" &&
+      obj.hasMember("edit") &&
+      obj.getMember("edit").asInstanceOf[ScriptObjectMirror].isFunction
+  }
 
-  override def createProjectOperation(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): JavaScriptProjectEditor = {
-    new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver)
+  override def create(jsc: JavaScriptContext, fnVar: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptProjectEditor] = {
+    Some(new JavaScriptProjectEditor(jsc, fnVar, jsc.rugAs, resolver))
   }
 }
 
@@ -58,8 +63,8 @@ class JavaScriptProjectEditor(
           jsc,
           jsVar,
           "edit",
-          wrapProject(pmv),
-          validated)
+          Some(validated),
+          wrapProject(pmv))
 
         if (pmv.currentBackingObject == targetProject) {
           NoModificationNeeded("OK")

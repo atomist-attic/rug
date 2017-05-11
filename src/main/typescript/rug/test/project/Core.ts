@@ -15,9 +15,9 @@
  */
 
 import { Project } from "../../model/Project";
-import { ProjectEditor } from "../../operations/ProjectEditor";
-import { ProjectGenerator } from "../../operations/ProjectGenerator";
 import { Result } from "../Result";
+import { EditProject } from "../../operations/ProjectEditor"
+import { PopulateProject } from "../../operations/ProjectGenerator"
 import { ScenarioWorld } from "../ScenarioWorld";
 import "./WellKnownSteps";
 
@@ -35,22 +35,22 @@ export interface ProjectScenarioWorld extends ScenarioWorld {
     /**
      * Return a project editor from the local context identified by name
      */
-    editor(name: string): ProjectEditor;
+    editor(name: string): EditProject;
 
     /**
      * Return a project generator from the local context identified by name
      */
-    generator(name: string): ProjectGenerator;
+    generator(name: string): PopulateProject;
 
     /**
      * Edit the project with the given editor, validating parameters
      */
-    editWith(ed: ProjectEditor, params: {});
+    editWith(ed: EditProject, params: {});
 
     /**
      * Create a project using the given generator named projectName, validating parameters
      */
-    generateWith(gen: ProjectGenerator, projectName: string, params: {});
+    generateWith(gen: PopulateProject, projectName: string, params: {});
 
     /**
      * Did the editor make modifications in this scenario?  Note

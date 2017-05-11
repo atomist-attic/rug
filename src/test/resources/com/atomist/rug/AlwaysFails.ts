@@ -1,10 +1,9 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 
-class AlwaysFails implements ProjectEditor {
-    name = "Walter"
-    description = "angry"
-        
+@Editor("Walter", "angry")
+class AlwaysFails  {
+
     edit(project: Project) {     
         throw new Error("I have buddies who died face down in the muck")
     }

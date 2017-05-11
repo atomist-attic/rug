@@ -1,5 +1,5 @@
 import {Project,File} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {ScalaPathExpressionEngine} from '@atomist/rug/ast/scala/ScalaPathExpressionEngine'
 import * as scala from '@atomist/rug/ast/scala/Types'
@@ -8,9 +8,8 @@ import * as scala from '@atomist/rug/ast/scala/Types'
  * Update ScalaTest assertions of the form "a should be(b)" or a "should equal(b)"
  * with "assert(a === b)" to get better error messages.
  */
-class UpgradeScalaTestAssertions implements ProjectEditor {
-    name: string = "UpgradeScalaTestAssertions"
-    description: string = "Upgrades ScalaTest assertions"
+@Editor("Edits")
+class UpgradeScalaTestAssertions  {
 
     edit(project: Project) {
       let eng: PathExpressionEngine = 

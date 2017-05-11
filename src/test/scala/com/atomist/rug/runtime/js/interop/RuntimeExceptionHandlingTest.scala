@@ -20,7 +20,7 @@ class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {
         e.pos should not be null
         assert(e.sourceLangRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.ts"))
         assert(e.jsRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.js"))
-        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 15)
+        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 13)
     }
   }
 

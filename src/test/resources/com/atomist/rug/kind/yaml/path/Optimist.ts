@@ -1,14 +1,11 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 
-class YamlEdit implements ProjectEditor {
+@Editor("YamlEdit")
+class YamlEdit  {
 
-    name: string = "YamlEdit"
-    
-    description: string = "YamlEdit"
-    
     edit(project: Project) {
     
         let eng: PathExpressionEngine = project.context.pathExpressionEngine;

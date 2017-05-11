@@ -1,29 +1,22 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
-import {Parameter} from '@atomist/rug/operations/RugOperation'
-
-
-interface Parameters {
-
-    service: string
-    new_sha: string
-
-}
 
 /**
        Update Kube spec to redeploy a service
 */
-class Redeploy implements ProjectEditor {
 
-    name: string = "Redeploy"
-    
-    description: string = "Update Kube spec to redeploy a service"
-    
-    parameters: Parameter[] = [{name: "service", pattern: "^[\\w.\\-_]+$", maxLength: -1, minLength: -1, validInput: "String value"}, {name: "new_sha", pattern: "^[a-f0-9]{7}$", maxLength: -1, minLength: -1, validInput: "String value"}];
-    
-    edit(project: Project, parameters: Parameters) {
+@Editor("Update Kube spec to redeploy a service")
+class Redeploy  {
 
-         project.regexpReplace(parameters.service + ":[a-f0-9]{7}", parameters.service + ":" + parameters.new_sha)
+    @Parameter({pattern: "^[\\w.\\-_]+$", maxLength: -1, minLength: -1, validInput: "String value"})
+    service: string;
+
+    @Parameter({pattern: "^[a-f0-9]{7}$", maxLength: -1, minLength: -1, validInput: "String value"})
+    new_sha: string;
+
+    edit(project: Project) {
+
+         project.regexpReplace(this.service + ":[a-f0-9]{7}", this.service + ":" + this.new_sha)
 
     }
 

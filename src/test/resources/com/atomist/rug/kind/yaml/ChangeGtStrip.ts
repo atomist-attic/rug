@@ -1,11 +1,11 @@
 import {Project, File} from "@atomist/rug/model/Core";
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor";
-import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from "@atomist/rug/operations/Decorators";
+import {Editor, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from "@atomist/rug/operations/Decorators";
 import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "@atomist/rug/tree/PathExpression";
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class ChangeGtStrip implements ProjectEditor {
+@Editor("Change >- string")
+class ChangeGtStrip  {
     name: string = "ChangeGtStrip"
     description = "Change >- string"
 

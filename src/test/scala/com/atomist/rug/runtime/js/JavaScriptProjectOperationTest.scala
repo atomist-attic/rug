@@ -13,15 +13,15 @@ object JavaScriptProjectOperationTest {
   val SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
-       |    edit(project: Project, {content} : {content: string}) {
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+       |    @Parameter({description: "Content", pattern: "@url", maxLength: 100})
+       |    content: string = "http://t.co"
+       |
+       |    edit(project: Project) {
        |    }
        |  }
        |export let editor = new SimpleEditor()
@@ -30,16 +30,17 @@ object JavaScriptProjectOperationTest {
   val SimpleEditorWithDefaultParameterValue: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100, default: "http://t.co"}]
-       |    edit(project: Project, {content} : {content: string}) {
-       |       if(content != "http://t.co"){
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+       |
+       |    @Parameter({description: "Content", pattern: "@url", maxLength: 100})
+       |    content: string = "http://t.co"
+       |
+       |    edit(project: Project) {
+       |       if(this.content != "http://t.co"){
        |          throw new Error("Content was not as expected");
        |       }
        |    }
@@ -50,16 +51,17 @@ object JavaScriptProjectOperationTest {
   val SimpleEditorWithRequiredParameterButNoDefault: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
-       |    edit(project: Project, {content} : {content: string}) {
-       |       if(content != "http://t.co"){
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+       |
+            @Parameter({description: "Content", pattern: "@url", maxLength: 100})
+       |    content: string
+       |
+       |    edit(project: Project) {
+       |       if(this.content != "http://t.co"){
        |          throw new Error("Content was not as expected");
        |       }
        |    }
@@ -67,39 +69,20 @@ object JavaScriptProjectOperationTest {
        |export let editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleReviewerInvokingOtherEditorAndAddingToOurOwnParameters: String =
-    s"""
-       |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
-       |import {File} from '@atomist/rug/model/Core'
-       |import {ReviewResult, ReviewComment, Parameter} from '@atomist/rug/operations/RugOperation'
-       |
-       |class SimpleReviewer implements ProjectReviewer {
-       |    name: string = "Simple"
-       |    description: string = "A nice little reviewer"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@url", maxLength: 100}]
-       |    review(project: Project, {content} : {content: string}) {
-       |      return new ReviewResult("",
-       |          <ReviewComment[]>[]
-       |        );
-       |    }
-       |  }
-       |export let reviewer = new SimpleReviewer()
-    """.stripMargin
-
   val SimpleEditorWithBrokenParameterPattern: String =
       s"""
          |import {Project} from '@atomist/rug/model/Core'
-         |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+         |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
          |import {File} from '@atomist/rug/model/Core'
-         |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+         |import {Result,Status} from '@atomist/rug/operations/RugOperation'
          |
-         |class SimpleEditor implements ProjectEditor {
-         |    name: string = "Simple"
-         |    description: string = "A nice little editor"
-         |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
+         |@Editor("Simple","A nice little editor")
+         |class SimpleEditor  {
          |
-         |    edit(project: Project, {content} : {content: string}) {
+         |    @Parameter({description: "Content", pattern: "@blah", maxLength: 100})
+         |    content: string = "http://t.co"
+         |
+         |    edit(project: Project) {
          |      project.describeChange(
          |        `Edited Project now containing $${project.fileCount} files: \n`
          |        );
@@ -108,46 +91,19 @@ object JavaScriptProjectOperationTest {
          |export let editor = new SimpleEditor()
     """.stripMargin
 
-  val SimpleReviewerWithBrokenParameterPattern: String =
-    s"""
-       |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectReviewer} from '@atomist/rug/operations/ProjectReviewer'
-       |import {File} from '@atomist/rug/model/Core'
-       |import {ReviewResult, ReviewComment, Parameter} from '@atomist/rug/operations/RugOperation'
-       |
-       |class SimpleReviewer implements ProjectReviewer {
-       |    name: string = "Simple"
-       |    description: string = "A nice little reviewer"
-       |    parameters: Parameter[] = [{name: "content", description: "Content", pattern: "@blah", maxLength: 100}]
-       |    review(project: Project, {content} : {content: string}) {
-       |      return new ReviewResult("",
-       |          <ReviewComment[]>[]
-       |        );
-       |    }
-       |  }
-       |export let reviewer = new SimpleReviewer()
-    """.stripMargin
-
   val SimpleEditorWithInvalidDefaultParameterValuePattern: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [
-       |      {
-       |        name: "content",
-       |        description: "Content",
-       |        pattern: "@url",
-       |        default: "not-a-url",
-       |        maxLength: 100
-       |      }
-       |    ]
-       |    edit(project: Project, {content} : {content: string}) {
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+       |
+       |    @Parameter({description: "Content", pattern: "@url", maxLength: 100})
+       |    content: string = "not-a-url"
+       |
+       |    edit(project: Project) {
        |      // Do nothing
        |    }
        |  }
@@ -157,23 +113,17 @@ object JavaScriptProjectOperationTest {
   val SimpleEditorWithValidDefaultParameterValueFromAlternation: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Result,Status,Parameter} from '@atomist/rug/operations/RugOperation'
+       |import {Result,Status} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [
-       |      {
-       |        name: "content",
-       |        description: "Content",
-       |        pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$",
-       |        default: "http://g.co",
-       |        maxLength: 100
-       |      }
-       |    ]
-       |    edit(project: Project, {content} : {content: string}) {
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+       |
+       |    @Parameter({description: "Content", pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$", maxLength: 100})
+       |    content: string = "http://g.co"
+       |
+       |    edit(project: Project) {
        |      project.describeChange(
        |        `Edited Project now containing $${project.fileCount} files: \n`
        |      )
@@ -185,23 +135,16 @@ object JavaScriptProjectOperationTest {
   val SimpleEditorWithInvalidDefaultParameterValueAlternation: String =
     s"""
        |import {Project} from '@atomist/rug/model/Core'
-       |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+       |import {Editor, Parameter} from '@atomist/rug/operations/Decorators'
        |import {File} from '@atomist/rug/model/Core'
-       |import {Parameter} from '@atomist/rug/operations/RugOperation'
        |
-       |class SimpleEditor implements ProjectEditor {
-       |    name: string = "Simple"
-       |    description: string = "A nice little editor"
-       |    parameters: Parameter[] = [
-       |      {
-       |        name: "content",
-       |        description: "Content",
-       |        pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$",
-       |        default: "http://g.com",
-       |        maxLength: 100
-       |      }
-       |    ]
-       |    edit(project: Project, {content} : {content: string}) {
+       |@Editor("Simple","A nice little editor")
+       |class SimpleEditor  {
+
+       |    @Parameter({description: "Content", pattern: "^(?:http://a.b.c|http://g.co|ftp://f.co)$$", maxLength: 100})
+       |    content: string = "http://g.com"
+       |
+       |    edit(project: Project) {
        |      // empty
        |    }
        |  }
@@ -255,8 +198,8 @@ class JavaScriptProjectOperationTest extends FlatSpec with Matchers {
     val as = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(tsf))
     val jsed = RugArchiveReader(as).editors.head.asInstanceOf[JavaScriptProjectEditor]
     val v1 = jsed.cloneVar(jsed.jsc, jsed.jsVar)
-    v1.put("name", "dude")
-    jsed.jsVar.get("name") should be ("Simple")
+    v1.put("__description", "dude")
+    jsed.jsVar.get("__description") should be ("A nice little editor")
   }
 
   it should "Should throw an exception if required parameters are not set" in {

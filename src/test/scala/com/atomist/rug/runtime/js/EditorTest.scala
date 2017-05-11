@@ -76,15 +76,15 @@ object EditorTest {
   val SimpleLetStyleEditorWithoutParameters =
     """
       |import {Project} from '@atomist/rug/model/Core'
-      |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+      |import {Editor} from '@atomist/rug/operations/Decorators'
       |
-      |export let editor: ProjectEditor  = {
-      |    name: "Simple",
-      |    description: "My simple editor",
+      |@Editor("My simple editor")
+      |class Simple {
       |    edit(project: Project) {
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
+      |export const editor = new Simple();
     """.stripMargin
 
   val SimpleEditor =
@@ -142,7 +142,7 @@ object EditorTest {
        |@Tags("java", "maven")
        |class SimpleEditor {
        |
-       |    @Parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100, tags: ["foo","bar"]})
+       |    @Parameter({description: "Content", displayName: "content", pattern: "$ContentPattern", maxLength: 100})
        |    content: string
        |
        |    edit(project: Project) {
@@ -157,7 +157,7 @@ object EditorTest {
       |import {Project} from '@atomist/rug/model/Core'
       |import {Generator} from '@atomist/rug/operations/Decorators'
       |
-      |@Generator("SimpleGenerator","My simple Generator")
+      |@Generator("My simple Generator")
       |class SimpleGenerator{
       |
       |     content: string = "woot"
@@ -346,7 +346,6 @@ class EditorTest extends FlatSpec with Matchers {
     val jsed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorInvokingOtherEditorAndAddingToOurOwnParameters))
     val p = jsed.parameters.head
-    assert(p.getTags === ListBuffer(Tag("foo","foo"),Tag("bar","bar")))
     assert(p.isDisplayable === true)
   }
 

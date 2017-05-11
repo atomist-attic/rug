@@ -17,10 +17,3 @@ export interface EditProject {
    */
   edit(project: Project, params?: {}): void;
 }
-
-/**
- * Edits projects
- */
-export interface ProjectEditor extends RugOperation, EditProject {
-
-}

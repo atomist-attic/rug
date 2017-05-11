@@ -22,7 +22,7 @@ class RugArchiveReaderTest extends FlatSpec with Matchers {
     assert(ops.eventHandlers.size === 1)
   }
 
-  it should "find and invoke plain javascript generators" in {
+  it should "find and invoke plain javascript editors" in {
     val f1 = StringFileArtifact("package.json", "{}")
     val f2 = StringFileArtifact("app/Thing.js", "var Thing = {};")
 

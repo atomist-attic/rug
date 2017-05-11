@@ -1,13 +1,12 @@
 import {Project, File} from "@atomist/rug/model/Core";
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor";
+import {Editor} from "@atomist/rug/operations/Decorators";
 import {EventHandler, ResponseHandler, CommandHandler, Parameter, Tags, Intent} from "@atomist/rug/operations/Decorators";
 import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "@atomist/rug/tree/PathExpression";
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class ChangePipe implements ProjectEditor {
-    name: string = "ChangePipe"
-    description = "Change | string"
+@Editor("Change | string")
+class ChangePipe  {
 
     @Parameter({description: "Change comment to this", pattern: "^[\\s\\S]*$"})
     newComment: string

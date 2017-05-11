@@ -1,12 +1,11 @@
 import {Project, File} from "@atomist/rug/model/Core";
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor";
+import {Editor} from "@atomist/rug/operations/Decorators";
 import {PathExpression, TextTreeNode, TypeProvider, PathExpressionEngine} from "@atomist/rug/tree/PathExpression";
 import * as yaml from "@atomist/rug/ast/yaml/Types";
 import {YamlPathExpressionEngine} from "@atomist/rug/ast/yaml/YamlPathExpressionEngine";
 
-class RemoveNonExistentElemFromSequence implements ProjectEditor {
-    name: string = "RemoveFromSequence2"
-    description = "Remove from sequence 2"
+@Editor("Edits")
+class RemoveNonExistentElemFromSequence  {
 
     edit(project: Project) {
         let eng: PathExpressionEngine =

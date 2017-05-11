@@ -1,5 +1,4 @@
 import {Project} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpression,TreeNode,Microgrammar} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'

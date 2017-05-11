@@ -1,6 +1,7 @@
 package com.atomist.rug.runtime.js
 
 import com.atomist.param.{Parameter, ParameterValues, ParameterizedSupport, Tag}
+import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.plans.{JsonResponseCoercer, NullResponseCoercer, ResponseCoercer}
@@ -12,15 +13,10 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   * Extract response handlers from a Nashorn instance
   */
 class JavaScriptResponseHandlerFinder
-  extends BaseJavaScriptHandlerFinder[JavaScriptResponseHandler] {
-  /**
-    *
-    * The value of kind in JS
-    * @return
-    */
-  override val kind: String = "response-handler"
+  extends JavaScriptRugFinder[JavaScriptResponseHandler]
+  with JavaScriptUtils{
 
-  override protected def extractHandler(jsc: JavaScriptContext, handler: ScriptObjectMirror): Option[JavaScriptResponseHandler] = {
+  override def create(jsc: JavaScriptContext, handler: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
     Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler), coerce(jsc,handler)))
   }
 
@@ -35,6 +31,12 @@ class JavaScriptResponseHandlerFinder
       case str: String => throw new InvalidHandlerException(s"Don't know how to coerce responses to $str")
       case _ => NullResponseCoercer
     }
+  }
+
+  override def isValid(obj: ScriptObjectMirror): Boolean = {
+    obj.getMember("__kind") == "response-handler" &&
+      obj.hasMember("handle") &&
+      obj.getMember("handle").asInstanceOf[ScriptObjectMirror].isFunction
   }
 }
 
@@ -55,7 +57,12 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     val coerced = responseCoercer.coerce(response)
-    invokeMemberFunction(jsc, handler, "handle", jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil))), validated) match {
+    invokeMemberFunction(
+      jsc,
+      handler,
+      "handle",
+      Some(validated),
+      jsScalaHidingProxy(jsResponse(coerced.msg.orNull, coerced.code.getOrElse(-1), coerced.body.getOrElse(Nil)))) match {
       case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
     }

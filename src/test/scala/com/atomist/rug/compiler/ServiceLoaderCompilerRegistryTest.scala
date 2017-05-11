@@ -10,12 +10,11 @@ class ServiceLoaderCompilerRegistryTest extends FlatSpec with Matchers with Lazy
   it should "compile a simple editor" in {
     val as = SimpleFileBasedArtifactSource(StringFileArtifact(".atomist/Thing.ts",
       """
-        |import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+        |import {Editor} from '@atomist/rug/operations/Decorators'
         |import {Project} from '@atomist/rug/model/Core'
         |
-        |class TestEditor implements ProjectEditor {
-        |    name: string = "TestEditor"
-        |    description: string = "Nothing special"
+        |@Editor("Nothing special")
+        |class TestEditor  {
         |    edit(p: Project) {
         |       // Do nothing
         |    }

@@ -1,4 +1,4 @@
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
@@ -6,11 +6,8 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 
 import {SpringBootProject} from '@atomist/rug/model/Core'
 
-class ClassAnnotated implements ProjectEditor {
-
-    name: string = "ClassAnnotated"
-    
-    description: string = "I annotate classes"
+@Editor("I annotate classes")
+class ClassAnnotated  {
 
     edit(project: Project) {
     

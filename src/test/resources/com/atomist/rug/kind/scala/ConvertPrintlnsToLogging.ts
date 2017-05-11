@@ -1,5 +1,4 @@
 import {Project,File} from '@atomist/rug/model/Core'
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
 import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
 import {PathExpression,TextTreeNode,TypeProvider} from '@atomist/rug/tree/PathExpression'
 import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
@@ -10,9 +9,8 @@ import * as scala from '@atomist/rug/ast/scala/Types'
 /**
  * Removes printlns to logging using a defined logger
  */
-class ConvertPrintlnsToLogging implements ProjectEditor {
-    name: string = "ConvertPrintlnsToLogging"
-    description: string = "Convert printlns to logging"
+@Editor("Edits")
+class ConvertPrintlnsToLogging  {
 
     logStatement = "logger.debug"
 

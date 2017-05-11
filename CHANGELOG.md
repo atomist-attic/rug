@@ -17,6 +17,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 -   Handle project generate failures
+-   **BREAKING** remove ProjectEditor & ProjectGenerator interfaces.
+    This also removes support for legacy parameter[] Parameter declarations
+-   **BREAKING** remove tags from Parameters (they are unused)
+-   Remove some more remnants of reviewers
+-   Harmonized much of the Rug loading code between project operations and
+    handlers
+    
+### Fixed
+
+-   Fixed handling of fields set with Object.defineProperty (now enumerable)
+-   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
+    omitted. If you omit the name, it uses the name of the class.
 
 ## [1.0.0-m.3] - 2017-05-09
 

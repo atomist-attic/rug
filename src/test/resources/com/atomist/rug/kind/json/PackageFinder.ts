@@ -1,11 +1,10 @@
-import {ProjectEditor} from "@atomist/rug/operations/ProjectEditor"
+import {Editor} from "@atomist/rug/operations/Decorators"
 import {Status, Result} from "@atomist/rug/operations/RugOperation"
 import {Project,Pair} from '@atomist/rug/model/Core'
 import {Match,PathExpression,PathExpressionEngine,TreeNode} from '@atomist/rug/tree/PathExpression'
 
-class PackageFinder implements ProjectEditor {
-    name: string = "node.deps"
-    description: string = "Finds package.json dependencies"
+@Editor("node.deps", "Finds package.json dependencies")
+class PackageFinder {
     edit(project: Project) {
 
       let eng: PathExpressionEngine = project.context.pathExpressionEngine;

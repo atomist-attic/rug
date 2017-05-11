@@ -1,5 +1,5 @@
     
-import {ProjectEditor} from '@atomist/rug/operations/ProjectEditor'
+import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
@@ -7,12 +7,8 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 
 import {Replacer} from '@atomist/rug/model/Core'
 
-class Replacer2 implements ProjectEditor {
-
-    name: string = "Replacer"
-    
-    description: string = "Replacer"
-    
+@Editor("Replacer")
+class Replacer2  {
     
     edit(project: Project) {
     

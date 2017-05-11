@@ -1,7 +1,7 @@
 import {Editor} from '@atomist/rug/operations/Decorators'
 import {Project} from '@atomist/rug/model/Core'
 
-@Editor("Walkter", "angry")
+@Editor("Walter", "angry")
 class AlwaysFails  {
 
     edit(project: Project) {     

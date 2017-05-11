@@ -27,10 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 -   Fixed handling of fields set with Object.defineProperty (now enumerable)
--   @Editor & @Generator decorators now allow 'name' to be omitted like
-    @EventHandler etc.
--   @EventHandler decorator now allows 'name' to be omitted like the
-    other decorators
+-   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
+    omitted. If you omit the name, it uses the name of the class.
 
 ## [1.0.0-m.3] - 2017-05-09
 

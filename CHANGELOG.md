@@ -10,8 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.3...HEAD
 
 ### Added
+
 -   Added `Identifiable` instruction that can be used for `DirectedMessage`
     and `ResponseMessage`
+
+### Changed
+
+-   Handle project generate failures
 
 ## [1.0.0-m.3] - 2017-05-09
 

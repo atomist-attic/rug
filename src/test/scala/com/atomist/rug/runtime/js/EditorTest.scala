@@ -195,6 +195,7 @@ object EditorTest {
       |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        if (project.totalFileCount != 0) throw "I got files";
+      |        if (project.findFile("I dont")) throw "I got something I don't want";
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
@@ -222,6 +223,7 @@ object EditorTest {
       |           throw Error(`Project name should be woot, but was ${project.name}`)
       |        }
       |        if (!project.findFile("1")) throw "I got no expected file from git";
+      |        if (!project.findFile("2")) throw "I got no second expected file from git";
       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God");
       |    }
       |}
@@ -502,11 +504,8 @@ class EditorTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/generators/Thing.ts", SimpleGeneratorLoadingEmptyRepo),
       StringFileArtifact("I dont", "want this"))
     val as = TypeScriptBuilder.compileWithModel(tsf)
-
-    val jsed = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
-
-    val prj = jsed.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")))
-    jsed
+    val jsgen = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
+    val prj = jsgen.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")))
   }
 
   it should "load external repo in generator" in {
@@ -514,9 +513,7 @@ class EditorTest extends FlatSpec with Matchers {
       StringFileArtifact(".atomist/generators/Thing.ts", SimpleGeneratorLoadingExternalRepo),
       StringFileArtifact("I dont", "want this"))
     val as = TypeScriptBuilder.compileWithModel(tsf)
-
-    val jsed = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
-
+    val jsgen = RugArchiveReader(as).generators.head.asInstanceOf[JavaScriptProjectGenerator]
     val project = SimpleFileBasedArtifactSource(
       StringFileArtifact("1","1"),
       StringFileArtifact("2", "2")
@@ -524,15 +521,14 @@ class EditorTest extends FlatSpec with Matchers {
     val ctx = new ProjectContext(LocalRugContext) {
       override def repoResolver: Option[RepoResolver] = Some(FixedBranchRepoResolver("atomist", "rug", "master", project))
     }
-    val prj = jsed.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")), ctx)
-    jsed
+    val prj = jsgen.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")), ctx)
+    jsgen
   }
 
   private def invokeAndVerifyConstructed(tsf: FileArtifact): (JavaScriptProjectEditor, SuccessfulModification) = {
     val as = SimpleFileBasedArtifactSource(tsf)
     val jsed = RugArchiveReader(TypeScriptBuilder.compileWithModel(as)).editors.head.asInstanceOf[JavaScriptProjectEditor]
     assert(jsed.name === "Constructed")
-
     val target = SimpleFileBasedArtifactSource(StringFileArtifact("pom.xml", "nasty stuff"))
     jsed.modify(target, SimpleParameterValues(Map("packageName" -> "com.atomist.crushed"))) match {
       case sm: SuccessfulModification =>

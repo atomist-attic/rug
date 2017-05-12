@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Allow `commitMessage` to be set on `Edit` instructions [#593][593]
 -   Ability to implement the `startingPoint` method in a generator to
     start with an empty repo or the content of a Git repo, if the runtime permits.
 -   Added `HandlerContext` as second parameter to `ResponseHandler.handle`
-    invocations [587]
+    invocations [#587][587]
 -   Added `Identifiable` instruction that can be used for `DirectedMessage`
     and `ResponseMessage`
 
@@ -34,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
 
+[593]: https://github.com/atomist/rug/issues/593
 [587]: https://github.com/atomist/rug/issues/587
 
 ## [1.0.0-m.3] - 2017-05-09

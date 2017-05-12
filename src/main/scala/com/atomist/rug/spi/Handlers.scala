@@ -105,23 +105,31 @@ object Handlers {
     */
   trait EditorTarget {
     def baseBranch: String
+    def commitMessage: Option[String]
+  }
+
+  case class DefaultTarget(override val commitMessage: Option[String] = None)
+    extends EditorTarget {
+    override def baseBranch: String = "master"
   }
 
   /**
     * A GitHub Pull Request for Edits
     *
     * @param baseBranch
+    * @param commitMessage
     * @param headBranch
     * @param title
     * @param body
     */
   case class GitHubPullRequest(
                                 override val baseBranch: String,
+                                override val commitMessage: Option[String] = None,
                                 headBranch: Option[String] = None,
                                 title: Option[String] = None,
                                 body: Option[String] = None
                               )
-    extends EditorTarget {}
+    extends EditorTarget
 
   /**
     * A GitHub Branch for Edits
@@ -130,10 +138,11 @@ object Handlers {
     * @param headBranch
     */
   case class GitHubBranch(
-                     override val baseBranch: String,
-                     headBranch: Option[String] = None
-                   )
-    extends EditorTarget {}
+                           override val baseBranch: String,
+                           override val commitMessage: Option[String] = None,
+                           headBranch: Option[String] = None
+                         )
+    extends EditorTarget
 
   object Instruction {
 

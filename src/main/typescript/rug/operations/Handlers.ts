@@ -83,6 +83,7 @@ export class GitHubBranch implements EditorTarget<"github-branch"> {
 // tslint:disable-next-line:no-empty-interface
 export interface Edit extends ProjectInstruction<"edit"> {
   target?: EditorTarget<EditorTargetKind>;
+  commitMessage?: string;
 }
 
 // extends ProjectInstruction because we need to know the project name

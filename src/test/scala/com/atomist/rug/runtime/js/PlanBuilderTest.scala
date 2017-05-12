@@ -125,6 +125,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     assert(target1.baseBranch == "base-branch")
     assert(target1.body.contains("PR body"))
     assert(target1.title.contains("PR title"))
+    assert(target1.commitMessage.isEmpty)
     assert(target1.headBranch.contains("head-branch"))
 
     val com2 = rugs.commandHandlers(1)
@@ -133,6 +134,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     assert(target2.baseBranch.contains("dev"))
     assert(target2.body.isEmpty)
     assert(target2.title.isEmpty)
+    assert(target2.commitMessage.isEmpty)
     assert(target2.headBranch.isEmpty)
 
     val com3 = rugs.commandHandlers(2)
@@ -141,6 +143,7 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     assert(target3.baseBranch.contains("master"))
     assert(target3.body.isEmpty)
     assert(target3.title.isEmpty)
+    assert(target3.commitMessage.isEmpty)
     assert(target3.headBranch.isEmpty)
 
     val com4 = rugs.commandHandlers(3)
@@ -148,11 +151,18 @@ class PlanBuilderTest extends FunSpec with Matchers with OneInstancePerTest with
     val target4 = plan4.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubBranch]
     assert(target4.baseBranch.contains("development"))
     assert(target4.headBranch.isEmpty)
+    assert(target4.commitMessage.isEmpty)
 
     val com5 = rugs.commandHandlers(4)
     val plan5 = com5.handle(null,SimpleParameterValues.Empty).get
     val target5 = plan5.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubBranch]
     assert(target5.baseBranch.contains("master"))
     assert(target5.headBranch.contains("feature"))
+    assert(target5.commitMessage.isEmpty)
+
+    val com6 = rugs.commandHandlers(5)
+    val plan6 = com6.handle(null,SimpleParameterValues.Empty).get
+    val target6 = plan6.instructions.head.instruction.detail.editorTarget.get.asInstanceOf[GitHubBranch]
+    assert(target6.commitMessage.contains("woot"))
   }
 }

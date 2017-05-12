@@ -96,3 +96,22 @@ class EditWithTarget5 implements HandleCommand {
 }
 
 export const command5 = new EditWithTarget5()
+
+@CommandHandler("Edit something with target info")
+class EditWithTarget6 implements HandleCommand {
+
+  handle(ctx: HandlerContext) : CommandPlan {
+    let result = new CommandPlan()
+    result.add({ instruction: {
+                 kind: "edit",
+                 name: "blah",
+                 commitMessage: "woot",
+                 project: "testme",
+                 target: new GitHubBranch("master", "feature")
+               }})
+
+    return result;
+  }
+}
+
+export const command6 = new EditWithTarget6()

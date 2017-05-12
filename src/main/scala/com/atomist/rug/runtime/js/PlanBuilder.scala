@@ -194,6 +194,11 @@ class PlanBuilder {
       case _ => None
     }
 
+    val commitMessage = jsInstruction.getMember("commitMessage") match {
+      case msg: String => Some(msg)
+      case _ => None
+    }
+
     val target = jsInstruction.getMember("target") match {
       case o: ScriptObjectMirror if o.hasMember("baseBranch") =>
         val baseBranch = o.getMember("baseBranch").asInstanceOf[String]
@@ -202,16 +207,17 @@ class PlanBuilder {
             val title = if (o.hasMember("title")) Some(o.getMember("title").asInstanceOf[String]) else None
             val body = if (o.hasMember("body")) Some(o.getMember("body").asInstanceOf[String]) else None
             val headBranch = if (o.hasMember("headBranch")) Some(o.getMember("headBranch").asInstanceOf[String]) else None
-            Some(GitHubPullRequest(baseBranch, headBranch, title, body))
+            Some(GitHubPullRequest(baseBranch, commitMessage, headBranch, title, body))
           case "github-branch" =>
             val headBranch = o.getMember("headBranch") match {
               case b: String => Some(b)
               case _ => None
             }
-            Some(GitHubBranch(baseBranch, headBranch))
+            Some(GitHubBranch(baseBranch, commitMessage, headBranch))
           case k => throw new BadPlanException(s"Unsupported EditorTarget kind: $k")
         }
-      case _ => None
+      case _ =>
+        Some(DefaultTarget(commitMessage))
     }
 
     Instruction.Detail(name, coordinates, parameters, project_name, target)

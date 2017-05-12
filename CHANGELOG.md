@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Exposed underlying TypeScript class decorator logic so that they can
+    be called directly to emit Rugs programmatically [#595][595]
 -   Allow `commitMessage` to be set on `Edit` instructions [#593][593]
 -   Ability to implement the `startingPoint` method in a generator to
     start with an empty repo or the content of a Git repo, if the runtime permits.
@@ -31,11 +33,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     
 ### Fixed
 
+-   Decorators now hide defined properties by setting `enumerable=false` [#554][554]
 -   Fixed handling of fields set with Object.defineProperty (now enumerable)
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
 
+<<<<<<< HEAD
 [593]: https://github.com/atomist/rug/issues/593
+=======
+[554]: https://github.com/atomist/rug/issues/554
+[595]: https://github.com/atomist/rug/issues/595
+>>>>>>> Expose underlying decorator logic #595 and hide their defined properties #554
 [587]: https://github.com/atomist/rug/issues/587
 
 ## [1.0.0-m.3] - 2017-05-09

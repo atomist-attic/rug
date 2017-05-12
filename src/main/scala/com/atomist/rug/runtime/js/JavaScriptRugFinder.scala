@@ -13,11 +13,11 @@ trait JavaScriptRugFinder[R <: Rug] {
 
   def find(jsc: JavaScriptContext, resolver: Option[RugResolver] = None): Seq[R] = {
     jsc.vars.flatMap {
-      case Var(_, handler) if isValid(handler) =>
+      case Var(_, handler) if isValidRug(handler) =>
         create(jsc, handler, resolver)
       case Var(_, arr) if arr.isArray =>
         arr.values().asScala.collect {
-          case som: ScriptObjectMirror if isValid(som) => som
+          case som: ScriptObjectMirror if isValidRug(som) => som
         }.flatMap(create(jsc, _, resolver))
       case _ => None
     }

@@ -38,15 +38,18 @@ object EditorTest {
        |import {Project} from '@atomist/rug/model/Core'
        |import {Parameter, Editor} from '@atomist/rug/operations/Decorators'
        |
-      |@Editor("Simple", "My simple editor")
+       |@Editor("Simple", "My simple editor")
        |class SimpleEditor {
        |
-      |    @Parameter({description: "Content", pattern: "$ContentPattern"})
-       |    content: string
+       |   @Parameter({description: "Content", pattern: "$ContentPattern"})
+       |   content: string
        |
-      |    edit(project: Project)  {
-       |        project.addFile("src/from/typescript", "Anders Hjelsberg is God")
-       |    }
+       |   @Parameter({description: "Content", pattern: "$ContentPattern", required: false})
+       |   another: string;
+       |
+       |   edit(project: Project)  {
+       |       project.addFile("src/from/typescript", "Anders Hjelsberg is God")
+       |   }
        |}
        |export let myeditor = new SimpleEditor()
     """.stripMargin
@@ -438,7 +441,7 @@ class EditorTest extends FlatSpec with Matchers {
   it should "default min/max length to -1 if not set" in {
     val ed = invokeAndVerifySimple(StringFileArtifact(s".atomist/editors/SimpleEditor.ts",
       SimpleEditorWithBasicParameter))
-    assert(ed.parameters.size === 1)
+    assert(ed.parameters.size === 2)
     val p = ed.parameters.head
     assert(p.getMinLength === -1)
     assert(p.getMaxLength === -1)

@@ -4,10 +4,12 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.generate.ProjectGenerator
-import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
+import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
 import com.atomist.util.Timing._
-import jdk.nashorn.api.scripting.ScriptObjectMirror
+import jdk.nashorn.api.scripting.{JSObject, ScriptObjectMirror}
+import jdk.nashorn.internal.runtime.ScriptRuntime
 
 /**
   * Find Generators in a Nashorn
@@ -49,14 +51,30 @@ class JavaScriptProjectGenerator(
     with ProjectGenerator {
 
   @throws(classOf[InvalidParametersException])
-  override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
-    val validated = addDefaultParameterValues(poa)
+  override def generate(projectName: String, pvs: ParameterValues, ctx: ProjectContext): ArtifactSource = {
+    val validated = addDefaultParameterValues(pvs)
     validateParameters(validated)
 
+    val raw = new EmptyArtifactSource(projectName)
+    val project = raw + startProject
+    val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this),
+      rugResolver = resolver,
+      ctx = ctx)
+
     val (result, elapsedMillis) = time {
-      val project = new EmptyArtifactSource(projectName) + startProject
-      val pmv = new ProjectMutableView(rugAs, project, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
-      invokeMemberFunction(jsc, jsVar, "populate", Some(validated), wrapProject(pmv))
+      // If the user has provided this method, call it to get the project starting point
+      val projectToInvokePopulateWith = jsVar.getMember("startingPoint") match {
+        case null | ScriptRuntime.UNDEFINED =>
+          wrapProject(pmv)
+        case js: JSObject if js.isFunction =>
+          val userProject = js.call(null, wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
+          val userAs = raw + userProject.currentBackingObject
+          val userPmv = new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
+          wrapProject(userPmv)
+        case x => throw new IllegalArgumentException(s"Don't know what to do with JavaScript member $x")
+      }
+
+      invokeMemberFunction(jsc, jsVar, "populate", Some(validated), projectToInvokePopulateWith)
       pmv.currentBackingObject
     }
     logger.debug(s"$name.populate took ${elapsedMillis}ms")

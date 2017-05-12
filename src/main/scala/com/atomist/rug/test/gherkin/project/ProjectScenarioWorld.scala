@@ -6,8 +6,8 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
-import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.runtime.js.JavaScriptProjectOperation
+import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
+import com.atomist.rug.runtime.js.{JavaScriptProjectOperation, LocalRugContext}
 import com.atomist.rug.runtime.js.interop.NashornUtils
 import com.atomist.rug.test.gherkin._
 import com.atomist.source.EmptyArtifactSource
@@ -67,7 +67,7 @@ class ProjectScenarioWorld(
     * We expect the JavaScript op to have been populated.
     */
   def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
-    val resultAs = generator.generate(projectName, parameters(params))
+    val resultAs = generator.generate(projectName, parameters(params), new ProjectContext(LocalRugContext))
     project.updateTo(resultAs)
   }
 

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Ability to implement the `startingPoint` method in a generator to
+    start with an empty repo or the content of a Git repo, if the runtime permits.
 -   Added `HandlerContext` as second parameter to `ResponseHandler.handle`
     invocations [587]
 -   Added `Identifiable` instruction that can be used for `DirectedMessage`

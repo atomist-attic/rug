@@ -567,4 +567,9 @@ class ProjectContext(ctx: RugContext) extends RugContext {
   override def treeMaterializer: TreeMaterializer = ctx.treeMaterializer
 
   override def contextRoot(): GraphNode = ctx.contextRoot()
+
+  def gitProjectLoader: AnyRef = new jsGitProjectLoader(ctx.repoResolver)
+
+  @ExposeAsFunction
+  def emptyProject() = new ProjectMutableView(originalBackingObject = EmptyArtifactSource("!!ThisValueWillBeOverwritten"))
 }

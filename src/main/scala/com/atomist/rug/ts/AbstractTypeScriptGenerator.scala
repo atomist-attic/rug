@@ -5,6 +5,7 @@ import com.atomist.param.{Parameter, ParameterValues, Tag}
 import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit._
 import com.atomist.project.generate.ProjectGenerator
+import com.atomist.rug.kind.core.ProjectContext
 import com.atomist.rug.spi.ReflectiveFunctionExport.exportedOperations
 import com.atomist.rug.spi._
 import com.atomist.source._
@@ -151,9 +152,9 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     .setDefaultValue(DefaultFilename))
 
   @throws[InvalidParametersException](classOf[InvalidParametersException])
-  override def generate(projectName: String, poa: ParameterValues): ArtifactSource = {
-    val createdFiles = emitTypes(poa)
-    new SimpleFileBasedArtifactSource("Rug user model", createdFiles ++ emitCombinedTypes(poa))
+  override def generate(projectName: String, pvs: ParameterValues, ctx: ProjectContext): ArtifactSource = {
+    val createdFiles = emitTypes(pvs)
+    new SimpleFileBasedArtifactSource("Rug user model", createdFiles ++ emitCombinedTypes(pvs))
   }
 
   override def modify(as: ArtifactSource, poa: ParameterValues): ModificationAttempt = {

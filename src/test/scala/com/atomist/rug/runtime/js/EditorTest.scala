@@ -526,7 +526,7 @@ class EditorTest extends FlatSpec with Matchers {
     val ctx = new ProjectContext(LocalRugContext) {
       override def repoResolver: Option[RepoResolver] = Some(FixedBranchRepoResolver("atomist", "rug", "master", project))
     }
-    val prj = jsgen.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")), ctx)
+    val prj = jsgen.generate("woot", SimpleParameterValues(Map("content" -> "Anders Hjelsberg is God")), new ProjectContext(ctx))
     jsgen
   }
 

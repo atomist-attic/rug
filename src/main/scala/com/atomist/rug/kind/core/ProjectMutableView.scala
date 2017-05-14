@@ -506,7 +506,11 @@ class ProjectMutableView(
     exposeAsProperty = true,
     exposeResultDirectlyToNashorn = true,
     description = "Provides access additional context, such as the PathExpressionEngine")
-  def context: ProjectContext = new ProjectContext(ctx)
+  def context: ProjectContext = ctx match {
+    case pc: ProjectContext => pc
+    case _ => new ProjectContext(ctx)
+  }
+
 
   import com.atomist.tree.pathexpression.PathExpressionParser._
 

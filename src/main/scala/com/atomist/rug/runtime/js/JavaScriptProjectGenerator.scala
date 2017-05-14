@@ -67,19 +67,18 @@ class JavaScriptProjectGenerator(
       // If the user has provided this method, call it to get the project starting point
       val projectToInvokePopulateWith = jsVar.getMember(StartingPointFunction) match {
         case null | ScriptRuntime.UNDEFINED =>
-          wrapProject(pmv)
+          pmv
         case js: JSObject if js.isFunction =>
           val userProject = invokeMemberFunction(jsc, jsVar,
             StartingPointFunction, None,
             wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
           val userAs = raw + userProject.currentBackingObject
-          val userPmv = new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
-          wrapProject(userPmv)
+          new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
         case x => throw new IllegalArgumentException(s"Don't know what to do with JavaScript member $x")
       }
 
-      invokeMemberFunction(jsc, jsVar, "populate", Some(validated), projectToInvokePopulateWith)
-      pmv.currentBackingObject
+      invokeMemberFunction(jsc, jsVar, "populate", Some(validated), wrapProject(projectToInvokePopulateWith))
+      projectToInvokePopulateWith.currentBackingObject
     }
     logger.debug(s"$name.populate took ${elapsedMillis}ms")
     result

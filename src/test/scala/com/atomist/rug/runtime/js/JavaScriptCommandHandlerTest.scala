@@ -9,7 +9,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.rug.{RugArchiveReader, RugRuntimeException, SimpleRugResolver}
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
 import org.scalatest.{FlatSpec, Matchers}
 import org.slf4j.helpers.NOPLogger
 
@@ -40,8 +40,12 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
       contentOf(this, "SimpleCommandHandlerExecuteInstructionCallingRespondable.ts"))
 
-  val simpleCommandHandlerReturningMessage = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    contentOf(this, "SimpleCommandHandlerReturningMessage.ts"))
+
+  val simpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction.ts"))
+
+  val simpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction2 = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction2.ts"))
 
   val simpleCommandHandlerReturningDirectedMessageWithInstructions = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerReturningDirectedMessageWithInstructions.ts"))
@@ -58,7 +62,7 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
   val simpleCommandHandlerWithSameParametersConfig = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
     contentOf(this, "SimpleCommandHandlerWithSameParametersConfig.ts"))
 
-  it should "not overwrite parameters when we reuse the same parametes object" in {
+  "command handler" should "not overwrite parameters when we reuse the same parameters object" in {
     val rugArchive = TypeScriptBuilder.compileWithExtendedModel(
       SimpleFileBasedArtifactSource(simpleCommandHandlerWithSameParametersConfig))
     val rugs = RugArchiveReader(rugArchive)
@@ -222,16 +226,26 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     assert(msg.contains("uh oh"))
   }
 
-  it should "return plan with DirectedMessage containing instructions" in {
+  it should "return plan with DirectedMessage containing instructions" in
+    directed(simpleCommandHandlerReturningDirectedMessageWithInstructions)
+
+  private def directed(f: FileArtifact) {
     val rugArchive = TypeScriptBuilder.compileWithModel(
-      SimpleFileBasedArtifactSource(simpleCommandHandlerReturningDirectedMessageWithInstructions))
+      SimpleFileBasedArtifactSource(f))
     val rugs = RugArchiveReader(rugArchive)
     val com = rugs.commandHandlers.head
+    assert(com.name === "ShowMeTheKitties")
     val plan = com.handle(null, SimpleParameterValues.Empty).get
     assert(plan.messages.length === 1)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.length === 1)
     assert(plan.messages.head.asInstanceOf[LocallyRenderedMessage].instructions.head.id.get === "123")
   }
+
+  it should "return plan with DirectedMessage containing instructions created by function" in
+    directed(simpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction)
+
+  it should "return plan with DirectedMessage containing instructions created by function without annotations" in
+    directed(simpleCommandHandlerReturningDirectedMessageWithInstructionsCreatedByFunction2)
 
   val handlerWithoutExplicitName =
     StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",

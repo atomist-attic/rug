@@ -186,9 +186,11 @@ object EditorTest {
       |@Generator("My simple Generator")
       |class SimpleGenerator {
       |
-      |     content: string = "woot"
+      |     content: string = "woot";
       |
       |     startingPoint(defaultProject: Project, pc: ProjectContext): Project {
+      |       // Test binding to this
+      |       if (this.content !== "woot") throw "this not bound";
       |       return pc.emptyProject();
       |     }
       |

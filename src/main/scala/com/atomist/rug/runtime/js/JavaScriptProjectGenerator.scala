@@ -50,6 +50,8 @@ class JavaScriptProjectGenerator(
   extends JavaScriptProjectOperation(jsc, jsVar, rugAs)
     with ProjectGenerator {
 
+  import JavaScriptProjectGenerator.StartingPointFunction
+
   @throws(classOf[InvalidParametersException])
   override def generate(projectName: String, pvs: ParameterValues, ctx: ProjectContext): ArtifactSource = {
     val validated = addDefaultParameterValues(pvs)
@@ -63,11 +65,13 @@ class JavaScriptProjectGenerator(
 
     val (result, elapsedMillis) = time {
       // If the user has provided this method, call it to get the project starting point
-      val projectToInvokePopulateWith = jsVar.getMember("startingPoint") match {
+      val projectToInvokePopulateWith = jsVar.getMember(StartingPointFunction) match {
         case null | ScriptRuntime.UNDEFINED =>
           wrapProject(pmv)
         case js: JSObject if js.isFunction =>
-          val userProject = js.call(null, wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
+          val userProject = invokeMemberFunction(jsc, jsVar,
+            StartingPointFunction, None,
+            wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
           val userAs = raw + userProject.currentBackingObject
           val userPmv = new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)
           wrapProject(userPmv)
@@ -81,4 +85,9 @@ class JavaScriptProjectGenerator(
     result
   }
 
+}
+
+object JavaScriptProjectGenerator {
+
+  val StartingPointFunction = "startingPoint"
 }

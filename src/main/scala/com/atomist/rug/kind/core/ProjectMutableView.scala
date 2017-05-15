@@ -18,7 +18,7 @@ import com.atomist.tree.content.text.{LineInputPositionImpl, OverwritableTextTre
 import com.atomist.tree.{AddressableTreeNode, TreeMaterializer, TreeNode}
 import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 
 import scala.util.Properties
 
@@ -37,9 +37,9 @@ object ProjectMutableView {
   * Operations on a project. Backed by an immutable ArtifactSource,
   * using copy on write.
   *
-  * @param rugAs                 backing store of the editor
+  * @param rugAs backing store of the editor
   * @param originalBackingObject original backing object (ArtifactSource). Changed on modification
-  * @param atomistConfig         Atomist configuration used to determine where we look for files.
+  * @param atomistConfig Atomist configuration used to determine where we look for files.
   */
 class ProjectMutableView(
                           val rugAs: ArtifactSource,
@@ -191,8 +191,8 @@ class ProjectMutableView(
   /**
     * Perform a regexp replace with the given file filter.
     *
-    * @param filter      file filter
-    * @param regexp      regexp
+    * @param filter file filter
+    * @param regexp regexp
     * @param replacement replacement for the regexp
     */
   def regexpReplaceWithFilter(
@@ -419,7 +419,7 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Don't use. Merely intended to simplify the life of the Rug to TypeScript transpiler.")
   def projects: java.util.List[ProjectMutableView] = Collections.singletonList(this)
-      
+
   @ExportFunction(readOnly = false,
     exposeAsProperty = true,
     description = "Files in this project")
@@ -434,12 +434,10 @@ class ProjectMutableView(
     * map of string arguments.
     *
     * @param editorName name of editor to use
-    * @param params     parameters to pass to the editor
-    * @return
+    * @param params parameters to pass to the editor
     */
   protected def editWith(editorName: String,
                          params: Map[String, Object]): Unit = {
-
     (creator, rugResolver) match {
       case (Some(rug), Some(resolver)) => resolver.resolve(rug, editorName) match {
         case Some(ed: ProjectEditor) =>
@@ -510,7 +508,6 @@ class ProjectMutableView(
     case pc: ProjectContext => pc
     case _ => new ProjectContext(ctx)
   }
-
 
   import com.atomist.tree.pathexpression.PathExpressionParser._
 

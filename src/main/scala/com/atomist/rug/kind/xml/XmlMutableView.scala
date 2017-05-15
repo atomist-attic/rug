@@ -23,7 +23,7 @@ object XmlMutableView {
   }
 
   def documentToString(doc: Document): String = {
-    val tf = TransformerFactory.newInstance()
+    val tf = TransformerFactory.newInstance("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl", getClass.getClassLoader)
 
     tf.setAttribute("indent-number", 4)
 

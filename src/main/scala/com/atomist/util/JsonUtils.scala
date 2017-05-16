@@ -1,5 +1,6 @@
 package com.atomist.util
 
+import java.io.InputStream
 import java.text.SimpleDateFormat
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include
@@ -21,6 +22,9 @@ object JsonUtils {
   // Wrap should be the default to avoid breaking a bunch of stuff outside rug that use it!
   def toJson(value: Any): String = mapper.writeValueAsString(value)
 
+  def toJson(ref: Option[AnyRef]): Option[String] =
+    if (ref.isDefined) Some(toJson(ref.get)) else None
+
   def toWrappedJson(value: Any): String = wrapper.writeValueAsString(value)
 
   def toJsonPrettyPrint(value: Any): String = mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
@@ -29,8 +33,7 @@ object JsonUtils {
 
   def fromJson[T](json: String, clazz: Class[T]): T = mapper.readValue(json, clazz)
 
-  def toJson(ref: Option[AnyRef]): Option[String] =
-    if (ref.isDefined) Some(toJson(ref.get)) else None
+  def fromJson[T](is: InputStream)(implicit m: Manifest[T]): T = mapper.readValue[T](is)
 
   private def getObjectMapper = {
     val objectMapper = new ObjectMapper() with ScalaObjectMapper

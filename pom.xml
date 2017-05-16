@@ -228,8 +228,8 @@
                       <addClasspath>false</addClasspath>
                     </manifest>
                     <manifestEntries>
-                      <Implementation-Version>${project.groupId}:${project.artifactId}</Implementation-Version>
-                      <Implementation-Title>${project.version}</Implementation-Title>
+                      <Implementation-Title>${project.groupId}:${project.artifactId}</Implementation-Title>
+                      <Implementation-Version>${project.version}</Implementation-Version>
                     </manifestEntries>
                   </archive>
                 </configuration>

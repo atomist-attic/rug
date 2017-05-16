@@ -5,7 +5,7 @@ import {Project} from '@atomist/rug/model/Core'
 class Merge  {
     
     edit(project: Project) {     
-        project.merge("template.vm", "dude.txt", {})
+        project.merge("template.mustache", "dude.txt", {})
     }
 
 }

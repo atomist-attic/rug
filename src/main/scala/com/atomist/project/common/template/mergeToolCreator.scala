@@ -12,6 +12,6 @@ class CombinedMergeToolCreator(
                               ) extends MergeToolCreator {
 
   override def createMergeTool(templateContent: ArtifactSource): MergeTool = {
-    new CombinedMergeTool(creators.map(c => c.createMergeTool(templateContent)))
+    new CombinedMergeTool(creators.map(_.createMergeTool(templateContent)))
   }
 }

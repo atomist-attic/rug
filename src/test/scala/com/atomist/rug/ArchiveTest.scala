@@ -35,7 +35,7 @@ class ArchiveTest extends FlatSpec with Matchers {
        |
        |with Project p
        |do
-       |  merge "template.vm" "dude.txt"
+       |  merge "template.mustache" "dude.txt"
       """.stripMargin)
 
   val prog2 = StringFileArtifact(atomistConfig.editorsRoot + "/Donny.rug",
@@ -44,7 +44,7 @@ class ArchiveTest extends FlatSpec with Matchers {
       |
       |with Project p
       |do
-      |  merge "template.vm" "dude.txt";
+      |  merge "template.mustache" "dude.txt";
     """.stripMargin
   )
 
@@ -61,7 +61,7 @@ class ArchiveTest extends FlatSpec with Matchers {
   private def verifyFileWithArchiveAccess(files: Seq[FileArtifact], useDotAtomist: Boolean) {
     val rootToUse = if (useDotAtomist) atomistConfig.templatesRoot else atomistConfig.templatesDirectory
     val as = TestUtils.rugsInSideFileAsArtifactSource(this, "Merge.ts") +
-      StringFileArtifact(s"$rootToUse/template.vm", "content")
+      StringFileArtifact(s"$rootToUse/template.mustache", "content")
     tryMod(as, "Merge", as) match {
       case sm: SuccessfulModification =>
         sm.result.findFile("dude.txt").isDefined

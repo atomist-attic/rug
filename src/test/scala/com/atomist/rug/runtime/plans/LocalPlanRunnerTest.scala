@@ -12,7 +12,7 @@ import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import org.mockito.Matchers.{eq => expected, _}
+import org.mockito.ArgumentMatchers.{eq => expected, _}
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
@@ -25,7 +25,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest with MockitoSugar with DiagrammedAssertions {
+class LocalPlanRunnerTest
+  extends FunSpec
+    with Matchers
+    with OneInstancePerTest
+    with MockitoSugar
+    with DiagrammedAssertions {
 
   val messageDeliverer = mock[MessageDeliverer]
   val instructionRunner = mock[InstructionRunner]
@@ -75,7 +80,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     val instructionNameAsSuccessResponseBody = new Answer[Response]() {
       def answer(invocation: InvocationOnMock) = {
-        val input = invocation.getArgumentAt(0, classOf[Instruction]).detail.name
+        val input = invocation.getArgument[Instruction](0).detail.name
         Response(Success, Some(input), Some(0), None)
       }
     }
@@ -108,7 +113,6 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     verify(instructionRunner).run(Respond(Detail("respond1", None, Nil, None)), Some(Response(Success, Some("edit3"), Some(0), None)))
     verify(instructionRunner).run(Edit(Detail("edit4", None, Nil, None)), None)
     verify(nestedPlanRunner).run(Plan(None, Nil, Seq(LocallyRenderedMessage("nested plan", "text/plain")), Nil), Some(Response(Success, Some("edit4"), Some(0), None)))
-
 
     verify(logger).debug("Delivered message channels: , usernames: , type: text/plain, body: message1")
 
@@ -175,7 +179,7 @@ class LocalPlanRunnerTest extends FunSpec with Matchers with OneInstancePerTest 
     )
     val instructionNameAsFailureResponseBody = new Answer[Response]() {
       def answer(invocation: InvocationOnMock) = {
-        val input = invocation.getArgumentAt(0, classOf[Instruction]).detail.name
+        val input = invocation.getArgument[Instruction](0).detail.name
         Response(Failure, Some(input), Some(0), None)
       }
     }

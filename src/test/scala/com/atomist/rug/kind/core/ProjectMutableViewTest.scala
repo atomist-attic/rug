@@ -164,12 +164,12 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
   // Written in response to community report of failure to preserve changes following this:
   //  with Project p
   //    begin
-  //  do merge 'my_template.vm' to 'my_template.output'
+  //  do merge 'my_template.mustache' to 'my_template.output'
   //  do copyEditorBackingFilesWithNewRelativePath sourcePath='test/' destinationPath='test_out'
   //  end
   it should "preserve merge after copyEditorBackingFilesWithNewRelativePath" in {
     val outputAs = EmptyArtifactSource("")
-    val templatePath = "my_template.vm"
+    val templatePath = "my_template.mustache"
     val mergeOutputPath = "my_template.output"
     val copyInputFile = "foo"
     val copyInputDir = "test"

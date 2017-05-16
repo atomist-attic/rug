@@ -28,8 +28,7 @@ object ProjectMutableView {
     * There should be a MergeToolCreator for each template engine we support.
     */
   val MergeToolCreators: Seq[MergeToolCreator] = Seq(
-    new MustacheMergeToolCreator,
-    new VelocityMergeToolCreator
+    new MustacheMergeToolCreator
   )
 }
 

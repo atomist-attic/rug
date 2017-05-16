@@ -221,6 +221,18 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                  <archive>
+                    <index>false</index>
+                    <manifest>
+                      <addClasspath>false</addClasspath>
+                    </manifest>
+                    <manifestEntries>
+                      <Implementation-Version>${project.groupId}:${project.artifactId}</Implementation-Version>
+                      <Implementation-Title>${project.version}</Implementation-Title>
+                    </manifestEntries>
+                  </archive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -3,17 +3,16 @@ package com.atomist.rug.kind.java
 import java.util.Objects
 
 import com.atomist.rug.RugRuntimeException
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, LazyFileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.{LazyFileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.spi.{ExportFunction, ExportFunctionParameterDescription, MutableView}
 import com.atomist.source.FileArtifact
 import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
-import com.github.javaparser.ast.expr.NameExpr
+import com.github.javaparser.ast.expr.Name
 import com.github.javaparser.ast.{CompilationUnit, PackageDeclaration}
 
 import scala.collection.JavaConverters._
-import JavaTypeType._
-
 import scala.util.Try
 
 class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
@@ -63,7 +62,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
     */
   @ExportFunction(readOnly = true, description = "Return the package name")
   def pkg: String = compilationUnit match {
-    case Some(cu) => cu.getPackage.getPackageName
+    case Some(cu) => cu.getPackageDeclaration.get().getNameAsString
     case None => ""
   }
 
@@ -79,7 +78,7 @@ class JavaSourceMutableView(old: FileArtifact, parent: ProjectMutableView)
     case Some(cu) =>
       val pathToReplace = pkg.replace(".", "/")
       val newPath = newPackage.replace(".", "/")
-      cu.setPackage(new PackageDeclaration(new NameExpr(newPackage)))
+      cu.setPackageDeclaration(new PackageDeclaration(new Name(newPackage)))
       setPath(path.replace(pathToReplace, newPath))
     case None =>
   }

@@ -29,7 +29,7 @@ class JavaMethodMutableView(originalBackingObject: MethodDeclaration, parent: Ja
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "Return the name of the method")
-  def name: String = currentBackingObject.getName
+  def name: String = currentBackingObject.getNameAsString
 
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,

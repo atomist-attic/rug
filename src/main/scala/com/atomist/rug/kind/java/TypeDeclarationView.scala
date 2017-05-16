@@ -5,7 +5,7 @@ import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.body.TypeDeclaration
 import com.github.javaparser.ast.comments.BlockComment
 
-abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: T, parent: JavaSourceMutableView)
+abstract class TypeDeclarationView[T <: TypeDeclaration[T]](originalBackingObject: T, parent: JavaSourceMutableView)
   extends BodyDeclarationView[T](originalBackingObject, parent) {
 
   def compilationUnit: Option[CompilationUnit] = parent.compilationUnit
@@ -18,7 +18,7 @@ abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: 
   @ExportFunction(readOnly = true,
     exposeAsProperty = true,
     description = "Return the name of the type")
-  def name: String = currentBackingObject.getName
+  def name: String = currentBackingObject.getNameAsString
 
   @ExportFunction(readOnly = false, description = "Add or replace header comment for this type")
   def setHeaderComment(
@@ -50,7 +50,7 @@ abstract class TypeDeclarationView[T <: TypeDeclaration](originalBackingObject: 
                       @ExportFunctionParameterDescription(name = "replacement",
                         description = "The replacement pattern")
                       replacement: String): Unit = {
-    val currentName = currentBackingObject.getName
+    val currentName = currentBackingObject.getNameAsString
     val newName = currentName.replaceAll(target, replacement)
     currentBackingObject.setName(newName)
     parent.rename(newName + ".java")

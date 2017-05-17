@@ -5,8 +5,9 @@ import com.atomist.rug.kind.core._
 import com.atomist.rug.kind.java.JavaSourceType._
 import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.spi._
+import com.github.javaparser.ast.NodeList
 import com.github.javaparser.ast.body._
-import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, NameExpr}
+import com.github.javaparser.ast.expr.{MarkerAnnotationExpr, Name}
 
 import scala.collection.JavaConverters._
 
@@ -43,23 +44,21 @@ class JavaTypeType
 
 object JavaTypeType {
 
-  def annotationAddedTo(bd: BodyDeclaration, annotationName: String): Boolean = {
+  def annotationAddedTo[T <: BodyDeclaration[T]](bd: BodyDeclaration[T], annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
-    if (!annotations.exists(_.getName.getName == annotationName)) {
-      bd.setAnnotations((annotations :+ new MarkerAnnotationExpr(new NameExpr(annotationName))).asJava)
+    if (!annotations.exists(_.getNameAsString == annotationName)) {
+      bd.setAnnotations(NodeList.nodeList((annotations :+ new MarkerAnnotationExpr(new Name(annotationName))).asJava))
       true
-    }
-    else // It's already there
+    } else // It's already there
       false
   }
 
-  def annotationRemovedFrom(bd: BodyDeclaration, annotationName: String): Boolean = {
+  def annotationRemovedFrom[T <: BodyDeclaration[T]](bd: BodyDeclaration[T], annotationName: String): Boolean = {
     val annotations = bd.getAnnotations.asScala
-    if (annotations.exists(_.getName.getName == annotationName)) {
-      bd.setAnnotations(annotations.filterNot(_.getName.getName == annotationName).asJava)
+    if (annotations.exists(_.getNameAsString == annotationName)) {
+      bd.setAnnotations(NodeList.nodeList(annotations.filterNot(_.getNameAsString == annotationName).asJava))
       true
-    }
-    else // It's already gone
+    } else // It's already gone
       false
   }
 

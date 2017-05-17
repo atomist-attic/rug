@@ -7,8 +7,8 @@ import scala.collection.JavaConverters._
 object SpringTypeSelectors {
 
   val SpringBootApplicationClassSelector: ClassOrInterfaceDeclaration => Boolean =
-    coit => coit.getAnnotations.asScala.exists(ann => "SpringBootApplication".equals(ann.getName.getName))
+    coit => coit.getAnnotations.asScala.exists(ann => "SpringBootApplication".equals(ann.getNameAsString))
 
   val FeignProxyClassSelector: ClassOrInterfaceDeclaration => Boolean =
-    coit => coit.getAnnotations.asScala.exists(ann => "FeignClient".equals(ann.getName.getName))
+    coit => coit.getAnnotations.asScala.exists(ann => "FeignClient".equals(ann.getNameAsString))
 }

@@ -14,6 +14,6 @@ class JavaConstructorParameterView(originalBackingObject: Parameter, parent: Jav
   override def childNodeNames: Set[String] = Set()
 
   @ExportFunction(readOnly = true, description = "Return the name of the parameter")
-  def name: String = currentBackingObject.getId.getName
+  def name: String = currentBackingObject.getNameAsString
 
 }

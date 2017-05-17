@@ -69,7 +69,7 @@ object JavaTypeUsageTest extends Matchers {
                       rugPath: String,
                       as: ArtifactSource, poa: Map[String,String]): ModificationAttempt = {
 
-    //println(ArtifactSourceUtils.prettyListFiles(program))
+    // println(ArtifactSourceUtils.prettyListFiles(program))
     val progAs = TypeScriptBuilder.compileWithModel(program)
     val eds = RugArchiveReader(progAs)
     val pe = eds.editors.head
@@ -82,17 +82,20 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   import JavaTypeUsageTest._
 
   "Java type" should "annotate class using function" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java1/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java1/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     annotateClass(program)
   }
 
   it should "annotate class going straight to class without enclosing JavaSource" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java2/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java2/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     annotateClass(program)
   }
 
   it should "add an annotation with properties to class" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java3/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java3/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
 
     val result = executeJava(program, "editors/ClassAnnotated.ts")
     val f = result.findFile("src/main/java/Dog.java").get
@@ -103,7 +106,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove annotation from class" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java4/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java4/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
 
     val result = executeJava(program, "editors/ClassAnnotated.ts")
     val f = result.findFile("src/main/java/Dog.java").get
@@ -114,7 +118,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove one annotation only from class" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java5/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java5/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
 
     val result = executeJava(program, "editors/ClassAnnotated.ts")
     val f = result.findFile("src/test/java/SpringBootJunit5ApplicationTests.java").get
@@ -158,7 +163,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   )
 
   it should "repackage class and verify name and path" in {
-    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java6/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program =ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java6/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
 
     val as = new SimpleFileBasedArtifactSource("", dog)
     val result = executeJava(program, "editors/ClassAnnotated.ts", as)
@@ -171,7 +177,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "repackage class and verify explicitly importing users are updated" in pendingUntilFixed {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java7/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java7/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
 
     val as = new SimpleFileBasedArtifactSource("", Seq(dog, cat, squirrel))
 
@@ -187,7 +194,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "rename class and verify name" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java8/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java8/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val as = new SimpleFileBasedArtifactSource("", dog)
     val result = executeJava(program, "editors/ClassAnnotated.ts", as)
 
@@ -207,7 +215,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "add import" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java9/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java9/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -215,7 +224,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "add and remove import" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java10/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java10/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -224,7 +234,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove an import" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java11/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java11/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -247,7 +258,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val (pkg, ann) = ("com.foo", "Baz")
 
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java12/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java12/ClassAnnotated.ts")
+        .withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/ClassAnnotated.ts", as)
     val f = r.findFile(impl.path).get
     f.content.lines.size should be > 0
@@ -268,7 +280,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val (pkg, ann) = ("com.foo", "Baz")
 
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java13/ClassExtended.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java13/ClassExtended.ts")
+        .withPathAbove(".atomist/editors")
 
     val r = executeJava(program, "editors/ClassExtended.ts", as)
     val unupdatedParentFile = r.findFile(parentFile.path).get
@@ -291,7 +304,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val (pkg, ann) = ("com.foo", "Baz")
 
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java14/ClassExtended.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java14/ClassExtended.ts")
+        .withPathAbove(".atomist/editors")
 
     val r = executeJava(program, "editors/ClassExtended.ts", as)
 
@@ -316,7 +330,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val newHeader = "It appears that Rod still likes long names"
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java15/CommentClassesWithLongNames.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java15/CommentClassesWithLongNames.ts")
+        .withPathAbove(".atomist/editors")
     assert(program.totalFileCount === 1)
     val r = executeJava(program, "editors/ClassAnnotated.ts", as)
 
@@ -328,7 +343,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
 
     val newHeader1 = "It appears that Alan would prefer more concise class names"
     val program1 =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java16/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java16/ClassAnnotated.ts")
+        .withPathAbove(".atomist/editors")
 
     val r1 = executeJava(program1,"editors/ClassAnnotated.ts", as)
 
@@ -351,7 +367,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val as = new SimpleFileBasedArtifactSource("", Seq(interfaceFile, impl))
 
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java17/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java17/ClassAnnotated.ts")
+        .withPathAbove(".atomist/editors")
 
     val r = executeJava(program,"editors/ClassAnnotated.ts", as)
 
@@ -370,7 +387,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     val as = new SimpleFileBasedArtifactSource("", Seq(interfaceFile, abstractFile, concreteFile))
 
     val program =
-      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java18/AbstractClass.ts").withPathAbove(".atomist/editors")
+      ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java18/AbstractClass.ts")
+        .withPathAbove(".atomist/editors")
     val r = executeJava(program, "editors/AbstractClass.ts", as)
     val updatedInterface = r.findFile(interfaceFile.path).get
     updatedInterface.content should include(s"import com.foo.bar.Baz;")
@@ -385,7 +403,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "allow access to project" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java19/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java19/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
 
@@ -395,7 +414,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "annotate constructor" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java20/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -404,7 +424,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "annotate method" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java21/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java21/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -413,7 +434,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove annotation from method" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java22/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java22/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -422,7 +444,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "annotate field" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java23/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java23/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0
@@ -431,7 +454,8 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "remove annotation from field" in {
-    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java24/ClassAnnotated.ts").withPathAbove(".atomist/editors")
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java24/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
     val r = executeJava(program,"editors/ClassAnnotated.ts")
     val f = r.findFile("src/main/java/Dog.java").get
     f.content.lines.size should be > 0

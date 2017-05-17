@@ -1,10 +1,9 @@
 package com.atomist.util.lang
 
-import com.github.javaparser.ASTHelper
 import com.github.javaparser.ast.`type`.{ClassOrInterfaceType, ReferenceType}
 import com.github.javaparser.ast.body._
 import com.github.javaparser.ast.expr._
-import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration}
+import com.github.javaparser.ast.{CompilationUnit, ImportDeclaration, Modifier}
 
 import scala.collection.JavaConverters._
 
@@ -70,11 +69,11 @@ object JavaParserUtils {
   )
 
   // Make calling JavaParser methods less verbose
-  implicit def stringToNameExpr(s: String): NameExpr = ASTHelper.createNameExpr(s)
+  implicit def stringToNameExpr(s: String): NameExpr = new NameExpr(s)
 
   // TODO why doesn't a structural type seem to work here?
-  def getAnnotation(bd: BodyDeclaration, name: String): Option[AnnotationExpr] =
-    bd.getAnnotations.asScala.find(_.getName.getName equals name)
+  def getAnnotation[T <: BodyDeclaration[T]](bd: BodyDeclaration[T], name: String): Option[AnnotationExpr] =
+    bd.getAnnotations.asScala.find(_.getNameAsString equals name)
 
   def getAnnotationValueAsString(an: AnnotationExpr): Option[String] = {
     an match {
@@ -88,23 +87,23 @@ object JavaParserUtils {
   }
 
   def getAnnotation(p: Parameter, name: String): Option[AnnotationExpr] =
-    p.getAnnotations.asScala.find(a => a.getName.getName equals name)
+    p.getAnnotations.asScala.find(_.getNameAsString equals name)
 
   import scala.language.reflectiveCalls
 
   // Structural type makes this work across method declarations and types
-  def isPublic(modifiable: {def getModifiers: Int}) = ModifierSet.isPublic(modifiable.getModifiers)
+  def isPublic(modifiable: {def getModifiers: Int}) =
+    java.lang.reflect.Modifier.isPublic(modifiable.getModifiers)
 
   def getUnderlyingType(rt: ReferenceType): ClassOrInterfaceType =
-    rt.getType match {
+    rt.getElementType match {
       case cit: ClassOrInterfaceType => cit
       case _ => ???
     }
 
-  def isPublicField(f: FieldDeclaration): Boolean = {
-    ModifierSet.isPublic(f.getModifiers) && !ModifierSet.isStatic(f.getModifiers) &&
+  def isPublicField(f: FieldDeclaration): Boolean =
+    f.getModifiers.contains(Modifier.PUBLIC) && !f.getModifiers.contains(Modifier.STATIC) &&
       f.getVariables.size == 1
-  }
 
   def isReservedWord(name: String): Boolean =
     name != null && name.length > 0 && reservedWords.contains(name)
@@ -113,7 +112,7 @@ object JavaParserUtils {
     fqns.foreach(fqn => {
       val importDefinition = cu.getImports.asScala.find(_.toString contains fqn)
       if (importDefinition.isEmpty) {
-        cu.getImports.add(new ImportDeclaration(new NameExpr(fqn), false, false))
+        cu.getImports.add(new ImportDeclaration(new Name(fqn), false, false))
       }
     })
   }

@@ -27,7 +27,7 @@ class JavaConstructorMutableView(originalBackingObject: ConstructorDeclaration, 
   }
 
   @ExportFunction(readOnly = true, description = "Return the name of the constructor")
-  def name: String = currentBackingObject.getName
+  def name: String = currentBackingObject.getNameAsString
 
   @ExportFunction(readOnly = true,
     description = "Return the Javadoc for the constructor, or an empty string if there isn't any")

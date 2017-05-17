@@ -1,7 +1,9 @@
 package com.atomist.rug.kind.java
 
+
 import com.atomist.rug.kind.java.JavaTypeType._
 import com.atomist.rug.spi._
+import com.github.javaparser.ast.Modifier
 import com.github.javaparser.ast.body._
 
 import scala.collection.JavaConverters._
@@ -9,7 +11,7 @@ import scala.collection.JavaConverters._
 class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: JavaSourceMutableView)
   extends TypeDeclarationView[ClassOrInterfaceDeclaration](old, parent) {
 
-  override def nodeName: String = currentBackingObject.getName
+  override def nodeName: String = currentBackingObject.getNameAsString
 
   override def nodeTags: Set[String] = Set(JavaTypeAlias)
 
@@ -50,12 +52,12 @@ class JavaClassOrInterfaceMutableView(old: ClassOrInterfaceDeclaration, parent: 
     exposeAsProperty = true,
     description = "Is this type abstract?")
   def isAbstract: Boolean =
-    isInterface || ModifierSet.isAbstract(currentBackingObject.getModifiers)
+    isInterface || currentBackingObject.getModifiers.contains(Modifier.ABSTRACT)
 
   @ExportFunction(readOnly = true, description = "Does this type extend the given type?")
   def inheritsFrom(
                     @ExportFunctionParameterDescription(name = "simpleName",
                       description = "Simple name of the ancestor class we're looking for")
                     simpleName: String): Boolean =
-    currentBackingObject.getExtends.asScala.exists(_.getName.equals(simpleName))
+    currentBackingObject.getExtendedTypes.asScala.exists(_.getNameAsString.equals(simpleName))
 }

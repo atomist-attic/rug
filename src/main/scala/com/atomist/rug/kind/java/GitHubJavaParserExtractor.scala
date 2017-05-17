@@ -25,7 +25,7 @@ object GitHubJavaParserExtractor extends Function[JList[FileArtifact], Seq[FileA
       withCloseable(f.inputStream())(is =>
         withCloseable(new InputStreamReader(is))(reader => {
           try {
-            FileAndCompilationUnit(f, JavaParser.parse(reader, true))
+            FileAndCompilationUnit(f, JavaParser.parse(reader))
           } catch {
             case pex: ParseException => throw new ArtifactSourceAccessException(s"Parsing error in ${f.path},content was\n${f.content}", pex)
           }

@@ -36,7 +36,7 @@ class AddClassAnnotationEditor(selector: ClassOrInterfaceDeclaration => Boolean,
       .filter(JavaHelpers.isJavaSourceArtifact)
       .exists(f => {
         val cu = JavaParser.parse(f.inputStream())
-        cu.getTypes.asScala.exists(_.getAnnotations.asScala.exists(_.getName.getName.equals(annotationName)))
+        cu.getTypes.asScala.exists(_.getAnnotations.asScala.exists(_.getNameAsString.equals(annotationName)))
       })
     annotatedFiles
   }

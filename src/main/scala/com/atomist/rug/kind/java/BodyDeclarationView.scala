@@ -11,7 +11,7 @@ import com.github.javaparser.ast.body.BodyDeclaration
   *
   * @tparam T underlying BodyDeclaration subclass
   */
-abstract class BodyDeclarationView[T <: BodyDeclaration](originalBackingObject: T, parent: MutableView[_])
+abstract class BodyDeclarationView[T <: BodyDeclaration[T]](originalBackingObject: T, parent: MutableView[_])
   extends ViewSupport[T](originalBackingObject, parent)
     with FileMetrics {
 

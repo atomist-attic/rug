@@ -1,12 +1,12 @@
 package com.atomist.rug.kind.java
 
-import com.github.javaparser.ast.DocumentableNode
+import com.github.javaparser.ast.Node
 
 object DocumentableNodeUtils {
 
-  def javadoc(dn: DocumentableNode): String = {
-    if (dn.getJavaDoc != null)
-      dn.getJavaDoc.asLineComment().getContent
+  def javadoc(dn: Node): String = {
+    if (dn.getComment.isPresent)
+      dn.getComment.get().getContent
     else ""
   }
 }

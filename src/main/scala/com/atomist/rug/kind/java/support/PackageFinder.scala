@@ -13,8 +13,8 @@ object PackageFinder {
   def findPackage(src: String): String = {
     val cu = GitHubJavaParserExtractor(Seq(StringFileArtifact("Src.java", src).asInstanceOf[FileArtifact]).asJava)
       .head.compilationUnit
-    if (cu.getPackage == null) ""
-    else cu.getPackage.getName.toString
+    if (!cu.getPackageDeclaration.isPresent) ""
+    else cu.getPackageDeclaration.get.getNameAsString
   }
 
   /**

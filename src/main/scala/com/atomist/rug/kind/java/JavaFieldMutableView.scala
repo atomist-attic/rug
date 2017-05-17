@@ -29,6 +29,6 @@ class JavaFieldMutableView(originalBackingObject: FieldDeclaration, parent: Java
   def name: String = {
     if (currentBackingObject.getVariables.size != 1)
       throw new UnsupportedOperationException(s"Can only handle 1 variable declaration: $currentBackingObject")
-    currentBackingObject.getVariables.asScala.head.getId.getName
+    currentBackingObject.getVariables.asScala.head.getNameAsString
   }
 }

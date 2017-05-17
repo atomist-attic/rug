@@ -70,7 +70,7 @@ class JavaScriptProjectGenerator(
           pmv
         case js: JSObject if js.isFunction =>
           val userProject = invokeMemberFunction(jsc, jsVar,
-            StartingPointFunction, None,
+            StartingPointFunction, Some(validated),
             wrapProject(pmv), jsScalaHidingProxy(pmv.context)).asInstanceOf[ProjectMutableView]
           val userAs = raw + userProject.currentBackingObject
           new ProjectMutableView(rugAs, userAs, atomistConfig = DefaultAtomistConfig, Some(this), rugResolver = resolver)

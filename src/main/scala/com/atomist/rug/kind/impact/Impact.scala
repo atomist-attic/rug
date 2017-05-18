@@ -124,6 +124,7 @@ class FileUpdateTypeProvider extends TypeProvider(classOf[FileUpdate]) {
 class FileUpdate(_parent: Impact, oldFile: FileMutableView, newFile: FileMutableView)
   extends FileImpact(_parent) {
 
+  @ExportFunction(readOnly = true, description = "Path to the file", exposeAsProperty = true)
   override def path: String = oldFile.path
 
   @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)
@@ -157,6 +158,7 @@ class FileDeletionTypeProvider extends TypeProvider(classOf[FileDeletion]) {
 class FileDeletion(_parent: Impact, oldFile: FileMutableView)
   extends FileImpact(_parent) {
 
+  @ExportFunction(readOnly = true, description = "Path to the file", exposeAsProperty = true)
   override def path: String = oldFile.path
 
   @ExportFunction(readOnly = true, description = "File", exposeAsProperty = true)

@@ -14,7 +14,7 @@ interface RugOperation {
  * Well-known patterns used in operation parameters.
  */
 abstract class Pattern {
-  public static url: string = "@java_package";
+  public static url: string = "@url";
   public static any: string = "@any";
   // tslint:disable-next-line:variable-name
   public static group_id: string = "@group_id";

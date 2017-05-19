@@ -15,25 +15,24 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
   */
 object JsonUtils {
 
-  private val mapper = getObjectMapper
-
-  private val wrapper = getObjectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true)
+  private val Mapper = getObjectMapper
+  private val Wrapper = getObjectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true)
 
   // Wrap should be the default to avoid breaking a bunch of stuff outside rug that use it!
-  def toJson(value: Any): String = mapper.writeValueAsString(value)
+  def toJson(value: Any): String = Mapper.writeValueAsString(value)
 
   def toJson(ref: Option[AnyRef]): Option[String] =
     if (ref.isDefined) Some(toJson(ref.get)) else None
 
-  def toWrappedJson(value: Any): String = wrapper.writeValueAsString(value)
+  def toWrappedJson(value: Any): String = Wrapper.writeValueAsString(value)
 
-  def toJsonPrettyPrint(value: Any): String = mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
+  def toJsonPrettyPrint(value: Any): String = Mapper.writer().withDefaultPrettyPrinter().writeValueAsString(value)
 
-  def fromJson[T](json: String)(implicit m: Manifest[T]): T = mapper.readValue[T](json)
+  def fromJson[T](json: String)(implicit m: Manifest[T]): T = Mapper.readValue[T](json)
 
-  def fromJson[T](json: String, clazz: Class[T]): T = mapper.readValue(json, clazz)
+  def fromJson[T](json: String, clazz: Class[T]): T = Mapper.readValue(json, clazz)
 
-  def fromJson[T](is: InputStream)(implicit m: Manifest[T]): T = mapper.readValue[T](is)
+  def fromJson[T](is: InputStream)(implicit m: Manifest[T]): T = Mapper.readValue[T](is)
 
   private def getObjectMapper = {
     val objectMapper = new ObjectMapper() with ScalaObjectMapper

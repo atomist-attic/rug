@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Parameters passed to ResponseHandlers with no declared parameters are now
+    set directly on the instance. This can be used to avoid using @Parameter
+    declarations
 -   Handle project generate failures
 -   **BREAKING** remove ProjectEditor & ProjectGenerator interfaces.
     This also removes support for legacy parameter[] Parameter declarations

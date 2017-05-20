@@ -115,4 +115,17 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     val response = Response(Status.Success, Some("It worked! :p"), Some(204))
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues.Empty)
   }
+
+  val responseHandlerWithInjectedValues = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ResponseHandlerWithInjectedValues.ts"))
+
+  it should "add set parameters to the handler instance if the field doesn't exist already and there's no parameter annotation" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithInjectedValues))
+    val finder = new JavaScriptResponseHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    val handler = handlers.head
+    val response = Response(Status.Success, Some("It worked! :p"), Some(204))
+    val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues(SimpleParameterValue("somenum", "10"), SimpleParameterValue("something", "woot")))
+  }
 }

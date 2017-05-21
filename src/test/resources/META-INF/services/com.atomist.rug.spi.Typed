@@ -2,3 +2,5 @@
 com.atomist.rug.kind.test.ReplacerType
 
 com.atomist.rug.kind.test.ReplacerCljType
+
+com.atomist.rug.kind.PandaRugLanguageExtension

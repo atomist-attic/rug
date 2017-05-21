@@ -29,8 +29,8 @@ class AddTypeScriptTest {
         let ts_file_path = "src/test/resources/" + ts_under_resources
         let scala_file_path = "src/test/scala/" + this.class_under_test.replace(/\./g, '/') + "TypeScriptTest.scala"
 
-        project.copyEditorBackingFileOrFail(sample_ts_file_path, ts_file_path)
-        project.copyEditorBackingFileOrFail("src/test/scala/com/atomist/rug/ts/SampleTypeScriptTest.scala", scala_file_path)
+        project.copyEditorBackingFileOrFailToDestination(sample_ts_file_path, ts_file_path)
+        project.copyEditorBackingFileOrFailToDestination("src/test/scala/com/atomist/rug/ts/SampleTypeScriptTest.scala", scala_file_path)
 
         let tsFile = project.findFile(ts_file_path)
         tsFile.replace("Sample", class_name)

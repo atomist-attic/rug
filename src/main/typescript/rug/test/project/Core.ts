@@ -45,12 +45,12 @@ export interface ProjectScenarioWorld extends ScenarioWorld {
     /**
      * Edit the project with the given editor, validating parameters
      */
-    editWith(ed: EditProject, params: {});
+    editWith(ed: EditProject, params?: {});
 
     /**
      * Create a project using the given generator named projectName, validating parameters
      */
-    generateWith(gen: PopulateProject, projectName: string, params: {});
+    generateWith(gen: PopulateProject, projectName: string, params?: {});
 
     /**
      * Did the editor make modifications in this scenario?  Note

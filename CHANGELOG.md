@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   Allow `editWith` and `generateWith` calls in Gherkin tests without parameters
 -   Parameters passed to ResponseHandlers with no declared parameters are now
     set directly on the instance. This can be used to avoid using @Parameter
     declarations
@@ -41,12 +42,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
 
-<<<<<<< HEAD
+
 [593]: https://github.com/atomist/rug/issues/593
-=======
 [554]: https://github.com/atomist/rug/issues/554
 [595]: https://github.com/atomist/rug/issues/595
->>>>>>> Expose underlying decorator logic #595 and hide their defined properties #554
 [587]: https://github.com/atomist/rug/issues/587
 
 ## [1.0.0-m.3] - 2017-05-09

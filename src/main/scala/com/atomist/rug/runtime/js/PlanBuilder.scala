@@ -161,6 +161,7 @@ class PlanBuilder {
           o.getMember(name) match {
             case null => false
             case ScriptRuntime.UNDEFINED => false
+            case o: ScriptObjectMirror if o.isFunction => false
             case _ => true
           }
         })

@@ -1,6 +1,6 @@
 package com.atomist.rug.runtime.js
 
-import com.atomist.param.{Parameter, ParameterValues, ParameterizedSupport, Tag}
+import com.atomist.param._
 import com.atomist.project.archive.RugResolver
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
 import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
@@ -66,6 +66,22 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
       jsScalaHidingProxy(ctx)) match {
       case plan: ScriptObjectMirror => ConstructPlan(plan, Some(this))
       case other => throw new InvalidHandlerResultException(s"$name ResponseHandler did not return a recognized response ($other) when invoked with ${params.toString()}")
+    }
+  }
+
+  /**
+    * If a field doesn't exist on the handler already, create it,
+    * but only if no @Parameter annotations are there
+    * This is handy to avoid use @Parameter decorators
+    */
+  override protected def setParameters(clone: ScriptObjectMirror, params: Seq[ParameterValue]): Unit = {
+    super.setParameters(clone, params)
+    if(parameters.isEmpty){
+      params.foreach(p => {
+        if(!clone.hasMember(p.getName)){
+          clone.setMember(p.getName, p.getValue);
+        }
+      })
     }
   }
 }

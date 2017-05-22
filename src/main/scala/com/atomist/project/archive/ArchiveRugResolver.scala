@@ -35,7 +35,7 @@ class ArchiveRugResolver(graph: Dependency,
     val found = finders.flatMap(finder => finder.find(jsc, Some(resolver)))
     val grouped = found.groupBy(_.name).collect{case x if x._2.size > 1 => x._1}
     if(grouped.nonEmpty){
-      throw new DuplicateRugException(s"Duplicate rugs found in archive: ${grouped.mkString}", found)
+      throw new DuplicateRugException(s"The following rugs have duplicates in the archive: ${grouped.mkString(", ")}", found)
     }else{
       found
     }

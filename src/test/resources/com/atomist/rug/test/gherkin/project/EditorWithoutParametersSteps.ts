@@ -8,7 +8,7 @@ Given("a visionary leader", p => {
 })
 When("politics takes its course", (p, w) => {
     let world = w as ProjectScenarioWorld;
-    world.editWith(world.editor("AlpEditor"), {});
+    world.editWith(world.editor("AlpEditor"));
 });
 Then("one edit was made", (p, world) => {
     return world.editorsRun() == 1;

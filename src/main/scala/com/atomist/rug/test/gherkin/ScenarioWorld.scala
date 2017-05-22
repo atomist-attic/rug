@@ -76,13 +76,13 @@ abstract class ScenarioWorld(val definitions: Definitions, rugs: Option[Rugs], c
   }
 
   protected def parameters(params: Any): ParameterValues = {
-    val m: Map[String, Object] = params match {
+    params match {
       case som: ScriptObjectMirror =>
         // The user has created a new JavaScript object, as in { foo: "bar" },
         // to pass up as an argument to the invoked editor. Extract its properties
-        NashornUtils.extractProperties(som)
+        SimpleParameterValues(NashornUtils.extractProperties(som))
+      case _ => SimpleParameterValues.Empty
     }
-    SimpleParameterValues(m)
   }
 
   protected case class RepoIdentification(owner: String, name: String, branch: Option[String], sha: Option[String])

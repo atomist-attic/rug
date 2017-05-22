@@ -7,8 +7,8 @@ import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt,
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
 import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
-import com.atomist.rug.runtime.js.{JavaScriptProjectOperation, LocalRugContext}
 import com.atomist.rug.runtime.js.interop.NashornUtils
+import com.atomist.rug.runtime.js.{JavaScriptProjectOperation, LocalRugContext}
 import com.atomist.rug.test.gherkin._
 import com.atomist.source.EmptyArtifactSource
 
@@ -62,6 +62,7 @@ class ProjectScenarioWorld(
     }
   }
 
+
   /**
     * Edit a project with the given editor, passed in from JavaScript.
     * We expect the JavaScript op to have been populated.
@@ -69,6 +70,11 @@ class ProjectScenarioWorld(
   def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
     val resultAs = generator.generate(projectName, parameters(params), new ProjectContext(LocalRugContext))
     project.updateTo(resultAs)
+  }
+
+  // for calling from nashorn which doesn't like default parameter values!
+  def generateWith(generator: ProjectGenerator, projectName: String): Unit = {
+    generateWith(generator, projectName, null)
   }
 
   /**
@@ -90,6 +96,10 @@ class ProjectScenarioWorld(
       case Left(unknown) =>
         throw unknown
     }
+  }
+  // for calling from nashorn which doesn't like default parameter values!
+  def editWith(editor: ProjectEditor): Unit = {
+    editWith(editor, null)
   }
 
   def modificationsMade: Boolean = editorResults.exists {

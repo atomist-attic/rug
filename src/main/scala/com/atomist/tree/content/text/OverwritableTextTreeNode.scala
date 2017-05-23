@@ -130,6 +130,7 @@ class OverwritableTextTreeNode(name: String,
 
   override val significance = Signal
 
+  @ExportFunction(readOnly = true, description = "Node content")
   override def value: String = requireNotInvalidated(_value)
 
   override def childNodeNames: Set[String] = requireNotInvalidated(requireNotOverwritten(visibleChildren.map(_.nodeName).toSet))

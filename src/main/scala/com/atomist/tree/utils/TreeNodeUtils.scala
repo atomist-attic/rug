@@ -1,9 +1,9 @@
 package com.atomist.tree.utils
 
 import com.atomist.graph.GraphNode
+import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.{Noise, Signal, Undeclared}
-import com.atomist.tree.content.text.{PositionedMutableContainerTreeNode, PositionedTreeNode}
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.content.text.PositionedTreeNode
 
 /**
   * Utility methods for TreeNode instances
@@ -36,7 +36,6 @@ object TreeNodeUtils {
 
     def showValue(n: GraphNode, cutoff: Int) = inlineReturns(
       n match {
-        case cn: PositionedMutableContainerTreeNode if !cn.padded => ""
         case n: TreeNode if n.value.length < cutoff => n.value
         case n: TreeNode => n.value.take(cutoff) + "..."
         case x => x.nodeName

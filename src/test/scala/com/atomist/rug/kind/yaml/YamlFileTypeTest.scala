@@ -1,12 +1,11 @@
 package com.atomist.rug.kind.yaml
 
-import com.atomist.graph.GraphNode
-import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.YamlUsageTestTargets._
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.content.text.{ImmutablePositionedTreeNode, TextTreeNodeLifecycle}
-import com.atomist.tree.utils.{NodeUtils, TreeNodePrinter, TreeNodeUtils}
+import com.atomist.tree.content.text.TextTreeNodeLifecycle
+import com.atomist.tree.utils.{NodeUtils, TreeNodePrinter}
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class YamlFileTypeTest extends AbstractTypeUnderFileTest {

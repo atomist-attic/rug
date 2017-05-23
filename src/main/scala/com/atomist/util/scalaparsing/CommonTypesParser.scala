@@ -85,32 +85,6 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
         new MutableTerminalTreeNode(name, ps.s, inputPosition)
   }
 
-  /**
-    * Decorator to add position of parsed object structure.
-    *
-    * @param underlying parser to use
-    * @param topLevel   whether this is a top level structure,
-    *                   meaning we should pad after the last recognized production
-    */
-  def positionedStructure[T <: ParsedMutableContainerTreeNode](underlying: => Parser[T], topLevel: Boolean = false): Parser[T] = new Parser[T] {
-    override def apply(in: Input): ParseResult[T] = {
-      val source = in.source
-      val offset = in.offset
-      val start = handleWhiteSpace(source, offset)
-      underlying(in) match {
-        case suc: Success[T @unchecked] =>
-          // Only update positions if they're not already updated
-          if (suc.result.startPosition == null || suc.result.endPosition == null) {
-            val inputString = in.source.toString
-            suc.result.startPosition = LineHoldingOffsetInputPosition(inputString, start)
-            suc.result.endPosition = LineHoldingOffsetInputPosition(inputString, suc.next.offset)
-          }
-          suc
-        case x => x
-      }
-    }
-  }
-
   protected def parseTo[T](f: FileArtifact, parser: Parser[T]): T = {
     logger.debug(s"Rug input is\n------\n${f.path}\n${f.content}\n------\n")
     // We need a source that gives us positions

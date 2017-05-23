@@ -27,8 +27,6 @@ com.atomist.rug.kind.json.JsonType
 com.atomist.rug.kind.pom.PomType
 com.atomist.rug.kind.pom.EveryPomType
 
-com.atomist.rug.kind.dynamic.MutableContainerTypeProvider
-
 com.atomist.rug.kind.csharp.CSharpFileType
 
 com.atomist.rug.kind.python3.PythonFileType
@@ -45,6 +43,5 @@ com.atomist.rug.kind.yaml.YamlFileType
 # Non public types
 com.atomist.rug.kind.json.PairTypeProvider
 com.atomist.rug.kind.java.JavaClassOrInterfaceProvider
-com.atomist.tree.content.text.MutableTerminalTreeNodeTypeProvider
 com.atomist.tree.content.text.OverwritableTextTypeProvider
 

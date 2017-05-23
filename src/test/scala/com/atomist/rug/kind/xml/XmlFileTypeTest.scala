@@ -3,26 +3,27 @@ package com.atomist.rug.kind.xml
 import com.atomist.graph.GraphNode
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.DefaultAtomistConfig
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.EmptyArtifactSource
+import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.OverwritableTextTreeNode
 import com.atomist.tree.pathexpression.{PathExpressionEngine, PathExpressionParser}
-import com.atomist.tree.utils.{NodeUtils, TreeNodeUtils}
-import com.atomist.tree.{ContainerTreeNode, TreeNode}
+import com.atomist.tree.utils.NodeUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class XmlFileTypeTest extends FlatSpec with Matchers {
 
   private  val pex = new PathExpressionEngine
 
-  it should "find XML file type using path expression" in {
+  "this test" should "find XML file type using path expression" in {
     val proj = ParsingTargets.NewStartSpringIoProject
     val pmv = new ProjectMutableView(EmptyArtifactSource(""), proj, DefaultAtomistConfig)
     val expr = "/File()[@name='pom.xml']/XmlFile()"
     val rtn = pex.evaluate(pmv, PathExpressionParser.parseString(expr))
     assert(rtn.right.get.size === 1)
     rtn.right.get.foreach {
-      case n: ContainerTreeNode =>
+      case n: OverwritableTextTreeNode =>
+        println(s"This is the tree node of the whole pom: ${n.value}")
         assert(n.value === proj.findFile("pom.xml").get.content)
     }
   }

@@ -1,8 +1,8 @@
 package com.atomist.tree.content.text.grammar.antlr
 
+import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
-import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
 import org.antlr.v4.runtime.{ParserRuleContext, Token}
@@ -54,7 +54,7 @@ class ModelBuildingListener(
   }
 
   // Use reflection to extract information from the generated methods and fields in this class
-  private def treeToContainerField(rc: ParserRuleContext): PositionedMutableContainerTreeNode = {
+  private def treeToContainerField(rc: ParserRuleContext): AntlrPositionedTreeNode = {
     val rule = this.getRuleByKey(rc.getRuleIndex)
 
     if (rc.exception != null) throw rc.exception
@@ -69,9 +69,9 @@ class ModelBuildingListener(
       .getDeclaredMethods
       .filter(m => !Excludes.ExcludedMethods.contains(m.getName))
 
-    val fieldsToAdd = ListBuffer.empty[TreeNode]
+    val fieldsToAdd = ListBuffer.empty[AntlrPositionedTreeNode]
 
-    def addField(f: TreeNode): Unit = f match {
+    def addField(f: AntlrPositionedTreeNode): Unit = f match {
       case ptn: PositionedTreeNode =>
         if (!fieldsToAdd.exists {
           case p: PositionedTreeNode if ptn.hasSamePositionAs(p) => true
@@ -98,20 +98,20 @@ class ModelBuildingListener(
     }
 
     val deduped = deduplicate(fieldsToAdd)
-    new SimpleMutableContainerTreeNode(
-      namingStrategy.nameForContainer(rule, deduped),
-      deduped,
+    val namey = namingStrategy.nameForContainer(rule, deduped)
+    AntlrPositionedTreeNode.parent(
+      namey,
       startPos,
       endPos,
-      namingStrategy.significance(rule, deduped),
-      // Mark it as a dynamic node
-      namingStrategy.tagsForContainer(rule, deduped) ++ Set(TreeNode.Dynamic))
+      deduped,
+      namingStrategy.tagsForContainer(rule, deduped) ++ Set(TreeNode.Dynamic),
+      namingStrategy.significance(rule, deduped))
   }
 
   // Remove duplicate fields. The ones with lower case can replace the ones with upper case
   // For example, handle case method_name=IDENTIFIER
-  private def deduplicate(fields: Seq[TreeNode]): Seq[TreeNode] = {
-    val lexerPred: TreeNode => Boolean = f => f.nodeName(0).isUpper
+  private def deduplicate(fields: Seq[AntlrPositionedTreeNode]): Seq[AntlrPositionedTreeNode] = {
+    val lexerPred: TreeNode => Boolean = f => f.nodeName.charAt(0).isUpper
     val lexerFields = fields.filter(lexerPred)
 
     val positionedParserFields = fields
@@ -133,7 +133,7 @@ class ModelBuildingListener(
       theresAnAliasFieldWithProbablySamePosition(f))
     )
 
-    def unwantedDuplicates(fields: Seq[TreeNode]): Seq[TreeNode] =
+    def unwantedDuplicates(fields: Seq[AntlrPositionedTreeNode]): Seq[AntlrPositionedTreeNode] =
       if (fields.size <= 1) Nil
       else fields.head match {
         case pm: PositionedTreeNode =>
@@ -160,25 +160,27 @@ class ModelBuildingListener(
     pos
   }
 
-  private def makeField(name: String, value: Object): Seq[TreeNode] = {
+  private def makeField(name: String, value: Object): Seq[AntlrPositionedTreeNode] = {
     val r = value match {
       case en: ErrorNode =>
         logger.info(s"ErrorNode: $name=$en")
         Seq() // does this have position information?
       case ct: Token if ct.getText.startsWith(s"<missing ") =>
         // Handle Antlr empty values
-        val sf = new MutableTerminalTreeNode(name, "", position(ct))
-        sf.addType(name)
+        val sf = AntlrPositionedTreeNode.leaf(name, position(ct), "", Set(name), TreeNode.Signal)
         Seq(sf)
       case ct: Token if ct.getText == "<EOF>" =>
         // For some reason, some grammars put the EOF on the token input stream
-        Nil
+        Seq()
       case ct: Token =>
-        val sf = new MutableTerminalTreeNode(
-          namingStrategy.nameForTerminal(name, ct.getText),
-          ct.getText,
-          position(ct))
-        sf.addType(name)
+        val pos = position(ct)
+        val text = ct.getText
+        val namey = namingStrategy.nameForTerminal(name, text)
+        val sf = AntlrPositionedTreeNode.leaf(
+          namey,
+          pos,
+          text,
+          Set(name), TreeNode.Signal)
         Seq(sf)
       case tn: TerminalNode =>
         makeField(name, tn.getSymbol)
@@ -202,11 +204,11 @@ trait AstNodeCreationStrategy {
 
   def nameForTerminal(rawName: String, content: String): String = rawName
 
-  def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule
+  def nameForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): String = rule
 
-  def tagsForContainer(rule: String, fields: Seq[TreeNode]): Set[String] = Set(rule)
+  def tagsForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): Set[String] = Set(rule)
 
-  def significance(rule: String, fields: Seq[TreeNode]): TreeNode.Significance =
+  def significance(rule: String, fields: Seq[AntlrPositionedTreeNode]): TreeNode.Significance =
     TreeNode.Signal
 
 }
@@ -217,24 +219,60 @@ trait AstNodeCreationStrategy {
   */
 object FromGrammarAstNodeCreationStrategy extends AstNodeCreationStrategy
 
-/**
-  * Empty container field value including fieldName information about possible fields,
-  * that are not present in this instance. This allows Rug type checking to work.
-  */
-case class EmptyAntlrContainerTreeNode(nodeName: String,
-                                       override val childNodeNames: Set[String],
-                                       types: Set[String] = Set())
-  extends ContainerTreeNode {
 
-  override def significance: Significance = TreeNode.Noise
+/*
+ * This has position, name, tags, value, significance
+ * PositionedTreeNode doesn't really need value, but it's helpful in NodeCreationStrategy methods.
+ */
+case class AntlrPositionedTreeNode(override val nodeName: String,
+                                   override val startPosition: InputPosition,
+                                   override val endPosition: InputPosition,
+                                   override val childNodes: Seq[AntlrPositionedTreeNode],
+                                   override val nodeTags: Set[String],
+                                   override val significance: Significance,
+                                   valueOption: Option[String])
+  extends PositionedTreeNode {
 
-  override def childNodes: Seq[TreeNode] = Nil
+  override def value: String = valueOption.getOrElse("")
 
-  override def childrenNamed(key: String): Seq[TreeNode] = Nil
+  override def childNodeNames: Set[String] = ???
 
-  override def nodeTags: Set[String] = Set("empty") ++ types
+  override def childNodeTypes: Set[String] = ???
 
-  override def childNodeTypes: Set[String] = Set()
+  override def childrenNamed(key: String): Seq[TreeNode] = childNodes.filter(_.nodeName == key)
+}
 
-  override def value: String = ""
+object AntlrPositionedTreeNode {
+
+  def leaf(nodeName: String,
+           startPosition: InputPosition,
+           value: String,
+           nodeTags: Set[String],
+           significance: Significance): AntlrPositionedTreeNode =
+    AntlrPositionedTreeNode(
+      nodeName,
+      startPosition,
+      startPosition + value.length,
+      Seq(),
+      nodeTags,
+      significance,
+      Some(value)
+    )
+
+  def parent(nodeName: String,
+             startPosition: InputPosition,
+             endPosition: InputPosition,
+             childNodes: Seq[AntlrPositionedTreeNode],
+             nodeTags: Set[String],
+             significance: Significance): AntlrPositionedTreeNode =
+    AntlrPositionedTreeNode(
+      nodeName,
+      startPosition,
+      endPosition,
+      childNodes,
+      nodeTags,
+      significance,
+      None
+    )
+
 }

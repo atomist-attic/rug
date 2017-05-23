@@ -95,6 +95,29 @@ export function CommandHandler(nameOrDescription: string, description?: string) 
   };
 }
 
+type TestKind = "integration";
+
+interface TestDescriptor {
+  description: string;
+  kind: TestKind;
+}
+
+export function IntegrationTest(description: string | TestDescriptor) {
+  return (obj: any) => {
+    if (typeof description === "string") {
+      declareCommandHandler(obj, description);
+      declareIntegrationTest(obj, { description, kind: "integration" });
+    } else {
+      declareCommandHandler(obj, description.description);
+      declareIntegrationTest(obj, description);
+    }
+  };
+}
+
+export function declareIntegrationTest(obj: any, descriptor: TestDescriptor) {
+  set_metadata(obj, "__test", descriptor);
+}
+
 export function declareCommandHandler(obj: any, description: string, name?: string) {
   declareRug(obj, "command-handler", description, name);
   return obj;

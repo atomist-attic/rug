@@ -1,0 +1,15 @@
+import {HandleCommand, HandleResponse, ResponseMessage, Response, HandlerContext, CommandPlan} from '@atomist/rug/operations/Handlers'
+import {IntegrationTest, ResponseHandler, Parameter, Tags, Intent} from '@atomist/rug/operations/Decorators'
+
+@IntegrationTest("Test some flow")
+class SomeTest implements HandleCommand{
+
+  handle(ctx: HandlerContext) : CommandPlan {
+
+    let result = new CommandPlan()
+    result.add({instruction: {kind: "execute", name: "ExampleFunction", parameters: {thingy: "woot", exception: true}},});
+    return result;
+  }
+}
+
+export let command = new SomeTest();

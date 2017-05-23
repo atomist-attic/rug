@@ -258,6 +258,22 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val com = rugs.commandHandlers.head
     assert(com.name == "FunctionKiller")
   }
+
+  val handlerWithIntegrationTestDecorator =
+    StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+      contentOf(this, "HandlerIntegrationTest.ts"))
+
+  it should "add test metadata if the @IntegrationTest decorator is used" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerWithIntegrationTestDecorator))
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
+    assert(rugs.commandHandlers.nonEmpty)
+    val test = rugs.commandHandlers.head.asInstanceOf[JavaScriptCommandHandler]
+    assert(test.testDescriptor.nonEmpty)
+    val td = test.testDescriptor.get
+    assert(td.description == "Test some flow")
+    assert(td.kind == "integration")
+  }
 }
 
 class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {

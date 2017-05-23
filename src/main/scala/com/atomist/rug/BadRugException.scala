@@ -85,8 +85,10 @@ class MissingRugException(msg: String)
   extends BadRugException(msg)
 
 class DuplicateRugException(msg: String, knownRugs: Seq[Rug])
-   extends BadRugException(msg) {
-}
+   extends BadRugException(msg)
+
+class InvalidTestDescriptorException(msg: String)
+  extends BadRugException(msg)
 
 class EditorNotFoundException(msg: String)
   extends BadRugException(msg) {

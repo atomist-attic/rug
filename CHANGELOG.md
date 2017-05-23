@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Add support for @IntegrationTest decorator. TypeScript Classes with
+    this decorator will behave much like Command Handlers, except in that
+    they will have additional metadata allowing the CLU/Runtime to behave
+    differently when required.
 -   Exposed underlying TypeScript class decorator logic so that they can
     be called directly to emit Rugs programmatically [#595][595]
 -   Allow `commitMessage` to be set on `Edit` instructions [#593][593]

@@ -14,7 +14,7 @@ import com.atomist.util.misc.SerializationFriendlyLazyLogging
   * @param tag name of the type we're looking into. An incorrect
   *            type name will result in error evaluations of
   *            path expressions unless the node name starts with lower case,
-  *            in which case it may be a local type from a microgrammar etc.
+  *            in which case it may be a local type (microgrammars used to be these, I don't know what is now)
   */
 case class NodesWithTag(tag: String)
   extends NodeTest
@@ -31,7 +31,7 @@ case class NodesWithTag(tag: String)
         None
       case None if tag.charAt(0).isLower =>
         // It starts with lower case. Give it the benefit of the doubt.
-        // It might be a microgrammar reference.
+        // It won't be a microgrammar reference anymore ... but maybe an AST node that might exist but doesn't?
         None
       case _ =>
         // With dynamic nodes we can't know this is invalid. A TreeMaterializer backed path expression

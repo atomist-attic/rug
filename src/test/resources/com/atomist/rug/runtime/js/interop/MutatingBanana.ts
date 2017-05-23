@@ -69,7 +69,7 @@ class Pear implements TreeNode {
 
 }
 
-@Editor("Constructed", "Uses single microgrammar")
+@Editor("Constructed", "Uses two dynamic grammars")
 class TwoLevel  {
 
     edit(project: Project) {

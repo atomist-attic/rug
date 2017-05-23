@@ -73,7 +73,7 @@ object TreeNode {
   case object Undeclared extends Significance
 
   /**
-    * Tag added to all dynamically created nodes, such as those backed by microgrammars,
+    * Tag added to all dynamically created nodes, such as those backed by
     * Antlr or LinkableContainerTreeNodes.
     */
   val Dynamic: String = "-dynamic"

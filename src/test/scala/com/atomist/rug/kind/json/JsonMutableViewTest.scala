@@ -1,12 +1,9 @@
 package com.atomist.rug.kind.json
 
-import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.content.text.microgrammar.MatcherMicrogrammar
-import com.atomist.tree.content.text.{ImmutablePositionedTreeNode, OverwritableTextTreeNode, PositionedMutableContainerTreeNode, TextTreeNodeLifecycle}
+import com.atomist.tree.content.text.TextTreeNodeLifecycle
 import com.atomist.tree.pathexpression.PathExpressionEngine
-import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{ContainerTreeNode, MutableTreeNode}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -16,9 +13,6 @@ class JsonMutableViewTest extends FlatSpec with Matchers {
   import com.atomist.tree.pathexpression.PathExpressionParser._
 
   val jsonParser = (new JsonType).parser
-
-  // Jess: I don't know why we manually build the json nodes here instead of getting them from the Type
-  // it's a mess
 
   it should "parse and find node in root" in {
     val f = StringFileArtifact("glossary.json", Simple)

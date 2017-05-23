@@ -12,7 +12,7 @@ Key areas of functionality of this project:
 |---|---|---|---|
 |  Tree model | Models project and file structure (e.g. ASTs) as a unified tree  | `com.atomist.tree`  | Used by parser and path expressions
 | Project operation support  | Editors and executors  |   `com.atomist.project`|   Project operations are authored in TypeScript, JavaScript or any language that compiles to JavaScript.
-|  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. *Microgrammar support in early development.*   |
+|  Parsing support |  Support for parsing files and preserving positional information to allow clean in-place updates | `com.atomist.tree.content.text`   | Integrates with Scala parser combinators and Antlr. 
 | JavaScript/TypeScript integration | Allows project operations to be written in JavaScript/TypeScript | `com.atomist.rug.runtime.js` | Uses Nashorn
 | Path expression language | XPath-like language for conveniently navigating trees | `com.atomist.tree` | Central concept for navigating project and model structure
 | TypeScript library |A `node` module to simplify authoring TypeScript rugs  | `src/main/typescript`| See [architectural overview](https://github.com/atomist/rug/blob/master/docs/TypeScriptLibrary.md). Will eventually be moved into a separate project.

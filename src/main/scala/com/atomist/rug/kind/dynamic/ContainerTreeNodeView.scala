@@ -43,7 +43,6 @@ class ContainerTreeNodeView[O <: ContainerTreeNode](
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] =
     currentBackingObject.childrenNamed(fieldName) collect {
-      case mctn: MutableContainerTreeNode => new MutableContainerMutableView(mctn, this)
       case o: ContainerTreeNode => viewFrom(o)
       case sv: MutableTerminalTreeNode => new ScalarValueView(sv, this)
     }

@@ -30,7 +30,10 @@ object TextTreeNodeLifecycle {
   }
 
   /**
-    * Some or all of the file has been parsed into some PositionedTreeNodes. (Microgrammars parse some. Antlr grammars parse all)
+    * Some or all of the file has been parsed into some PositionedTreeNodes.
+    * (Since microgrammars aren't here anymore, it should always be ALL afaik, unless the
+    * language extension chooses to return a node or nodes representing only part of the file.
+    * It could happen.)
     *
     * Before we can update any of the nodes or their children, we have to:
     *

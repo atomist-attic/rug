@@ -9,8 +9,6 @@ import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.js.interop.NashornUtils._
 import com.atomist.rug.runtime.js.{RugContext, SimpleExecutionContext}
 import com.atomist.rug.spi._
-import com.atomist.tree.content.text.microgrammar._
-import com.atomist.tree.content.text.microgrammar.dsl.MatcherDefinitionParser
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpression, PathExpressionEngine, PathExpressionParser}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
@@ -65,14 +63,6 @@ class jsPathExpressionEngine(
   }
 
   private def dynamicTypeDefinitionToTypeProvider(o: Object): Typed = o match {
-    case som: ScriptObjectMirror if hasDefinedProperties(som, "name", "grammar", "submatchers") =>
-      // It's a microgrammar
-      val name = stringProperty(som, "name")
-      val grammar = stringProperty(som, "grammar")
-      val submatchers = toJavaMap(som.getMember("submatchers"))
-      // println(s"Parsing $name=$grammar with ${matcherRegistry}")
-      val mg = MatcherMicrogrammarConstruction.matcherMicrogrammar(name, grammar, submatchers)
-      new MicrogrammarTypeProvider(mg)
     case som: ScriptObjectMirror if hasDefinedProperties(som, "typeName") =>
       // It's a type provider coded in JavaScript
       val tp = new JavaScriptBackedTypeProvider(som)
@@ -230,8 +220,6 @@ object PathExpressionException {
 }
 
 object jsPathExpressionEngine {
-
-  val matcherParser = new MatcherDefinitionParser
 
   /**
     * Parse path expression from a JavaScript-backed object with an "expression" property or a string.

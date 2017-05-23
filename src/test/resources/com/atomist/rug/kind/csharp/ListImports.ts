@@ -5,7 +5,7 @@ import {PathExpressionEngine} from '@atomist/rug/tree/PathExpression'
 import {Match} from '@atomist/rug/tree/PathExpression'
 import {Parameter} from '@atomist/rug/operations/RugOperation'
 
-@Editor("Uses single microgrammar")
+@Editor("Uses C# type")
 class Imports  {
 
     edit(project: Project) {

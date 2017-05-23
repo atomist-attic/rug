@@ -20,13 +20,13 @@ class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {
         e.pos should not be null
         assert(e.sourceLangRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.ts"))
         assert(e.jsRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.js"))
-        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 13)
+        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 8)
     }
   }
 
   it should "report correct position for null pointer exception in multiple files" in {
-    val rugs = TestUtils.rugsInSideFile(this, "DeliberateNpe.ts", "SimpleBanana.ts")
-    val jsed = rugs.editors.find(_.name.indexOf("Banana") == -1).get
+    val rugs = TestUtils.rugsInSideFile(this, "DeliberateNpe.ts", "HandlerWithFailingRugFunction.ts")
+    val jsed = rugs.editors.find(_.name.indexOf("FunctionKiller") == -1).get
     val target = ParsingTargets.SpringIoGuidesRestServiceSource
     try {
       jsed.modify(target, SimpleParameterValues.Empty)
@@ -37,7 +37,7 @@ class RuntimeExceptionHandlingTest extends FlatSpec with Matchers {
         e.pos should not be null
         assert(e.sourceLangRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.ts"))
         assert(e.jsRuntimeErrorInfo.filePath.endsWith("/DeliberateNpe.js"))
-        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 15)
+        assert(e.sourceLangRuntimeErrorInfo.pos.lineFrom1 == 8)
     }
   }
 

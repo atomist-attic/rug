@@ -124,6 +124,9 @@ method on a Text TreeNode supplies its current offset and indentation informatio
 It also contains the padding before, between, and after microgrammar matches.
 Something has to hold the entire contents of the file when the parsed nodes don't.
 
+(microgrammars don't exist in Scala anymore but maybe a custom language extension might only represent
+part of the file as a tree? it could happen.)
+
 The completed, ready-for-Rug-operations structure looks like this,
 for a microgrammar that looks for simple Scala methods:
 
@@ -215,7 +218,7 @@ transitions.
 
 In PR317, OverwritableTextTreeNodes replace MutableContainerMutableView,
 MutableContainerTreeNode, MutableTerminalMutableView, and ScalarValueView
-for Antlr file types and Microgrammar types, post-pad.
+for Antlr file types, post-pad.
 
 Sadly, all the more complicated types still exist. Fully extracting them is
 another project. It is time to get comments on this structure, first.

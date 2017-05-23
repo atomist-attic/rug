@@ -7,7 +7,6 @@ import com.atomist.rug.kind.yaml.YamlFileType._
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.grammar.MatchListener
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.IOUtils
 import org.yaml.snakeyaml.Yaml
@@ -53,7 +52,7 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
   /**
     * Uses a state machine to handle SnakeYAML events, which include node positions.
     */
-  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener]): Option[PositionedTreeNode] = {
+  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] = {
     // We're currently adding to the node on top of the stack
     val nodeStack: mutable.Stack[ParsedMutableContainerTreeNode] = new mutable.Stack()
     var state: State = InDocument

@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets
 
 import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text.PositionedTreeNode
-import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.content.text.grammar.antlr.{AntlrGrammar, AstNodeCreationStrategy}
 import com.atomist.util.Utils.withCloseable
 import org.apache.commons.io.IOUtils
@@ -33,7 +32,7 @@ abstract class AntlrRawFileType(
 
   private lazy val antlrGrammar = new AntlrGrammar(topLevelProduction, nodeCreationStrategy, g4s: _*)
 
-  override def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode] = {
-    antlrGrammar.parse(f.content, ml)
+  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] = {
+    antlrGrammar.parse(f.content)
   }
 }

@@ -3,7 +3,7 @@ package com.atomist.rug.kind.scala
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.AbstractTypeUnderFileTest
 import com.atomist.source.{EmptyArtifactSource, SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.content.text.{ConsoleMatchListener, FormatInfo, OverwritableTextTreeNode, TreeNodeOperations}
+import com.atomist.tree.content.text.{FormatInfo, OverwritableTextTreeNode, TreeNodeOperations}
 import com.atomist.tree.pathexpression.{PathExpression, PathExpressionParser}
 import com.atomist.tree.utils.TreeNodeUtils
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
@@ -27,7 +27,7 @@ class ScalaFileTypeTest extends AbstractTypeUnderFileTest {
   }
 
   it should "parse hello world and write out correctly" in {
-    val parsed = typeBeingTested.fileToRawNode(HelloWorldScala, Some(ConsoleMatchListener)).get
+    val parsed = typeBeingTested.fileToRawNode(HelloWorldScala).get
     val parsedValue = parsed.value
     withClue(s"Unexpected content: [$parsedValue]") {
       parsedValue should equal(HelloWorldScala.content)

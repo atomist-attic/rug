@@ -164,8 +164,7 @@ class ModelBuildingListener(
     val r = value match {
       case en: ErrorNode =>
         logger.info(s"ErrorNode: $name=$en")
-        val sf = SimpleTerminalTreeNode(name, "", Set(name))
-        Seq(sf)
+        Seq() // does this have position information?
       case ct: Token if ct.getText.startsWith(s"<missing ") =>
         // Handle Antlr empty values
         val sf = new MutableTerminalTreeNode(name, "", position(ct))

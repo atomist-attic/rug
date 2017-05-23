@@ -87,13 +87,13 @@ class ModelBuildingListener(
       if m.getParameterCount == 0
     } {
       val value = m.invoke(rc)
-      for (f <- makeField(m.getName, value, m.getReturnType))
+      for (f <- makeField(m.getName, value))
         addField(f)
     }
 
     for (f <- rc.getClass.getDeclaredFields) {
       val value = f.get(rc)
-      for (mf <- makeField(f.getName, value, f.getType))
+      for (mf <- makeField(f.getName, value))
         addField(mf)
     }
 
@@ -160,7 +160,7 @@ class ModelBuildingListener(
     pos
   }
 
-  private def makeField(name: String, value: Object, typ: Class[_]): Seq[TreeNode] = {
+  private def makeField(name: String, value: Object): Seq[TreeNode] = {
     val r = value match {
       case en: ErrorNode =>
         logger.info(s"ErrorNode: $name=$en")
@@ -181,17 +181,13 @@ class ModelBuildingListener(
         sf.addType(name)
         Seq(sf)
       case tn: TerminalNode =>
-        makeField(name, tn.getSymbol, classOf[String])
+        makeField(name, tn.getSymbol)
       case l: java.util.List[Object@unchecked] =>
-        l.asScala.flatMap(e => makeField(name, e, classOf[Object]))
+        l.asScala.flatMap(e => makeField(name, e))
       case prc: ParserRuleContext =>
         Seq(treeToContainerField(prc))
       case null =>
-        // It's valid to reference this field, but it should produce nothing. So return an empty collection.
-        // However, populate it with the possible field names
-        val possibleFieldNames =
-          typ.getDeclaredMethods.map(_.getName) ++ typ.getDeclaredFields.map(_.getName)
-        Seq(EmptyAntlrContainerTreeNode(name, possibleFieldNames.toSet, Set(name)))
+        Seq()
     }
     r
   }

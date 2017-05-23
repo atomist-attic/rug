@@ -6,6 +6,7 @@ import com.atomist.rug.kind.grammar.TypeUnderFile
 import com.atomist.rug.kind.yaml.YamlFileType._
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
+import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.IOUtils
@@ -80,30 +81,30 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
 
     protected override def on = {
       case Input(content, s: ScalarEvent, _) =>
-        SeenKey(keyTerminal = scalarToTreeNode(content, s), this)
+        SeenKey(keyTerminal = scalarToValue(content, s), this)
     }
   }
 
-  private case class SeenKey(keyTerminal: PositionedTreeNode, previousState: State)
+  private case class SeenKey(keyTerminal: String, previousState: State)
     extends State {
 
     protected def on = {
       case Input(content, s: ScalarEvent, nodeStack) =>
         // Scalar key with value. Add a container a child of present node and return to Open state
         val value = scalarToTreeNode(content, s)
-        val container = SimpleMutableContainerTreeNode.wrap(keyTerminal.value, Seq(value), significance = TreeNode.Signal)
+        val container = SimpleMutableContainerTreeNode.wrap(keyTerminal, Seq(value), significance = TreeNode.Signal)
         container.addType(ScalarType)
         nodeStack.top.insertFieldCheckingPosition(container)
         previousState
       case Input(content, sse: SequenceStartEvent, nodeStack) =>
-        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal.value)
+        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal)
         newContainer.addType(SequenceType)
         newContainer.startPosition = markToPosition(content, sse.getStartMark)
         nodeStack.top.appendField(newContainer)
         nodeStack.push(newContainer)
         InSequence(previousState)
       case Input(content, mse: MappingStartEvent, nodeStack) =>
-        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal.value)
+        val newContainer = new ParsedMutableContainerTreeNode(keyTerminal)
         newContainer.addType(MappingType)
         newContainer.startPosition = markToPosition(content, mse.getStartMark)
         nodeStack.top.appendField(newContainer)
@@ -119,14 +120,14 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
         nodeStack.pop()
         previousState
       case Input(content, s: ScalarEvent, _) =>
-        SeenKey(keyTerminal = scalarToTreeNode(content, s), this)
+        SeenKey(keyTerminal = scalarToValue(content, s), this)
     }
   }
 
   private case class InNewKey(previousState: State) extends State {
     protected override def on = {
       case Input(content, s: ScalarEvent, _) =>
-        SeenKey(keyTerminal = scalarToTreeNode(content, s), previousState)
+        SeenKey(keyTerminal = scalarToValue(content, s), previousState)
     }
   }
 
@@ -151,16 +152,42 @@ class YamlFileType extends TypeUnderFile with LazyLogging {
   private def scalarToTreeNode(in: String, se: ScalarEvent): PositionedTreeNode = {
     val start = markToPosition(in, se.getStartMark)
     val end = markToPosition(in, se.getEndMark)
-    val fullValue = in.substring(start.offset, end.offset)
-    val f = new MutableTerminalTreeNode(ScalarName, fullValue, start)
-    f.addType(ScalarType)
+    val f = YamlPositionedTreeNode(ScalarName, start, end, Seq(), Set(ScalarType), TreeNode.Signal)
     f
+  }
+
+  /**
+    * Value will be the full structure.
+    */
+  private def scalarToValue(in: String, se: ScalarEvent): String = {
+    val start = markToPosition(in, se.getStartMark)
+    val end = markToPosition(in, se.getEndMark)
+    in.substring(start.offset, end.offset)
   }
 
   private def markToPosition(in: String, m: Mark): InputPosition = {
     // Snake YAML shows positions in toStrings from 1 but returns them from 0
     LineInputPositionImpl(in, m.getLine + 1, m.getColumn + 1)
   }
+}
+
+case class YamlPositionedTreeNode(override val nodeName: String,
+                                  override val startPosition: InputPosition,
+                                  override val endPosition: InputPosition,
+                                  override val childNodes: Seq[PositionedTreeNode],
+                                  override val nodeTags: Set[String],
+                                  override val significance: Significance)
+  extends PositionedTreeNode {
+
+  // These are really only needed on the Updatable tree nodes, not on Positioned at all
+
+  override def value: String = ???
+
+  override def childNodeNames: Set[String] = ???
+
+  override def childNodeTypes: Set[String] = ???
+
+  override def childrenNamed(key: String): Seq[TreeNode] = childNodes.filter(_.nodeName == key)
 }
 
 object YamlFileType {

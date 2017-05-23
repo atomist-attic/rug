@@ -1,10 +1,12 @@
 package com.atomist.rug.kind.yaml
 
-import com.atomist.rug.kind.core.ProjectMutableView
+import com.atomist.graph.GraphNode
+import com.atomist.rug.kind.core.{FileArtifactBackedMutableView, ProjectMutableView}
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
 import com.atomist.rug.kind.yaml.YamlUsageTestTargets._
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-import com.atomist.tree.utils.NodeUtils
+import com.atomist.tree.content.text.{ImmutablePositionedTreeNode, TextTreeNodeLifecycle}
+import com.atomist.tree.utils.{NodeUtils, TreeNodePrinter, TreeNodeUtils}
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 class YamlFileTypeTest extends AbstractTypeUnderFileTest {
@@ -16,7 +18,7 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     val nodes = evaluatePathExpression(tn, "/components/*")
-    assert(NodeUtils.value(nodes.last) === "Nait 3R")
+    assert(NodeUtils.positionedValue(nodes.last, YamlNestedSeq) === "Nait 3R")
   }
 
   it should "parse and run path expression to find nested sequence" in {
@@ -24,25 +26,27 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
     val nodes = evaluatePathExpression(tn, "/components/cables/*")
-    assert(NodeUtils.value(nodes.last) === "A5 speaker cable")
+    assert(NodeUtils.positionedValue(nodes.last, YamlNestedSeq) === "A5 speaker cable")
   }
 
   it should "parse and run path expression to find deeper nested sequence" in {
-    val f = StringFileArtifact("test.yml", YamlNestedSeq)
-    val tn = typeBeingTested.fileToRawNode(f).get
-    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
+    val tn = parseAndPrepare()
     val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/*[@value='NAP250.2']")
     assert(nodes.size === 1)
     assert(NodeUtils.value(nodes.last) === "NAP250.2")
   }
 
-  it should "parse and run path expression to find deepest nested sequence" in {
-    val f = StringFileArtifact("test.yml", YamlNestedSeq)
-    val tn = typeBeingTested.fileToRawNode(f).get
+  def parseAndPrepare(fileContent: String = YamlNestedSeq): UpdatableTreeNode = {
+    val f = new ProjectMutableView(SimpleFileBasedArtifactSource(StringFileArtifact("test.yml", fileContent))).findFile("test.yml")
+    val tn = typeBeingTested.fileToRawNode(f.currentBackingObject).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+    TextTreeNodeLifecycle.makeWholeFileNodeReady("Yaml", tn, f)
+  }
 
-    val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/NAC82/*")
+  it should "parse and run path expression to find deepest nested sequence" in {
+    val otif = parseAndPrepare()
+
+    val nodes = evaluatePathExpression(otif, "/components/Amplifier/*[@name='future upgrades']/NAC82/*")
     assert(NodeUtils.value(nodes.head) === "NAPSC power supply")
   }
 
@@ -50,9 +54,9 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     val f = StringFileArtifact("test.yml", xYaml)
     val tn = typeBeingTested.fileToRawNode(f).get
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
-
-    withClue(s"Was [${tn.value}]\nExpected [${f.content}]") {
-      assert(tn.value === f.content)
+    val nodeValue = NodeUtils.positionedValue(tn, xYaml)
+    withClue(s"Was [${nodeValue}]\nExpected [${f.content}]") {
+      assert(nodeValue === f.content)
     }
   }
 
@@ -63,7 +67,7 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
 
     val nodes = evaluatePathExpression(tn, "/artifact")
     assert(nodes.size == 1)
-    assert(NodeUtils.value(nodes.head) === "\"A Night at the Opera\"")
+    assert(NodeUtils.positionedValue(nodes.head, xYaml) === "\"A Night at the Opera\"")
   }
 
   it should "find scala value in quotes and modify" in {
@@ -84,9 +88,11 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
     assert(pmv.findFile("test.yml").content === xYaml.replace(oldContent, newContent))
   }
 
+  def printTree(t: UpdatableTreeNode) =
+    println(TreeNodePrinter.draw[UpdatableTreeNode](u => u.childNodes.map(_.asInstanceOf[UpdatableTreeNode]), u => s"${u.nodeName}: ${u.value}")(t))
+
   it should "find scalar using path expression key" in {
-    val f = StringFileArtifact("test.yml", xYaml)
-    val tn = typeBeingTested.fileToRawNode(f).get
+    val tn = parseAndPrepare(xYaml)
 
     var nodes = evaluatePathExpression(tn, "/group")
     assert(nodes.size == 1)
@@ -102,8 +108,7 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
   }
 
   it should "parse and run path expression using name again" in {
-    val f = StringFileArtifact("test.yml", xYaml)
-    val tn = typeBeingTested.fileToRawNode(f).get
+    val tn = parseAndPrepare(xYaml)
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
     val nodes = evaluatePathExpression(tn, "/dependencies")
@@ -114,8 +119,7 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
   }
 
   it should "parse and run path expression using type" in {
-    val f = StringFileArtifact("test.yml", xYaml)
-    val tn = typeBeingTested.fileToRawNode(f).get
+    val tn = parseAndPrepare(xYaml)
     // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
 
     val nodes2 = evaluatePathExpression(tn, "/Sequence()[@name='dependencies']/*")
@@ -131,9 +135,8 @@ class YamlFileTypeTest extends AbstractTypeUnderFileTest {
   }
 
   it should "parse and run path expression using | and > strings" in {
-    val f = StringFileArtifact("test.yml", YamlOrgStart)
-    val tn = typeBeingTested.fileToRawNode(f).get
-    assert(tn.value === f.content)
+    val tn = parseAndPrepare(YamlOrgStart)
+    assert(tn.value === YamlOrgStart)
     val nodes = evaluatePathExpression(tn, "//*[@name='bill-to']/given/value")
     assert(nodes.size === 1)
     assert(nodes.head.asInstanceOf[TreeNode].value === "Chris")

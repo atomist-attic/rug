@@ -2,6 +2,7 @@ package com.atomist.tree.utils
 
 import com.atomist.graph.GraphNode
 import com.atomist.tree.TreeNode
+import com.atomist.tree.content.text.PositionedTreeNode
 import org.springframework.util.ReflectionUtils
 
 import scala.reflect.ClassTag
@@ -59,6 +60,11 @@ object NodeUtils {
   def value(gn: GraphNode): String = gn match {
     case tn: TreeNode => tn.value
     case _ => ""
+  }
+
+  def positionedValue(gn: GraphNode, in: String): String = gn match {
+    case pn: PositionedTreeNode => in.substring(pn.startPosition.offset, pn.endPosition.offset)
+    case _ => ???
   }
 
   /**

@@ -2,7 +2,6 @@ package com.atomist.tree.content.text.grammar.antlr
 
 import com.atomist.tree.TreeNode.Significance
 import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.{ContainerTreeNode, SimpleTerminalTreeNode, TreeNode}
 import com.typesafe.scalalogging.LazyLogging
 import org.antlr.v4.runtime.tree.{ErrorNode, TerminalNode}
@@ -25,7 +24,6 @@ object Excludes {
   */
 class ModelBuildingListener(
                              matchRule: String,
-                             ml: Option[MatchListener],
                              namingStrategy: AstNodeCreationStrategy)
   extends DefaultListener with LazyLogging {
 
@@ -48,7 +46,6 @@ class ModelBuildingListener(
         else {
           val mctn = treeToContainerField(ctx)
           results.append(mctn)
-          ml.foreach(_.onMatch(mctn))
           logger.debug("\t" + ctx)
         }
       case _ =>

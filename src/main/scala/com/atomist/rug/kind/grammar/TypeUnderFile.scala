@@ -6,7 +6,6 @@ import com.atomist.rug.kind.dynamic.MutableContainerMutableView
 import com.atomist.rug.spi.{MutableView, ReflectivelyTypedType, Type}
 import com.atomist.source.FileArtifact
 import com.atomist.tree.content.text._
-import com.atomist.tree.content.text.grammar.MatchListener
 import com.atomist.tree.{TreeNode, UpdatableTreeNode}
 
 import scala.collection.JavaConverters._
@@ -70,5 +69,5 @@ abstract class TypeUnderFile
     * @param f file with content to parse
     * @return a PositionedTreeNode
     */
-  def fileToRawNode(f: FileArtifact, ml: Option[MatchListener] = None): Option[PositionedTreeNode]
+  def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode]
 }

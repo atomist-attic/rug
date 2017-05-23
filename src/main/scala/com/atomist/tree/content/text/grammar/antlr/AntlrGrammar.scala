@@ -1,7 +1,6 @@
 package com.atomist.tree.content.text.grammar.antlr
 
 import com.atomist.tree.content.text.PositionedTreeNode
-import com.atomist.tree.content.text.grammar.{MatchListener, Parser}
 import org.antlr.v4.runtime.{InputMismatchException, NoViableAltException}
 import org.snt.inmemantlr.GenericParser
 
@@ -15,17 +14,16 @@ class AntlrGrammar(
                     production: String,
                     nodeCreationStrategy: AstNodeCreationStrategy,
                     grammars: String*)
-  extends AbstractInMemAntlrGrammar
-    with Parser {
+  extends AbstractInMemAntlrGrammar {
 
   override protected def setup: ParserSetup = {
     val parser = new GenericParser(this, false, grammars:_*)
     ParserSetup(grammars, parser, production)
   }
 
-  override def parse(input: String, ml: Option[MatchListener] = None): Option[PositionedTreeNode] = {
+  def parse(input: String): Option[PositionedTreeNode] = {
     logger.debug(s"Using grammars:\n$grammars")
-    val l = new ModelBuildingListener(production, ml, nodeCreationStrategy)
+    val l = new ModelBuildingListener(production, nodeCreationStrategy)
     try {
       val parser = config.parser
       parser.setListener(l)

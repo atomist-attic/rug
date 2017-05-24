@@ -1,8 +1,11 @@
 package com.atomist.rug.kind.yaml
 
 import com.atomist.project.edit.{NoModificationNeeded, SuccessfulModification}
+import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.grammar.{AbstractTypeUnderFileTest, TypeUnderFile}
-import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.source.{FileArtifact, SimpleFileBasedArtifactSource, StringFileArtifact}
+import com.atomist.tree.UpdatableTreeNode
+import com.atomist.tree.content.text.{PositionedTreeNode, TextTreeNodeLifecycle}
 
 class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlUsageTest {
 
@@ -411,14 +414,21 @@ class YamlFileTypeUsageTest extends AbstractTypeUnderFileTest with AbstractYamlU
       new SimpleFileBasedArtifactSource("single", StringFileArtifact("x.yml", YamlNestedSeq))) match {
       case sm: SuccessfulModification =>
         val theFile = sm.result.findFile("x.yml").get
-        // println(theFile.content)
-        val tn = typeBeingTested.fileToRawNode(theFile).get
+        assert(theFile != null)
+        val tn = parseAndPrepare(theFile)
         val nodes = evaluatePathExpression(tn, "/components/Amplifier/*[@name='future upgrades']/NAC82/*")
         assert(!nodes.map(_.nodeName).contains("Hicap"))
         validateResultContainsValidFiles(sm.result)
       case wtf => fail(s"Expected SuccessfulModification, not $wtf")
     }
   }
+  def parseAndPrepare(fileArtifact: FileArtifact): UpdatableTreeNode = {
+    val f = new ProjectMutableView(SimpleFileBasedArtifactSource(fileArtifact)).findFile(fileArtifact.path)
+    val tn = typeBeingTested.fileToRawNode(f.currentBackingObject).get
+    // println(TreeNodeUtils.toShorterString(tn, TreeNodeUtils.NameAndContentStringifier))
+    TextTreeNodeLifecycle.makeWholeFileNodeReady("Yaml", PositionedTreeNode.fromParsedNode(tn), f)
+  }
+
 
   it should "change multiple documents in one file" is pending
 }

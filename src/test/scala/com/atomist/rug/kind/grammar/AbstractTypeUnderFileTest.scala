@@ -8,7 +8,7 @@ import com.atomist.rug.kind.DefaultTypeRegistry
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.source.{ArtifactSource, FileArtifact, SimpleFileBasedArtifactSource}
 import com.atomist.tree.TreeNode
-import com.atomist.tree.content.text.TextTreeNodeLifecycle
+import com.atomist.tree.content.text.{PositionedTreeNode, TextTreeNodeLifecycle}
 import com.atomist.tree.pathexpression.{ExpressionEngine, PathExpressionEngine}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -35,7 +35,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
     withClue(s"files named ${filesOfType.map(_.path).mkString(",")}") {
       val parsedFiles = filesOfType.map(cs => (cs, typeBeingTested.fileToRawNode(cs)))
         .map(tup => tup._2.getOrElse(fail(s"Cannot parse file\n[${tup._1.content}]")))
-      val goodFileCount = parsedFiles.count(tree => tree.childNodes.nonEmpty)
+      val goodFileCount = parsedFiles.count(tree => tree.parsedNodes.nonEmpty)
       goodFileCount should be >= (1)
     }
   }
@@ -56,7 +56,7 @@ abstract class AbstractTypeUnderFileTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(as, as)
     val fmv = pmv.files.get(0)
     val parsed = typeBeingTested.fileToRawNode(file).get
-    val nodes = TextTreeNodeLifecycle.makeReady(typeBeingTested.name, Seq(parsed), fmv)
+    val nodes = TextTreeNodeLifecycle.makeReady(typeBeingTested.name, Seq(PositionedTreeNode.fromParsedNode(parsed)), fmv)
     nodes.head.update(nodes.head.value) // trigger an update to file contents
     fmv.content
   }

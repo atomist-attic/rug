@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Remove some more remnants of reviewers
 -   Harmonized much of the Rug loading code between project operations and
     handlers
+-   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
+    their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`.
     
 ### Fixed
 

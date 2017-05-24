@@ -1,7 +1,7 @@
 package com.atomist.rug.kind
 
 
-import com.atomist.rug.kind.grammar.TypeUnderFile
+import com.atomist.rug.kind.grammar.{ParsedNode, SimpleParsedNode, TypeUnderFile}
 import org.scalatest.FunSpec
 
 import _root_.scala.util.parsing.combinator.RegexParsers
@@ -23,7 +23,7 @@ class PandaRugLanguageExtension extends TypeUnderFile {
 
   override def isOfType(f: FileArtifact): Boolean = f.name.endsWith(".panda")
 
-  override def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode] =
+  override def fileToRawNode(f: FileArtifact): Option[ParsedNode] =
     Some(PandaParser.parse(f.content))
 
   override def description: String = "A language extension for my imaginary language"
@@ -51,55 +51,10 @@ object Panda {
 
 object PandaParser extends RegexParsers {
 
-  import com.atomist.tree.content.text.{OffsetInputPosition, PositionedTreeNode}
-
-  trait MinimalPositionedTreeNode extends PositionedTreeNode {
-
-    import com.atomist.tree.TreeNode
-
-    def name: String
-
-    def valueOption: Option[String]
-
-    def start: Int
-
-    def end: Int
-
-    override def nodeName = name
-
-    override def startPosition = OffsetInputPosition(start)
-
-    override def endPosition = OffsetInputPosition(end)
-
-    override def value = valueOption.getOrElse("")
-
-    override def childNodeNames: Set[String] = ???
-
-    override def childNodeTypes: Set[String] = ???
-
-    override def childrenNamed(key: String): Seq[TreeNode] = childNodes.filter(_.nodeName == key)
-
-  }
-
-  case class PositionedSyntaxNode(name: String,
-                                  override val childNodes: Seq[PositionedSyntaxNode],
-                                  override val valueOption: Option[String],
-                                  start: Int,
-                                  end: Int) extends MinimalPositionedTreeNode
-
+  type PositionedSyntaxNode = ParsedNode
 
   case class SyntaxNode(name: String,
-                        childNodes: Seq[PositionedSyntaxNode],
-                        valueOption: Option[String])
-
-  object SyntaxNode {
-
-    def leaf(name: String)(value: String): SyntaxNode =
-      SyntaxNode(name, Seq(), Some(value))
-
-    def parent(name: String, children: Seq[PositionedSyntaxNode]): SyntaxNode =
-      SyntaxNode(name, children, None)
-  }
+                        childNodes: Seq[ParsedNode] = Seq())
 
   def positionedNode(inner: Parser[SyntaxNode]) = new Parser[PositionedSyntaxNode] {
     override def apply(in: Input): ParseResult[PositionedSyntaxNode] = {
@@ -109,23 +64,22 @@ object PandaParser extends RegexParsers {
         case Failure(msg, next) => Failure(msg, next)
         case Success(result, next) =>
           val end = next.offset
-          Success(PositionedSyntaxNode(result.name, result.childNodes, result.valueOption,
-            start, end), next)
+          Success(SimpleParsedNode(result.name, start, end, result.childNodes), next)
       }
     }
   }
 
   def curly: Parser[PositionedSyntaxNode] =
-    positionedNode("{" ~> rep(word) <~ "}" ^^ { n => SyntaxNode.parent("curly", n) })
+    positionedNode("{" ~> rep(word) <~ "}" ^^ { n => SyntaxNode("curly", n) })
 
   def paren: Parser[PositionedSyntaxNode] =
-    positionedNode("(" ~> rep(word) <~ ")" ^^ { n => SyntaxNode.parent("paren", n) })
+    positionedNode("(" ~> rep(word) <~ ")" ^^ { n => SyntaxNode("paren", n) })
 
   def word: Parser[PositionedSyntaxNode] =
-    positionedNode("[a-zA-Z]+".r ^^ SyntaxNode.leaf("word"))
+    positionedNode("[a-zA-Z]+".r ^^ { _ => SyntaxNode("word") })
 
   def pandaParser: Parser[PositionedSyntaxNode] =
-    positionedNode(rep(word | curly | paren) ^^ { parts => SyntaxNode.parent("panda", parts) })
+    positionedNode(rep(word | curly | paren) ^^ { parts => SyntaxNode("panda", parts) })
 
   def parse(content: String): PositionedSyntaxNode = {
     parseAll(pandaParser, content) match {

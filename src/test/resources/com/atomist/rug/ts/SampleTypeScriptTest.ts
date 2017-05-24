@@ -1,6 +1,6 @@
-import { Project, File } from '@atomist/rug/model/Core'
-import { Editor } from '@atomist/rug/operations/Decorators'
-import { PathExpressionEngine } from '@atomist/rug/tree/PathExpression'
+import { Project, File } from "@atomist/rug/model/Core"
+import { Editor } from "@atomist/rug/operations/Decorators"
+import { PathExpressionEngine } from "@atomist/rug/tree/PathExpression"
 
 @Editor("SampleTypeScriptTest", "Uses Sample from TypeScript")
 class SampleTypeScriptTest {

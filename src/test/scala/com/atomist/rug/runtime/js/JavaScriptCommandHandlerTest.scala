@@ -4,6 +4,7 @@ import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.runtime.ResponseHandler
+import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
@@ -282,6 +283,7 @@ class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
     None
   }
 
+  override def scope: Scope = r.scope
   override def name: String = r.name
 
   override def description: String = r.description

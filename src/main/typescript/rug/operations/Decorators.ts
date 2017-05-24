@@ -114,6 +114,19 @@ export function IntegrationTest(description: string | TestDescriptor) {
   };
 }
 
+/**
+ * Describe to whom this rug is visible (not to be confused by ACLs)
+ * This stuff is not enforced, but specifies developer intent.
+ *
+ * @param obj - a rug
+ * @param scope
+ */
+export function setScope(obj: any, scope: Scope) {
+  set_metadata(obj, "__scope", scope);
+  return obj;
+}
+type Scope = "archive";
+
 export function declareIntegrationTest(obj: any, descriptor: TestDescriptor) {
   set_metadata(obj, "__test", descriptor);
 }

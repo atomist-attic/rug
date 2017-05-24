@@ -4,6 +4,7 @@ import javax.script.ScriptException
 
 import com.atomist.project.edit.ProjectEditor
 import com.atomist.rug.runtime.Rug
+import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.util.scalaparsing.ErrorInfo
 
 abstract class BadRugException(msg: String, rootCause: Throwable = null)
@@ -88,6 +89,10 @@ class DuplicateRugException(msg: String, knownRugs: Seq[Rug])
    extends BadRugException(msg)
 
 class InvalidTestDescriptorException(msg: String)
+  extends BadRugException(msg)
+
+
+class InvalidRugScopeException(msg: String, validScopes: Seq[Scope])
   extends BadRugException(msg)
 
 class EditorNotFoundException(msg: String)

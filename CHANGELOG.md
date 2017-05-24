@@ -11,9 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+-   Add internal support for `Scope` on Rugs. Currently this is only used
+    on Response Handlers, and will be used to change the visibility of 
+    auto-generated ones so they are not indexed, displayed etc by the CLI
+    or Bot.
 -   Add support for @IntegrationTest decorator. TypeScript Classes with
     this decorator will behave much like Command Handlers, except in that
-    they will have additional metadata allowing the CLU/Runtime to behave
+    they will have additional metadata allowing the CLI or runtime to behave
     differently when required.
 -   Exposed underlying TypeScript class decorator logic so that they can
     be called directly to emit Rugs programmatically [#595][595]

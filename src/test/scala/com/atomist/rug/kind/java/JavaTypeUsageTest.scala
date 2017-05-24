@@ -20,13 +20,20 @@ object JavaTypeUsageTest extends Matchers {
       StringFileArtifact("pom.xml", "<maven></maven"),
       StringFileArtifact("/src/main/java/Dog.java",
         """
+          |import java.io.Serializable;
           |import java.util.Set;
           |import com.foo.Bar;
           |import com.someone.ComFooBar;
           |import com.someone.FooBar;
           |
+          |/**
+          | * Class comment
+          | */
           |@Bar
-          |class Dog {
+          |class Dog
+          |  implements
+          |    Serializable,
+          |    Cloneable {
           |
           |   @ComFooBar
           |   private String stringField;
@@ -205,14 +212,6 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
   }
 
   it should "verify usages of renamed class are updated" is pending
-
-  private  def annotateClass(program: ArtifactSource): Unit = {
-    val result = executeJava(program, "editors/ClassAnnotated.ts")
-    val f = result.findFile("src/main/java/Dog.java").get
-
-    f.content.lines.size should be > 0
-    f.content should include("@FooBar")
-  }
 
   it should "add import" in {
     val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java9/ClassAnnotated.ts")
@@ -461,5 +460,21 @@ class JavaTypeUsageTest extends FlatSpec with Matchers with LazyLogging {
     f.content.lines.size should be > 0
     f.content should include("import com.someone.ComFooBar;")
     f.content shouldNot include("@ComFooBar")
+  }
+
+  it should "annotate class" in {
+    val program = ClassPathArtifactSource.toArtifactSource("com/atomist/rug/kind/java25/ClassAnnotated.ts")
+      .withPathAbove(".atomist/editors")
+    val result = executeJava(program, "editors/ClassAnnotated.ts")
+    val f = result.findFile("src/main/java/Dog.java").get
+    f.content.lines.size should be > 0
+    f.content should include("@MyAnnotation")
+  }
+
+  private  def annotateClass(program: ArtifactSource): Unit = {
+    val result = executeJava(program, "editors/ClassAnnotated.ts")
+    val f = result.findFile("src/main/java/Dog.java").get
+    f.content.lines.size should be > 0
+    f.content should include("@FooBar")
   }
 }

@@ -27,7 +27,7 @@ object JavaTypeUsageTest extends Matchers {
           |import com.someone.FooBar;
           |
           |/**
-          | * Class comment
+          | * Class comment.
           | */
           |@Bar
           |class Dog
@@ -38,12 +38,18 @@ object JavaTypeUsageTest extends Matchers {
           |   @ComFooBar
           |   private String stringField;
           |
+          |   /**
+          |     No-arg constructor.
+          |    */
           |   public Dog() {}
           |
           |   public Dog(String stringField) {
           |     this.stringField = stringField;
           |   }
           |
+          |   /**
+          |    * Bark.
+          |    */
           |   @FooBar
           |   public void bark() {
           |   }

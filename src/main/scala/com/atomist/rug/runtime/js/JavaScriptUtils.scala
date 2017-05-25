@@ -30,7 +30,7 @@ trait JavaScriptUtils {
   protected def invokeMemberFunction(jsc: JavaScriptContext, jsVar: ScriptObjectMirror, member: String, params: Option[ParameterValues], args: Object*): Any = {
     jsc.withEnhancedExceptions {
       val clone = cloneVar(jsc, jsVar)
-      if(params.nonEmpty){
+      if (params.nonEmpty) {
         setParameters(clone, params.get.parameterValues)
       }
       //TODO wrap parameters in safe committing proxy
@@ -41,16 +41,17 @@ trait JavaScriptUtils {
   /**
     * Separate for test
     */
-  private[js] def cloneVar (jsc: JavaScriptContext, objToClone: ScriptObjectMirror) : ScriptObjectMirror = {
+  private[js] def cloneVar(jsc: JavaScriptContext, objToClone: ScriptObjectMirror): ScriptObjectMirror = {
     val bindings = new SimpleBindings()
-    bindings.put("rug",objToClone)
+    bindings.put("rug", objToClone)
 
     //TODO - why do we need this?
-    jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach{
-      case (k: String, v: AnyRef) => bindings.put(k,v)
+    jsc.engine.getContext.getBindings(ScriptContext.ENGINE_SCOPE).asScala.foreach {
+      case (k: String, v: AnyRef) => bindings.put(k, v)
     }
     jsc.engine.eval("Object.create(rug);", bindings).asInstanceOf[ScriptObjectMirror]
   }
+
   /**
     * Make sure we only set fields if they've been decorated with @Parameter or @MappedParameter
     */
@@ -73,11 +74,11 @@ trait JavaScriptUtils {
       case _ => Set()
     }
     params.foreach(p => {
-      if(decoratedParamNames.contains(p.getName)){
-        clone.put(p.getName,p.getValue)
+      if (decoratedParamNames.contains(p.getName)) {
+        clone.put(p.getName, p.getValue)
       }
-      if(mappedParams.contains(p.getName)){
-        clone.put(p.getName,p.getValue)
+      if (mappedParams.contains(p.getName)) {
+        clone.put(p.getName, p.getValue)
       }
     })
   }
@@ -85,7 +86,7 @@ trait JavaScriptUtils {
   /**
     * Fetch a member by name.
     */
-  protected def getMember(someVar: ScriptObjectMirror, name: String) : Option[AnyRef] = {
+  protected def getMember(someVar: ScriptObjectMirror, name: String): Option[AnyRef] = {
     someVar.getMember(name) match {
       case value if value != ScriptRuntime.UNDEFINED => Some(value)
       case _ => Option.empty
@@ -121,17 +122,17 @@ trait JavaScriptUtils {
   /**
     * Fetch any secrets decorated on the handler
     */
-  protected def secrets(someVar: ScriptObjectMirror) : Seq[Secret] = {
+  protected def secrets(someVar: ScriptObjectMirror): Seq[Secret] = {
     someVar.getMember("__secrets") match {
       case som: ScriptObjectMirror =>
         som.values().asScala.collect {
-          case s: String => Secret(s,s)
+          case s: String => Secret(s, s)
         }.toSeq
       case _ => Nil
     }
   }
 
-  private def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror) : Parameter = {
+  private def parameterVarToParameter(rug: ScriptObjectMirror, details: ScriptObjectMirror): Parameter = {
 
     val pName = details.get("name").asInstanceOf[String]
     val pPattern = details.get("pattern").asInstanceOf[String]
@@ -149,11 +150,11 @@ trait JavaScriptUtils {
 
     parameter.setDefaultRef(details.get("defaultRef").asInstanceOf[String])
     val disp = details.get("displayable")
-    parameter.setDisplayable(if(disp != null) disp.asInstanceOf[Boolean] else true)
+    parameter.setDisplayable(if (disp != null) disp.asInstanceOf[Boolean] else true)
 
-    if(details.hasMember("required")){
+    if (details.hasMember("required")) {
       parameter.setRequired(details.get("required").asInstanceOf[Boolean])
-    }else{
+    } else {
       parameter.setRequired(true)
     }
 
@@ -174,18 +175,25 @@ trait JavaScriptUtils {
       case _ => throw new InvalidRugParameterPatternException(s"Parameter $pName has no valid validation pattern")
     }
 
-    if(rug.hasMember(pName) && rug.getMember(pName) != null){
+    if (rug.hasMember(pName) && rug.getMember(pName) != null) {
       val asString = rug.getMember(pName).toString
       if (!parameter.isValidValue(asString))
-        throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($asString) is not valid: $parameter")
+        if (asString == "") {
+           // how can we warn them??? this is deprecated
+          println(s"WARNING: On rug ${name(rug)}, parameter '${pName}' has a default value of '${asString}', but that is not a valid value for this parameter. Set the parameter to null instead, please.")
+        } else {
+          throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($asString) is not valid: $parameter")
+        }
       parameter.setDefaultValue(rug.getMember(pName).toString)
     }
+
     parameter
   }
+
   protected def name(obj: ScriptObjectMirror): String = {
-    if(obj.hasMember("__name")){
+    if (obj.hasMember("__name")) {
       obj.getMember("__name").asInstanceOf[String]
-    }else{
+    } else {
       Try(obj.getMember("constructor").asInstanceOf[ScriptObjectMirror].getMember("name").asInstanceOf[String]) match {
         case Success(name) => name
         case Failure(error) => throw new BadPlanException(s"Could not determine name of Rug", error)

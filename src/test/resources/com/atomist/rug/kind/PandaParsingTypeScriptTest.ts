@@ -10,6 +10,9 @@ class PandaParsingTypeScriptTest {
     @Parameter({pattern: Pattern.any})
     changePandasInCurliesTo: string;
 
+    @Parameter({pattern: Pattern.any})
+    changeFirstPandaInEachLineTo: string;
+
     edit(project: Project) {
 
         let eng: PathExpressionEngine = project.context.pathExpressionEngine;
@@ -17,10 +20,16 @@ class PandaParsingTypeScriptTest {
         let pandafile = eng.scalar<Project, File>(project, `/my.panda`);
         let parsedPanda = eng.scalar<File, TextTreeNode>(pandafile, "/Panda()");
 
-        eng.with<TextTreeNode>(parsedPanda, `/curly/word`, pandaWord => {
+        eng.with<TextTreeNode>(parsedPanda, `//curly/word`, pandaWord => {
             pandaWord.update(this.changePandasInCurliesTo);
+        });
+
+        eng.with<TextTreeNode>(parsedPanda, `/line/word[1]`, pandaWord => {
+            //console.log("Found first word in line: " + (pandaWord.parent() as TextTreeNode).value());
+            pandaWord.update(this.changeFirstPandaInEachLineTo);
         })
 
     }
 }
+
 export let editor = new PandaParsingTypeScriptTest();

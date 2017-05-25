@@ -1,7 +1,7 @@
 package com.atomist.rug.kind
 
 
-import com.atomist.rug.kind.grammar.{ParsedNode, SimpleParsedNode, TypeUnderFile}
+import com.atomist.rug.kind.grammar.TypeUnderFile
 import org.scalatest.FunSpec
 
 import _root_.scala.util.parsing.combinator.RegexParsers
@@ -16,8 +16,8 @@ import _root_.scala.util.parsing.combinator.RegexParsers
 
 class PandaRugLanguageExtension extends TypeUnderFile {
 
+  import com.atomist.rug.kind.grammar.ParsedNode
   import com.atomist.source.FileArtifact
-  import com.atomist.tree.content.text.PositionedTreeNode
 
   override val name: String = "Panda" // To trigger parsing, get to a file in the path expression, then /Panda()
 
@@ -28,17 +28,29 @@ class PandaRugLanguageExtension extends TypeUnderFile {
 
   override def description: String = "A language extension for my imaginary language"
 
+  override def preprocess(originalContent: String): String =
+    originalContent.replaceAll("(?m)^(\\S)", "\\$$1")
+
+
+  override def postprocess(preprocessedContent: String): String =
+     preprocessedContent.replaceAll("(?m)^\\$", "")
+
 }
 
 object Panda {
+
   val PandaText =
     """panda { panda panda } panda
-      |(panda panda) panda
+      | (panda panda) panda
+      |
+      |panda panda
     """.stripMargin
 
   val KawaiiPandas =
-    """panda { kawaii kawaii } panda
-      |(panda panda) panda
+    """bear { kawaii kawaii } panda
+      | (panda panda) panda
+      |
+      |bear panda
     """.stripMargin
 
   val PandaFilename = "my.panda"
@@ -50,6 +62,8 @@ object Panda {
 }
 
 object PandaParser extends RegexParsers {
+
+  import com.atomist.rug.kind.grammar.{ParsedNode, SimpleParsedNode}
 
   type PositionedSyntaxNode = ParsedNode
 
@@ -69,6 +83,9 @@ object PandaParser extends RegexParsers {
     }
   }
 
+  def line: Parser[PositionedSyntaxNode] =
+    positionedNode("$" ~> rep(word | curly | paren) ^^ { parts => SyntaxNode("line", parts) })
+
   def curly: Parser[PositionedSyntaxNode] =
     positionedNode("{" ~> rep(word) <~ "}" ^^ { n => SyntaxNode("curly", n) })
 
@@ -79,7 +96,7 @@ object PandaParser extends RegexParsers {
     positionedNode("[a-zA-Z]+".r ^^ { _ => SyntaxNode("word") })
 
   def pandaParser: Parser[PositionedSyntaxNode] =
-    positionedNode(rep(word | curly | paren) ^^ { parts => SyntaxNode("panda", parts) })
+    positionedNode(rep(line) ^^ { parts => SyntaxNode("panda", parts) })
 
   def parse(content: String): PositionedSyntaxNode = {
     parseAll(pandaParser, content) match {
@@ -97,9 +114,12 @@ class RugIsExtensible extends FunSpec {
 
       // TODO: get this Panda type declared in the manifest thinger somehow
 
-      val changedProject = runTypeScriptProgram(Panda.PandaProject,
+      val changedProject = runTypeScriptProgram(
+        Panda.PandaProject,
         "com/atomist/rug/kind/PandaParsingTypeScriptTest.ts",
-        Map("changePandasInCurliesTo" -> "kawaii"))
+        Map(
+          "changePandasInCurliesTo" -> "kawaii",
+          "changeFirstPandaInEachLineTo" -> "bear"))
 
       assert(changedProject.findFile(Panda.PandaFilename).get.content == Panda.KawaiiPandas)
 

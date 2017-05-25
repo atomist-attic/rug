@@ -41,11 +41,13 @@ abstract class TypeUnderFile
   }
 
   private def toView(f: FileArtifactBackedMutableView): Option[TreeNode] = {
-    val inner = fileToRawNode(f.currentBackingObject) match {
+    val preprocessedFile = f.currentBackingObject.withContent(preprocess(f.content))
+    val inner = fileToRawNode(preprocessedFile) match {
       case Some(ptn: ParsedNode) =>
         Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name,
           PositionedTreeNode.fromParsedNode(ptn),
-          f))
+          f,
+          preprocess, postprocess))
       case None => None
       case x => throw new RuntimeException(s"What is $x")
     }
@@ -71,6 +73,9 @@ abstract class TypeUnderFile
     */
   def fileToRawNode(f: FileArtifact): Option[ParsedNode]
 
+  def preprocess(originalContent: String): String = originalContent
+
+  def postprocess(preprocessedContent: String): String = preprocessedContent
 
 }
 

@@ -20,7 +20,8 @@ import scala.collection.mutable.ListBuffer
   * @param allKids     the OverwritableTextTreeNodes
   */
 class OverwritableTextInFile(dynamicType: String,
-                             allKids: Seq[TreeNode])
+                             allKids: Seq[TreeNode],
+                             postprocess: String => String)
   extends OverwritableTextTreeNodeParent {
 
   import OverwritableTextTreeNode._
@@ -41,7 +42,8 @@ class OverwritableTextInFile(dynamicType: String,
 
   override def commit(): Unit = requireReady {
     _value = allKids.map(_.value).mkString("") // some child has changed
-    fileView.updateTo(StringFileArtifact.updated(fileView.currentBackingObject, _value))
+    val fileContent = postprocess(_value)
+    fileView.updateTo(StringFileArtifact.updated(fileView.currentBackingObject, fileContent))
     fileView.commit()
   }
 
@@ -66,14 +68,15 @@ class OverwritableTextInFile(dynamicType: String,
 
     def inner(mostUsefulSoFar: Option[AddressableTreeNode], remainingOffset: Int, children: Seq[TreeNode]): Option[AddressableTreeNode] = {
       def sameValueAsContainingNodeAbove(tn: TreeNode) = mostUsefulSoFar.exists(_.value == tn.value)
+
       val firstChild = children.head
       val others = children.drop(1)
       firstChild match {
         case _ if firstChild.value.length <= remainingOffset => // this is not the child I'm looking for
           inner(mostUsefulSoFar, remainingOffset - firstChild.value.length, others)
-        case lessInteresting : OverwritableTextTreeNode if sameValueAsContainingNodeAbove(lessInteresting) =>
+        case lessInteresting: OverwritableTextTreeNode if sameValueAsContainingNodeAbove(lessInteresting) =>
           inner(mostUsefulSoFar, remainingOffset, lessInteresting.allKidsIncludingPadding)
-        case moreInteresting : OverwritableTextTreeNode =>
+        case moreInteresting: OverwritableTextTreeNode =>
           inner(Some(moreInteresting), remainingOffset, moreInteresting.allKidsIncludingPadding)
         case unaddressable =>
           mostUsefulSoFar
@@ -86,7 +89,7 @@ class OverwritableTextInFile(dynamicType: String,
   /*
    * called by descendants to find their position in the file
    */
-  def formatInfoFromHere(stringsToLeft: Seq[String], childAsking : OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
+  def formatInfoFromHere(stringsToLeft: Seq[String], childAsking: OverwritableTextTreeNodeChild, valueOfInterest: String): FormatInfo = {
     def valueBefore(child: OverwritableTextTreeNodeChild) = allKids.takeWhile(_ != childAsking).map(_.value).mkString
 
     val stringToLeft = (valueBefore(childAsking) +: stringsToLeft).mkString
@@ -111,7 +114,7 @@ class OverwritableTextInFile(dynamicType: String,
   }
 
   private def determineLocationStep(visibleChildren: Seq[TreeNode], forChild: TreeNode): String = {
-    if(allKids.size == 1) {
+    if (allKids.size == 1) {
       // there's only one thing here. We parsed the whole file.
       s"$dynamicType()"
     } else {

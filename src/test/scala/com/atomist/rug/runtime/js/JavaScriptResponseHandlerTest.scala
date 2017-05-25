@@ -3,6 +3,7 @@ package com.atomist.rug.runtime.js
 import com.atomist.param.{SimpleParameterValue, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.rug.TestUtils.contentOf
+import com.atomist.rug.runtime.RugScopes
 import com.atomist.rug.spi.Handlers.{Response, Status}
 import com.atomist.rug.ts.TypeScriptBuilder
 import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
@@ -127,5 +128,25 @@ class JavaScriptResponseHandlerTest extends FlatSpec with Matchers {
     val handler = handlers.head
     val response = Response(Status.Success, Some("It worked! :p"), Some(204))
     val plan = handler.handle(LocalRugContext(TestTreeMaterializer), response, SimpleParameterValues(SimpleParameterValue("somenum", "10"), SimpleParameterValue("something", "woot")))
+  }
+
+  it should "the scope of a ResponseHandler should be `default` by default" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithInjectedValues))
+    val finder = new JavaScriptResponseHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    assert(handlers.head.scope == RugScopes.DEFAULT)
+  }
+
+
+  val responseHandlerWithArchiveScope = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+    contentOf(this, "ResponseHandlerWithArchiveScope.ts"))
+
+  it should "be possible to set the scope of a response handler" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(responseHandlerWithArchiveScope))
+    val finder = new JavaScriptResponseHandlerFinder()
+    val handlers = finder.find(new JavaScriptContext(rugArchive))
+    handlers.size should be(1)
+    assert(handlers.head.scope == RugScopes.ARCHIVE)
   }
 }

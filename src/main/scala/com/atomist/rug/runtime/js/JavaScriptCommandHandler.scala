@@ -2,8 +2,8 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.project.archive.RugResolver
-import com.atomist.rug.InvalidHandlerResultException
-import com.atomist.rug.runtime.CommandHandler
+import com.atomist.rug.{InvalidHandlerResultException, InvalidTestDescriptorException, RugRuntimeException}
+import com.atomist.rug.runtime.{CommandHandler, TestDescriptor}
 import com.atomist.rug.runtime.js.interop.{jsSafeCommittingProxy, jsScalaHidingProxy}
 import com.atomist.rug.runtime.plans.MappedParameterSupport
 import com.atomist.rug.spi.Handlers.Plan
@@ -40,9 +40,24 @@ class JavaScriptCommandHandlerFinder
       mappedParameters(handler),
       tags(handler),
       secrets(handler),
-      intent(handler)))
+      intent(handler),
+      testDescriptor(handler)))
   }
 
+  /**
+    * Extract any test related metadata - if any
+    * @param someVar
+    * @return
+    */
+  protected def testDescriptor(someVar: ScriptObjectMirror): Option[TestDescriptor] = {
+    someVar.getMember("__test") match {
+      case som: ScriptObjectMirror => (som.getMember("description"), som.getMember("kind")) match {
+        case (description: String, kind: String) => Some(TestDescriptor(kind, description))
+        case _ => throw new InvalidTestDescriptorException("A test must have a 'kind' and a 'description'")
+      }
+      case _ => None
+    }
+  }
   /**
     * Extract intent from a var
     */
@@ -87,7 +102,8 @@ class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                override val mappedParameters: Seq[MappedParameter],
                                override val tags: Seq[Tag],
                                override val secrets: Seq[Secret],
-                               override val intent: Seq[String] = Seq())
+                               override val intent: Seq[String] = Seq(),
+                               val testDescriptor: Option[TestDescriptor] = None)
   extends CommandHandler
     with MappedParameterSupport
     with JavaScriptUtils {

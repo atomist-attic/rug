@@ -95,6 +95,42 @@ export function CommandHandler(nameOrDescription: string, description?: string) 
   };
 }
 
+type TestKind = "integration";
+
+interface TestDescriptor {
+  description: string;
+  kind: TestKind;
+}
+
+export function IntegrationTest(description: string | TestDescriptor) {
+  return (obj: any) => {
+    if (typeof description === "string") {
+      declareCommandHandler(obj, description);
+      declareIntegrationTest(obj, { description, kind: "integration" });
+    } else {
+      declareCommandHandler(obj, description.description);
+      declareIntegrationTest(obj, description);
+    }
+  };
+}
+
+/**
+ * Describe to whom this rug is visible (not to be confused by ACLs)
+ * This stuff is not enforced, but specifies developer intent.
+ *
+ * @param obj - a rug
+ * @param scope
+ */
+export function setScope(obj: any, scope: Scope) {
+  set_metadata(obj, "__scope", scope);
+  return obj;
+}
+type Scope = "archive";
+
+export function declareIntegrationTest(obj: any, descriptor: TestDescriptor) {
+  set_metadata(obj, "__test", descriptor);
+}
+
 export function declareCommandHandler(obj: any, description: string, name?: string) {
   declareRug(obj, "command-handler", description, name);
   return obj;

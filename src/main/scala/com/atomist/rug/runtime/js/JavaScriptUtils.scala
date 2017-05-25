@@ -5,6 +5,8 @@ import javax.script.{ScriptContext, SimpleBindings}
 import com.atomist.param.{Parameter, ParameterValue, ParameterValues, Tag}
 import com.atomist.rug.{BadPlanException, InvalidRugParameterDefaultValue, InvalidRugParameterPatternException}
 import com.atomist.rug.parser.DefaultIdentifierResolver
+import com.atomist.rug.runtime.RugScopes
+import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.spi.Secret
 import jdk.nashorn.api.scripting.{ScriptObjectMirror, ScriptUtils}
 import jdk.nashorn.internal.runtime.ScriptRuntime
@@ -188,6 +190,13 @@ trait JavaScriptUtils {
         case Success(name) => name
         case Failure(error) => throw new BadPlanException(s"Could not determine name of Rug", error)
       }
+    }
+  }
+
+  protected def scope(obj: ScriptObjectMirror): Scope = {
+    obj.getMember("__scope") match {
+      case o: String => RugScopes.from(o)
+      case _ => RugScopes.DEFAULT
     }
   }
 

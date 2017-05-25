@@ -4,6 +4,7 @@ import com.atomist.param._
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
 import com.atomist.project.common.MissingParametersException
 import com.atomist.rug.runtime.ResponseHandler
+import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.runtime.plans._
 import com.atomist.rug.spi.Handlers._
 import com.atomist.rug.spi.Secret
@@ -258,6 +259,22 @@ class JavaScriptCommandHandlerTest extends FlatSpec with Matchers {
     val com = rugs.commandHandlers.head
     assert(com.name == "FunctionKiller")
   }
+
+  val handlerWithIntegrationTestDecorator =
+    StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
+      contentOf(this, "HandlerIntegrationTest.ts"))
+
+  it should "add test metadata if the @IntegrationTest decorator is used" in {
+    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerWithIntegrationTestDecorator))
+    val resolver = SimpleRugResolver(rugArchive)
+    val rugs = resolver.resolvedDependencies.rugs
+    assert(rugs.commandHandlers.nonEmpty)
+    val test = rugs.commandHandlers.head.asInstanceOf[JavaScriptCommandHandler]
+    assert(test.testDescriptor.nonEmpty)
+    val td = test.testDescriptor.get
+    assert(td.description == "Test some flow")
+    assert(td.kind == "integration")
+  }
 }
 
 class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
@@ -266,6 +283,7 @@ class TestResponseHandler(r: ResponseHandler) extends ResponseHandler {
     None
   }
 
+  override def scope: Scope = r.scope
   override def name: String = r.name
 
   override def description: String = r.description

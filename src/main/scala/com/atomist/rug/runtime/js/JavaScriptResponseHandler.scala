@@ -2,11 +2,12 @@ package com.atomist.rug.runtime.js
 
 import com.atomist.param._
 import com.atomist.project.archive.RugResolver
+import com.atomist.rug.runtime.RugScopes.Scope
 import com.atomist.rug.runtime.js.interop.jsScalaHidingProxy
-import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
 import com.atomist.rug.runtime.plans.{JsonResponseCoercer, NullResponseCoercer, ResponseCoercer}
-import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler, _}
+import com.atomist.rug.runtime.{ParameterizedRug, ResponseHandler}
 import com.atomist.rug.spi.Handlers.{Plan, Response}
+import com.atomist.rug.{InvalidHandlerException, InvalidHandlerResultException}
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 
 /**
@@ -17,7 +18,15 @@ class JavaScriptResponseHandlerFinder
   with JavaScriptUtils{
 
   override def create(jsc: JavaScriptContext, handler: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
-    Some(new JavaScriptResponseHandler(jsc, handler, name(handler), description(handler), parameters(handler), tags(handler), coerce(jsc,handler)))
+    Some(new JavaScriptResponseHandler(
+      jsc,
+      handler,
+      name(handler),
+      description(handler),
+      parameters(handler),
+      tags(handler),
+      coerce(jsc,handler),
+      scope(handler)))
   }
 
   /**
@@ -46,7 +55,8 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
                                  override val description: String,
                                  override val parameters: Seq[Parameter],
                                  override val tags: Seq[Tag],
-                                 responseCoercer: ResponseCoercer)
+                                 responseCoercer: ResponseCoercer,
+                                 override val scope: Scope)
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport

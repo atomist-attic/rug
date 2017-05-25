@@ -7,6 +7,8 @@ import com.atomist.rug.spi.Handlers.{Plan, Response}
 /**
   * Handles responses from other Rugs & Executions
   */
-trait ResponseHandler extends ParameterizedRug{
+trait ResponseHandler
+  extends ParameterizedRug
+  with ScopedRug {
   def handle(ctx: RugContext, response: Response, params: ParameterValues) : Option[Plan]
 }

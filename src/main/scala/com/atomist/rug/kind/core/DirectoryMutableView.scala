@@ -19,10 +19,20 @@ class DirectoryMutableView(
   def path: String = currentBackingObject.path
 
   @ExportFunction(readOnly = true, description = "Return the number of files directly in this directory")
+  @Deprecated
   def fileCount: Int = currentBackingObject.files.size
 
   @ExportFunction(readOnly = true, description = "Node content")
+  @Deprecated
   override def value: String = currentBackingObject.path
+
+  // TODO: add files method
+
+  // TODO: set name
+
+  // TODO: set path
+
+  // TODO: copy declarations of fileExists and directoryExists up from superclass
 
   override def childrenNamed(fieldName: String): Seq[MutableView[_]] = kids(fieldName, parent)
 

@@ -20,7 +20,7 @@ abstract class AntlrRawFileType(
                                  nodeCreationStrategy: AstNodeCreationStrategy,
                                  grammars: String*
                                )
-   extends TypeUnderFile {
+  extends TypeUnderFile {
 
   private val g4s: Seq[String] = {
     val cp = new DefaultResourceLoader()

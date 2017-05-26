@@ -4,7 +4,7 @@ import com.atomist.rug.kind.grammar.AntlrRawFileType
 import com.atomist.source.FileArtifact
 import com.atomist.tree.TreeNode
 import com.atomist.tree.TreeNode.Significance
-import com.atomist.tree.content.text.grammar.antlr.AstNodeCreationStrategy
+import com.atomist.tree.content.text.grammar.antlr.{AntlrPositionedTreeNode, AstNodeCreationStrategy}
 
 object XmlFileType {
 
@@ -29,7 +29,7 @@ class XmlFileType
 
 private object XmlAstNodeCreationStrategy extends AstNodeCreationStrategy {
 
-  override def nameForContainer(rule: String, fields: Seq[TreeNode]): String = rule match {
+  override def nameForContainer(rule: String, fields: Seq[AntlrPositionedTreeNode]): String = rule match {
     case "element" =>
       fields.find(f => f.nodeName == "Name") match {
         case Some(nameField) => nameField.value
@@ -38,7 +38,7 @@ private object XmlAstNodeCreationStrategy extends AstNodeCreationStrategy {
     case x => x
   }
 
-  override def significance(rule: String, fields: Seq[TreeNode]): Significance = rule match {
+  override def significance(rule: String, fields: Seq[AntlrPositionedTreeNode]): Significance = rule match {
     case "content" =>
       // We want to flatten this layer
       TreeNode.Noise

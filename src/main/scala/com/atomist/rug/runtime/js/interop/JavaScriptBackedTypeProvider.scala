@@ -3,18 +3,17 @@ package com.atomist.rug.runtime.js.interop
 import java.util.Objects
 
 import com.atomist.graph.GraphNode
-import com.atomist.rug.kind.dynamic.{ChildResolver, MutableContainerMutableView}
+import com.atomist.rug.kind.dynamic.ChildResolver
 import com.atomist.rug.runtime.js.interop.NashornUtils._
-import com.atomist.rug.spi.TypeProvider
+import com.atomist.rug.spi.{TypeOperation, Typed}
 import com.atomist.tree.TreeNode
 import jdk.nashorn.api.scripting.{AbstractJSObject, ScriptObjectMirror}
 
 /**
   * Type provider backed by a JavaScript object
   */
-class JavaScriptBackedTypeProvider(
-                                    jsTypeProvider: ScriptObjectMirror)
-  extends TypeProvider(classOf[MutableContainerMutableView])
+class JavaScriptBackedTypeProvider(jsTypeProvider: ScriptObjectMirror)
+  extends Typed
     with ChildResolver {
 
   override val name: String = stringProperty(jsTypeProvider, "typeName")
@@ -28,6 +27,10 @@ class JavaScriptBackedTypeProvider(
     )
     Some(nodes)
   }
+
+  override def allOperations: Seq[TypeOperation] = Seq() // SOBTNs are handled specially in jsSafeCommittingProxy
+
+  override def operations: Seq[TypeOperation] = Seq()
 }
 
 /**

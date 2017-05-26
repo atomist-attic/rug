@@ -6,12 +6,13 @@ import org.scalatest.{FlatSpec, Matchers}
 class ReflectiveTypeOperationFinderTest extends FlatSpec with Matchers {
 
   it should "find well known operations on well-known types" in {
-    val st = DefaultTypeRegistry.findByName("YamlFile").get
-    st.allOperations.find(_.name == "value") shouldBe defined
+    val st = DefaultTypeRegistry.findByName("Project").get
+    st.allOperations.find(_.name == "children") shouldBe defined
   }
 
   it should "not find property on parent" in {
-    val st = DefaultTypeRegistry.findByName("YamlFile").get
-    st.operations.find(_.name == "value") shouldBe empty
+    val st = DefaultTypeRegistry.findByName("Project").get
+
+    st.operations.find(_.name == "children") shouldBe empty
   }
 }

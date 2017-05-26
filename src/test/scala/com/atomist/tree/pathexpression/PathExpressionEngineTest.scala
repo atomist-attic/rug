@@ -1,10 +1,39 @@
 package com.atomist.tree.pathexpression
 
 import com.atomist.rug.spi.ExportFunction
-import com.atomist.tree.content.text.OffsetInputPosition._
-import com.atomist.tree.content.text.{LineHoldingOffsetInputPosition, MutableTerminalTreeNode, ParsedMutableContainerTreeNode, SimpleMutableContainerTreeNode}
 import com.atomist.tree.{ContainerTreeNodeImpl, SimpleTerminalTreeNode, TreeNode}
 import org.scalatest.{FlatSpec, Matchers}
+
+/*
+ * This class reveals which TreeNode methods are necessary for PathExpressions.
+ * (They do have to be TreeNodes. Value-based navigation doesn't work on plain GraphNodes.)
+ */
+class TrivialTreeNode(name: String, var _children:Seq[TreeNode] = Seq(), _value: String = null) extends TreeNode {
+  def appendField(gn: TreeNode) = _children = _children :+ gn
+
+  override def nodeName: String = name
+
+  override def relatedNodes: Seq[TreeNode] = _children
+
+  override def relatedNodeNames: Set[String] = ???
+
+  override def relatedNodeTypes: Set[String] = ???
+
+  override def relatedNodesNamed(key: String): Seq[TreeNode] = _children.filter(_.nodeName == key)
+
+  override def value: String = if (_value == null) ??? else _value
+
+  override def childrenNamed(key: String): Seq[TreeNode] = ???
+
+  override def childNodeNames: Set[String] = ???
+
+  override def childNodeTypes: Set[String] = ???
+}
+
+object TrivialTreeNode {
+  def leaf(name: String, value: String): TrivialTreeNode =
+    new TrivialTreeNode(name, Seq(), value)
+}
 
 class PathExpressionEngineTest extends FlatSpec with Matchers {
 
@@ -13,7 +42,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   val ee: ExpressionEngine = new PathExpressionEngine
 
   "PathExpressionEngine" should "return root node with / expression" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
+    val tn = new TrivialTreeNode("name")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")
     tn.appendField(fooNode)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
@@ -23,7 +52,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "find property in container tree node" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
+    val tn = new TrivialTreeNode("name")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")
     tn.appendField(fooNode)
     tn.appendField(SimpleTerminalTreeNode("bar", "bar"))
@@ -34,8 +63,8 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "find property in container tree node 2 levels deep" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
-    val prop1 = new ParsedMutableContainerTreeNode("nested")
+    val tn = new TrivialTreeNode("name")
+    val prop1 = new TrivialTreeNode("nested")
     val fooNode = SimpleTerminalTreeNode("foo", "foo")
     prop1.appendField(fooNode)
     tn.appendField(prop1)
@@ -46,9 +75,9 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "follow //" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
-    val prop1 = new ParsedMutableContainerTreeNode("nested")
-    val prop11 = new ParsedMutableContainerTreeNode("level2")
+    val tn = new TrivialTreeNode("name")
+    val prop1 = new TrivialTreeNode("nested")
+    val prop11 = new TrivialTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
 
@@ -65,9 +94,9 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "match on node name" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
-    val prop1 = new ParsedMutableContainerTreeNode("nested")
-    val prop11 = new ParsedMutableContainerTreeNode("level2")
+    val tn = new TrivialTreeNode("name")
+    val prop1 = new TrivialTreeNode("nested")
+    val prop11 = new TrivialTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
     prop1.appendField(prop11)
@@ -96,9 +125,9 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     matchOnNodeName("/nested/level2//*[@value='foo1' or @value='foo2']")
 
   private def matchOnNodeName(expr: String) {
-    val tn = new ParsedMutableContainerTreeNode("name")
-    val prop1 = new ParsedMutableContainerTreeNode("nested")
-    val prop11 = new ParsedMutableContainerTreeNode("level2")
+    val tn = new TrivialTreeNode("name")
+    val prop1 = new TrivialTreeNode("nested")
+    val prop11 = new TrivialTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
     prop1.appendField(prop11)
@@ -111,9 +140,9 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "match on node index" in {
-    val tn = new ParsedMutableContainerTreeNode("name")
-    val prop1 = new ParsedMutableContainerTreeNode("nested")
-    val prop11 = new ParsedMutableContainerTreeNode("level2")
+    val tn = new TrivialTreeNode("name")
+    val prop1 = new TrivialTreeNode("nested")
+    val prop11 = new TrivialTreeNode("level2")
     val fooNode1 = SimpleTerminalTreeNode("foo", "foo1")
     val fooNode2 = SimpleTerminalTreeNode("foo", "foo2")
 
@@ -134,13 +163,13 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "preparing nodes in path" in {
-    class TouchableTreeNode extends ParsedMutableContainerTreeNode("name") {
+    class TouchableTreeNode extends TrivialTreeNode("name") {
       def foo: String = null
 
       var touched: Boolean = false
     }
 
-    val rn = new ParsedMutableContainerTreeNode("root")
+    val rn = new TrivialTreeNode("root")
     val tn = new TouchableTreeNode
     rn.appendField(tn)
 
@@ -157,8 +186,8 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "compare value to null" in {
-    val rn = new ParsedMutableContainerTreeNode("root")
-    val tn = new ParsedMutableContainerTreeNode("name") {
+    val rn = new TrivialTreeNode("root")
+    val tn = new TrivialTreeNode("name") {
       def foo: String = null
     }
     rn.appendField(tn)
@@ -173,8 +202,8 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "compare method value to int with method" in {
-    val rn = new ParsedMutableContainerTreeNode("root")
-    val tn = new ParsedMutableContainerTreeNode("name") {
+    val rn = new TrivialTreeNode("root")
+    val tn = new TrivialTreeNode("name") {
       def age = 25
     }
     rn.appendField(tn)
@@ -189,8 +218,8 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
   }
 
   it should "compare method value to int with property" in {
-    val rn = new ParsedMutableContainerTreeNode("root")
-    val tn = new ParsedMutableContainerTreeNode("name")
+    val rn = new TrivialTreeNode("root")
+    val tn = new TrivialTreeNode("name")
     tn.appendField(SimpleTerminalTreeNode("age", "25"))
     rn.appendField(tn)
 
@@ -205,7 +234,7 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
 
   it should "descend to scalar property" in {
     val kid = SimpleTerminalTreeNode("name", "thing")
-    val tn = new ParsedMutableContainerTreeNode("name") {
+    val tn = new TrivialTreeNode("name") {
       def thing = kid
     }
 
@@ -220,10 +249,10 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val unmatchedContent = "this is incorrect"
     val line = inputA + unmatchedContent + inputB
 
-    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+    val f1 = TrivialTreeNode.leaf("a", inputA)
+    val f2 = TrivialTreeNode.leaf("b", inputB)
 
-    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+    val soo = new TrivialTreeNode("x", Seq(f1, f2), line)
 
     val expr = "/*[utter-balderdash(., 'fo')]"
     an[IllegalArgumentException] should be thrownBy
@@ -236,10 +265,10 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val unmatchedContent = "this is incorrect"
     val line = inputA + unmatchedContent + inputB
 
-    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+    val f1 = TrivialTreeNode.leaf("a", inputA)
+    val f2 = TrivialTreeNode.leaf("b", inputB)
 
-    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+    val soo = new TrivialTreeNode("x", Seq(f1, f2), line)
 
     val expr = "/*[contains(.,'foo')]"
     val rtn = ee.evaluate(soo, expr)
@@ -256,10 +285,10 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val unmatchedContent = "this is incorrect"
     val line = inputA + unmatchedContent + inputB
 
-    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
+    val f1 = TrivialTreeNode.leaf("a", inputA)
+    val f2 = TrivialTreeNode.leaf("b", inputB)
 
-    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2), line)
+    val soo = new TrivialTreeNode("x", Seq(f1, f2), line)
 
     val expr = "/*[starts-with(., 'fo')]"
     val rtn = ee.evaluate(soo, expr)
@@ -278,12 +307,12 @@ class PathExpressionEngineTest extends FlatSpec with Matchers {
     val unmatchedContent = "this is incorrect"
     val bollocks2 = "(more bollocks)"
     val line = inputA + unmatchedContent + inputB + inputC + bollocks2 + inputD
-    val f1 = new MutableTerminalTreeNode("a", inputA, LineHoldingOffsetInputPosition(line, 0))
-    val f2 = new MutableTerminalTreeNode("b", inputB, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length))
-    val ff1 = new MutableTerminalTreeNode("c1", inputC, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length))
-    val ff2 = new MutableTerminalTreeNode("c2", inputD, LineHoldingOffsetInputPosition(line, inputA.length + unmatchedContent.length + inputB.length + inputC.length + bollocks2.length))
-    val f3 = new SimpleMutableContainerTreeNode("c", Seq(ff1, ff2), ff1.startPosition, endOf(line), TreeNode.Signal)
-    val soo = SimpleMutableContainerTreeNode.wholeInput("x", Seq(f1, f2, f3), line)
+    val f1 = TrivialTreeNode.leaf("a", inputA)
+    val f2 = TrivialTreeNode.leaf("b", inputB)
+    val ff1 = TrivialTreeNode.leaf("c1", inputC)
+    val ff2 = TrivialTreeNode.leaf("c2", inputD)
+    val f3 = new TrivialTreeNode("c", Seq(ff1, ff2))
+    val soo = new TrivialTreeNode("x", Seq(f1, f2, f3), line)
 
     val expr = "/*[contains(c1,'Lisbo')]"
     val rtn = ee.evaluate(soo, expr)

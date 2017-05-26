@@ -14,8 +14,6 @@ import scala.util.parsing.input.{CharSequenceReader, OffsetPosition, Positional}
   * Scala parser combinators.
   * Offers common tokens, consistent reserved word handling, comment and string handling,
   * and productions for nested blocks.
-  * However, the most important functionality allows convenient parsing into the
-  * TreeNode structure for exposure via Rug.
   *
   * @see TreeNode
   */
@@ -61,55 +59,6 @@ abstract class CommonTypesParser extends JavaTokenParsers with LazyLogging {
 
   protected def identifierRefString(reservedWords: Set[String], underlying: Parser[String] = ident): Parser[String] =
     identifierRef(reservedWords, underlying) ^^ (ir => ir.name)
-
-  case class PositionedString(s: String) extends Positional
-
-  protected def positionedString(underlying: Parser[String]): Parser[PositionedString] = underlying ^^ (s => PositionedString(s))
-
-  /**
-    * Return a parser decorator creating a MutableTerminalTreeNode with the given name,
-    * preserving position information within the total input string
-    *
-    * @param name       name of the field
-    * @param underlying underlying parser to decorate to capture the positional information
-    *                   and create the field.
-    * @return new field if there is a match
-    */
-  protected def mutableTerminalNode(name: String, underlying: Parser[String]): Parser[MutableTerminalTreeNode] =
-    positioned(positionedString(underlying)) ^^ {
-      ps =>
-        val inputPosition: InputPosition = ps.pos match {
-          case of: OffsetPosition => new OffsetPositionInputPosition(of)
-          case wtf => throw new RugRuntimeException(s"Unexpected Position type $wtf", null)
-        }
-        new MutableTerminalTreeNode(name, ps.s, inputPosition)
-  }
-
-  /**
-    * Decorator to add position of parsed object structure.
-    *
-    * @param underlying parser to use
-    * @param topLevel   whether this is a top level structure,
-    *                   meaning we should pad after the last recognized production
-    */
-  def positionedStructure[T <: ParsedMutableContainerTreeNode](underlying: => Parser[T], topLevel: Boolean = false): Parser[T] = new Parser[T] {
-    override def apply(in: Input): ParseResult[T] = {
-      val source = in.source
-      val offset = in.offset
-      val start = handleWhiteSpace(source, offset)
-      underlying(in) match {
-        case suc: Success[T @unchecked] =>
-          // Only update positions if they're not already updated
-          if (suc.result.startPosition == null || suc.result.endPosition == null) {
-            val inputString = in.source.toString
-            suc.result.startPosition = LineHoldingOffsetInputPosition(inputString, start)
-            suc.result.endPosition = LineHoldingOffsetInputPosition(inputString, suc.next.offset)
-          }
-          suc
-        case x => x
-      }
-    }
-  }
 
   protected def parseTo[T](f: FileArtifact, parser: Parser[T]): T = {
     logger.debug(s"Rug input is\n------\n${f.path}\n${f.content}\n------\n")

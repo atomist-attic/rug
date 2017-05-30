@@ -87,6 +87,8 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = gn
   }
 
+  def getRootContext(): GraphNode = rootContext
+
   protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {
     // TODO publish event indicating plan was recorded
     case _ =>

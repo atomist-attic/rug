@@ -46,6 +46,11 @@ export interface HandlerScenarioWorld<T extends Plan> extends ScenarioWorld {
     setRootContext(n: GraphNode): void;
 
     /**
+     * May be null if setRootContext has not been called
+     */
+    getRootContext(): GraphNode;
+
+    /**
      * Define the given repo
      */
     defineRepo(owner: string, name: string, branchOrSha: string, p: Project);

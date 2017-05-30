@@ -29,7 +29,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   protected def createRugContext(tm: TreeMaterializer): RugContext =
     new FakeRugContext("team_id", tm, Some(repoResolver))
 
-  private var rootContext: SimpleContainerGraphNode =
+  private var rootContext: GraphNode =
     SimpleContainerGraphNode.empty("root", TreeNode.Dynamic)
 
   private case class ProjectId(owner: String, repoName: String, sha: String)
@@ -74,7 +74,17 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     val gn = NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
       throw new IllegalArgumentException(s"$n is not a valid GraphNode")
     )
-    rootContext = rootContext.addRelatedNode(gn)
+    rootContext = rootContext match {
+      case src: SimpleContainerGraphNode => src.addRelatedNode(gn)
+      case x => throw new IllegalArgumentException(s"Cannot add to context $x")
+    }
+  }
+
+  def setRootContext(n: AnyRef): Unit = {
+    val gn = NashornMapBackedGraphNode.toGraphNode(n).getOrElse(
+      throw new IllegalArgumentException(s"$n is not a valid GraphNode")
+    )
+    rootContext = gn
   }
 
   protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {

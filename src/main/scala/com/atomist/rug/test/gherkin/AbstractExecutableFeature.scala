@@ -124,9 +124,9 @@ abstract class AbstractExecutableFeature[W <: ScenarioWorld](
       case Some(som) =>
         callFunction(som, world) match {
           case Left(t) =>
+            world.abort(t.getMessage)
             listeners.foreach(_.stepFailed(step, t))
             logger.error(t.getMessage, t)
-            world.abort(t.getMessage)
             None
           case _ =>
             None

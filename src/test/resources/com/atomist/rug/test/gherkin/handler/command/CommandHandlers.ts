@@ -107,14 +107,14 @@ export const command5 = new GoesOffGraph();
 class LooksInProjects implements HandleCommand {
 
     handle(ctx: HandlerContext): CommandPlan {
-        let result = new CommandPlan()
-        const eng = ctx.pathExpressionEngine
+        let result = new CommandPlan();
+        const eng = ctx.pathExpressionEngine;
 
         // Find all Maven projects
-        const mavenProjects = "/Repo()/master::Project()[/pom.xml]"
+        const mavenProjects = "/orgs::Org()/repo::Repo()/master::Project()[/pom.xml]";
         eng.with<Project>(ctx.contextRoot, mavenProjects, p => {
             result.add(new ResponseMessage(`${p.name} is a Maven project`))
-        })
+        });
         return result;
     }
 }

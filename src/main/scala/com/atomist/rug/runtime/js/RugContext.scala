@@ -29,9 +29,11 @@ trait RugContext extends ExecutionContext {
   /**
     * @return the root node for the team's context.
     *         Path expressions can be executed against it,
-    *         for example in command handlers
+    *         for example in command handlers.
+    *         Normally a GraphNode, but detyped to
+    *         enable JVM/JS interop
     */
-  def contextRoot(): GraphNode
+  def contextRoot(): AnyRef
 
 }
 

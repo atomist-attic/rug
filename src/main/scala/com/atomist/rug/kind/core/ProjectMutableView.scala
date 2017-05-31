@@ -566,7 +566,7 @@ class ProjectContext(ctx: RugContext) extends RugContext {
     */
   override def treeMaterializer: TreeMaterializer = ctx.treeMaterializer
 
-  override def contextRoot(): GraphNode = ctx.contextRoot()
+  override def contextRoot(): AnyRef = ctx.contextRoot()
 
   def gitProjectLoader: AnyRef = new jsGitProjectLoader(ctx.repoResolver)
 

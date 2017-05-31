@@ -14,6 +14,17 @@ import _root_.scala.util.parsing.combinator.RegexParsers
   * This test shows an extension with custom Scala parsing code.
   */
 
+/**
+  * First, the language extension itself!
+  * The key method here is fileToRawNode, which returns a ParsedNode, which is a tree
+  * of nodes with position information.
+  *
+  * preprocess and postprocess are optional. the Panda language is whitespace
+  * sensitive, so they're useful.
+  *
+  * There is one piece you can't see: this class is declared in
+  * src/test/resources/META-INF/services/com.atomist.rug.spi.Typed
+  */
 class PandaRugLanguageExtension extends TypeUnderFile {
 
   import com.atomist.rug.kind.grammar.ParsedNode
@@ -28,39 +39,19 @@ class PandaRugLanguageExtension extends TypeUnderFile {
 
   override def description: String = "A language extension for my imaginary language"
 
+  // mark significant beginnings of lines, ones that don't start with whitespace
   override def preprocess(originalContent: String): String =
     originalContent.replaceAll("(?m)^(\\S)", "\\$$1")
 
-
+  // strip the preprocess marks
   override def postprocess(preprocessedContent: String): String =
      preprocessedContent.replaceAll("(?m)^\\$", "")
 
 }
 
-object Panda {
-
-  val PandaText =
-    """panda { panda panda } panda
-      | (panda panda) panda
-      |
-      |panda panda
-    """.stripMargin
-
-  val KawaiiPandas =
-    """bear { kawaii kawaii } panda
-      | (panda panda) panda
-      |
-      |bear panda
-    """.stripMargin
-
-  val PandaFilename = "my.panda"
-
-  import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
-
-  val PandaProject = SimpleFileBasedArtifactSource(StringFileArtifact(PandaFilename, PandaText))
-
-}
-
+/**
+  * Here is the parser! It uses Scala parser-combinators.
+  */
 object PandaParser extends RegexParsers {
 
   import com.atomist.rug.kind.grammar.{ParsedNode, SimpleParsedNode}
@@ -106,6 +97,37 @@ object PandaParser extends RegexParsers {
   }
 }
 
+/**
+  * These are just constants for test.
+  */
+object Panda {
+
+  val PandaText =
+    """panda { panda panda } panda
+      | (panda panda) panda
+      |
+      |panda panda
+    """.stripMargin
+
+  val KawaiiPandas =
+    """bear { kawaii kawaii } panda
+      | (panda panda) panda
+      |
+      |bear panda
+    """.stripMargin
+
+  val PandaFilename = "my.panda"
+
+  import com.atomist.source.{SimpleFileBasedArtifactSource, StringFileArtifact}
+
+  val PandaProject = SimpleFileBasedArtifactSource(StringFileArtifact(PandaFilename, PandaText))
+
+}
+
+/**
+  * Here is the end-to-end test! See the TypeScript program, it lives in src/test/resources.
+  * This test checks that it converts the input to the output.
+  */
 class RugIsExtensible extends FunSpec {
 
   describe("How rug can be extended to parse a panda language") {
@@ -153,6 +175,33 @@ class RugIsExtensible extends FunSpec {
         sm.result
       case boo => fail(s"Modification was not successful: $boo")
     }
+
+  }
+
+}
+
+/**
+  * Here is another way to write high-level tests for your language extension.
+  * This will load files in a directory, and you can run path expressions
+  * against them.
+  */
+class PandaRugLanguageExtensionText extends FunSpec with RugLanguageExtensionTest {
+
+  it("can change my source code") {
+    val sourceProjectLocation = "src/test/resources"
+
+    val pmv = projectFromDirectory(sourceProjectLocation)
+
+    val expr = """/com/atomist/rug/kind/Sample.panda/Panda()/line/curly/word"""
+
+    val nodes = evaluatePathExpression(pmv, expr)
+
+    nodes.head.update("xiaoping")
+
+    val newContent = pmv.findFile("com/atomist/rug/kind/Sample.panda").content
+    assert(newContent.contains("xiaoping"))
+
+    println("New content: ------\n" + newContent + "\n--------")
 
   }
 

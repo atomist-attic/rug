@@ -28,27 +28,32 @@ abstract class TypeUnderFile
   override def runtimeClass: Class[_ <: GraphNode] = classOf[OverwritableTextTreeNode]
 
   override def findAllIn(context: GraphNode): Option[Seq[TreeNode]] = context match {
-      case pmv: ProjectMutableView =>
-        Some(pmv
-          .files
-          .asScala
-          .filter(f => isOfType(f.currentBackingObject))
-          .flatMap(toView)
-        )
-      case f: FileMutableView if isOfType(f.currentBackingObject) =>
-        Some(toView(f).toSeq)
-      case _ => None
-    }
+    case pmv: ProjectMutableView =>
+      Some(pmv
+        .files
+        .asScala
+        .filter(f => isOfType(f.currentBackingObject))
+        .flatMap(toView)
+      )
+    case f: FileMutableView if isOfType(f.currentBackingObject) =>
+      Some(toView(f).toSeq)
+    case _ => None
+  }
 
   private def toView(f: FileArtifactBackedMutableView): Option[TreeNode] = {
-    val inner = fileToRawNode(f.currentBackingObject) match {
-      case Some(ptn: PositionedTreeNode) =>
-        Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name, ptn, f))
+    val preprocessedFile = f.currentBackingObject.withContent(preprocess(f.content))
+    val inner = fileToRawNode(preprocessedFile) match {
+      case Some(ptn: ParsedNode) =>
+        Some(TextTreeNodeLifecycle.makeWholeFileNodeReady(name,
+          PositionedTreeNode.fromParsedNode(ptn),
+          f,
+          preprocess, postprocess))
       case None => None
       case x => throw new RuntimeException(s"What is $x")
     }
     inner.map(createView(_, f))
   }
+
 
   /**
     * Subclasses can override this if they want to customize the top level node created:
@@ -66,5 +71,30 @@ abstract class TypeUnderFile
     * @param f file with content to parse
     * @return a PositionedTreeNode
     */
-  def fileToRawNode(f: FileArtifact): Option[PositionedTreeNode]
+  def fileToRawNode(f: FileArtifact): Option[ParsedNode]
+
+  def preprocess(originalContent: String): String = originalContent
+
+  def postprocess(preprocessedContent: String): String = preprocessedContent
+
 }
+
+/**
+  * minimum information a Rug Language Extension needs to provide
+  * in order for us to construct the TextTreeNodes that let us drill
+  * into the file in a path expression.
+  */
+trait ParsedNode {
+  def nodeName: String
+
+  def parsedNodes: Seq[ParsedNode]
+
+  def startOffset: Int
+
+  def endOffset: Int
+}
+
+case class SimpleParsedNode(override val nodeName: String,
+                            override val startOffset: Int,
+                            override val endOffset: Int,
+                            override val parsedNodes: Seq[ParsedNode] = Seq()) extends ParsedNode

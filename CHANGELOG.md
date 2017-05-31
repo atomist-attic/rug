@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     invocations [#587][587]
 -   Added `Identifiable` instruction that can be used for `DirectedMessage`
     and `ResponseMessage`
+-   Rug Language Extensions can provide a preprocessing (and postprocessing) step.
+    This lets them do string manipulation before parsing, and undo it afterward.
 
 ### Changed
 
@@ -42,6 +44,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Remove some more remnants of reviewers
 -   Harmonized much of the Rug loading code between project operations and
     handlers
+-   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
+    their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`.
     
 ### Fixed
 

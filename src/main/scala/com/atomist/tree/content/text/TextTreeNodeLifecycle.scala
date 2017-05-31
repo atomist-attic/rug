@@ -8,25 +8,30 @@ object TextTreeNodeLifecycle {
   /**
     * This is how tree nodes progress:
     *
-               ┌───────────────────┐                    ┌───────────────────┐
-               │                   │                    │                   │
-───parsing────▶│PositionedTreeNode │─────makeReady─────▶│ UpdatableTreeNode │───────▶  proceed with
-               │                   │                    │                   │            updates
-               └───────────────────┘                    └───────────────────┘
+    * ┌───────────────────┐                    ┌───────────────────┐
+    * │                   │                    │                   │
+    * ───parsing────▶│PositionedTreeNode │─────makeReady─────▶│ UpdatableTreeNode │───────▶  proceed with
+    * │                   │                    │                   │            updates
+    * └───────────────────┘                    └───────────────────┘
     *
-    *  Parsing produces PositionedTreeNodes, which know their offset.
-    *  makeReady incorporates the original contents of the file, and also the file's MutableView,
-    *  so that the output UpdatableTreeNodes can report their value, accept a new value,
-    *  and propogate that value all the way back to the file.
+    * Parsing produces PositionedTreeNodes, which know their offset.
+    * makeReady incorporates the original contents of the file, and also the file's MutableView,
+    * so that the output UpdatableTreeNodes can report their value, accept a new value,
+    * and propagate that value all the way back to the file.
     */
 
   /* This is for Antlr grammars, or anything that represents the entire file in a single parsed node. */
-  def makeWholeFileNodeReady(typeName: String, parsed: PositionedTreeNode, fileArtifact: FileArtifactBackedMutableView): UpdatableTreeNode = {
+  def makeWholeFileNodeReady(typeName: String,
+                             parsed: PositionedTreeNode,
+                             fileArtifact: FileArtifactBackedMutableView,
+                             preprocess: String => String = identity,
+                             postprocess: String => String = identity): UpdatableTreeNode = {
+    val inputAsParsed = preprocess(fileArtifact.content)
     val parsedWithWholeFileOffsets =
       ImmutablePositionedTreeNode(parsed).copy(
         startPosition = OffsetInputPosition(0),
-        endPosition = OffsetInputPosition(fileArtifact.content.length))
-    makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact).head
+        endPosition = OffsetInputPosition(inputAsParsed.length))
+    makeReady(typeName, Seq(parsedWithWholeFileOffsets), fileArtifact, preprocess, postprocess).head
   }
 
   /**
@@ -44,12 +49,24 @@ object TextTreeNodeLifecycle {
     * Cascade parentage information down into all the nodes.
     * Return the new, Updatable representations of the input PositionedTreeNodes.
     */
-  def makeReady(typeName: String, matches: Seq[PositionedTreeNode], fileArtifact: FileArtifactBackedMutableView): Seq[UpdatableTreeNode] = {
-    val wrapperNodeContainingWholeFileContent = ImmutablePositionedTreeNode.pad(typeName: String, matches, fileArtifact.content)
+  def makeReady(typeName: String,
+                matches: Seq[PositionedTreeNode],
+                fileArtifact: FileArtifactBackedMutableView,
+                preprocess: String => String = identity,
+                postprocess: String => String = identity): Seq[UpdatableTreeNode] = {
+    val inputAsParsed = preprocess(fileArtifact.content)
+
+    val ottn: OverwritableTextTreeNode =
+      ImmutablePositionedTreeNode.pad(typeName: String, matches, inputAsParsed)
+
+    val wrapperNodeContainingWholeFileContent =
+      new OverwritableTextInFile(typeName, ottn.allKidsIncludingPadding, postprocess)
     wrapperNodeContainingWholeFileContent.setParent(fileArtifact)
     wrapperNodeContainingWholeFileContent.childNodes.collect {
       case utn: UpdatableTreeNode => utn // should be all of them
       case _ => ???
     }
   }
+
+
 }

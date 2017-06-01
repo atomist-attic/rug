@@ -52,7 +52,9 @@ Milestone 4 (whiskey) release
 -   Harmonized much of the Rug loading code between project operations and
     handlers
 -   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
-    their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`.
+    their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`
+-   Removed CommonViewOperations with its deprecated `fail` and `println` methods
+-   Removed unnecessary InstantEditorFailureException as TypeScript can throw errors
     
 ### Fixed
 
@@ -60,7 +62,7 @@ Milestone 4 (whiskey) release
 -   Fixed handling of fields set with Object.defineProperty (now enumerable)
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
--   `files` in ProjectView now returns a list of `FileMutableView` [#623][623]
+-   `files` in ProjectView now returns a list of FileMutableView [#623][623]
 
 
 [593]: https://github.com/atomist/rug/issues/593

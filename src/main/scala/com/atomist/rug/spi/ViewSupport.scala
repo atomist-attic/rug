@@ -2,12 +2,14 @@ package com.atomist.rug.spi
 
 import com.atomist.rug.kind.core.ChangeCounting
 import com.atomist.tree.TreeNode
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 
 abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableView[_])
-  extends CommonViewOperations[T]
-    with ChangeCounting {
+  extends MutableView[T]
+    with ChangeCounting
+    with LazyLogging {
 
   private var _currentBackingObject: T = originalBackingObject
 
@@ -61,7 +63,6 @@ abstract class ViewSupport[T](val originalBackingObject: T, val parent: MutableV
     if (parent != null)
       parent.commit()
   }
-
 }
 
 abstract class TreeViewSupport[T <: TreeNode](originalBackingObject: T, parent: MutableView[_])
@@ -72,5 +73,4 @@ abstract class TreeViewSupport[T <: TreeNode](originalBackingObject: T, parent: 
   override def value: String = currentBackingObject.value
 
   override def nodeTags: Set[String] = currentBackingObject.nodeTags
-
 }

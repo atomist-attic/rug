@@ -3,7 +3,6 @@ package com.atomist.rug.kind.java
 import com.atomist.project.archive.DefaultAtomistConfig
 import com.atomist.rug.kind.core.ProjectMutableView
 import com.atomist.rug.kind.java.JavaVerifier._
-import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -23,7 +22,7 @@ class JavaProjectMutableViewTest extends FlatSpec with Matchers {
     val pmv = new ProjectMutableView(new EmptyArtifactSource(""), NewSpringBootProject, DefaultAtomistConfig)
     val jpv = new JavaProjectMutableView(pmv)
     val oldPackage = "com.atomist.test1"
-    an[InstantEditorFailureException] should be thrownBy jpv.renamePackage(oldPackage, "bogus.1.packagename")
+    an[IllegalArgumentException] should be thrownBy jpv.renamePackage(oldPackage, "bogus.1.packagename")
   }
 
   it should "move package without subpackages" in {

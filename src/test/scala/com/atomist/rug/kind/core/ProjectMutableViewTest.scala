@@ -1,13 +1,11 @@
 package com.atomist.rug.kind.core
 
-import com.atomist.param.{ParameterValues, SimpleParameterValues, Tag}
+import com.atomist.param.SimpleParameterValues
 import com.atomist.parse.java.ParsingTargets
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig}
-import com.atomist.project.edit.{Applicability, ModificationAttempt, ProjectEditor}
-import com.atomist.rug.{EditorNotFoundException, SimpleRugResolver}
 import com.atomist.rug.kind.java.JavaTypeUsageTest
-import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.rug.ts.TypeScriptBuilder
+import com.atomist.rug.{EditorNotFoundException, SimpleRugResolver}
 import com.atomist.source._
 import com.atomist.source.file.FileSystemArtifactSource
 import org.scalatest.{FlatSpec, Matchers}
@@ -299,7 +297,7 @@ class ProjectMutableViewTest extends FlatSpec with Matchers {
       StringFileArtifact("other", "random")
     ))
     val pmv = new ProjectMutableView(backingAs, outputAs)
-    an[InstantEditorFailureException] should be thrownBy pmv.copyEditorBackingFilesPreservingPath("src/thing")
+    an[IllegalArgumentException] should be thrownBy pmv.copyEditorBackingFilesPreservingPath("src/thing")
   }
 
   it should "copy files under dir with new path" in {

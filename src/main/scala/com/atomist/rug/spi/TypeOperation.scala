@@ -64,7 +64,6 @@ case class TypeOperation(
     try {
       methods.head.invoke(target, args: _*)
     } catch {
-      case e: InvocationTargetException if e.getCause.isInstanceOf[InstantEditorFailureException] => throw e.getCause // we meant to do this
       case e: InvocationTargetException if e.getCause.isInstanceOf[OutOfDateNodeException] => throw e.getCause // we meant to do this
       case t: Throwable =>
         val argDiagnostics = args map {

@@ -294,13 +294,14 @@ class ProjectMutableView(
                        description = "Destination path")
                      destinationPath: String): Unit = {
     if (fileExists(destinationPath))
-      fail(s"Attempt to copy file [$sourcePath] to existing path [$destinationPath]")
+      throw new IllegalArgumentException(s"Attempt to copy file [$sourcePath] to existing path [$destinationPath]")
+
     val sourceFileO = currentBackingObject.findFile(sourcePath)
     sourceFileO match {
       case Some(sourceFile) =>
         updateTo(currentBackingObject + sourceFile.withPath(destinationPath))
       case None =>
-        fail(s"Attempt to copy file [$sourcePath], which does not exist")
+        throw new IllegalArgumentException(s"Attempt to copy file [$sourcePath], which does not exist")
     }
   }
 
@@ -314,13 +315,14 @@ class ProjectMutableView(
   def copyEditorBackingFileOrFailToDestination(@ExportFunctionParameterDescription(name = "sourcePath", description = "Source path") sourcePath: String,
                                                @ExportFunctionParameterDescription(name = "destinationPath", description = "Destination path") destinationPath: String): Unit = {
     if (fileExists(destinationPath))
-      fail(s"Attempt to copy file [$sourcePath] to existing path [$destinationPath]")
+      throw new IllegalArgumentException(s"Attempt to copy file [$sourcePath] to existing path [$destinationPath]")
+
     val sourceFileO = rugAs.findFile(sourcePath)
     sourceFileO match {
       case Some(sourceFile) =>
         updateTo(currentBackingObject + sourceFile.withPath(destinationPath))
       case None =>
-        fail(s"Attempt to copy editor backing file [$sourcePath], which does not exist")
+        throw new IllegalArgumentException(s"Attempt to copy editor backing file [$sourcePath], which does not exist")
     }
   }
 
@@ -333,7 +335,8 @@ class ProjectMutableView(
                                                   description = "Destination path")
                                                 destinationPath: String): Unit = {
     if (rugAs.findFile(sourceDir).isDefined)
-      throw new InstantEditorFailureException(s"Path [$sourceDir] is a file, not a directory")
+      throw new IllegalArgumentException(s"Path [$sourceDir] is a file, not a directory")
+
     val underDir = (rugAs / sourceDir) withPathAbove destinationPath
     updateTo(currentBackingObject + underDir)
   }
@@ -345,7 +348,8 @@ class ProjectMutableView(
                                            sourceDir: String
                                           ): Unit = {
     if (rugAs.findFile(sourceDir).isDefined)
-      throw new InstantEditorFailureException(s"Path [$sourceDir] is a file, not a directory")
+      throw new IllegalArgumentException(s"Path [$sourceDir] is a file, not a directory")
+
     val underDir = rugAs.filter(_ => true, f => f.path.startsWith(sourceDir))
     updateTo(currentBackingObject + underDir)
   }
@@ -367,7 +371,7 @@ class ProjectMutableView(
                                    destinationPath: String): Unit = {
     val underDir = rugAs / sourceDir
     if (underDir.totalFileCount == 0)
-      fail(s"No files found in editor backing object [$sourceDir]")
+      throw new IllegalArgumentException(s"No files found in editor backing object [$sourceDir]")
     else
       updateTo(currentBackingObject + underDir)
   }
@@ -538,7 +542,7 @@ class ProjectMutableView(
       case Right(nodes) if nodes.size > 1 =>
         throw new IllegalArgumentException(s"Found ${nodes.size} hits for [$pexpr], not 1")
       case x =>
-        //println(s"Unexpected result [$x] for [$pexpr]")
+        // println(s"Unexpected result [$x] for [$pexpr]")
         None
     }
   }

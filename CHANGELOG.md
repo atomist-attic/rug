@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     handlers
 -   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
     their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`.
+-   `files` in ProjectView now returns a list of `FileMutableView`
     
 ### Fixed
 

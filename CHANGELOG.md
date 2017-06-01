@@ -46,7 +46,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     handlers
 -   RugLanguageExtensions may return a smaller interface, `ParsedNode` from 
     their parsing method `fileToRawNode`, instead of requiring `PositionedTreeNode`.
--   `files` in ProjectView now returns a list of `FileMutableView`
     
 ### Fixed
 
@@ -54,12 +53,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   Fixed handling of fields set with Object.defineProperty (now enumerable)
 -   @Editor, @Generator, and @EventHandler decorators now allow 'name' to be
     omitted. If you omit the name, it uses the name of the class.
+-   `files` in ProjectView now returns a list of `FileMutableView` [#623][623]
 
 
 [593]: https://github.com/atomist/rug/issues/593
 [554]: https://github.com/atomist/rug/issues/554
 [595]: https://github.com/atomist/rug/issues/595
 [587]: https://github.com/atomist/rug/issues/587
+[623]: https://github.com/atomist/rug/issues/623
 
 ## [1.0.0-m.3] - 2017-05-09
 

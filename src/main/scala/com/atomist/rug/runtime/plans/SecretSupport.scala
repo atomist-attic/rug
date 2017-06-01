@@ -23,7 +23,7 @@ trait SecretSupport
 
     secrets.foreach { s =>
       if(!mapped.contains(s.name)){
-        throw new MissingSecretException(s"${name} invocation is missing secret parameter '${s.name}' referring to '${s.path}'")
+        throw new MissingSecretException(s"$name invocation is missing secret parameter '${s.name}' referring to '${s.path}'")
       }
     }
   }

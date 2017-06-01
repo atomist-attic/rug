@@ -26,7 +26,7 @@ class DockerFileMutableView(originalBackingObject: FileArtifact, pmv: ProjectMut
 
   @ExportFunction(readOnly = true, description = "")
   def getExposedPorts: java.util.List[Int] = {
-    val exposePorts: Set[Int] = _content.getExposePorts()
+    val exposePorts: Set[Int] = _content.getExposePorts
     /*
     We have to export collections as Java collections, as these get passed into
     nashorn for the typescript stuff, and it doesn't understand scala.

@@ -134,7 +134,7 @@ private class PairMutableView(
             Nil
           case empty if empty.isEmpty => Nil
           case tooMany if tooMany.size > 1 =>
-            tooMany.map(f => println(TreeNodeUtils.toShortString(f)))
+            tooMany.foreach(f => println(TreeNodeUtils.toShortString(f)))
             throw new RuntimeException(s"Look, I found too many nodes. There are ${tooMany.size} and ${tooMany.collect{ case p: PaddingTreeNode => p}.size} of them are padding")
         }
       case _ => requiredSingleChild(currentBackingObject, "STRING") match {

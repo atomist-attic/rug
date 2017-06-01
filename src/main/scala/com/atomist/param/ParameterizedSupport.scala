@@ -19,10 +19,9 @@ trait ParameterizedSupport
   def addDefaultParameterValues(pvs: ParameterValues): ParameterValues = {
     val toDefault = parameters.filter(p => !pvs.parameterValueMap.contains(p.getName) && p.getDefaultValue != "")
     toDefault match {
-      case parms: Seq[Parameter] if parms.nonEmpty => {
+      case parms: Seq[Parameter] if parms.nonEmpty =>
         val newParams = parms.map(p => SimpleParameterValue(p.getName, p.getDefaultValue))
         new SimpleParameterValues(newParams ++ pvs.parameterValues)
-      }
       case _ => pvs
     }
   }

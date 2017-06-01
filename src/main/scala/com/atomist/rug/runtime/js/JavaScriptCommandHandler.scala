@@ -45,9 +45,7 @@ class JavaScriptCommandHandlerFinder
   }
 
   /**
-    * Extract any test related metadata - if any
-    * @param someVar
-    * @return
+    * Extract any test related metadata - if any.
     */
   protected def testDescriptor(someVar: ScriptObjectMirror): Option[TestDescriptor] = {
     someVar.getMember("__test") match {
@@ -59,7 +57,7 @@ class JavaScriptCommandHandlerFinder
     }
   }
   /**
-    * Extract intent from a var
+    * Extract intent from a var.
     */
   protected def intent(someVar: ScriptObjectMirror): Seq[String] = {
     someVar.getMember("__intent") match {
@@ -92,7 +90,7 @@ class JavaScriptCommandHandlerFinder
 }
 
 /**
-  * Runs a CommandHandler in Nashorn
+  * Runs a CommandHandler in Nashorn.
   */
 class JavaScriptCommandHandler(jsc: JavaScriptContext,
                                handler: ScriptObjectMirror,

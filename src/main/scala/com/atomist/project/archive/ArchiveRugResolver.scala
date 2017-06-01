@@ -25,10 +25,7 @@ class ArchiveRugResolver(graph: Dependency,
     new JavaScriptProjectEditorFinder())
 
   /**
-    * Find Rugs of all known kinds in the artifact
-    *
-    * @param as
-    * @return
+    * Find Rugs of all known kinds in the artifact.
     */
   private def find(as: ArtifactSource, resolver: RugResolver): Seq[Rug] = {
     val jsc = new JavaScriptContext(as, initializer = engineInitializer)
@@ -53,10 +50,7 @@ class ArchiveRugResolver(graph: Dependency,
   }
 
   /**
-    * Recursively resolve all the rugs
-    *
-    * @param deps
-    * @return
+    * Recursively resolve all the rugs.
     */
   private def dependencies(deps: Seq[Dependency]): Seq[ResolvedDependency] = {
     deps.map(dep =>
@@ -69,11 +63,7 @@ class ArchiveRugResolver(graph: Dependency,
   }
 
   /**
-    * Search direct dependencies of root for a rug
-    *
-    * @param root
-    * @param nameOrFqName
-    * @return
+    * Search direct dependencies of root for a rug.
     */
   override def resolve(root: Rug, nameOrFqName: String): Option[Rug] = {
     findResolvedDependency(root) match {
@@ -94,11 +84,6 @@ class ArchiveRugResolver(graph: Dependency,
 
   /**
     * Does the current rug/dep match the name?
-    *
-    * @param rug
-    * @param rootDep
-    * @param name
-    * @return
     */
   private def rugMatches(rug: Rug, rootDep: ResolvedDependency, name: String): Boolean = {
     name match {
@@ -114,20 +99,14 @@ class ArchiveRugResolver(graph: Dependency,
   }
 
   /**
-    * Find the node in the dependency graph for a given Rug instance
-    *
-    * @param rug
-    * @return
+    * Find the node in the dependency graph for a given Rug instance.
     */
   override def findResolvedDependency(rug: Rug): Option[ResolvedDependency] = {
     findRug(rug, resolvedDependencies)
   }
 
   /**
-    * Find the root rug in the graph
-    *
-    * @param root the rug
-    * @return
+    * Find the root rug in the graph.
     */
   private def findRug(root: Rug, resolved: ResolvedDependency): Option[ResolvedDependency] = {
     resolved.resolvedRugs.find(r => r == root) match {

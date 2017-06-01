@@ -97,7 +97,7 @@ class JavaScriptArray[T](val toProxy: java.util.List[T])
   }
 
   override def isEmpty: Boolean = {
-    lyst.isEmpty()
+    lyst.isEmpty
   }
 
   override def containsAll(collection: util.Collection[_]): Boolean = {

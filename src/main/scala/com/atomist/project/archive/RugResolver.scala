@@ -7,25 +7,17 @@ import com.atomist.source.ArtifactSource
 trait RugResolver {
 
   /**
-    * Returns the root
-    * @return
+    * Returns the root.
     */
   val resolvedDependencies: ResolvedDependency
 
   /**
-    * Search direct dependencies of root for a rug
-    *
-    * @param root
-    * @param nameOrFqName
-    * @return
+    * Search direct dependencies of root for a rug.
     */
   def resolve(root: Rug, nameOrFqName: String): Option[Rug]
 
   /**
-    * Find the node in the dependency graph for a given Rug instance
-    *
-    * @param rug
-    * @return
+    * Find the node in the dependency graph for a given Rug instance.
     */
   def findResolvedDependency(rug: Rug): Option[ResolvedDependency]
 }

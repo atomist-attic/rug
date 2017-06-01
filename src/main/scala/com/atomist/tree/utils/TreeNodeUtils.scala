@@ -13,8 +13,8 @@ object TreeNodeUtils {
   /**
     * Replace returns in values with a character that's easier to read in a debug log
     *
-    * @param s
-    * @return
+    * @param s the string to replace new line characters
+    * @return a string which new lines replaced
     */
   def inlineReturns(s: String): String = s.replace("\n", "ø")
 
@@ -52,7 +52,7 @@ object TreeNodeUtils {
         case _ => ""
       }
 
-      s"${significance} ${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
+      s"$significance ${f.nodeName} (${f.getClass.getSimpleName}#${f.hashCode()}) ${offset(f)}:[${showValue(f, 50)}]"
     }
 
     def toShortStr(fv: GraphNode, depth: Int, shown: GraphNode => Boolean): String = fv match {

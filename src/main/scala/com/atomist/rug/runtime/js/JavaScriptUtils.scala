@@ -180,7 +180,7 @@ trait JavaScriptUtils {
       if (!parameter.isValidValue(asString))
         if (asString == "") {
            // how can we warn them??? this is deprecated
-          println(s"WARNING: On rug ${name(rug)}, parameter '${pName}' has a default value of '${asString}', but that is not a valid value for this parameter. Set the parameter to null instead, please.")
+          println(s"WARNING: On rug ${name(rug)}, parameter '$pName' has a default value of '$asString', but that is not a valid value for this parameter. Set the parameter to null instead, please.")
         } else {
           throw new InvalidRugParameterDefaultValue(s"Parameter $pName default value ($asString) is not valid: $parameter")
         }

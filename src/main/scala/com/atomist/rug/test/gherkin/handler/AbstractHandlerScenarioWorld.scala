@@ -84,7 +84,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
     rootContext = n
   }
 
-  def getRootContext(): AnyRef = rootContext
+  def getRootContext: AnyRef = rootContext
 
   protected def recordPlan(handlerName: String, plan: Plan): Unit = plan match {
     // TODO publish event indicating plan was recorded
@@ -98,7 +98,7 @@ abstract class AbstractHandlerScenarioWorld(definitions: Definitions, rugs: Opti
   }
 
   /**
-    * Return a single plan or throw an exception if none was recorded
+    * Return a single plan or throw an exception if none was recorded.
     */
   def requiredPlan: AnyRef = recordedPlans.values.toList match {
     case Nil =>

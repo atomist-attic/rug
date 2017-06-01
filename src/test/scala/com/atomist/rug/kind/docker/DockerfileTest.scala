@@ -61,7 +61,7 @@ class DockerfileTest extends FlatSpec with Matchers {
       |EXPOSE 8080""".stripMargin
 
     val df = DockerfileParser.parse(initialFile)
-    val ports = df.getExposePorts()
+    val ports = df.getExposePorts
     ports should equal(Set(8080))
   }
 
@@ -72,7 +72,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |EXPOSE  8080  """.stripMargin
 
     val df = DockerfileParser.parse(initialFile)
-    val ports = df.getExposePorts()
+    val ports = df.getExposePorts
     ports should equal(Set(8080))
   }
 
@@ -83,7 +83,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |EXPOSE 8080 9090""".stripMargin
 
     val df = DockerfileParser.parse(initialFile)
-    val ports = df.getExposePorts()
+    val ports = df.getExposePorts
     ports should equal(Set(8080, 9090))
   }
 
@@ -94,7 +94,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |EXPOSE 8080    9090  """.stripMargin
 
     val df = DockerfileParser.parse(initialFile)
-    val ports = df.getExposePorts()
+    val ports = df.getExposePorts
     ports should equal(Set(8080, 9090))
   }
 
@@ -106,7 +106,7 @@ class DockerfileTest extends FlatSpec with Matchers {
         |EXPOSE 9090""".stripMargin
 
     val df = DockerfileParser.parse(initialFile)
-    val ports = df.getExposePorts()
+    val ports = df.getExposePorts
     ports should equal(Set(8080, 9090))
   }
 }

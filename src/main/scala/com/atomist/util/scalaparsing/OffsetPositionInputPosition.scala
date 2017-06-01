@@ -5,9 +5,7 @@ import com.atomist.tree.content.text.LineInputPosition
 import scala.util.parsing.input.OffsetPosition
 
 /**
-  * InputPosition wrapping a Scala OffsetPosition
-  *
-  * @param of
+  * InputPosition wrapping a Scala OffsetPosition.
   */
 class OffsetPositionInputPosition(of: OffsetPosition) extends LineInputPosition {
 

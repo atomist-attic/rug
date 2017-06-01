@@ -16,7 +16,7 @@ class Dockerfile(val lines: Seq[DockerfileLine]) {
 
   import Command._
 
-  def getExposePorts(): Set[Int] = {
+  def getExposePorts: Set[Int] = {
     val matchingLines: Seq[DockerfileLine] = lines.filter(d => EXPOSE.toString.equals(d.name))
     val exposeLineToPorts: (DockerfileLine) => Set[Int] = l => {
       // This could be a single value, or a list of values. First trim off any extra whitespace

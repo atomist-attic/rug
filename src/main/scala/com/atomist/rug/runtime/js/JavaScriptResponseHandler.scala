@@ -15,7 +15,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
   */
 class JavaScriptResponseHandlerFinder
   extends JavaScriptRugFinder[JavaScriptResponseHandler]
-  with JavaScriptUtils{
+    with JavaScriptUtils {
 
   override def create(jsc: JavaScriptContext, handler: ScriptObjectMirror, resolver: Option[RugResolver]): Option[JavaScriptResponseHandler] = {
     Some(new JavaScriptResponseHandler(
@@ -25,14 +25,12 @@ class JavaScriptResponseHandlerFinder
       description(handler),
       parameters(handler),
       tags(handler),
-      coerce(jsc,handler),
+      coerce(jsc, handler),
       scope(handler)))
   }
 
   /**
-    * Figure out if we need to parse json or whatever
-    * @param handler
-    * @return
+    * Figure out if we need to parse json or whatever.
     */
   def coerce(jsc: JavaScriptContext, handler: ScriptObjectMirror): ResponseCoercer = {
     handler.getMember("__coercion") match {
@@ -49,21 +47,21 @@ class JavaScriptResponseHandlerFinder
   }
 }
 
-class JavaScriptResponseHandler (jsc: JavaScriptContext,
-                                 handler: ScriptObjectMirror,
-                                 override val name: String,
-                                 override val description: String,
-                                 override val parameters: Seq[Parameter],
-                                 override val tags: Seq[Tag],
-                                 responseCoercer: ResponseCoercer,
-                                 override val scope: Scope)
+class JavaScriptResponseHandler(jsc: JavaScriptContext,
+                                handler: ScriptObjectMirror,
+                                override val name: String,
+                                override val description: String,
+                                override val parameters: Seq[Parameter],
+                                override val tags: Seq[Tag],
+                                responseCoercer: ResponseCoercer,
+                                override val scope: Scope)
   extends ParameterizedRug
     with ResponseHandler
     with ParameterizedSupport
     with JavaScriptUtils {
 
   override def handle(ctx: RugContext, response: Response, params: ParameterValues): Option[Plan] = {
-    //TODO this handle method is almost identical to the command handler - extract it
+    // TODO this handle method is almost identical to the command handler - extract it
     val validated = addDefaultParameterValues(params)
     validateParameters(validated)
     val coerced = responseCoercer.coerce(response)
@@ -86,10 +84,10 @@ class JavaScriptResponseHandler (jsc: JavaScriptContext,
     */
   override protected def setParameters(clone: ScriptObjectMirror, params: Seq[ParameterValue]): Unit = {
     super.setParameters(clone, params)
-    if(parameters.isEmpty){
+    if (parameters.isEmpty) {
       params.foreach(p => {
-        if(!clone.hasMember(p.getName)){
-          clone.setMember(p.getName, p.getValue);
+        if (!clone.hasMember(p.getName)) {
+          clone.setMember(p.getName, p.getValue)
         }
       })
     }

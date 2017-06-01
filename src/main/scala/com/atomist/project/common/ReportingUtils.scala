@@ -6,10 +6,7 @@ package com.atomist.project.common
 object ReportingUtils {
 
   /**
-    * Format the fragment adding line numbers, to help with diagnostics
-    *
-    * @param s
-    * @return
+    * Format the fragment adding line numbers, to help with diagnostics.
     */
   def withLineNumbers(s: String): String = {
     if (s == null) null

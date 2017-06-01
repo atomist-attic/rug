@@ -12,22 +12,12 @@ import com.atomist.source.ArtifactSource
 trait ProjectManagement {
 
   /**
-    * Run generator & persist the output from a project generator
-    *
-    * @param generator
-    * @param arguments
-    * @param projectName
-    * @return
+    * Run generator & persist the output from a project generator.
     */
   def generate(generator: ProjectGenerator, arguments: ParameterValues, projectName: String): ArtifactSource
 
   /**
-    * Run the editor and take persistence decisions based on the results
-    *
-    * @param editor
-    * @param arguments
-    * @param projectName
-    * @return
+    * Run the editor and take persistence decisions based on the results.
     */
   def edit(editor: ProjectEditor, arguments: ParameterValues, projectName: String, target: Option[EditorTarget]): ModificationAttempt
 }

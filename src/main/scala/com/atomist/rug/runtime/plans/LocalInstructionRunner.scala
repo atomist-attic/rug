@@ -107,10 +107,7 @@ class LocalInstructionRunner(currentRug: Rug,
   }
 
   /**
-    * Convert Instruction.Detail name/coords to a string for resolver
-    *
-    * @param detail
-    * @return
+    * Convert Instruction.Detail name/coords to a string for resolver.
     */
   def extractName(detail: Instruction.Detail): String = {
     detail.coordinates match {

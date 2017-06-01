@@ -90,7 +90,7 @@ abstract class AbstractTypeScriptGenerator(typeRegistry: TypeRegistry,
     def comment(indent: String): String = {
       val builder = new StringBuilder(s"$indent/**\n")
       val deprecationMessage = if (deprecated) "DEPRECATED - " else ""
-      builder ++= s"$indent  * ${deprecationMessage}${description.getOrElse("")}\n"
+      builder ++= s"$indent  * $deprecationMessage${description.getOrElse("")}\n"
       builder ++= s"$indent  * \n"
 
       if (exposeAsProperty) {

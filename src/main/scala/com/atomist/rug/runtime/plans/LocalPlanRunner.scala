@@ -11,9 +11,6 @@ import scala.util.{Try, Failure => ScalaFailure, Success => ScalaSuccess}
 
 /**
   * Runs Plans in this JVM - i.e. no work distribution.
-  * @param messageDeliverer
-  * @param instructionRunner
-  * @param nestedPlanRunner
   */
 class LocalPlanRunner(messageDeliverer: MessageDeliverer,
                       instructionRunner: InstructionRunner,
@@ -25,7 +22,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
   override def run(plan: Plan, callbackInput: Option[Response]): Future[PlanResult] = {
     val allMessages = plan.lifecycle ++ plan.local
     val messageLog: Seq[MessageDeliveryError] = allMessages.flatMap { message =>
-      if(plan.returningRug.nonEmpty){
+      if (plan.returningRug.nonEmpty) {
         Try(messageDeliverer.deliver(plan.returningRug.get, message, callbackInput)) match {
           case ScalaFailure(error) =>
             val msg = s"Failed to deliver message ${message.toDisplay} - ${error.getMessage}"
@@ -36,7 +33,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
             logger.debug(msg)
             None
         }
-      }else{
+      } else {
         val msg = s"Failed to deliver message ${message.toDisplay} - current Rug not available for dependency resolution"
         logger.error(msg)
         None
@@ -44,14 +41,18 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
     }
     val instructionResponseFutures: Seq[Future[Iterable[PlanLogEvent]]] = plan.instructions.map { respondable =>
       val instruction = handleInstruction(plan, respondable, callbackInput)
-      Future { instruction }
+      Future {
+        instruction
+      }
     }
     val futureInstructionLog: Future[Seq[PlanLogEvent]] = Future.fold(instructionResponseFutures)(Seq[PlanLogEvent]())(_ ++ _)
     futureInstructionLog.map(instructionLogEvents => PlanResult(messageLog ++ instructionLogEvents))
   }
 
   private def handleInstruction(currentPlan: Plan, plannable: Plannable, callbackInput: Option[Response]): Seq[PlanLogEvent] = {
-    Try { instructionRunner.run(plannable.instruction, callbackInput) } match {
+    Try {
+      instructionRunner.run(plannable.instruction, callbackInput)
+    } match {
       case ScalaFailure(error) =>
         val msg = s"Failed to run ${plannable.toDisplay} - ${error.getMessage}"
         logger.error(msg, error)
@@ -70,7 +71,6 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
               case Response(Success, _, _, _) => respondable.onSuccess
               case Response(Failure, _, _, _) => respondable.onFailure
             }
-
         }
         val callbackResults: Option[Seq[PlanLogEvent]] = callbackOption.map { callback =>
           Try(handleCallback(currentPlan, callback, Some(response))) match {
@@ -86,7 +86,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
         }
         //ensure handled errors don't return failure https://github.com/atomist/rug/issues/531
         (response, callbackResults, callbackOption) match {
-          case (Response(Failure,_,_,_), Some(logs), Some(callback)) if !PlanResultInterpreter.hasLogFailure(logs) && callback.isInstanceOf[Respond] =>
+          case (Response(Failure, _, _, _), Some(logs), Some(callback)) if !PlanResultInterpreter.hasLogFailure(logs) && callback.isInstanceOf[Respond] =>
             val handled = Response(Status.Handled, response.msg, response.code, response.body)
             Seq(callbackResults, Some(Seq(InstructionResult(plannable.instruction, handled)))).flatten.flatten
           case _ =>
@@ -97,7 +97,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
 
   private def handleCallback(currentPlan: Plan, callback: Callback, instructionResult: Option[Response]): Seq[PlanLogEvent] = callback match {
     case m: Message =>
-      if(currentPlan.returningRug.nonEmpty){
+      if (currentPlan.returningRug.nonEmpty) {
         Try(messageDeliverer.deliver(currentPlan.returningRug.get, m, instructionResult)) match {
           case ScalaFailure(error) =>
             val msg = s"Failed to deliver message ${m.toDisplay} - ${error.getMessage}"
@@ -106,7 +106,7 @@ class LocalPlanRunner(messageDeliverer: MessageDeliverer,
             val msg = s"Delivered message ${m.toDisplay}"
             logger.debug(msg)
         }
-      }else{
+      } else {
         val msg = s"Failed to deliver message ${m.toDisplay} - current Rug not available for dependency resolution"
         logger.error(msg)
       }

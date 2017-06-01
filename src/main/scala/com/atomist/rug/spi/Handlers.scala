@@ -51,12 +51,7 @@ object Handlers {
 
   /**
     * Rendering/correlation is done in the handler
-    * Directed & Response messages become these
-    *
-    * @param body
-    * @param channelNames
-    * @param contentType
-    * @param usernames
+    * Directed & Response messages become these.
     */
   case class LocallyRenderedMessage(body: String,
                                     contentType: String,
@@ -114,13 +109,7 @@ object Handlers {
   }
 
   /**
-    * A GitHub Pull Request for Edits
-    *
-    * @param baseBranch
-    * @param commitMessage
-    * @param headBranch
-    * @param title
-    * @param body
+    * A GitHub Pull Request for Edits.
     */
   case class GitHubPullRequest(
                                 override val baseBranch: String,
@@ -132,10 +121,7 @@ object Handlers {
     extends EditorTarget
 
   /**
-    * A GitHub Branch for Edits
-    *
-    * @param baseBranch
-    * @param headBranch
+    * A GitHub Branch for Edits.
     */
   case class GitHubBranch(
                            override val baseBranch: String,
@@ -146,7 +132,7 @@ object Handlers {
 
   object Instruction {
 
-    //probably makes more sense to put project_name elsewhere
+    // Probably makes more sense to put project_name elsewhere
     case class Detail(name: String,
                       coordinates: Option[MavenCoordinate],
                       parameters: Seq[ParameterValue],

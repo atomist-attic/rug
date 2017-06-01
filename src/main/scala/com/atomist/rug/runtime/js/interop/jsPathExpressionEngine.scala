@@ -166,7 +166,7 @@ class jsPathExpressionEngine(
           inner(report, Some(steps), steps.dropLastStep)
         case nonEmpty => // something was found
           val dirtyDeets = if (nonEmpty.size > 1) "" else s" = ${nonEmpty.get(0)}"
-          val myReport = Seq(s"${steps} found ${nonEmpty.size}$dirtyDeets")
+          val myReport = Seq(s"$steps found ${nonEmpty.size}$dirtyDeets")
           val recentEmptyReport = lastEmptySteps.map(" " + _ + " found 0").toSeq
           val reportSoFar = myReport ++ recentEmptyReport ++ report
           inner(reportSoFar.map(" " + _), None, steps.dropLastStep)

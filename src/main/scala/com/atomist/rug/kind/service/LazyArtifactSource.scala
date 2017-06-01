@@ -8,7 +8,7 @@ import com.atomist.source._
   * Not threadsafe.
   *
   * @param loc locator that enables us to load this ArtifactSource
-  * @param materialize
+  * @param materialize function
   */
 class LazyArtifactSource(
                           loc: ArtifactSourceLocator,

@@ -2,7 +2,6 @@ package com.atomist.rug.kind.core
 
 import java.util.{Collections, Objects}
 
-import com.atomist.graph.GraphNode
 import com.atomist.param.{ParameterValues, SimpleParameterValues}
 import com.atomist.project.archive.{AtomistConfig, DefaultAtomistConfig, RugResolver}
 import com.atomist.project.common.template._
@@ -20,6 +19,7 @@ import com.atomist.util.BinaryDecider
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import org.apache.commons.lang3.StringUtils
 
+import scala.collection.JavaConverters._
 import scala.util.Properties
 
 object ProjectMutableView {
@@ -422,11 +422,8 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     exposeAsProperty = true,
     description = "Files in this project")
-  def files: java.util.List[FileArtifactBackedMutableView] = {
-    import scala.collection.JavaConverters._
-    val allFiles = currentBackingObject.allFiles.map(f => new FileMutableView(f, this)).asJava
-    allFiles.asInstanceOf[java.util.List[FileArtifactBackedMutableView]]
-  }
+  def files: java.util.List[FileMutableView] =
+    currentBackingObject.allFiles.map(new FileMutableView(_, this)).asJava
 
   /**
     * For use by scripts. Edit the project with the given

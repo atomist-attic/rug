@@ -23,7 +23,7 @@ trait ProjectView
   @ExportFunction(readOnly = false,
     exposeAsProperty = true,
     description = "Files in this archive")
-  def files: java.util.List[FileArtifactBackedMutableView]
+  def files: java.util.List[FileMutableView]
 
   @ExportFunction(readOnly = true,
     description = "Does a file with the given path exist and have the expected content?")

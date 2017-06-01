@@ -286,32 +286,4 @@ class LocalPlanRunnerTest
     verifyNoMoreInteractions(messageDeliverer, logger)
   }
 
-  val atomistConfig: AtomistConfig = DefaultAtomistConfig
-
-  val handlerThatHandlersAnError = StringFileArtifact(atomistConfig.handlersRoot + "/Handler.ts",
-    contentOf(this, "HandlerThatHandlesAnError.ts"))
-
-  it("should not return failure for handled errors") {
-    val rugArchive = TypeScriptBuilder.compileWithModel(SimpleFileBasedArtifactSource(handlerThatHandlersAnError))
-    val resolver = SimpleRugResolver(rugArchive)
-
-    val handlers = resolver.resolvedDependencies.resolvedRugs
-    val handler = handlers.collect { case i: CommandHandler => i }.head
-    val runner = new LocalPlanRunner(null, new LocalInstructionRunner(handlers.head, null, null, new TestSecretResolver(handler) {
-      override def resolveSecrets(secrets: Seq[Secret]): Seq[ParameterValue] = {
-        assert(secrets.size === 1)
-        assert(secrets.head.name === "very")
-        assert(secrets.head.path === "/secret/thingy")
-        Seq(SimpleParameterValue("very", "cool"))
-      }
-    }, rugResolver = Some(resolver)))
-
-    val result = Await.result(runner.run(handler.handle(null, SimpleParameterValues.Empty).get, None), 10.seconds)
-    val results = result.log.collect { case i: InstructionResult => i }
-    assert(results.head.instruction.detail.name === "HandleIt")
-    assert(results.head.response.status === Status.Success)
-    assert(results(1).instruction.detail.name === "ExampleFunction")
-    assert(results(1).response.status === Status.Handled)
-    assert(PlanResultInterpreter.interpret(result).status === Status.Success)
-  }
 }

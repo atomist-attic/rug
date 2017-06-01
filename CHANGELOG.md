@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.3...HEAD
+[Unreleased]: https://github.com/atomist/rug/compare/1.0.0-m.4...HEAD
+
+## [1.0.0-m.4] - 2017-06-01
+
+[1.0.0-m.4]: https://github.com/atomist/rug/compare/1.0.0-m.3...1.0.0-m.4
+
+Milestone 4 (whiskey) release
 
 ### Added
 
@@ -33,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+-   **BREAKING** Removed support for Velocity templates from `Project`
 -   Allow `editWith` and `generateWith` calls in Gherkin tests without parameters
 -   Parameters passed to ResponseHandlers with no declared parameters are now
     set directly on the instance. This can be used to avoid using @Parameter

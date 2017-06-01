@@ -310,10 +310,14 @@ export class LifecycleMessage implements Message<"lifecycle"> {
 export type PlanMessage = ResponseMessage | DirectedMessage | LifecycleMessage;
 
 export abstract class MappedParameters {
+  // GITHUB_REPO_OWNER is deprecated; instead use GITHUB_OWNER
   public static readonly GITHUB_REPO_OWNER: string = "atomist://github/repository/owner";
+  public static readonly GITHUB_OWNER: string = "atomist://github/repository/owner";
   public static readonly GITHUB_REPOSITORY: string = "atomist://github/repository";
+  public static readonly GITHUB_WEBHOOK_URL: string = "atomist://github_webhook_url";
+  public static readonly GITHUB_API_URL: string = "atomist://github_api_url";
+  
   public static readonly SLACK_CHANNEL: string = "atomist://slack/channel";
   public static readonly SLACK_TEAM: string = "atomist://slack/team";
   public static readonly SLACK_USER: string = "atomist://slack/user";
-  public static readonly GITHUB_WEBHOOK_URL: string = "atomist://github_webhook_url";
 }

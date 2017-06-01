@@ -6,11 +6,12 @@ import com.atomist.project.common.InvalidParametersException
 import com.atomist.project.edit.{FailedModificationAttempt, ModificationAttempt, ProjectEditor, SuccessfulModification}
 import com.atomist.project.generate.ProjectGenerator
 import com.atomist.rug.RugNotFoundException
-import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView}
+import com.atomist.rug.kind.core.{ProjectContext, ProjectMutableView, RepoResolver}
 import com.atomist.rug.runtime.js.interop.NashornUtils
-import com.atomist.rug.runtime.js.{JavaScriptProjectOperation, LocalRugContext}
+import com.atomist.rug.runtime.js.{BaseRugContext, JavaScriptProjectOperation, LocalRugContext}
 import com.atomist.rug.test.gherkin._
-import com.atomist.source.EmptyArtifactSource
+import com.atomist.source.{ArtifactSource, EmptyArtifactSource}
+import com.atomist.source.git.GitRepositoryCloner
 
 /**
   * Convenient methods for working with projects
@@ -68,7 +69,7 @@ class ProjectScenarioWorld(
     * We expect the JavaScript op to have been populated.
     */
   def generateWith(generator: ProjectGenerator, projectName: String, params: Any): Unit = {
-    val resultAs = generator.generate(projectName, parameters(params), new ProjectContext(LocalRugContext))
+    val resultAs = generator.generate(projectName, parameters(params), new ProjectContext(ProjectGenerationContext))
     project.updateTo(resultAs)
   }
 
@@ -125,4 +126,27 @@ class ProjectScenarioWorld(
     op.validateParameters(SimpleParameterValues(paramValues))
   }
 
+}
+
+/**
+  * Context that allows us to clone public github repos, which is
+  * what we want in testing seed style generators
+  */
+private object ProjectGenerationContext extends BaseRugContext {
+
+  override def repoResolver: Option[RepoResolver] = Some(GitRepoResolver)
+}
+
+private object GitRepoResolver extends RepoResolver {
+
+  private val cloner = new GitRepositoryCloner("");
+
+  override def resolveBranch(owner: String, repoName: String, branch: String): ArtifactSource = {
+    cloner.clone(owner = owner, repo = repoName, branch= Some(branch))
+  }
+
+
+  override def resolveSha(owner: String, repoName: String, sha: String): ArtifactSource = {
+    cloner.clone(owner = owner, repo = repoName, sha = Some(sha))
+  }
 }

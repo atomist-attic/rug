@@ -49,6 +49,9 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
                       description = "The new package name")
                     newPackageName: String): Unit = {
     // We do this will string operations rather than JavaParser
+    if (!JavaHelpers.isValidPackageName(newPackageName))
+      throw new IllegalArgumentException(s"Invalid new package name: [$newPackageName]")
+
     val pathToReplace = oldPackageName.replace(".", "/")
     val newPath = newPackageName.replace(".", "/")
 

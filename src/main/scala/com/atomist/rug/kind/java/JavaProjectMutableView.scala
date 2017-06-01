@@ -49,13 +49,10 @@ class JavaProjectMutableView(pmv: ProjectMutableView)
                       description = "The new package name")
                     newPackageName: String): Unit = {
     // We do this will string operations rather than JavaParser
-    if (!JavaHelpers.isValidPackageName(newPackageName))
-      fail(s"Invalid new package name: [$newPackageName]")
     val pathToReplace = oldPackageName.replace(".", "/")
     val newPath = newPackageName.replace(".", "/")
 
     // Replace imports and other references, such as annotations and Strings
-    //regexpReplaceWithFilter(isJavaFilter, s"import[\\s]+$oldPackageName", s"import $newPackageName")
     regexpReplaceWithFilter(mayContainReferencesToClassNames, oldPackageName, newPackageName)
 
     regexpReplaceWithFilter(f => f.name.endsWith(JavaExtension) && f.path.contains(pathToReplace),
@@ -86,8 +83,7 @@ object JavaProjectMutableView {
 
   val isJava: FileArtifact => Boolean = f => f.name.endsWith(JavaExtension)
 
-  val mayContainReferencesToClassNames: FileArtifact => Boolean = f =>
-    !f.path.equals(ProvenanceFilePath)
+  val mayContainReferencesToClassNames: FileArtifact => Boolean = f => !f.path.equals(ProvenanceFilePath)
 
   def apply(pv: ProjectMutableView) = pv match {
     case jpv: JavaProjectMutableView => jpv

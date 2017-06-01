@@ -321,13 +321,13 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Copy the given files from the editor's backing archive under the given path. Take the relative paths and place under new destination path")
   def copyEditorBackingFilesWithNewRelativePath(@ExportFunctionParameterDescription(name = "sourcePath",
-    description = "Source directory")
-                                                sourceDir: String,
+    description = "Source directory") sourceDir: String,
                                                 @ExportFunctionParameterDescription(name = "destinationPath",
                                                   description = "Destination path")
                                                 destinationPath: String): Unit = {
     if (rugAs.findFile(sourceDir).isDefined)
-      throw new InstantEditorFailureException(s"Path [$sourceDir] is a file, not a directory")
+      throw new IllegalArgumentException(s"Path [$sourceDir] is a file, not a directory")
+
     val underDir = (rugAs / sourceDir) withPathAbove destinationPath
     updateTo(currentBackingObject + underDir)
   }
@@ -335,11 +335,11 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Copy the given files from the editor's backing archive under the given directory into the same directory in the project being edited.")
   def copyEditorBackingFilesPreservingPath(@ExportFunctionParameterDescription(name = "sourcePath",
-    description = "Source directory")
-                                           sourceDir: String
+    description = "Source directory") sourceDir: String
                                           ): Unit = {
     if (rugAs.findFile(sourceDir).isDefined)
-      throw new InstantEditorFailureException(s"Path [$sourceDir] is a file, not a directory")
+      throw new IllegalArgumentException(s"Path [$sourceDir] is a file, not a directory")
+
     val underDir = rugAs.filter(_ => true, f => f.path.startsWith(sourceDir))
     updateTo(currentBackingObject + underDir)
   }
@@ -354,8 +354,7 @@ class ProjectMutableView(
   @ExportFunction(readOnly = false,
     description = "Copy the given file from the editor's backing archive. Fail the editor if it isn't found or if the destination already exists")
   def copyEditorBackingFilesOrFail(@ExportFunctionParameterDescription(name = "sourcePath",
-    description = "Source directory")
-                                   sourceDir: String,
+    description = "Source directory") sourceDir: String,
                                    @ExportFunctionParameterDescription(name = "destinationPath",
                                      description = "Destination path")
                                    destinationPath: String): Unit = {

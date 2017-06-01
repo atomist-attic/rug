@@ -4,7 +4,6 @@ import com.atomist.param.ParameterValues
 import com.atomist.project.archive.{DefaultAtomistConfig, RugResolver}
 import com.atomist.project.edit._
 import com.atomist.rug.kind.core.ProjectMutableView
-import com.atomist.rug.spi.InstantEditorFailureException
 import com.atomist.source.ArtifactSource
 import com.atomist.util.Timing._
 import jdk.nashorn.api.scripting.ScriptObjectMirror
@@ -74,8 +73,6 @@ class JavaScriptProjectEditor(
         }
       }
       catch {
-        case f: InstantEditorFailureException =>
-          FailedModificationAttempt(f.getMessage)
         case sle: SourceLanguageRuntimeException =>
           throw sle
         case NonFatal(t) =>
